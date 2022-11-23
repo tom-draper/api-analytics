@@ -2,8 +2,7 @@
 import threading
 from time import time
 import requests
-from starlette.middleware.base import (BaseHTTPMiddleware,
-                                       RequestResponseEndpoint)
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.types import ASGIApp
@@ -25,7 +24,7 @@ class Analytics(BaseHTTPMiddleware):
             'HEAD': 7,
             'TRACE': 8,
         }
-    
+
     def log_request(self, json: dict):
         requests.post('http://localhost:8080/request', json=json)
 
@@ -33,7 +32,7 @@ class Analytics(BaseHTTPMiddleware):
         start = time()
         response = await call_next(request)
         elapsed = time() - start
-                
+
         json = {
             'api_key': self.api_key,
             'path': request.url.path,
