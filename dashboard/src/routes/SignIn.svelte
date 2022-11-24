@@ -3,7 +3,7 @@
   async function genAPIKey() {
     // Fetch page ID
     const response = await fetch(
-      "https://fastapi-analytics.vercel.app/api/generate-api-key",
+      "https://fastapi-analytics.vercel.app/api/user-id",
       {
         method: 'POST',
         headers: {
