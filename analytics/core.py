@@ -21,4 +21,5 @@ framework_map = {
 def log_request(json: dict):
     json['method'] = method_map[json['method']]
     json['framework'] = framework_map[json['framework']]
-    requests.post('https://fastapi-analytics.vercel.app/api/request', json=json)
+    requests.post(
+        'https://api-analytics.vercel.app/api/log-request', json=json)
