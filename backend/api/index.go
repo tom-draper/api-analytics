@@ -35,7 +35,9 @@ type User struct {
 }
 
 func genAPIKeyHandler(supabase *supa.Client) gin.HandlerFunc {
+	fmt.Println("Outer")
 	genAPIKey := func(c *gin.Context) {
+		fmt.Println("Inner")
 		var row struct{} // Insert empty row, use default values
 		var result []User
 		err := supabase.DB.From("Users").Insert(row).Execute(&result)
@@ -73,7 +75,6 @@ func logRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "API request logged successfully."})
-
 	}
 
 	return gin.HandlerFunc(logRequest)
