@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	supa "github.com/nedpals/supabase-go"
@@ -73,7 +74,7 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 }
 
 func GetUserIDHandler(supabase *supa.Client) gin.HandlerFunc {
-	logRequest := func(c *gin.Context) {
+	getUserID := func(c *gin.Context) {
 		// Collect API key sent via POST request
 		var apiKey string
 		if err := c.BindJSON(&apiKey); err != nil {
@@ -95,7 +96,7 @@ func GetUserIDHandler(supabase *supa.Client) gin.HandlerFunc {
 		c.JSON(200, gin.H{"value": userID})
 	}
 
-	return gin.HandlerFunc(logRequest)
+	return gin.HandlerFunc(getUserID)
 }
 
 type RequestRow struct {
@@ -110,7 +111,7 @@ type RequestRow struct {
 }
 
 func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
-	logRequest := func(c *gin.Context) {
+	getData := func(c *gin.Context) {
 		// Collect user ID sent via POST request
 		var userID string
 		if err := c.BindJSON(&userID); err != nil {
@@ -132,7 +133,7 @@ func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
 		c.JSON(200, gin.H{"value": result})
 	}
 
-	return gin.HandlerFunc(logRequest)
+	return gin.HandlerFunc(getData)
 }
 
 func CORSMiddleware() gin.HandlerFunc {
@@ -172,7 +173,8 @@ func init() {
 
 	r := app.Group("/api") // Vercel - must be /api/xxx
 
-	r.Use(CORSMiddleware())
+	// r.Use(CORSMiddleware())
+	r.Use(cors.Default())
 	registerRouter(r, supabase) // Register route
 }
 
