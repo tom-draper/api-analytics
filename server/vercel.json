@@ -2,7 +2,7 @@
   "trailingSlash": false,
   "redirects": [
     {
-      "source": "/(.*)",
+      "source": "/",
       "destination": "/api",
       "permanent": false
     }
