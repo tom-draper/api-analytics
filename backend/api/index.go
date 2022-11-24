@@ -18,10 +18,10 @@ var (
 )
 
 func getDBLogin() (string, string) {
-	err := godotenv.Load(".env")
-	if err != nil {
-		panic(err)
-	}
+	// err := godotenv.Load(".env")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	supabaseURL := os.Getenv("SUPABASE_URL")
 	supabaseKey := os.Getenv("SUPABASE_KEY")
@@ -88,7 +88,7 @@ func init() {
 	r := app.Group("/api")
 
 	r.GET("/gen-api-key", genAPIKeyHandler(supabase))
-	r.GET("/request", logRequestHandler(supabase))
+	r.POST("/request", logRequestHandler(supabase))
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
