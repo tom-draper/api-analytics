@@ -6,7 +6,7 @@
   async function genAPIKey() {
     if (!generatedKey) {
       const response = await fetch(
-        "https://fastapi-analytics.vercel.app/api/generate-api-key"
+        "https://api-analytics-server.vercel.app/api/generate-api-key"
       );
       console.log(response.status);
       if (response.status == 200) {
@@ -93,6 +93,7 @@
   }
   .keep-secure {
     color: #5a5a5a;
+    /* color: #7e7e7e; */
     margin-bottom: 1em;
   }
   #copyBtn {

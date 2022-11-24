@@ -2,7 +2,7 @@
   async function genAPIKey() {
     // Fetch page ID
     const response = await fetch(
-      "https://fastapi-analytics.vercel.app/api/data",
+      "https://api-analytics-server.vercel.app/api/data",
       {
         method: 'POST',
         headers: {
@@ -12,6 +12,7 @@
       }
     );
     
+    console.log(response)
     if (response.status == 200) {
       const data = await response.json();
       window.location.href = `/dashboard/${data.value}`;
