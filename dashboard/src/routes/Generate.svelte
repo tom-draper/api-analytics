@@ -1,33 +1,45 @@
 <script lang="ts">
-    let generatedKey = false;
-    let apiKey = "";
+  let generatedKey = false;
+  let apiKey = "";
+  let generateBtn: HTMLButtonElement;
+  let copyBtn: HTMLButtonElement;
   async function genAPIKey() {
     if (!generatedKey) {
-        const response = await fetch(
-        "https://fastapi-analytics.vercel.app/api/gen-api-key"
-        );
+      const response = await fetch(
+        "https://fastapi-analytics.vercel.app/api/generate-api-key"
+      );
+      console.log(response.status);
+      if (response.status == 200) {
         const data = await response.json();
-        console.log(data);
-        if (data.status == 200) {
-            generatedKey = true;
-            apiKey = data.api-key
-        }
+        generatedKey = true;
+        apiKey = data.value;
+        generateBtn.style.display = "none";
+        copyBtn.style.display = "initial";
+      }
     }
   }
 
   function copyToClipboard() {
-    console.log("Copy");
+    navigator.clipboard.writeText(apiKey);
+    copyBtn.value = "Copied";
   }
 </script>
 
 <div class="generate">
   <div class="content">
     <h2>Generate API key</h2>
-    <input type="text" readonly bind:value={apiKey} >
-    <button id="generateBtn" on:click={genAPIKey}>Generate</button>
-    <button id="copyBtn" on:click={genAPIKey}>Generate</button>
+    <input type="text" readonly bind:value={apiKey} />
+    <button id="generateBtn" on:click={genAPIKey} bind:this={generateBtn}
+      >Generate</button
+    >
+    <button id="copyBtn" on:click={copyToClipboard} bind:this={copyBtn}
+      >Copy</button
+    >
 
-    <div class="logo">API Analytics</div>
+    <div class="details">
+      <div class="keep-secure">Keep your API key safe and secure.</div>
+      <div class="highlight logo">API Analytics</div>
+    </div>
   </div>
 </div>
 
@@ -56,6 +68,8 @@
     border: none;
     padding: 0 20px;
     width: 300px;
+    font-size: 1em;
+    text-align: center;
     height: 40px;
     border-radius: 4px;
     margin-bottom: 2.5em;
@@ -70,10 +84,16 @@
     cursor: pointer;
     width: 100px;
   }
-  .logo {
+  .highlight {
     color: #3fcf8e;
-    margin-top: 3em;
+  }
+  .details {
+    margin-top: 15em;
     font-size: 0.8em;
+  }
+  .keep-secure {
+    color: #5a5a5a;
+    margin-bottom: 1em;
   }
   #copyBtn {
     background: #1c1c1c;
