@@ -96,13 +96,13 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	app.ServeHTTP(w, r)
 }
 
-func main() {
-	supabaseURL, supabaseKey := getDBLogin()
-	supabase := supa.CreateClient(supabaseURL, supabaseKey)
+// func main() {
+// 	supabaseURL, supabaseKey := getDBLogin()
+// 	supabase := supa.CreateClient(supabaseURL, supabaseKey)
 
-	router := gin.Default()
-	router.GET("/gen-api-key", genAPIKeyHandler(supabase))
-	router.POST("/request", logRequestHandler(supabase))
-	router.Run("localhost:8080")
-	router.Handler()
-}
+// 	router := gin.Default()
+// 	router.GET("/gen-api-key", genAPIKeyHandler(supabase))
+// 	router.POST("/request", logRequestHandler(supabase))
+// 	router.Run("localhost:8080")
+// 	router.Handler()
+// }
