@@ -86,7 +86,7 @@ func init() {
 
 	app = gin.New()
 
-	r := app.Group("/api")
+	// r := app.Group("/api")
 
 	r.GET("/gen-api-key", genAPIKeyHandler(supabase))
 	r.POST("/request", logRequestHandler(supabase))
