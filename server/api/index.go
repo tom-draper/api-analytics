@@ -33,6 +33,8 @@ func CORSMiddleware() gin.HandlerFunc {
 func registerRouter(r *gin.RouterGroup, supabase *supa.Client) {
 	r.GET("/generate-api-key", GenAPIKeyHandler(supabase))
 	r.POST("/log-request", LogRequestHandler(supabase))
+	r.POST("/user-id", GetUserIDHandler(supabase))
+	r.POST("/data", GetDataHandler(supabase))
 }
 
 func getDBLogin() (string, string) {
