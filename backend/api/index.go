@@ -13,15 +13,9 @@ import (
 	supa "github.com/nedpals/supabase-go"
 )
 
-func main() {
-	supabaseURL, supabaseKey := getDBLogin()
-	supabase := supa.CreateClient(supabaseURL, supabaseKey)
-
-	router := gin.Default()
-	router.GET("/gen-api-key", genAPIKeyHandler(supabase))
-	router.POST("/request", logRequestHandler(supabase))
-	router.Run("localhost:8080")
-}
+var (
+	app *gin.Engine
+)
 
 func getDBLogin() (string, string) {
 	err := godotenv.Load(".env")
@@ -84,4 +78,31 @@ func logRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 	}
 
 	return gin.HandlerFunc(logRequest)
+}
+
+func init() {
+	supabaseURL, supabaseKey := getDBLogin()
+	supabase := supa.CreateClient(supabaseURL, supabaseKey)
+
+	app = gin.New()
+
+	r := app.Group("/api")
+
+	r.GET("/gen-api-key", genAPIKeyHandler(supabase))
+	r.GET("/request", logRequestHandler(supabase))
+}
+
+func Handler(w http.ResponseWriter, r *http.Request) {
+	app.ServeHTTP(w, r)
+}
+
+func main() {
+	supabaseURL, supabaseKey := getDBLogin()
+	supabase := supa.CreateClient(supabaseURL, supabaseKey)
+
+	router := gin.Default()
+	router.GET("/gen-api-key", genAPIKeyHandler(supabase))
+	router.POST("/request", logRequestHandler(supabase))
+	router.Run("localhost:8080")
+	router.Handler()
 }
