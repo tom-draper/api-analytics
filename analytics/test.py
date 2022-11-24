@@ -14,7 +14,7 @@ app.add_middleware(Analytics, api_key=api_key)
 
 @app.get("/")
 async def test():
-    return "Test 2"
+    return "Test 1"
 
 
 @app.get("/test/")
