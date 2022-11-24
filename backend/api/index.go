@@ -53,6 +53,7 @@ func genAPIKeyHandler(supabase *supa.Client) gin.HandlerFunc {
 }
 
 func genAPIKey(c *gin.Context) {
+	fmt.Println("Inner")
 	supabaseURL, supabaseKey := getDBLogin()
 	supabase := supa.CreateClient(supabaseURL, supabaseKey)
 
