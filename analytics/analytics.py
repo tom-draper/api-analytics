@@ -26,7 +26,7 @@ class Analytics(BaseHTTPMiddleware):
         }
 
     def log_request(self, json: dict):
-        requests.post('http://localhost:8080/request', json=json)
+        requests.post('https://fastapi-analytics.vercel.app/api/request', json=json)
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         start = time()
@@ -39,7 +39,8 @@ class Analytics(BaseHTTPMiddleware):
             'user_agent': request.headers['user-agent'],
             'method': self.method_map[request.method],
             'status': int(response.status_code),
-            'response_time': int(elapsed * 1000)
+            'response_time': int(elapsed * 1000),
+            'framework': 0
         }
         threading.Thread(target=self.log_request, args=(json,)).start()
         return response

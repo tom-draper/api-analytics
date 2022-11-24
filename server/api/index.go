@@ -14,12 +14,6 @@ var (
 	app *gin.Engine
 )
 
-func getDBLogin() (string, string) {
-	supabaseURL := os.Getenv("SUPABASE_URL")
-	supabaseKey := os.Getenv("SUPABASE_KEY")
-	return supabaseURL, supabaseKey
-}
-
 type User struct {
 	UserID    string    `json:"user_id"`
 	APIKey    string    `json:"api_key"`
@@ -48,6 +42,7 @@ type Request struct {
 	Method       int16  `json:"method"`
 	StatusCode   int16  `json:"status_code"`
 	ResponseTime int16  `json:"response_time"`
+	Framework    int16  `json:"framework"`
 }
 
 func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
@@ -71,6 +66,12 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 func registerRouter(r *gin.RouterGroup, supabase *supa.Client) {
 	r.GET("/gen-api-key", GenAPIKeyHandler(supabase))
 	r.POST("/request", LogRequestHandler(supabase))
+}
+
+func getDBLogin() (string, string) {
+	supabaseURL := os.Getenv("SUPABASE_URL")
+	supabaseKey := os.Getenv("SUPABASE_KEY")
+	return supabaseURL, supabaseKey
 }
 
 func init() {

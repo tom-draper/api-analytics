@@ -2,15 +2,9 @@
   "trailingSlash": false,
   "redirects": [
     {
-      "source": "/",
+      "source": "/(.*)",
       "destination": "/api",
       "permanent": false
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/index.go"
     }
   ]
 }
