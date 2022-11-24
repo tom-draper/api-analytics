@@ -2,13 +2,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/api"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/index.go"
+      "dest": "/api/index.go"
     }
   ]
 }

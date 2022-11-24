@@ -80,13 +80,21 @@ func logRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 	return gin.HandlerFunc(logRequest)
 }
 
+func ErrRouter(c *gin.Context) {
+	c.JSON(http.StatusBadRequest, gin.H{
+		"errors": "this page could not be found",
+	})
+}
+
 func init() {
 	supabaseURL, supabaseKey := getDBLogin()
 	supabase := supa.CreateClient(supabaseURL, supabaseKey)
 
 	app = gin.New()
 
-	// r := app.Group("/api")
+	app.NoRoute(ErrRouter)
+
+	r := app.Group("/api")
 
 	r.GET("/gen-api-key", genAPIKeyHandler(supabase))
 	r.POST("/request", logRequestHandler(supabase))
