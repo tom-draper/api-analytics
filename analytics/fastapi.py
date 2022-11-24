@@ -1,12 +1,13 @@
 import threading
 from time import time
 
-import requests
 from starlette.middleware.base import (BaseHTTPMiddleware,
                                        RequestResponseEndpoint)
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.types import ASGIApp
+
+from analytics.core import log_request
 
 
 class Analytics(BaseHTTPMiddleware):
@@ -14,24 +15,9 @@ class Analytics(BaseHTTPMiddleware):
         super().__init__(app)
         self.api_key = api_key
 
-        self.method_map = {
-            'GET': 0,
-            'POST': 1,
-            'PUT': 2,
-            'PATCH': 3,
-            'DELETE': 4,
-            'OPTIONS': 5,
-            'CONNECT': 6,
-            'HEAD': 7,
-            'TRACE': 8,
-        }
-
-    def log_request(self, json: dict):
-        requests.post('https://fastapi-analytics.vercel.app/api/request', json=json)
-
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         start = time()
-        response = await call_next(request)
+        response: Response = await call_next(request)
         elapsed = time() - start
         
         json = {
@@ -39,10 +25,10 @@ class Analytics(BaseHTTPMiddleware):
             'hostname': request.url.hostname,
             'path': request.url.path,
             'user_agent': request.headers['user-agent'],
-            'method': self.method_map[request.method],
+            'method': request.method,
             'status': int(response.status_code),
             'response_time': int(elapsed * 1000),
-            'framework': 0
+            'framework': 'FastAPI'
         }
-        threading.Thread(target=self.log_request, args=(json,)).start()
+        threading.Thread(target=log_request, args=(json,)).start()
         return response

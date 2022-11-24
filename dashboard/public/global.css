@@ -6,7 +6,7 @@ body {
   margin: 0;
   padding: 0;
   text-align: center;
-  background-color: #2a2d37;
+  background-color: #1c1c1c;
 }
 
 nav {
@@ -15,7 +15,7 @@ nav {
 }
 
 nav a {
-  color: #2a2d37;
+  color: #343434;
   padding: 1em;
   display: inline-block;
 }
@@ -23,7 +23,7 @@ nav a {
 a.active,
 h1,
 h2 {
-  color: #da99da;
+  color: #3fcf8e;
 }
 
 ul {
