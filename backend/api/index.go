@@ -68,8 +68,7 @@ func logRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 		fmt.Println(request)
 
 		var result []interface{}
-		err := supabase.DB.From("Requests").Insert(request).Execute(&result)
-		if err != nil {
+		if err := supabase.DB.From("Requests").Insert(request).Execute(&result); err != nil {
 			panic(err)
 		}
 
