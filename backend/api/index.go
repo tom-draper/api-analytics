@@ -52,6 +52,22 @@ func genAPIKeyHandler(supabase *supa.Client) gin.HandlerFunc {
 	return gin.HandlerFunc(genAPIKey)
 }
 
+func genAPIKey(c *gin.Context) {
+	supabaseURL, supabaseKey := getDBLogin()
+	supabase := supa.CreateClient(supabaseURL, supabaseKey)
+
+	fmt.Println("Inner")
+	var row struct{} // Insert empty row, use default values
+	var result []User
+	err := supabase.DB.From("Users").Insert(row).Execute(&result)
+	if err != nil {
+		panic(err)
+	}
+	apiKey := result[0].APIKey
+	fmt.Println(apiKey)
+	c.JSON(200, gin.H{"status": 200, "api-key": apiKey})
+}
+
 type Request struct {
 	APIKey       string `json:"api_key"`
 	Path         string `json:"path"`
@@ -80,6 +96,24 @@ func logRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 	return gin.HandlerFunc(logRequest)
 }
 
+func logRequest(c *gin.Context) {
+	supabaseURL, supabaseKey := getDBLogin()
+	supabase := supa.CreateClient(supabaseURL, supabaseKey)
+
+	var request Request
+	if err := c.BindJSON(&request); err != nil {
+		panic(err)
+	}
+	fmt.Println(request)
+
+	var result []interface{}
+	if err := supabase.DB.From("Requests").Insert(request).Execute(&result); err != nil {
+		panic(err)
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "API request logged successfully."})
+}
+
 func ErrRouter(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"errors": "this page could not be found",
@@ -87,8 +121,8 @@ func ErrRouter(c *gin.Context) {
 }
 
 func init() {
-	supabaseURL, supabaseKey := getDBLogin()
-	supabase := supa.CreateClient(supabaseURL, supabaseKey)
+	// supabaseURL, supabaseKey := getDBLogin()
+	// supabase := supa.CreateClient(supabaseURL, supabaseKey)
 
 	app = gin.New()
 
@@ -96,8 +130,8 @@ func init() {
 
 	r := app.Group("/api")
 
-	r.GET("/gen-api-key", genAPIKeyHandler(supabase))
-	r.POST("/request", logRequestHandler(supabase))
+	r.GET("/gen-api-key", genAPIKey)
+	r.POST("/request", logRequest)
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
