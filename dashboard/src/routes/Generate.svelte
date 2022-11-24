@@ -1,12 +1,18 @@
 <script lang="ts">
+    let generatedKey = false;
+    let apiKey = "";
   async function genAPIKey() {
-    const response = await fetch(
-      "https://fastapi-analytics.vercel.app/api/gen-api-key"
-    );
-    console.log(response)
-    console.log(response.body)
-    const data = await response.json();
-    console.log(data);
+    if (!generatedKey) {
+        const response = await fetch(
+        "https://fastapi-analytics.vercel.app/api/gen-api-key"
+        );
+        const data = await response.json();
+        console.log(data);
+        if (data.status == 200) {
+            generatedKey = true;
+            apiKey = data.api-key
+        }
+    }
   }
 
   function copyToClipboard() {
@@ -17,7 +23,7 @@
 <div class="generate">
   <div class="content">
     <h2>Generate API key</h2>
-    <input type="text" readonly />
+    <input type="text" readonly bind:value={apiKey} >
     <button id="generateBtn" on:click={genAPIKey}>Generate</button>
     <button id="copyBtn" on:click={genAPIKey}>Generate</button>
 

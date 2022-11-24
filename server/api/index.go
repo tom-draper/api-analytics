@@ -46,7 +46,7 @@ func GenAPIKeyHandler(supabase *supa.Client) gin.HandlerFunc {
 			panic(err)
 		}
 		apiKey := result[0].APIKey
-		c.JSON(200, gin.H{"status": 200, "api-key": apiKey})
+		c.JSON(200, gin.H{"value": apiKey})
 	}
 
 	return gin.HandlerFunc(genAPIKey)
@@ -81,7 +81,7 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 }
 
 func registerRouter(r *gin.RouterGroup, supabase *supa.Client) {
-	r.GET("/gen-api-key", GenAPIKeyHandler(supabase))
+	r.GET("/generate-api-key", GenAPIKeyHandler(supabase))
 	r.POST("/request", LogRequestHandler(supabase))
 }
 
