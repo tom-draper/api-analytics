@@ -76,10 +76,6 @@
   }
   .keep-secure {
     color: #5a5a5a;
-    /* color: #7e7e7e;
-    color: #232323;
-    color: #343434;
-    color: #545454; */
     margin-bottom: 1em;
   }
   #generateBtn {

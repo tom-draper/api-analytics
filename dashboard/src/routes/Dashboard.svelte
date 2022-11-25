@@ -18,18 +18,10 @@
     if (response.status == 200) {
       const json = await response.json();
       data = json.value;
-      buildStats();
     }
   }
 
-
-
-  function buildStats() {
-
-  }
-
   let data: any;
-  let stats: any;
   onMount(() => {
     fetchData();
   });
@@ -38,8 +30,15 @@
 
 <div>
   <h1>Dashboard</h1>
-  <div class="id">{userID}</div>
   {#if data != undefined}
-    <ResponseTimes {data} />
+    <div class="dashboard">
+      <ResponseTimes {data} />
+    </div>
     {/if}
 </div>
+
+<style>
+  .dashboard {
+    margin: 5em;
+  }
+</style>

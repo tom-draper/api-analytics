@@ -4,19 +4,17 @@
   // Median and quartiles from StackOverflow answer
   // https://stackoverflow.com/a/55297611/8851732
   const asc = (arr) => arr.sort((a, b) => a - b);
-
   const sum = (arr) => arr.reduce((a, b) => a + b, 0);
-
   const mean = (arr) => sum(arr) / arr.length;
 
   // sample standard deviation
-  const std = (arr) => {
+  function std(arr: number[]) {
     const mu = mean(arr);
     const diffArr = arr.map((a) => (a - mu) ** 2);
     return Math.sqrt(sum(diffArr) / (arr.length - 1));
   };
 
-  const quantile = (arr, q) => {
+  function quantile(arr: number[], q: number) {
     const sorted = asc(arr);
     const pos = (sorted.length - 1) * q;
     const base = Math.floor(pos);
@@ -28,22 +26,36 @@
     }
   };
 
-  const q25 = (responseTimes) => quantile(responseTimes, 0.25);
-  const q50 = (responseTimes) => quantile(responseTimes, 0.5);
-  const q75 = (responseTimes) => quantile(responseTimes, 0.75);
+  function markerPosition(x: number) {
+    let position = Math.log10(x)*125-300
+    console.log(position)
+    if (position < 0) {
+        return 0
+    } else if (position > 100) {
+        return 100
+    } else {
+        return position
+    }
+  }
+
+  function setMarkerPosition(median: number) {
+    let position = markerPosition(median);
+    marker.style.left = `${position}%`;
+  }
 
   function build() {
     let responseTimes: number[] = [];
     for (let i = 0; i < data.length; i++) {
       responseTimes.push(data[i].response_time);
     }
-    median = q50(responseTimes);
-    LQ = q25(responseTimes);
-    UQ = q75(responseTimes);
-    console.log(median, LQ, UQ);
+    median = quantile(responseTimes, 0.25);
+    LQ = quantile(responseTimes, 0.5);
+    UQ = quantile(responseTimes, 0.75);
+    setMarkerPosition(median);
   }
 
-  let median, LQ, UQ
+  let median: number, LQ: number, UQ: number;
+  let marker: HTMLDivElement;
   onMount(() => {
     build()
   })
@@ -68,14 +80,14 @@
         <div class="bar-green"></div>
         <div class="bar-yellow"></div>
         <div class="bar-red"></div>
+        <div class="marker" bind:this="{marker}"></div>
     </div>
 </div>
 
 <style>
     .card {
-        background: #232323;
-        color: #ededed;
-        /* height: 200px; */
+        background: var(--light-background);
+        color: var(--faded-text);
         width: 400px;
         border-radius: 6px;
     }
@@ -85,51 +97,57 @@
     }
     .values {
         display: flex;
-        color: #3fcf8e;
+        color: var(--highlight);
         font-size: 1.8em;
         font-weight: 700;
     }
+    .values,
+    .labels {
+        margin: 0 0.5rem;
+    }
     .value {
         flex: 1;
+        font-size: 1.1em;
         padding: 20px 20px 4px;
     }
     .labels {
         display: flex;
         font-size: 0.8em;
-        color: #707070;
+        color: var(--dim-text)
     }
     .label {
         flex: 1;
     }
 
     .milliseconds {
-        color: #707070;
+        color: var(--dim-text);
         font-size: 0.8em;
         margin-left: 4px;
     }
 
     .median {
-        font-size: 1.5em;
+        font-size: 1em;
     }
     .upper-quartile,
     .lower-quartile {
-        font-size: 0.9em;
-        line-height: 53px;
+        font-size: 1em;
         padding-bottom: 0;
     }
 
     .bar {
-        padding: 30px 0 25px;
+        padding: 20px 0 20px;
         display: flex;
-        height: 10px;
+        height: 30px;
         width: 85%;
         margin: auto;
+        align-items: center;
+        position: relative;
     }
     .bar-green {
-        background: #3fcf8e;
+        background: var(--highlight);
         width: 75%;
         height: 10px;
-        border-radius: 3px 0 0 3px;
+        border-radius: 2px 0 0 2px;
     }
     .bar-yellow {
         width: 15%;
@@ -139,7 +157,15 @@
     .bar-red {
         width: 20%;
         height: 10px;
-        border-radius: 0 3px 3px 0;
+        border-radius: 0 2px 2px 0;
         background: rgb(228, 97, 97);
+    }
+    .marker {
+        position: absolute;
+        height: 30px;
+        width: 5px;
+        background: white;
+        border-radius: 2px;
+        left: 0;  /* Changed during runtime to reflect median */
     }
 </style>

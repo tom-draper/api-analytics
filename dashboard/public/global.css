@@ -43,3 +43,10 @@ p {
   color: white;
   padding: 1em;
 }
+
+:root {
+  --highlight: #3fcf8e;
+  --light-background: #232323;
+  --faded-text: #ededed;
+  --dim-text: #707070;
+}
