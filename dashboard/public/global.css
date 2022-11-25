@@ -60,6 +60,8 @@ p {
 
 :root {
   --highlight: #3fcf8e;
+  --red: #e46161;
+  --yellow: #ebeb81;
   --light-background: #232323;
   --faded-text: #ededed;
   --dim-text: #707070;
