@@ -99,14 +99,16 @@ func GetUserIDHandler(supabase *supa.Client) gin.HandlerFunc {
 }
 
 type RequestRow struct {
-	RequestID    int16  `json:"request_id" `
-	APIKey       string `json:"api_key"`
-	Path         string `json:"path"`
-	UserAgent    string `json:"user_agent"`
-	Method       int16  `json:"method"`
-	StatusCode   int16  `json:"status_code"`
-	ResponseTime int16  `json:"response_time"`
-	Framework    int16  `json:"framework"`
+	APIKey       string    `json:"api_key"`
+	RequestID    int16     `json:"request_id" `
+	Hostname     string    `json:"hostname"`
+	Path         string    `json:"path"`
+	UserAgent    string    `json:"user_agent"`
+	Method       int16     `json:"method"`
+	StatusCode   int16     `json:"status_code"`
+	ResponseTime int16     `json:"response_time"`
+	Framework    int16     `json:"framework"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
@@ -115,14 +117,17 @@ func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
 		userID := c.Param("userID")
 
 		// Fetch all API request data associated with this account
-		var result []interface{}
+		var result []struct {
+			Requests []RequestRow `json:"Requests"`
+			APIKey   string       `json:"api_key"`
+		}
 		err := supabase.DB.From("Users").Select("api_key, Requests!inner(*)").Eq("user_id", userID).Execute(&result)
 		if err != nil {
 			panic(err)
 		}
 
 		// Return API request data
-		c.JSON(200, gin.H{"value": result})
+		c.JSON(200, gin.H{"value": result[0].Requests})
 	}
 
 	return gin.HandlerFunc(getData)

@@ -13,9 +13,9 @@ app = Flask(__name__)
 add_middleware(app, api_key)
 
 
-@app.get("/health")
-def health():
-    return {"message": "I'm healthy"}
+@app.get("/")
+def root():
+    return {"message": "Hello World!"}
 
 
 if __name__ == "__main__":

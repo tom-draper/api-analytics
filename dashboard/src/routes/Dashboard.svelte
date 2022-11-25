@@ -11,7 +11,6 @@
     if (response.status == 200) {
       data = await response.json();
       console.log(data)
-    //   window.location.href = `/dashboard/${data.value}`;
     }
   }
 
