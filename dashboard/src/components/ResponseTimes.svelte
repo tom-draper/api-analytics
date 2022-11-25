@@ -12,7 +12,7 @@
     const mu = mean(arr);
     const diffArr = arr.map((a) => (a - mu) ** 2);
     return Math.sqrt(sum(diffArr) / (arr.length - 1));
-  };
+  }
 
   function quantile(arr: number[], q: number) {
     const sorted = asc(arr);
@@ -24,17 +24,17 @@
     } else {
       return sorted[base];
     }
-  };
+  }
 
   function markerPosition(x: number) {
-    let position = Math.log10(x)*125-300
-    console.log(position)
+    let position = Math.log10(x) * 125 - 300;
+    console.log(position);
     if (position < 0) {
-        return 0
+      return 0;
     } else if (position > 100) {
-        return 100
+      return 100;
     } else {
-        return position
+      return position;
     }
   }
 
@@ -57,115 +57,106 @@
   let median: number, LQ: number, UQ: number;
   let marker: HTMLDivElement;
   onMount(() => {
-    build()
-  })
+    build();
+  });
 
   export let data: any;
 </script>
 
-
 <div class="card">
-    <div class="title">Response Times <span class="milliseconds">(ms)</span></div>
-    <div class="values">
-        <div class="value lower-quartile">{LQ}</div>
-        <div class="value median">{median}</div>
-        <div class="value upper-quartile">{UQ}</div>
-    </div>
-    <div class="labels">
-        <div class="label">25%</div>
-        <div class="label">Median</div>
-        <div class="label">75%</div>
-    </div>
-    <div class="bar">
-        <div class="bar-green"></div>
-        <div class="bar-yellow"></div>
-        <div class="bar-red"></div>
-        <div class="marker" bind:this="{marker}"></div>
-    </div>
+  <div class="card-title">
+    Response Times <span class="milliseconds">(ms)</span>
+  </div>
+  <div class="values">
+    <div class="value lower-quartile">{LQ}</div>
+    <div class="value median">{median}</div>
+    <div class="value upper-quartile">{UQ}</div>
+  </div>
+  <div class="labels">
+    <div class="label">25%</div>
+    <div class="label">Median</div>
+    <div class="label">75%</div>
+  </div>
+  <div class="bar">
+    <div class="bar-green" />
+    <div class="bar-yellow" />
+    <div class="bar-red" />
+    <div class="marker" bind:this={marker} />
+  </div>
 </div>
 
 <style>
-    .card {
-        background: var(--light-background);
-        color: var(--faded-text);
-        width: 400px;
-        border-radius: 6px;
-    }
-    .title {
-        text-align: left;
-        padding: 20px 20px 0;
-    }
-    .values {
-        display: flex;
-        color: var(--highlight);
-        font-size: 1.8em;
-        font-weight: 700;
-    }
-    .values,
-    .labels {
-        margin: 0 0.5rem;
-    }
-    .value {
-        flex: 1;
-        font-size: 1.1em;
-        padding: 20px 20px 4px;
-    }
-    .labels {
-        display: flex;
-        font-size: 0.8em;
-        color: var(--dim-text)
-    }
-    .label {
-        flex: 1;
-    }
+  .values {
+    display: flex;
+    color: var(--highlight);
+    font-size: 1.8em;
+    font-weight: 700;
+  }
+  .values,
+  .labels {
+    margin: 0 0.5rem;
+  }
+  .value {
+    flex: 1;
+    font-size: 1.1em;
+    padding: 20px 20px 4px;
+  }
+  .labels {
+    display: flex;
+    font-size: 0.8em;
+    color: var(--dim-text);
+  }
+  .label {
+    flex: 1;
+  }
 
-    .milliseconds {
-        color: var(--dim-text);
-        font-size: 0.8em;
-        margin-left: 4px;
-    }
+  .milliseconds {
+    color: var(--dim-text);
+    font-size: 0.8em;
+    margin-left: 4px;
+  }
 
-    .median {
-        font-size: 1em;
-    }
-    .upper-quartile,
-    .lower-quartile {
-        font-size: 1em;
-        padding-bottom: 0;
-    }
+  .median {
+    font-size: 1em;
+  }
+  .upper-quartile,
+  .lower-quartile {
+    font-size: 1em;
+    padding-bottom: 0;
+  }
 
-    .bar {
-        padding: 20px 0 20px;
-        display: flex;
-        height: 30px;
-        width: 85%;
-        margin: auto;
-        align-items: center;
-        position: relative;
-    }
-    .bar-green {
-        background: var(--highlight);
-        width: 75%;
-        height: 10px;
-        border-radius: 2px 0 0 2px;
-    }
-    .bar-yellow {
-        width: 15%;
-        height: 10px;
-        background: rgb(235, 235, 129);
-    }
-    .bar-red {
-        width: 20%;
-        height: 10px;
-        border-radius: 0 2px 2px 0;
-        background: rgb(228, 97, 97);
-    }
-    .marker {
-        position: absolute;
-        height: 30px;
-        width: 5px;
-        background: white;
-        border-radius: 2px;
-        left: 0;  /* Changed during runtime to reflect median */
-    }
+  .bar {
+    padding: 20px 0 20px;
+    display: flex;
+    height: 30px;
+    width: 85%;
+    margin: auto;
+    align-items: center;
+    position: relative;
+  }
+  .bar-green {
+    background: var(--highlight);
+    width: 75%;
+    height: 10px;
+    border-radius: 2px 0 0 2px;
+  }
+  .bar-yellow {
+    width: 15%;
+    height: 10px;
+    background: rgb(235, 235, 129);
+  }
+  .bar-red {
+    width: 20%;
+    height: 10px;
+    border-radius: 0 2px 2px 0;
+    background: rgb(228, 97, 97);
+  }
+  .marker {
+    position: absolute;
+    height: 30px;
+    width: 5px;
+    background: white;
+    border-radius: 2px;
+    left: 0; /* Changed during runtime to reflect median */
+  }
 </style>

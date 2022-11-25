@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import ResponseTimes from "../components/ResponseTimes.svelte";
+  import Endpoints from "../components/Endpoints.svelte";
 
   function formatUUID(userID: string): string {
     return `${userID.slice(0, 8)}-${userID.slice(8, 12)}-${userID.slice(
@@ -33,6 +34,7 @@
   {#if data != undefined}
     <div class="dashboard">
       <ResponseTimes {data} />
+      <Endpoints {data} />
     </div>
     {/if}
 </div>

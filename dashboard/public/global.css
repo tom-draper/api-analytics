@@ -44,6 +44,20 @@ p {
   padding: 1em;
 }
 
+.card {
+  background: var(--light-background);
+  color: var(--faded-text);
+  width: 400px;
+  border-radius: 6px;
+  border: 1px solid #2E2E2E;
+  margin: 2rem;
+}
+
+.card-title {
+  text-align: left;
+  padding: 20px 20px 0;
+}
+
 :root {
   --highlight: #3fcf8e;
   --light-background: #232323;
