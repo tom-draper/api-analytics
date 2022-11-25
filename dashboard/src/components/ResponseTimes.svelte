@@ -28,7 +28,6 @@
 
   function markerPosition(x: number) {
     let position = Math.log10(x) * 125 - 300;
-    console.log(position);
     if (position < 0) {
       return 0;
     } else if (position > 100) {

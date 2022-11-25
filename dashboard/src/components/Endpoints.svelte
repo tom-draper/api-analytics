@@ -23,8 +23,24 @@
     });
     endpoints = _endpoints;
   }
+  function setEndpointLabelVisibility(idx: number) {
+    let endpoint = document.getElementById(`endpoint-label-${idx}`)
+    let endpointPath = document.getElementById(`endpoint-path-${idx}`)
+    let endpointCount = document.getElementById(`endpoint-count-${idx}`)
+    let externalLabel = document.getElementById(`external-label-${idx}`)
+    if (endpoint.clientWidth < endpointPath.clientWidth + endpointCount.clientWidth) {
+        externalLabel.style.display = 'flex';
+        endpointPath.style.display = 'none';
+    }
+  }
+  function setEndpointLabels() {
+    for (let i = 0; i < endpoints.length; i++) {
+        setEndpointLabelVisibility(i)
+    }
+  }
   onMount(() => {
     setEndpoints();
+    setTimeout(setEndpointLabels, 0);
   });
   let endpoints: any[];
   let maxCount: number;
@@ -35,15 +51,26 @@
   <div class="card-title">Endpoints</div>
   {#if endpoints != undefined}
     <div class="endpoints">
-      {#each endpoints as endpoint, _}
-        <div
-          class="endpoint"
-          style="width: {(endpoint.count / maxCount) * 100}%"
-        >
-          <div class="path">
-            {endpoint.path}
+      {#each endpoints as endpoint, i}
+        <div class="endpoint-container">
+          <div
+            class="endpoint"
+            id="endpoint-{i}"
+            style="width: {(endpoint.count / maxCount) * 100}%"
+          >
+            <div class="endpoint-label" id="endpoint-label-{i}">
+              <div class="path" id="endpoint-path-{i}">
+                {endpoint.path}
+              </div>
+              <div class="count" id="endpoint-count-{i}">{endpoint.count}</div>
+            </div>
           </div>
-          <div class="count">{endpoint.count}</div>
+          <div class="external-label" id="external-label-{i}">
+            <div class="external-label-path">
+              {endpoint.path}
+            </div>
+            <!-- <div class="external-label-count">{endpoint.count}</div> -->
+          </div>
         </div>
       {/each}
     </div>
@@ -60,6 +87,9 @@
     margin: 10px 0;
     color: var(--light-background);
     text-align: left;
+    position: relative;
+  }
+  .endpoint-label {
     display: flex;
   }
   .path,
@@ -68,5 +98,19 @@
   }
   .path {
     flex-grow: 1;
+  }
+  .endpoint-container {
+    display: flex;
+  }
+  .external-label {
+    padding: 3px 15px;
+    left: 40px;
+    top: 0;
+    margin: 10px 0;
+    color: #707070;
+    display: none;
+  }
+  .external-label-count {
+    margin-left: 10px;
   }
 </style>
