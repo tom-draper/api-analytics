@@ -3,15 +3,13 @@
   async function genAPIKey() {
     // Fetch page ID
     const response = await fetch(
-      // `http://localhost:8080/user-id/${apiKey}`,
-      `https://api-analytics-server.vercel.app/api/user-id/${apiKey}`,
+      `https://api-analytics-server.vercel.app/api/user-id/${apiKey}`
+    );
+    console.log(response);
 
-      );
-    console.log(response)
-    
     if (response.status == 200) {
       const data = await response.json();
-      window.location.href = `/dashboard/${data.value}`;
+      window.location.href = `/dashboard/${data.value.replaceAll("-", "")}`;
     }
   }
 </script>

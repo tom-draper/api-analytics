@@ -1,16 +1,19 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
+  function formatUUID(userID: string): string {
+    return `${userID.slice(0, 8)}-${userID.slice(8, 12)}-${userID.slice(12, 16)}-${userID.slice(16, 20)}-${userID.slice(20)}`
+  }
+
   async function fetchData() {
+    userID = formatUUID(userID);
     // Fetch page ID
     const response = await fetch(
-    //   `http://localhost:8080/data/${userID}`
       `https://api-analytics-server.vercel.app/api/data/${userID}`
     );
-    console.log(response);
     if (response.status == 200) {
       data = await response.json();
-      console.log(data)
+      console.log(data);
     }
   }
 

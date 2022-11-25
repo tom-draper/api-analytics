@@ -6,7 +6,6 @@
   async function genAPIKey() {
     if (!generatedKey) {
       const response = await fetch(
-        // "http://localhost:8080/generate-api-key"
         "https://api-analytics-server.vercel.app/api/generate-api-key"
       );
       console.log(response.status);
