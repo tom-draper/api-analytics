@@ -44,9 +44,10 @@ func GenAPIKeyHandler(supabase *supa.Client) gin.HandlerFunc {
 type Request struct {
 	APIKey       string `json:"api_key"`
 	Path         string `json:"path"`
+	Hostname     string `json:"hostname"`
 	UserAgent    string `json:"user_agent"`
 	Method       int16  `json:"method"`
-	StatusCode   int16  `json:"status_code"`
+	Status       int16  `json:"status"`
 	ResponseTime int16  `json:"response_time"`
 	Framework    int16  `json:"framework"`
 }
@@ -105,7 +106,7 @@ type RequestRow struct {
 	Path         string    `json:"path"`
 	UserAgent    string    `json:"user_agent"`
 	Method       int16     `json:"method"`
-	StatusCode   int16     `json:"status_code"`
+	Status       int16     `json:"status"`
 	ResponseTime int16     `json:"response_time"`
 	Framework    int16     `json:"framework"`
 	CreatedAt    time.Time `json:"created_at"`
