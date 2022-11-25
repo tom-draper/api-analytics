@@ -4,18 +4,25 @@
   function build() {
     let eps = {};
     for (let i = 0; i < data.length; i++) {
-      if (!(data[i].path in eps)) {
-        eps[data[i].path] = { count: 0 };
+      let endpointID = data[i].path + data[i].status;
+      if (!(endpointID in eps)) {
+        eps[endpointID] = {
+          path: data[i].path,
+          status: data[i].status,
+          count: 0,
+        };
       }
-      eps[data[i].path].count++;
+      eps[endpointID].count++;
     }
+
+    console.log(eps);
 
     let _endpoints = [];
     maxCount = 0;
-    for (let path in eps) {
-      _endpoints.push({ path: path, count: eps[path].count });
-      if (eps[path].count > maxCount) {
-        maxCount = eps[path].count;
+    for (let endpointID in eps) {
+      _endpoints.push(eps[endpointID]);
+      if (eps[endpointID].count > maxCount) {
+        maxCount = eps[endpointID].count;
       }
     }
     _endpoints.sort((a, b) => {
@@ -24,18 +31,21 @@
     endpoints = _endpoints;
   }
   function setEndpointLabelVisibility(idx: number) {
-    let endpoint = document.getElementById(`endpoint-label-${idx}`)
-    let endpointPath = document.getElementById(`endpoint-path-${idx}`)
-    let endpointCount = document.getElementById(`endpoint-count-${idx}`)
-    let externalLabel = document.getElementById(`external-label-${idx}`)
-    if (endpoint.clientWidth < endpointPath.clientWidth + endpointCount.clientWidth) {
-        externalLabel.style.display = 'flex';
-        endpointPath.style.display = 'none';
+    let endpoint = document.getElementById(`endpoint-label-${idx}`);
+    let endpointPath = document.getElementById(`endpoint-path-${idx}`);
+    let endpointCount = document.getElementById(`endpoint-count-${idx}`);
+    let externalLabel = document.getElementById(`external-label-${idx}`);
+    if (
+      endpoint.clientWidth <
+      endpointPath.clientWidth + endpointCount.clientWidth
+    ) {
+      externalLabel.style.display = "flex";
+      endpointPath.style.display = "none";
     }
   }
   function setEndpointLabels() {
     for (let i = 0; i < endpoints.length; i++) {
-        setEndpointLabelVisibility(i)
+      setEndpointLabelVisibility(i);
     }
   }
   onMount(() => {
@@ -56,7 +66,11 @@
           <div
             class="endpoint"
             id="endpoint-{i}"
-            style="width: {(endpoint.count / maxCount) * 100}%"
+            style="width: {(endpoint.count / maxCount) *
+              100}%; background: {endpoint.status >= 200 &&
+            endpoint.status <= 299
+              ? 'var(--highlight)'
+              : '#e46161'}"
           >
             <div class="endpoint-label" id="endpoint-label-{i}">
               <div class="path" id="endpoint-path-{i}">
@@ -78,10 +92,10 @@
 
 <style>
   .endpoints {
-    margin: 1em 20px 20px;
+    margin: 1em 20px 0.6em;
   }
   .endpoint {
-    background: var(--highlight);
+    /* background: var(--highlight); */
     border-radius: 4px;
     margin: 10px 0;
     color: var(--light-background);
@@ -108,8 +122,5 @@
     margin: 10px 0;
     color: #707070;
     display: none;
-  }
-  .external-label-count {
-    margin-left: 10px;
   }
 </style>

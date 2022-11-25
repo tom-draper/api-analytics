@@ -17,9 +17,7 @@ framework_map = {
     'Flask': 1,
 }
 
-
 def log_request(json: dict):
     json['method'] = method_map[json['method']]
     json['framework'] = framework_map[json['framework']]
-    requests.post(
-        'https://api-analytics-server.vercel.app/api/log-request', json=json)
+    requests.post('https://api-analytics-server.vercel.app/api/log-request', json=json)

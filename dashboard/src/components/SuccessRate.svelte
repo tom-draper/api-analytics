@@ -2,9 +2,9 @@
   import { onMount } from "svelte";
 
   function thisWeek(date: Date): boolean {
-    let weekAgo = new Date()
+    let weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
-    return date > weekAgo
+    return date > weekAgo;
   }
 
   function build() {
@@ -14,12 +14,12 @@
       let date = new Date(data[i].created_at);
       if (thisWeek(date)) {
         if (data[i].status_code >= 200 && data[i].status_cde <= 299) {
-          successfulRequests++
+          successfulRequests++;
         }
-        totalRequests++
+        totalRequests++;
       }
     }
-    successRate = (successfulRequests/ totalRequests).toFixed(1)
+    successRate = (successfulRequests / totalRequests).toFixed(1);
   }
 
   let successRate: string;
@@ -30,10 +30,8 @@
   export let data: any;
 </script>
 
-<div class="card" title="Last month">
-  <div class="card-title">
-    Success Rate
-  </div>
+<div class="card" title="Last week">
+  <div class="card-title">Success Rate</div>
   {#if successRate != undefined}
     <div class="value">{successRate}%</div>
   {/if}
@@ -47,8 +45,7 @@
 
   .value {
     margin: 20px 0;
-    font-size: 2em;
+    font-size: 1.8em;
     font-weight: 600;
   }
-
 </style>

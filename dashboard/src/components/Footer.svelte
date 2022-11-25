@@ -1,11 +1,8 @@
-
-<div class="footer">
-    API Analytics
-</div>
+<div class="footer">API Analytics</div>
 
 <style>
-    .footer {
-        font-size: 0.9em;
-        color: var(--highlight);
-    }
+  .footer {
+    font-size: 0.9em;
+    color: var(--highlight);
+  }
 </style>
