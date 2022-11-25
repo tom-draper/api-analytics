@@ -76,16 +76,15 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 func GetUserIDHandler(supabase *supa.Client) gin.HandlerFunc {
 	getUserID := func(c *gin.Context) {
 		// Collect API key sent via POST request
-		var apiKey string
-		if err := c.BindJSON(&apiKey); err != nil {
-			panic(err)
-		}
+		apiKey := c.Param("apiKey")
+
+		fmt.Println(apiKey)
 
 		// Fetch user ID corresponding with API key
 		var result []struct {
 			UserID string `json:"user_id"`
 		}
-		err := supabase.DB.From("Users").Select("user_id").Filter("api_key", "eq", apiKey).Execute(&result)
+		err := supabase.DB.From("Users").Select("user_id").Eq("api_key", apiKey).Execute(&result)
 		if err != nil {
 			panic(err)
 		}
@@ -113,21 +112,14 @@ type RequestRow struct {
 func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
 	getData := func(c *gin.Context) {
 		// Collect user ID sent via POST request
-		var userID string
-		if err := c.BindJSON(&userID); err != nil {
-			panic(err)
-		}
-
-		fmt.Println(userID)
+		userID := c.Param("userID")
 
 		// Fetch all API request data associated with this account
-		var result []RequestRow
-		err := supabase.DB.From("Requests").Select("*").Filter("user_id", "eq", userID).Execute(&result)
+		var result []interface{}
+		err := supabase.DB.From("Users").Select("api_key, Requests!inner(*)").Eq("user_id", userID).Execute(&result)
 		if err != nil {
 			panic(err)
 		}
-
-		fmt.Println(result)
 
 		// Return API request data
 		c.JSON(200, gin.H{"value": result})
@@ -155,8 +147,8 @@ func CORSMiddleware() gin.HandlerFunc {
 func registerRouter(r *gin.RouterGroup, supabase *supa.Client) {
 	r.GET("/generate-api-key", GenAPIKeyHandler(supabase))
 	r.POST("/log-request", LogRequestHandler(supabase))
-	r.POST("/user-id", GetUserIDHandler(supabase))
-	r.POST("/data", GetDataHandler(supabase))
+	r.GET("/user-id/:apiKey", GetUserIDHandler(supabase))
+	r.GET("/data/:userID", GetDataHandler(supabase))
 }
 
 func getDBLogin() (string, string) {

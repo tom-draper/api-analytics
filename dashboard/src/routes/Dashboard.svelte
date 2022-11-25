@@ -1,27 +1,28 @@
 <script lang="ts">
-  async function genAPIKey() {
+  import { onMount } from "svelte";
+
+  async function fetchData() {
     // Fetch page ID
     const response = await fetch(
-      "https://api-analytics-server.vercel.app/api/data",
-      {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userID)
-      }
+    //   `http://localhost:8080/data/${userID}`
+      `https://api-analytics-server.vercel.app/api/data/${userID}`
     );
-    
-    console.log(response)
+    console.log(response);
     if (response.status == 200) {
-      const data = await response.json();
-      window.location.href = `/dashboard/${data.value}`;
+      data = await response.json();
+      console.log(data)
+    //   window.location.href = `/dashboard/${data.value}`;
     }
   }
-    export let userID: string;
+
+  let data: any;
+  onMount(() => {
+    fetchData();
+  });
+  export let userID: string;
 </script>
 
 <div>
-    <h1>Dashboard</h1>
-    <div class="id">{userID}</div>
+  <h1>Dashboard</h1>
+  <div class="id">{userID}</div>
 </div>

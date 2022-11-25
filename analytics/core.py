@@ -22,4 +22,4 @@ def log_request(json: dict):
     json['method'] = method_map[json['method']]
     json['framework'] = framework_map[json['framework']]
     requests.post(
-        'https://api-analytics.vercel.app/api/log-request', json=json)
+        'https://api-analytics-server.vercel.app/api/log-request', json=json)

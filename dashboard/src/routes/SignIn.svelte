@@ -3,15 +3,10 @@
   async function genAPIKey() {
     // Fetch page ID
     const response = await fetch(
-      "https://api-analytics-server.vercel.app/api/user-id",
-      {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(apiKey)
-      }
-    );
+      // `http://localhost:8080/user-id/${apiKey}`,
+      `https://api-analytics-server.vercel.app/api/user-id/${apiKey}`,
+
+      );
     console.log(response)
     
     if (response.status == 200) {

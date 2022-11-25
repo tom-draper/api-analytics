@@ -29,8 +29,8 @@ func main() {
 	router.Use(api.CORSMiddleware())
 	router.GET("/generate-api-key", api.GenAPIKeyHandler(supabase))
 	router.POST("/log-request", api.LogRequestHandler(supabase))
-	router.POST("/user-id", api.GetUserIDHandler(supabase))
-	router.POST("/data", api.GetDataHandler(supabase))
+	router.GET("/user-id/:apiKey", api.GetUserIDHandler(supabase))
+	router.GET("/data/:userID", api.GetDataHandler(supabase))
 
 	router.Run("localhost:8080")
 }

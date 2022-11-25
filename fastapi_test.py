@@ -9,7 +9,7 @@ load_dotenv()
 api_key = os.environ.get("API_KEY")
 
 app = FastAPI()
-app.add_middleware(Analytics, api_key)
+app.add_middleware(Analytics, api_key=api_key)
 
 
 @app.get("/")
