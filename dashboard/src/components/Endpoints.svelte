@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  function setEndpoints() {
+  function build() {
     let eps = {};
     for (let i = 0; i < data.length; i++) {
       if (!(data[i].path in eps)) {
@@ -39,7 +39,7 @@
     }
   }
   onMount(() => {
-    setEndpoints();
+    build();
     setTimeout(setEndpointLabels, 0);
   });
   let endpoints: any[];
@@ -69,7 +69,6 @@
             <div class="external-label-path">
               {endpoint.path}
             </div>
-            <!-- <div class="external-label-count">{endpoint.count}</div> -->
           </div>
         </div>
       {/each}

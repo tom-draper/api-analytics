@@ -1,7 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import Requests from "../components/Requests.svelte";
   import ResponseTimes from "../components/ResponseTimes.svelte";
   import Endpoints from "../components/Endpoints.svelte";
+  import Footer from "../components/Footer.svelte";
+  import SuccessRate from "../components/SuccessRate.svelte";
 
   function formatUUID(userID: string): string {
     return `${userID.slice(0, 8)}-${userID.slice(8, 12)}-${userID.slice(
@@ -19,6 +22,7 @@
     if (response.status == 200) {
       const json = await response.json();
       data = json.value;
+      console.log(data);
     }
   }
 
@@ -33,14 +37,22 @@
   <h1>Dashboard</h1>
   {#if data != undefined}
     <div class="dashboard">
+      <div class="two-row">
+        <Requests {data} />
+        <SuccessRate {data} />
+      </div>
       <ResponseTimes {data} />
       <Endpoints {data} />
     </div>
     {/if}
+  <Footer />
 </div>
 
 <style>
   .dashboard {
     margin: 5em;
+  }
+  .two-row {
+    display: flex;
   }
 </style>
