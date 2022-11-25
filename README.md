@@ -6,21 +6,19 @@ Currently available for FastAPI and Flask.
 
 ## Getting Started
 
-### 1. Install pip package
-
-```
-python -m pip install api-analytics
-```
-
-### 2. Generate a new API key
+### 1. Generate a new API key
 
 Head to <URL> to generate your unique API key with a single click. This key is used to monitor your specific API, so keep it secret! It's also required in order to view your APIs analytics dashboard.
 
-### 3. Add middleware to your API
+### 2. Add middleware to your API
 
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there should be virtually no impact on your APIs performance.
 
 #### FastAPI
+
+```
+python -m pip install api-analytics
+```
 
 ```py
 from fastapi import FastAPI
@@ -36,6 +34,10 @@ async def root():
 
 #### Flask
 
+```
+python -m pip install api-analytics
+```
+
 ```py
 from flask import Flask
 from api_analytics.flask import add_middleware
@@ -48,7 +50,7 @@ def root():
     return {"message": "Hello World"}
 ```
 
-### 4. View your analytics
+### 3. View your analytics
 
 Your API will log requests on all valid routes. Head over to <URL> and paste in your API key to view your dashboard.
 
