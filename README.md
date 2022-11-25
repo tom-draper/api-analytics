@@ -1,4 +1,4 @@
-# FastAPI Analytics
+# API Analytics
 
 A lightweight API analytics solution, complete with a dashboard.
 
@@ -8,7 +8,7 @@ Currently available for FastAPI and Flask.
 
 ### 1. Generate a new API key
 
-Head to <URL> to generate your unique API key with a single click. This key is used to monitor your specific API, so keep it secret! It's also required in order to view your APIs analytics dashboard.
+Head to *URL* to generate your unique API key with a single click. This key is used to monitor your specific API, so keep it secret! It's also required in order to view your APIs analytics dashboard.
 
 ### 2. Add middleware to your API
 
@@ -52,7 +52,7 @@ def root():
 
 ### 3. View your analytics
 
-Your API will log requests on all valid routes. Head over to <URL> and paste in your API key to view your dashboard.
+Your API will log requests on all valid routes. Head over to *URL* and paste in your API key to view your dashboard.
 
 ## Data and Security
 
