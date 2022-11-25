@@ -5,6 +5,7 @@
   import Endpoints from "../components/Endpoints.svelte";
   import Footer from "../components/Footer.svelte";
   import SuccessRate from "../components/SuccessRate.svelte";
+  import PastMonth from "../components/PastMonth.svelte";
 
   function formatUUID(userID: string): string {
     return `${userID.slice(0, 8)}-${userID.slice(8, 12)}-${userID.slice(
@@ -34,15 +35,20 @@
 </script>
 
 <div>
-  <h1>Dashboard</h1>
+  <!-- <h1>Dashboard</h1> -->
   {#if data != undefined}
     <div class="dashboard">
-      <div class="two-row">
-        <Requests {data} />
-        <SuccessRate {data} />
+      <div class="left">
+        <div class="two-row">
+          <Requests {data} />
+          <SuccessRate {data} />
+        </div>
+        <ResponseTimes {data} />
+        <Endpoints {data} />
       </div>
-      <ResponseTimes {data} />
-      <Endpoints {data} />
+      <div class="right">
+        <PastMonth {data} />
+      </div>
     </div>
     {/if}
   <Footer />
@@ -51,8 +57,12 @@
 <style>
   .dashboard {
     margin: 5em;
+    display: flex;
   }
   .two-row {
     display: flex;
+  }
+  .right {
+    flex-grow: 1;
   }
 </style>

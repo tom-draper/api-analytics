@@ -97,7 +97,7 @@
   .endpoint {
     /* background: var(--highlight); */
     border-radius: 4px;
-    margin: 10px 0;
+    margin: 6px 0;
     color: var(--light-background);
     text-align: left;
     position: relative;
@@ -119,7 +119,7 @@
     padding: 3px 15px;
     left: 40px;
     top: 0;
-    margin: 10px 0;
+    margin: 6px 0;
     color: #707070;
     display: none;
   }

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  function thisWeek(date: Date): boolean {
+  function pastWeek(date: Date): boolean {
     let weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     return date > weekAgo;
@@ -12,8 +12,8 @@
     let successfulRequests = 0;
     for (let i = 0; i < data.length; i++) {
       let date = new Date(data[i].created_at);
-      if (thisWeek(date)) {
-        if (data[i].status_code >= 200 && data[i].status_cde <= 299) {
+      if (pastWeek(date)) {
+        if (data[i].status >= 200 && data[i].status <= 299) {
           successfulRequests++;
         }
         totalRequests++;
