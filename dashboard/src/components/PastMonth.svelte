@@ -50,7 +50,6 @@
       let idx = daysAgo(new Date(date));
       successArr[successArr.length - idx] = success[date].successful / success[date].total;
     }
-    console.log(successArr)
     successRate = successArr;
   }
 
@@ -71,16 +70,11 @@
         title: { text: "Response time (ms)" },
         gridcolor: "gray",
         showgrid: false,
-        // showline: false,
-        // zeroline: false,
         fixedrange: true,
-        // visible: false,
       },
       xaxis: {
         title: { text: "Date" },
-        // linecolor: "black",
         showgrid: false,
-        // showline: false,
         fixedrange: true,
         range: [monthAgo, tomorrow],
         visible: false,
@@ -130,7 +124,6 @@
 
   function genResponseTimePlot() {
     let plotData = responseTimePlotData();
-    console.log(plotData);
     //@ts-ignore
     new Plotly.newPlot(
       responseTimePlotDiv,
@@ -157,15 +150,10 @@
         title: { text: "Requests" },
         gridcolor: "gray",
         showgrid: false,
-        // showline: false,
-        // zeroline: false,
         fixedrange: true,
       },
       xaxis: {
         title: { text: "Date" },
-        // linecolor: "black",
-        // showgrid: false,
-        // showline: false,
         fixedrange: true,
         range: [monthAgo, tomorrow],
         visible: false,
@@ -229,7 +217,6 @@
 
   function genRequestsFreqPlot() {
     let plotData = requestsFreqPlotData();
-    console.log(plotData);
     //@ts-ignore
     new Plotly.newPlot(
       requestsFreqPlotDiv,
@@ -258,12 +245,12 @@
 <div class="card">
   <div class="card-title">Past Month</div>
   <div id="plotly">
-    <div id="requestsFreqPlotDiv" bind:this={requestsFreqPlotDiv}>
+    <div id="plotDiv" bind:this={requestsFreqPlotDiv}>
       <!-- Plotly chart will be drawn inside this DIV -->
     </div>
   </div>
-  <div id="plotlyy">
-    <div id="responseTimePlotDiv" bind:this={responseTimePlotDiv}>
+  <div id="plotly">
+    <div id="plotDiv" bind:this={responseTimePlotDiv}>
       <!-- Plotly chart will be drawn inside this DIV -->
     </div>
   </div>
