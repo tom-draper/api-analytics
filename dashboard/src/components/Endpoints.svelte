@@ -95,6 +95,9 @@
 </div>
 
 <style>
+  .card {
+    min-height: 361px;
+  }
   .endpoints {
     margin: 1em 20px 0.6em;
   }

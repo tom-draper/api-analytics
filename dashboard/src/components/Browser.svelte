@@ -148,8 +148,9 @@
   .card {
     margin: 2em 2em 2em 0;
     padding-bottom: 1em;
+    flex: 1;
   }
   #plotDiv {
-    margin: 0 20px;
+    margin-right: 20px;
   }
 </style>

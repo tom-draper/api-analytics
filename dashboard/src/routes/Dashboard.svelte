@@ -53,7 +53,8 @@
         <div class="row">
 
           <OperatingSystem {data} />
-          <Browser {data} />
+          <!-- <!-- <Browser {data} /> -->
+          <Browser {data} /> -->
         </div>
       </div>
     </div>

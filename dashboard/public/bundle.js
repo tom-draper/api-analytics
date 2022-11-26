@@ -3358,7 +3358,7 @@
     			this.h();
     		},
     		h: function hydrate() {
-    			attr_dev(div, "class", "endpoints svelte-1e031qh");
+    			attr_dev(div, "class", "endpoints svelte-xrcm7o");
     			add_location(div, file$6, 59, 4, 1765);
     		},
     		m: function mount(target, anchor) {
@@ -3477,16 +3477,16 @@
     			this.h();
     		},
     		h: function hydrate() {
-    			attr_dev(div0, "class", "path svelte-1e031qh");
+    			attr_dev(div0, "class", "path svelte-xrcm7o");
     			attr_dev(div0, "id", "endpoint-path-" + /*i*/ ctx[8]);
     			add_location(div0, file$6, 72, 14, 2262);
-    			attr_dev(div1, "class", "count svelte-1e031qh");
+    			attr_dev(div1, "class", "count svelte-xrcm7o");
     			attr_dev(div1, "id", "endpoint-count-" + /*i*/ ctx[8]);
     			add_location(div1, file$6, 75, 14, 2374);
-    			attr_dev(div2, "class", "endpoint-label svelte-1e031qh");
+    			attr_dev(div2, "class", "endpoint-label svelte-xrcm7o");
     			attr_dev(div2, "id", "endpoint-label-" + /*i*/ ctx[8]);
     			add_location(div2, file$6, 71, 12, 2194);
-    			attr_dev(div3, "class", "endpoint svelte-1e031qh");
+    			attr_dev(div3, "class", "endpoint svelte-xrcm7o");
     			attr_dev(div3, "id", "endpoint-" + /*i*/ ctx[8]);
     			set_style(div3, "width", /*endpoint*/ ctx[6].count / /*maxCount*/ ctx[1] * 100 + "%");
 
@@ -3497,10 +3497,10 @@
     			add_location(div3, file$6, 62, 10, 1882);
     			attr_dev(div4, "class", "external-label-path");
     			add_location(div4, file$6, 79, 12, 2555);
-    			attr_dev(div5, "class", "external-label svelte-1e031qh");
+    			attr_dev(div5, "class", "external-label svelte-xrcm7o");
     			attr_dev(div5, "id", "external-label-" + /*i*/ ctx[8]);
     			add_location(div5, file$6, 78, 10, 2489);
-    			attr_dev(div6, "class", "endpoint-container svelte-1e031qh");
+    			attr_dev(div6, "class", "endpoint-container svelte-xrcm7o");
     			add_location(div6, file$6, 61, 8, 1838);
     		},
     		m: function mount(target, anchor) {
@@ -3581,7 +3581,7 @@
     		h: function hydrate() {
     			attr_dev(div0, "class", "card-title");
     			add_location(div0, file$6, 57, 2, 1688);
-    			attr_dev(div1, "class", "card");
+    			attr_dev(div1, "class", "card svelte-xrcm7o");
     			add_location(div1, file$6, 56, 0, 1666);
     		},
     		m: function mount(target, anchor) {
@@ -4747,11 +4747,11 @@
     			attr_dev(div0, "class", "card-title");
     			add_location(div0, file$2, 132, 2, 3481);
     			attr_dev(div1, "id", "plotDiv");
-    			attr_dev(div1, "class", "svelte-1k7nusv");
+    			attr_dev(div1, "class", "svelte-1xifokj");
     			add_location(div1, file$2, 134, 4, 3545);
     			attr_dev(div2, "id", "plotly");
     			add_location(div2, file$2, 133, 2, 3522);
-    			attr_dev(div3, "class", "card svelte-1k7nusv");
+    			attr_dev(div3, "class", "card svelte-1xifokj");
     			attr_dev(div3, "title", "Last week");
     			add_location(div3, file$2, 131, 0, 3441);
     		},
@@ -5029,11 +5029,11 @@
     			attr_dev(div0, "class", "card-title");
     			add_location(div0, file$1, 159, 2, 4293);
     			attr_dev(div1, "id", "plotDiv");
-    			attr_dev(div1, "class", "svelte-1k7nusv");
+    			attr_dev(div1, "class", "svelte-1b4x1x7");
     			add_location(div1, file$1, 161, 4, 4352);
     			attr_dev(div2, "id", "plotly");
     			add_location(div2, file$1, 160, 2, 4329);
-    			attr_dev(div3, "class", "card svelte-1k7nusv");
+    			attr_dev(div3, "class", "card svelte-1b4x1x7");
     			attr_dev(div3, "title", "Last week");
     			add_location(div3, file$1, 158, 0, 4253);
     		},
@@ -5312,6 +5312,7 @@
     	let operatingsystem;
     	let t5;
     	let browser;
+    	let t6;
     	let current;
 
     	requests = new Requests({
@@ -5369,6 +5370,7 @@
     			create_component(operatingsystem.$$.fragment);
     			t5 = space();
     			create_component(browser.$$.fragment);
+    			t6 = text(" -->");
     			this.h();
     		},
     		l: function claim(nodes) {
@@ -5397,6 +5399,7 @@
     			claim_component(operatingsystem.$$.fragment, div2_nodes);
     			t5 = claim_space(div2_nodes);
     			claim_component(browser.$$.fragment, div2_nodes);
+    			t6 = claim_text(div2_nodes, " -->");
     			div2_nodes.forEach(detach_dev);
     			div3_nodes.forEach(detach_dev);
     			div4_nodes.forEach(detach_dev);
@@ -5433,6 +5436,7 @@
     			mount_component(operatingsystem, div2, null);
     			append_hydration_dev(div2, t5);
     			mount_component(browser, div2, null);
+    			append_hydration_dev(div2, t6);
     			current = true;
     		},
     		p: function update(ctx, dirty) {
