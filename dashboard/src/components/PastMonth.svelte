@@ -8,17 +8,16 @@
   }
 
   let colors = [
-    "grey",
-    "#3FCF8E",
-    "#77D884",
-    "#A1DF7E",
-    "#C7E57D",
-    "#EBEB81",
-    "#EBEB81",
-    "#F3C966",
-    "#F5A65A",
+    "#444444",  // Grey (no requests)
+    "#E46161",   // Red
     "#F18359",
-    "#E46161",
+    "#F5A65A",
+    "#F3C966",
+    "#EBEB81",  // Yellow
+    "#C7E57D",
+    "#A1DF7E",
+    "#77D884",
+    "#3FCF8E",  // Green
   ];
 
   function daysAgo(date: Date): number {
@@ -46,12 +45,12 @@
       }
     }
 
-    let successArr = new Array(60).fill(0);
+    let successArr = new Array(60).fill(-0.1);  // -0.1 -> 0
     for (let date in success) {
       let idx = daysAgo(new Date(date));
-      successArr[successArr.length - idx] =
-        success[date].successful / success[date].total;
+      successArr[successArr.length - idx] = success[date].successful / success[date].total;
     }
+    console.log(successArr)
     successRate = successArr;
   }
 
@@ -104,9 +103,6 @@
       dates.push(points[i][0]);
       responses.push(points[i][1]);
     }
-
-    dates.push(new Date());
-    responses.push(50);
 
     return [
       {
@@ -207,9 +203,6 @@
       requests.push(requestFreqArr[i][1]);
     }
 
-    dates.push(new Date());
-    requests.push(50);
-
     return [
       {
         x: dates,
@@ -281,7 +274,7 @@
         {#each successRate as value, i}
           <div
             class="error"
-            style="background: {colors[Math.floor(value * 10)]}"
+            style="background: {colors[Math.floor(value * 10) + 1]}"
             title="{(value * 100).toFixed(1)}%"
           />
         {/each}

@@ -4077,7 +4077,7 @@
     	return child_ctx;
     }
 
-    // (245:4) {#if successRate != undefined}
+    // (240:4) {#if successRate != undefined}
     function create_if_block$1(ctx) {
     	let div0;
     	let t0;
@@ -4122,9 +4122,9 @@
     		},
     		h: function hydrate() {
     			attr_dev(div0, "class", "success-rate-title");
-    			add_location(div0, file$1, 245, 6, 7053);
+    			add_location(div0, file$1, 240, 6, 6975);
     			attr_dev(div1, "class", "errors svelte-ik169t");
-    			add_location(div1, file$1, 246, 6, 7111);
+    			add_location(div1, file$1, 241, 6, 7033);
     		},
     		m: function mount(target, anchor) {
     			insert_hydration_dev(target, div0, anchor);
@@ -4173,14 +4173,14 @@
     		block,
     		id: create_if_block$1.name,
     		type: "if",
-    		source: "(245:4) {#if successRate != undefined}",
+    		source: "(240:4) {#if successRate != undefined}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (248:8) {#each successRate as value, i}
+    // (243:8) {#each successRate as value, i}
     function create_each_block(ctx) {
     	let div;
     	let div_title_value;
@@ -4197,16 +4197,16 @@
     		},
     		h: function hydrate() {
     			attr_dev(div, "class", "error svelte-ik169t");
-    			set_style(div, "background", /*colors*/ ctx[3][Math.floor(/*value*/ ctx[15] * 10)]);
+    			set_style(div, "background", /*colors*/ ctx[3][Math.floor(/*value*/ ctx[15] * 10) + 1]);
     			attr_dev(div, "title", div_title_value = "" + ((/*value*/ ctx[15] * 100).toFixed(1) + "%"));
-    			add_location(div, file$1, 248, 10, 7184);
+    			add_location(div, file$1, 243, 10, 7106);
     		},
     		m: function mount(target, anchor) {
     			insert_hydration_dev(target, div, anchor);
     		},
     		p: function update(ctx, dirty) {
     			if (dirty & /*successRate*/ 1) {
-    				set_style(div, "background", /*colors*/ ctx[3][Math.floor(/*value*/ ctx[15] * 10)]);
+    				set_style(div, "background", /*colors*/ ctx[3][Math.floor(/*value*/ ctx[15] * 10) + 1]);
     			}
 
     			if (dirty & /*successRate*/ 1 && div_title_value !== (div_title_value = "" + ((/*value*/ ctx[15] * 100).toFixed(1) + "%"))) {
@@ -4222,7 +4222,7 @@
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(248:8) {#each successRate as value, i}",
+    		source: "(243:8) {#each successRate as value, i}",
     		ctx
     	});
 
@@ -4290,19 +4290,19 @@
     		},
     		h: function hydrate() {
     			attr_dev(div0, "class", "card-title");
-    			add_location(div0, file$1, 232, 2, 6588);
+    			add_location(div0, file$1, 227, 2, 6510);
     			attr_dev(div1, "id", "requestsFreqPlotDiv");
-    			add_location(div1, file$1, 234, 4, 6655);
+    			add_location(div1, file$1, 229, 4, 6577);
     			attr_dev(div2, "id", "plotly");
-    			add_location(div2, file$1, 233, 2, 6632);
+    			add_location(div2, file$1, 228, 2, 6554);
     			attr_dev(div3, "id", "responseTimePlotDiv");
-    			add_location(div3, file$1, 239, 4, 6826);
+    			add_location(div3, file$1, 234, 4, 6748);
     			attr_dev(div4, "id", "plotlyy");
-    			add_location(div4, file$1, 238, 2, 6802);
+    			add_location(div4, file$1, 233, 2, 6724);
     			attr_dev(div5, "class", "success-rate-container svelte-ik169t");
-    			add_location(div5, file$1, 243, 2, 6973);
+    			add_location(div5, file$1, 238, 2, 6895);
     			attr_dev(div6, "class", "card svelte-ik169t");
-    			add_location(div6, file$1, 231, 0, 6566);
+    			add_location(div6, file$1, 226, 0, 6488);
     		},
     		m: function mount(target, anchor) {
     			insert_hydration_dev(target, div6, anchor);
@@ -4441,18 +4441,17 @@
     	validate_slots('PastMonth', slots, []);
 
     	let colors = [
-    		"grey",
-    		"#3FCF8E",
-    		"#77D884",
-    		"#A1DF7E",
-    		"#C7E57D",
-    		"#EBEB81",
-    		"#EBEB81",
-    		"#F3C966",
-    		"#F5A65A",
+    		"#444444",
+    		"#E46161",
     		"#F18359",
-    		"#E46161"
-    	];
+    		"#F5A65A",
+    		"#F3C966",
+    		"#EBEB81",
+    		"#C7E57D",
+    		"#A1DF7E",
+    		"#77D884",
+    		"#3FCF8E"
+    	]; // Green
 
     	function setSuccessRate() {
     		let success = {};
@@ -4479,13 +4478,14 @@
     			}
     		}
 
-    		let successArr = new Array(60).fill(0);
+    		let successArr = new Array(60).fill(-0.1); // -0.1 -> 0
 
     		for (let date in success) {
     			let idx = daysAgo(new Date(date));
     			successArr[successArr.length - idx] = success[date].successful / success[date].total;
     		}
 
+    		console.log(successArr);
     		$$invalidate(0, successRate = successArr);
     	}
 
@@ -4507,9 +4507,6 @@
     			dates.push(points[i][0]);
     			responses.push(points[i][1]);
     		}
-
-    		dates.push(new Date());
-    		responses.push(50);
 
     		return [
     			{
@@ -4577,9 +4574,6 @@
     			dates.push(requestFreqArr[i][0]);
     			requests.push(requestFreqArr[i][1]);
     		}
-
-    		dates.push(new Date());
-    		requests.push(50);
 
     		return [
     			{
