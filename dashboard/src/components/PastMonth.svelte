@@ -8,58 +8,246 @@
   }
 
   let colors = [
-    'grey',
-    '#3FCF8E',
-    '#77D884',
-    '#A1DF7E',
-    '#C7E57D',
-    '#EBEB81',
-    '#EBEB81',
-    '#F3C966',
-    '#F5A65A',
-    '#F18359',
-    '#E46161'
-  ]
+    "grey",
+    "#3FCF8E",
+    "#77D884",
+    "#A1DF7E",
+    "#C7E57D",
+    "#EBEB81",
+    "#EBEB81",
+    "#F3C966",
+    "#F5A65A",
+    "#F18359",
+    "#E46161",
+  ];
 
   function daysAgo(date: Date): number {
-    let now = new Date()
-    return Math.floor((now.getTime() - date.getTime())/(24 * 60 * 60 * 1000))
+    let now = new Date();
+    return Math.floor((now.getTime() - date.getTime()) / (24 * 60 * 60 * 1000));
+  }
+
+  function setSuccessRate() {
+    let success = {};
+    for (let i = 0; i < data.length; i++) {
+      let date = new Date(data[i].created_at);
+      if (pastMonth(date)) {
+        date.setHours(0, 0, 0, 0);
+        // @ts-ignore
+        if (!(date in success)) {
+          // @ts-ignore
+          success[date] = { total: 0, successful: 0 };
+        }
+        if (data[i].status >= 200 && data[i].status <= 299) {
+          // @ts-ignore
+          success[date].successful++;
+        }
+        // @ts-ignore
+        success[date].total++;
+      }
+    }
+
+    let successArr = new Array(60).fill(0);
+    for (let date in success) {
+      let idx = daysAgo(new Date(date));
+      successArr[successArr.length - idx] =
+        success[date].successful / success[date].total;
+    }
+    successRate = successArr;
+  }
+
+  function responseTimePlotLayout() {
+    let monthAgo = new Date()
+    monthAgo.setDate(monthAgo.getDate() - 30);
+    let tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return {
+      title: false,
+      autosize: true,
+      margin: { r: 35, l: 70, t: 10, b: 40, pad: 0 },
+      hovermode: "closest",
+      plot_bgcolor: "transparent",
+      paper_bgcolor: "transparent",
+      height: 200,
+      yaxis: {
+        title: { text: "Response time (ms)" },
+        gridcolor: "gray",
+        showgrid: false,
+        showline: false,
+        zeroline: false,
+        fixedrange: true,
+    },
+    xaxis: {
+        title: { text: "Date" },
+        linecolor: "black",
+        showgrid: false,
+        showline: false,
+        fixedrange: true,
+        range: [monthAgo, tomorrow]
+      },
+      dragmode: false,
+    };
+  }
+
+  function responseTimeLine() {
+    let points = [];
+    for (let i = 0; i < data.length; i++) {
+        points.push([new Date(data[i].created_at), data[i].response_time])
+    }
+    points.sort((a, b) => {
+        return a[0] - b[0]
+    })
+    let dates = [];
+    let responses = [];
+    for (let i = 0; i < points.length; i++) {
+        dates.push(points[i][0])
+        responses.push(points[i][1])
+    }
+
+    dates.push(new Date())
+    responses.push(50)
+
+    return [{
+      x: dates,
+      y: responses,
+      mode: "lines",
+      line: { color: '#3fcf8e'},
+    //   hovertemplate: `<br>Matchday %{x}<br>%{text|%d %b %Y}<br>Form: <b>%{y:.1f}%</b><extra></extra>`,
+      showlegend: false
+    }];
+  }
+
+  function responseTimePlotData() {
+    return {
+      data: responseTimeLine(),
+      layout: responseTimePlotLayout(),
+      config: {
+        responsive: true,
+        showSendToCloud: false,
+        displayModeBar: false,
+      },
+    };
+  }
+
+  function genResponseTimePlot() {
+    let plotData = responseTimePlotData();
+    console.log(plotData);
+    //@ts-ignore
+    new Plotly.newPlot(
+      responseTimePlotDiv,
+      plotData.data,
+      plotData.layout,
+      plotData.config
+    )
+  }
+
+  function requestsFreqPlotLayout() {
+    let monthAgo = new Date()
+    monthAgo.setDate(monthAgo.getDate() - 30);
+    let tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return {
+      title: false,
+      autosize: true,
+      margin: { r: 35, l: 70, t: 10, b: 40, pad: 0 },
+      hovermode: "closest",
+      plot_bgcolor: "transparent",
+      paper_bgcolor: "transparent",
+      height: 200,
+      yaxis: {
+        title: { text: "Requests" },
+        gridcolor: "gray",
+        showgrid: false,
+        showline: false,
+        zeroline: false,
+        fixedrange: true,
+    },
+    xaxis: {
+        title: { text: "Date" },
+        linecolor: "black",
+        showgrid: false,
+        showline: false,
+        fixedrange: true,
+        range: [monthAgo, tomorrow]
+      },
+      dragmode: false,
+    };
+  }
+
+  function requestsFreqLine() {
+    let requestFreq = {};
+    for (let i = 0; i < data.length; i++) {
+        let date = new Date(data[i].created_at)
+        date.setHours(0, 0, 0, 0);
+        // @ts-ignore
+        if (!(date in requestFreq)) {
+            // @ts-ignore
+            requestFreq[date] = 0
+        }
+        // @ts-ignore
+        requestFreq[date]++
+    }
+
+    let requestFreqArr = [];
+    for (let date in requestFreq) {
+        requestFreqArr.push([new Date(date), requestFreq[date]])
+    }
+    requestFreqArr.sort((a, b) => {
+        return a[0] - b[0]
+    })
+
+    let dates = [];
+    let requests = [];
+    for (let i = 0; i < requestFreqArr.length; i++) {
+        dates.push(requestFreqArr[i][0])
+        requests.push(requestFreqArr[i][1])
+    }
+
+    dates.push(new Date())
+    requests.push(50)
+
+    return [{
+      x: dates,
+      y: requests,
+      type: "bar",
+      marker: { color: '#3fcf8e'},
+    //   hovertemplate: `<br>Matchday %{x}<br>%{text|%d %b %Y}<br>Form: <b>%{y:.1f}%</b><extra></extra>`,
+      showlegend: false
+    }];
+  }
+
+  function requestsFreqPlotData() {
+    return {
+      data: requestsFreqLine(),
+      layout: requestsFreqPlotLayout(),
+      config: {
+        responsive: true,
+        showSendToCloud: false,
+        displayModeBar: false,
+      },
+    };
+  }
+
+  function genRequestsFreqPlot() {
+    let plotData = requestsFreqPlotData();
+    console.log(plotData);
+    //@ts-ignore
+    new Plotly.newPlot(
+      requestsFreqPlotDiv,
+      plotData.data,
+      plotData.layout,
+      plotData.config
+    )
   }
 
   function build() {
-    let successRate = {}
-    for (let i = 0; i < data.length; i++) {
-        let date = new Date(data[i].created_at);
-        if (pastMonth(date)) {
-            date.setHours(0, 0, 0, 0)
-            // @ts-ignore
-            if (!(date in successRate)) {
-                // @ts-ignore
-                successRate[date] = {total: 0, successful: 0}
-            }
-            if (data[i].status >= 200 && data[i].status <= 299) {
-                // @ts-ignore
-                successRate[date].successful++
-            }
-            // @ts-ignore
-            successRate[date].total++
-        }
-    }
-
-    console.log(successRate)
-
-    let sr = new Array(60).fill(0)
-
-    for (let date in successRate) {
-        let idx = daysAgo(new Date(date))
-        console.log(date, idx)
-        sr[sr.length-idx] = (successRate[date].successful / successRate[date].total)
-    }
-    console.log(sr)
-    _successRate = sr;
+    setSuccessRate();
+    genResponseTimePlot();
+    genRequestsFreqPlot();
   }
 
-  let _successRate
+  let successRate: any[];
+  let responseTimePlotDiv: HTMLDivElement;
+  let requestsFreqPlotDiv: HTMLDivElement;
   onMount(() => {
     build();
   });
@@ -69,12 +257,25 @@
 
 <div class="card">
   <div class="card-title">Past Month</div>
-
-  {#if _successRate != undefined}
+  <div id="plotly">
+    <div id="requestsFreqPlotDiv" bind:this={requestsFreqPlotDiv}>
+      <!-- Plotly chart will be drawn inside this DIV -->
+    </div>
+  </div>
+  <div id="plotlyy">
+    <div id="responseTimePlotDiv" bind:this={responseTimePlotDiv}>
+      <!-- Plotly chart will be drawn inside this DIV -->
+    </div>
+  </div>
+  {#if successRate != undefined}
     <div class="errors">
-        {#each _successRate as value, i}
-        <div class="error" style="background: {colors[Math.floor(value*10)]}" title="{(value*100).toFixed(1)}%"/>
-        {/each}
+      {#each successRate as value, i}
+        <div
+          class="error"
+          style="background: {colors[Math.floor(value * 10)]}"
+          title="{(value * 100).toFixed(1)}%"
+        />
+      {/each}
     </div>
   {/if}
 </div>

@@ -1,34 +1,38 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  function build() {
-    let eps = {};
+  function endpointFreq(): any {
+    let freq = {};
     for (let i = 0; i < data.length; i++) {
       let endpointID = data[i].path + data[i].status;
-      if (!(endpointID in eps)) {
-        eps[endpointID] = {
+      if (!(endpointID in freq)) {
+        freq[endpointID] = {
           path: data[i].path,
           status: data[i].status,
           count: 0,
         };
       }
-      eps[endpointID].count++;
+      freq[endpointID].count++;
     }
+    return freq;
+  }
 
-    console.log(eps);
+  function build() {
+    let freq = endpointFreq();
 
-    let _endpoints = [];
+    let freqArr = [];
     maxCount = 0;
-    for (let endpointID in eps) {
-      _endpoints.push(eps[endpointID]);
-      if (eps[endpointID].count > maxCount) {
-        maxCount = eps[endpointID].count;
+    for (let endpointID in freq) {
+      freqArr.push(freq[endpointID]);
+      if (freq[endpointID].count > maxCount) {
+        maxCount = freq[endpointID].count;
       }
     }
-    _endpoints.sort((a, b) => {
+
+    freqArr.sort((a, b) => {
       return b.count - a.count;
     });
-    endpoints = _endpoints;
+    endpoints = freqArr;
   }
   function setEndpointLabelVisibility(idx: number) {
     let endpoint = document.getElementById(`endpoint-label-${idx}`);
@@ -50,7 +54,7 @@
   }
   onMount(() => {
     build();
-    setTimeout(setEndpointLabels, 0);
+    setTimeout(setEndpointLabels, 50);
   });
   let endpoints: any[];
   let maxCount: number;
@@ -95,8 +99,7 @@
     margin: 1em 20px 0.6em;
   }
   .endpoint {
-    /* background: var(--highlight); */
-    border-radius: 4px;
+    border-radius: 3px;
     margin: 6px 0;
     color: var(--light-background);
     text-align: left;
