@@ -10,7 +10,7 @@
 </script>
 
 <Router {url}>
-    <Route path="/" component={Home} />
+    <!-- <Route path="/" component={Home} /> -->
     <Route path="/generate" component={Generate} />
     <Route path="/dashboard" component={SignIn} />
     <Route path="/dashboard/:userID" component={Dashboard} />

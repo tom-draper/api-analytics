@@ -58,6 +58,33 @@ p {
   padding: 20px 20px 0;
 }
 
+.spinner {
+  display: grid;
+  place-items: center;
+  height: 10em;
+  margin-bottom: 5em;
+}
+
+.loader {
+  border: 6px solid #343434;
+  border-top: 6px solid var(--highlight);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+
 :root {
   --highlight: #3fcf8e;
   --red: #e46161;

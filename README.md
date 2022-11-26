@@ -8,7 +8,7 @@ Currently available for FastAPI and Flask.
 
 ### 1. Generate a new API key
 
-Head to *URL* to generate your unique API key with a single click. This key is used to monitor your specific API, so keep it secret! It's also required in order to view your APIs analytics dashboard.
+Head to https://my-api-analytics.vercel.app/generate to generate your unique API key with a single click. This key is used to monitor your specific API, so keep it secret! It's also required in order to view your APIs analytics dashboard.
 
 ### 2. Add middleware to your API
 
@@ -52,7 +52,7 @@ def root():
 
 ### 3. View your analytics
 
-Your API will log requests on all valid routes. Head over to *URL* and paste in your API key to view your dashboard.
+Your API will log requests on all valid routes. Head over to https://my-api-analytics.vercel.app/dashboard and paste in your API key to view your dashboard.
 
 ## Data and Security
 
@@ -72,3 +72,5 @@ For any given request to your API, data recorded is limited to only:
 Data collected is only used by the analytics dashboard.
 
 When using API Analytics to collect analytics for your API, you are anonymous, with the API key the only link between you and you API's analytics. Should you lose your API key, you will have no method to access your API analytics.
+
+You can use the same API key across multiple APIs, but all your data will appear in the same dashboard.

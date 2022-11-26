@@ -1,27 +1,31 @@
 <script lang="ts">
+  let loading = false;
   let generatedKey = false;
   let apiKey = "";
   let generateBtn: HTMLButtonElement;
   let copyBtn: HTMLButtonElement;
+  let copiedNotification: HTMLDivElement;
   async function genAPIKey() {
     if (!generatedKey) {
+      loading = true;
       const response = await fetch(
         "https://api-analytics-server.vercel.app/api/generate-api-key"
       );
-      console.log(response.status);
       if (response.status == 200) {
         const data = await response.json();
         generatedKey = true;
         apiKey = data.value;
         generateBtn.style.display = "none";
-        copyBtn.style.display = "initial";
+        copyBtn.style.display = "grid";
       }
+      loading = false;
     }
   }
 
   function copyToClipboard() {
     navigator.clipboard.writeText(apiKey);
     copyBtn.value = "Copied";
+    copiedNotification.style.visibility = "visible";
   }
 </script>
 
@@ -33,8 +37,13 @@
       >Generate</button
     >
     <button id="copyBtn" on:click={copyToClipboard} bind:this={copyBtn}
-      >Copy</button
+      ><img class="copy-icon" src="img/copy.png" alt="" /></button
     >
+    <div id="copied" bind:this={copiedNotification}>Copied!</div>
+
+    <div class="spinner">
+      <div class="loader" style="display: {loading ? 'initial' : 'none'}" />
+    </div>
 
     <div class="details">
       <div class="keep-secure">Keep your API key safe and secure.</div>
@@ -88,17 +97,34 @@
     color: #3fcf8e;
   }
   .details {
-    margin-top: 15em;
     font-size: 0.8em;
   }
   .keep-secure {
     color: #5a5a5a;
-    /* color: #7e7e7e; */
     margin-bottom: 1em;
   }
+
   #copyBtn {
     background: #1c1c1c;
     display: none;
+    background: #343434;
+    place-items: center;
+    margin: auto;
+  }
+  .copy-icon {
+    filter: contrast(0.3);
+    height: 20px;
+  }
+  #copied {
+    color: var(--highlight);
+    margin: 2em auto auto;
+    visibility: hidden;
+    height: 1em;
+  }
+
+  .spinner {
+    height: 7em;
+    margin-bottom: 5em;
   }
   #generateBtn {
     background: #3fcf8e;
