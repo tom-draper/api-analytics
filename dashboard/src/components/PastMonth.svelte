@@ -276,7 +276,7 @@
   </div>
   <div class="success-rate-container">
     {#if successRate != undefined}
-      <div class="success-rate-title">Success Rate</div>
+      <div class="success-rate-title">Success rate</div>
       <div class="errors">
         {#each successRate as value, i}
           <div

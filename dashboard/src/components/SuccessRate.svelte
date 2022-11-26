@@ -19,10 +19,10 @@
         totalRequests++;
       }
     }
-    successRate = (successfulRequests / totalRequests).toFixed(1);
+    successRate = (successfulRequests / totalRequests) * 100;
   }
 
-  let successRate: string;
+  let successRate: number;
   onMount(() => {
     build();
   });
@@ -33,7 +33,15 @@
 <div class="card" title="Last week">
   <div class="card-title">Success Rate</div>
   {#if successRate != undefined}
-    <div class="value">{successRate}%</div>
+    <div
+      class="value"
+      style="color: {successRate <= 75 ? 'var(--red)' : ''}{successRate > 75 &&
+      successRate < 90
+        ? 'var(--yellow)'
+        : ''}{successRate >= 90 ? 'var(--highlight)' : ''}"
+    >
+      {successRate.toFixed(1)}%
+    </div>
   {/if}
 </div>
 
@@ -47,5 +55,6 @@
     margin: 20px 0;
     font-size: 1.8em;
     font-weight: 600;
+    color: var(--yellow);
   }
 </style>
