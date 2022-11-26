@@ -56,33 +56,35 @@
   }
 
   function responseTimePlotLayout() {
-    let monthAgo = new Date()
+    let monthAgo = new Date();
     monthAgo.setDate(monthAgo.getDate() - 30);
-    let tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
+    let tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
     return {
       title: false,
       autosize: true,
-      margin: { r: 35, l: 70, t: 10, b: 40, pad: 0 },
+      margin: { r: 35, l: 70, t: 10, b: 20, pad: 0 },
       hovermode: "closest",
       plot_bgcolor: "transparent",
       paper_bgcolor: "transparent",
-      height: 200,
+      height: 150,
       yaxis: {
         title: { text: "Response time (ms)" },
         gridcolor: "gray",
         showgrid: false,
-        showline: false,
-        zeroline: false,
+        // showline: false,
+        // zeroline: false,
         fixedrange: true,
-    },
-    xaxis: {
+        // visible: false,
+      },
+      xaxis: {
         title: { text: "Date" },
-        linecolor: "black",
+        // linecolor: "black",
         showgrid: false,
-        showline: false,
+        // showline: false,
         fixedrange: true,
-        range: [monthAgo, tomorrow]
+        range: [monthAgo, tomorrow],
+        visible: false,
       },
       dragmode: false,
     };
@@ -91,29 +93,31 @@
   function responseTimeLine() {
     let points = [];
     for (let i = 0; i < data.length; i++) {
-        points.push([new Date(data[i].created_at), data[i].response_time])
+      points.push([new Date(data[i].created_at), data[i].response_time]);
     }
     points.sort((a, b) => {
-        return a[0] - b[0]
-    })
+      return a[0] - b[0];
+    });
     let dates = [];
     let responses = [];
     for (let i = 0; i < points.length; i++) {
-        dates.push(points[i][0])
-        responses.push(points[i][1])
+      dates.push(points[i][0]);
+      responses.push(points[i][1]);
     }
 
-    dates.push(new Date())
-    responses.push(50)
+    dates.push(new Date());
+    responses.push(50);
 
-    return [{
-      x: dates,
-      y: responses,
-      mode: "lines",
-      line: { color: '#3fcf8e'},
-    //   hovertemplate: `<br>Matchday %{x}<br>%{text|%d %b %Y}<br>Form: <b>%{y:.1f}%</b><extra></extra>`,
-      showlegend: false
-    }];
+    return [
+      {
+        x: dates,
+        y: responses,
+        mode: "lines",
+        line: { color: "#3fcf8e" },
+        hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
+        showlegend: false,
+      },
+    ];
   }
 
   function responseTimePlotData() {
@@ -137,37 +141,38 @@
       plotData.data,
       plotData.layout,
       plotData.config
-    )
+    );
   }
 
   function requestsFreqPlotLayout() {
-    let monthAgo = new Date()
+    let monthAgo = new Date();
     monthAgo.setDate(monthAgo.getDate() - 30);
-    let tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
+    let tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
     return {
       title: false,
       autosize: true,
-      margin: { r: 35, l: 70, t: 10, b: 40, pad: 0 },
+      margin: { r: 35, l: 70, t: 10, b: 20, pad: 0 },
       hovermode: "closest",
       plot_bgcolor: "transparent",
       paper_bgcolor: "transparent",
-      height: 200,
+      height: 150,
       yaxis: {
         title: { text: "Requests" },
         gridcolor: "gray",
         showgrid: false,
-        showline: false,
-        zeroline: false,
+        // showline: false,
+        // zeroline: false,
         fixedrange: true,
-    },
-    xaxis: {
+      },
+      xaxis: {
         title: { text: "Date" },
-        linecolor: "black",
-        showgrid: false,
-        showline: false,
+        // linecolor: "black",
+        // showgrid: false,
+        // showline: false,
         fixedrange: true,
-        range: [monthAgo, tomorrow]
+        range: [monthAgo, tomorrow],
+        visible: false,
       },
       dragmode: false,
     };
@@ -176,43 +181,45 @@
   function requestsFreqLine() {
     let requestFreq = {};
     for (let i = 0; i < data.length; i++) {
-        let date = new Date(data[i].created_at)
-        date.setHours(0, 0, 0, 0);
+      let date = new Date(data[i].created_at);
+      date.setHours(0, 0, 0, 0);
+      // @ts-ignore
+      if (!(date in requestFreq)) {
         // @ts-ignore
-        if (!(date in requestFreq)) {
-            // @ts-ignore
-            requestFreq[date] = 0
-        }
-        // @ts-ignore
-        requestFreq[date]++
+        requestFreq[date] = 0;
+      }
+      // @ts-ignore
+      requestFreq[date]++;
     }
 
     let requestFreqArr = [];
     for (let date in requestFreq) {
-        requestFreqArr.push([new Date(date), requestFreq[date]])
+      requestFreqArr.push([new Date(date), requestFreq[date]]);
     }
     requestFreqArr.sort((a, b) => {
-        return a[0] - b[0]
-    })
+      return a[0] - b[0];
+    });
 
     let dates = [];
     let requests = [];
     for (let i = 0; i < requestFreqArr.length; i++) {
-        dates.push(requestFreqArr[i][0])
-        requests.push(requestFreqArr[i][1])
+      dates.push(requestFreqArr[i][0]);
+      requests.push(requestFreqArr[i][1]);
     }
 
-    dates.push(new Date())
-    requests.push(50)
+    dates.push(new Date());
+    requests.push(50);
 
-    return [{
-      x: dates,
-      y: requests,
-      type: "bar",
-      marker: { color: '#3fcf8e'},
-    //   hovertemplate: `<br>Matchday %{x}<br>%{text|%d %b %Y}<br>Form: <b>%{y:.1f}%</b><extra></extra>`,
-      showlegend: false
-    }];
+    return [
+      {
+        x: dates,
+        y: requests,
+        type: "bar",
+        marker: { color: "#3fcf8e" },
+        hovertemplate: `<b>%{y} requests</b><br>%{x|%d %b %Y}</b><extra></extra>`,
+        showlegend: false,
+      },
+    ];
   }
 
   function requestsFreqPlotData() {
@@ -236,7 +243,7 @@
       plotData.data,
       plotData.layout,
       plotData.config
-    )
+    );
   }
 
   function build() {
@@ -267,17 +274,20 @@
       <!-- Plotly chart will be drawn inside this DIV -->
     </div>
   </div>
-  {#if successRate != undefined}
-    <div class="errors">
-      {#each successRate as value, i}
-        <div
-          class="error"
-          style="background: {colors[Math.floor(value * 10)]}"
-          title="{(value * 100).toFixed(1)}%"
-        />
-      {/each}
-    </div>
-  {/if}
+  <div class="success-rate-container">
+    {#if successRate != undefined}
+      <div class="success-rate-title">Success Rate</div>
+      <div class="errors">
+        {#each successRate as value, i}
+          <div
+            class="error"
+            style="background: {colors[Math.floor(value * 10)]}"
+            title="{(value * 100).toFixed(1)}%"
+          />
+        {/each}
+      </div>
+    {/if}
+  </div>
 </div>
 
 <style>
@@ -287,7 +297,7 @@
   }
   .errors {
     display: flex;
-    margin: 2em;
+    margin-top: 8px;
   }
   .error {
     background: var(--highlight);
@@ -295,5 +305,14 @@
     height: 40px;
     margin: 0 1px;
     border-radius: 1px;
+  }
+  .success-rate-container {
+    text-align: left;
+    font-size: 0.9em;
+    color: #707070;
+    /* color: rgb(68, 68, 68); */
+  }
+  .success-rate-container {
+    margin: 1.5em 2em 2em;
   }
 </style>
