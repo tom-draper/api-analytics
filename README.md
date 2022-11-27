@@ -29,7 +29,7 @@ app.add_middleware(Analytics, <api_key>)
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Hello World!"}
 ```
 
 #### Flask
@@ -47,8 +47,39 @@ add_middleware(app, <api_key>)
 
 @app.get("/")
 def root():
-    return {"message": "Hello World"}
+    return {"message": "Hello World!"}
 ```
+
+#### Gin
+
+```go
+package main
+
+import (
+	analytics "analytics/analytics"
+	"net/http"
+	"os"
+
+	"github.com/gin-gonic/gin"
+)
+
+func root(c *gin.Context) {
+	jsonData := []byte(`{"message": "Hello World!"}`)
+	c.Data(http.StatusOK, "application/json", jsonData)
+}
+
+func main() {
+	apiKey := getAPIKey()
+
+	router := gin.Default()
+	
+	router.Use(analytics.Analytics(<api-key>))
+
+	router.GET("/", root)
+	router.Run("localhost:8080")
+}
+```
+
 
 ### 3. View your analytics
 

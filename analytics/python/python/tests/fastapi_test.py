@@ -1,4 +1,6 @@
+import sys
 import os
+sys.path.insert(0, os.path.abspath('../'))
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -20,3 +22,6 @@ async def test():
 @app.get("/test/")
 async def test():
     return "Test 2"
+
+if __name__ == '__main__':
+    app.run()

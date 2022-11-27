@@ -49,9 +49,9 @@ function gaussian(mean, stdev) {
   return -retval;
 }
 
-function setCirclePosition(circle) {
-  let x = gaussian(500, 100);
-  let y = gaussian(500, 100);
+function setCirclePosition(circle, mean, std) {
+  let x = gaussian(mean, std);
+  let y = gaussian(mean, std);
   circle.setAttributeNS(null, "cx", x);
   circle.setAttributeNS(null, "cy", y);
 }
@@ -155,7 +155,7 @@ function setCircleColor(circle) {
 function addCenterCircle(svg) {
   let svgNS = svg.namespaceURI;
   let circle = document.createElementNS(svgNS, "circle");
-  circle.setAttribute("radius", 1000);
+  // circle.setAttribute("radius", 1000);
   circle.setAttributeNS(null, "cx", 500);
   circle.setAttributeNS(null, "cy", 500);
   circle.setAttributeNS(null, "r", 50);
@@ -163,22 +163,37 @@ function addCenterCircle(svg) {
 
   svg.appendChild(circle);
 }
+
+function addRedCircles(svg) {
+  let svgNS = svg.namespaceURI;
+  for (let i = 0; i < 50; i++) {
+    let circle = document.createElementNS(svgNS, "circle");
+    // circle.setAttribute("radius", 1000);
+  
+    setCirclePosition(circle, 500, 200);
+    setCircleSize(circle);
+    circle.setAttribute("fill", '#e46161');
+  
+    svg.appendChild(circle);
+  }
+}
+
 function addCircles(svg) {
   let svgNS = svg.namespaceURI;
   for (let i = 0; i < 100000; i++) {
     let circle = document.createElementNS(svgNS, "circle");
-    circle.setAttribute("radius", 1000);
-    setCirclePosition(circle);
+    // circle.setAttribute("radius", 1000);
+    setCirclePosition(circle, 500, 100);
     setCircleSize(circle);
     setCircleColor(circle);
 
     svg.appendChild(circle);
   }
 
+  addRedCircles(svg)
   addCenterCircle(svg)
 }
 
-document.createAttributeNS('img')
 
 svg = initSVG();
 addCircles(svg);
