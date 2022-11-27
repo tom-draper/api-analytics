@@ -28,16 +28,20 @@
     color: #707070;
     display: flex;
     width: 400px;
-    margin: 50px auto auto;
+    margin: 30px auto auto;
+    flex-direction: column;
   }
   .link {
     /* margin: 0 20px; */
     width: fit-content;
-    margin: auto;
+    margin: 10px auto;
     color: #707070;
     color: white;
     font-size: 0.9;
     /* width: 200px; */
+  }
+  .link:hover {
+    color: var(--highlight);
   }
   /* .text {
     width: 200px;
