@@ -1,0 +1,29 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [
+  "setuptools>=42",
+  "wheel",
+]
+
+[project]
+authors = [{name = "Tom Draper", email = "tomjdraper1@gmail.com"}]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+]
+dependencies = ["fastapi"]
+description = "Monitoring and analytics for FastAPI applications."
+keywords = ["analytics", "api", "dashboard"]
+license = {file = "LICENSE"}
+name = "fastapi-analytics"
+readme = "README.md"
+requires-python = ">=3.7"
+version = "1.0.2"
+
+[project.optional-dependencies]
+build = ["build", "twine"]
+dev = ["pytest"]
+
+[project.urls]
+repository = "https://github.com/tom-draper/api-analytics"
