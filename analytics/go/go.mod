@@ -1,4 +1,4 @@
-module analyticss
+module analytics
 
 go 1.19
 

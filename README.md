@@ -52,11 +52,15 @@ def root():
 
 #### Gin
 
+```bash
+go get -u github.com/tom-draper/api-analytics/analytics/go
+```
+
 ```go
 package main
 
 import (
-	analytics "analytics/analytics"
+	analytics "github.com/tom-draper/api-analytics/analytics/go"
 	"net/http"
 	"os"
 
