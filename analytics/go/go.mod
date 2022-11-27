@@ -1,4 +1,4 @@
-module github.com/tom-draper/api-analytics/analytics/go
+module github.com/tom-draper/api-analytics
 
 go 1.19
 
