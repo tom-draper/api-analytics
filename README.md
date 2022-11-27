@@ -6,7 +6,7 @@ Currently available for FastAPI and Flask.
 
 ## Getting Started
 
-### 1. Generate a new API key
+### 1. Generate an API key
 
 Head to https://my-api-analytics.vercel.app/generate to generate your unique API key with a single click. This key is used to monitor your specific API, so keep it secret! It's also required in order to view your APIs analytics dashboard.
 
