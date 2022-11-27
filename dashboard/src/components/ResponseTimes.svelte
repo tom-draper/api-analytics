@@ -47,8 +47,8 @@
     for (let i = 0; i < data.length; i++) {
       responseTimes.push(data[i].response_time);
     }
-    median = quantile(responseTimes, 0.25);
-    LQ = quantile(responseTimes, 0.5);
+    LQ = quantile(responseTimes, 0.25);
+    median = quantile(responseTimes, 0.5);
     UQ = quantile(responseTimes, 0.75);
     setMarkerPosition(median);
   }

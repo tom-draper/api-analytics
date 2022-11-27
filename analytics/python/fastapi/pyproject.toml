@@ -12,14 +12,14 @@ classifiers = [
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
 ]
-dependencies = ["fastapi"]
+dependencies = ["fastapi", "requests"]
 description = "Monitoring and analytics for FastAPI applications."
 keywords = ["analytics", "api", "dashboard"]
 license = {file = "LICENSE"}
 name = "fastapi-analytics"
 readme = "README.md"
 requires-python = ">=3.7"
-version = "1.0.3"
+version = "1.0.5"
 
 [project.optional-dependencies]
 build = ["build", "twine"]

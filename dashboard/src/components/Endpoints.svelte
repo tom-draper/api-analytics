@@ -115,6 +115,9 @@
   .count {
     padding: 3px 15px;
   }
+  .count {
+    margin-left: auto;
+  }
   .path {
     flex-grow: 1;
   }
