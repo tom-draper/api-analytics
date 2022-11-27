@@ -1,7 +1,33 @@
 {
-    "type": "module",
-    "dependencies": {
-        "express": "^4.18.2",
-        "node": "^19.1.0"
-    }
+  "name": "analytics",
+  "version": "1.0.0",
+  "description": "Monitoring and analytics for APIs.",
+  "main": "analytics.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "node": "^19.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tom-draper/api-analytics.git"
+  },
+  "keywords": [
+    "analytics",
+    "api",
+    "dashboard",
+    "express"
+  ],
+  "author": "Tom Draper",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tom-draper/api-analytics/issues"
+  },
+  "homepage": "https://github.com/tom-draper/api-analytics#readme"
 }
