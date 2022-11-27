@@ -1,9 +1,0 @@
-fastapi
-Flask
-
-[build]
-build
-twine
-
-[dev]
-pytest

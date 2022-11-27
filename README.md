@@ -2,7 +2,9 @@
 
 A lightweight API analytics solution, complete with a dashboard.
 
-Currently available for FastAPI and Flask.
+Currently available for:
+ - Python: Flask and FastAPI
+ - Go: Gin
 
 ## Getting Started
 
@@ -29,7 +31,7 @@ app.add_middleware(Analytics, <api_key>)
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Hello World!"}
 ```
 
 #### Flask
@@ -47,8 +49,43 @@ add_middleware(app, <api_key>)
 
 @app.get("/")
 def root():
-    return {"message": "Hello World"}
+    return {"message": "Hello World!"}
 ```
+
+#### Gin
+
+```bash
+go get -u github.com/tom-draper/api-analytics/analytics/go
+```
+
+```go
+package main
+
+import (
+	analytics "github.com/tom-draper/api-analytics/analytics/go"
+	"net/http"
+	"os"
+
+	"github.com/gin-gonic/gin"
+)
+
+func root(c *gin.Context) {
+	jsonData := []byte(`{"message": "Hello World!"}`)
+	c.Data(http.StatusOK, "application/json", jsonData)
+}
+
+func main() {
+	apiKey := getAPIKey()
+
+	router := gin.Default()
+	
+	router.Use(analytics.Analytics(<api-key>))
+
+	router.GET("/", root)
+	router.Run("localhost:8080")
+}
+```
+
 
 ### 3. View your analytics
 
@@ -58,7 +95,7 @@ Your API will log requests on all valid routes. Head over to https://my-api-anal
 
 All data is stored securely in compliance with The EU General Data Protection Regulation (GDPR).
 
-For any given request to your API, data recorded is limited to only:
+For any given request to your API, data recorded is limited to:
  - API hostname
  - Path requested by user
  - User's operating system

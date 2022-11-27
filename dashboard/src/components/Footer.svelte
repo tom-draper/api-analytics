@@ -1,5 +1,5 @@
 <div class="footer">API Analytics</div>
-<img class="footer-logo" src="img/logo.png" alt="">
+<img class="footer-logo" src="../img/logo.png" alt="">
 
 <style>
   .footer {

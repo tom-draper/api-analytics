@@ -20,17 +20,22 @@
   async function fetchData() {
     userID = formatUUID(userID);
     // Fetch page ID
-    const response = await fetch(
-      `https://api-analytics-server.vercel.app/api/data/${userID}`
-    );
-    if (response.status == 200) {
-      const json = await response.json();
-      data = json.value;
-      console.log(data);
+    try {
+      const response = await fetch(
+        `https://api-analytics-server.vercel.app/api/data/${userID}`
+      );
+      if (response.status == 200) {
+        const json = await response.json();
+        data = json.value;
+        console.log(data);
+      }
+    } catch (e) {
+      failed = true;
     }
   }
 
   let data: any;
+  let failed = false;
   onMount(() => {
     fetchData();
   });
@@ -58,6 +63,9 @@
       </div>
     </div>
     {/if}
+    {#if failed}
+      <div class="no-requests">No requests currently logged.</div>
+    {/if}
   <Footer />
 </div>
 
@@ -71,5 +79,12 @@
   }
   .right {
     flex-grow: 1;
+  }
+  .no-requests {
+    height: 70vh;
+    font-size: 1.5em;
+    display: grid;
+    place-items: center;
+    color: var(--highlight);
   }
 </style>

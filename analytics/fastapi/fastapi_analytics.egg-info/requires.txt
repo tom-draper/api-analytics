@@ -1,8 +1,0 @@
-fastapi
-
-[build]
-build
-twine
-
-[dev]
-pytest
