@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	a "github.com/tom-draper/api-analytics"
+	a "github.com/tom-draper/api-analytics/go"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -26,13 +26,13 @@ func root(c *gin.Context) {
 	c.Data(http.StatusOK, "application/json", jsonData)
 }
 
-// func main() {
-// 	apiKey := getAPIKey()
+func main() {
+	apiKey := getAPIKey()
 
-// 	router := gin.Default()
+	router := gin.Default()
 
-// 	router.Use(a.Analytics(apiKey))
+	router.Use(a.Analytics(apiKey))
 
-// 	router.GET("/", root)
-// 	router.Run("localhost:8080")
-// }
+	router.GET("/", root)
+	router.Run("localhost:8080")
+}
