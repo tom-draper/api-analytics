@@ -1,6 +1,6 @@
-import sys
 import os
-sys.path.insert(0, os.path.abspath('../'))
+# import sys
+# sys.path.insert(0, os.path.abspath('../'))
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -15,10 +15,5 @@ app.add_middleware(Analytics, api_key=api_key)
 
 
 @app.get("/")
-async def test():
-    return "Test 1"
-
-
-@app.get("/test/")
-async def test():
-    return "Test 2"
+async def root():
+    return {'message': 'Hello World!'}

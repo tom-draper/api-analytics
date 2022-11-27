@@ -58,7 +58,7 @@
         <div class="row">
           <OperatingSystem {data} />
           <Browser {data} />
-          <Device {data} />
+          <!-- <Device {data} /> -->
         </div>
       </div>
     </div>

@@ -1,7 +1,6 @@
 package main
 
 import (
-	// analytics "analytics/analytics"
 	"net/http"
 	"os"
 

@@ -129,7 +129,7 @@
 
 <style>
   .card {
-    margin: 2em 2em 2em 0;
+    margin: 2em 0 2em 0;
     padding-bottom: 1em;
     flex: 1;
   }

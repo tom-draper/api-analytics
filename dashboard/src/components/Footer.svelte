@@ -3,6 +3,7 @@
 
 <style>
   .footer {
+    margin-top: 2em;
     font-size: 0.9em;
     color: var(--highlight);
   }

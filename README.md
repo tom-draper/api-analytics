@@ -3,8 +3,8 @@
 A lightweight API analytics solution, complete with a dashboard.
 
 Currently available for:
- - Python: Flask and FastAPI
- - Go: Gin
+ - Python: <b>Flask</b> and <b>FastAPI</b>
+ - Go: <b>Gin</b>
 
 ## Getting Started
 
@@ -19,7 +19,7 @@ Add our lightweight middleware to your API. Almost all processing is handled by 
 #### FastAPI
 
 ```bash
-python -m pip install api-analytics
+pip install api-analytics
 ```
 
 ```py
@@ -27,7 +27,7 @@ from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
 
 app = FastAPI()
-app.add_middleware(Analytics, <api_key>)
+app.add_middleware(Analytics, api_key=<api_key>)
 
 @app.get("/")
 async def root():
@@ -37,7 +37,7 @@ async def root():
 #### Flask
 
 ```bash
-python -m pip install api-analytics
+pip install api-analytics
 ```
 
 ```py
@@ -64,7 +64,6 @@ package main
 import (
 	analytics "github.com/tom-draper/api-analytics/analytics/go"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -75,17 +74,14 @@ func root(c *gin.Context) {
 }
 
 func main() {
-	apiKey := getAPIKey()
-
 	router := gin.Default()
 	
-	router.Use(analytics.Analytics(<api-key>))
+	router.Use(analytics.Analytics(<api_key>))
 
 	router.GET("/", root)
 	router.Run("localhost:8080")
 }
 ```
-
 
 ### 3. View your analytics
 

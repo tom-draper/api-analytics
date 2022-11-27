@@ -15,7 +15,7 @@
   }
   .logo {
     width: 700px;
-    margin-bottom: -80px;
+    margin-bottom: -50px;
   }
 
   h1 {
