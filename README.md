@@ -75,8 +75,6 @@ func root(c *gin.Context) {
 }
 
 func main() {
-	apiKey := getAPIKey()
-
 	router := gin.Default()
 	
 	router.Use(analytics.Analytics(<api-key>))
@@ -85,7 +83,6 @@ func main() {
 	router.Run("localhost:8080")
 }
 ```
-
 
 ### 3. View your analytics
 
