@@ -1,8 +1,39 @@
-<h1>Home</h1>
-<p>Welcome to my website</p>
+<div class="home">
+<img class="logo" src="img/logo.png" alt="" />
+<h1>API Analytics</h1>
 
-<style>
-  h1 {
-    background: #1c1c1c;
+<div class="links">
+  <a href="/generate" class="link"> <div class="text">API key</div></a>
+  <a href="/generate" class="link"> <div class="text">Dashboard</div></a>
+</div>
+</div>
+
+<style scoped>
+  .home {
+    display: grid;
+    place-items: center;
   }
+  .logo {
+    width: 70px;
+    margin-top: 25vh;
+    margin-bottom: 10px
+  }
+
+  .links {
+    color: #707070;
+    display: flex;
+    width: 400px;
+    margin: 50px auto auto;
+  }
+  .link {
+    /* margin: 0 20px; */
+    width: fit-content;
+    margin: auto;
+    color: #707070;
+    font-size: 0.9;
+    /* width: 200px; */
+  }
+  /* .text {
+    width: 200px;
+  } */
 </style>
