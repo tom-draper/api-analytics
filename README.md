@@ -19,7 +19,7 @@ Add our lightweight middleware to your API. Almost all processing is handled by 
 #### FastAPI
 
 ```bash
-python -m pip install api-analytics
+pip install api-analytics
 ```
 
 ```py
@@ -37,7 +37,7 @@ async def root():
 #### Flask
 
 ```bash
-python -m pip install api-analytics
+pip install api-analytics
 ```
 
 ```py
