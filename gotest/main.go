@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	a "github.com/tom-draper/api-analytics/analytics/go"
+	"github.com/tom-draper/api-analytics/analytics/go"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -31,7 +31,7 @@ func main() {
 
 	router := gin.Default()
 
-	router.Use(a.Analytics(apiKey))
+	router.Use(Analytics(apiKey))
 
 	router.GET("/", root)
 	router.Run("localhost:8080")
