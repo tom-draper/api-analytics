@@ -17,6 +17,7 @@ type data struct {
 	UserAgent    string `json:"user_agent"`
 	Method       int    `json:"method"`
 	ResponseTime int64  `json:"response_time"`
+	Status       int    `json:"status"`
 	Framework    int8   `json:"framework"`
 }
 
@@ -53,11 +54,10 @@ func Analytics(APIKey string) gin.HandlerFunc {
 			UserAgent:    c.Request.UserAgent(),
 			Method:       methodMap[c.Request.Method],
 			ResponseTime: elapsed,
+			Status:       c.Writer.Status(),
 			Framework:    2,
 		}
 
 		go logRequest(data)
-
-		fmt.Println(data)
 	}
 }
