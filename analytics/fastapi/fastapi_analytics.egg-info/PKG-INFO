@@ -1,7 +1,7 @@
 Metadata-Version: 2.1
 Name: fastapi-analytics
-Version: 1.0.1
-Summary: Monitoring and analytics for FastAPI.
+Version: 1.0.2
+Summary: Monitoring and analytics for FastAPI applications.
 Home-page: https://github.com/tom-draper/api-analytics
 Author: Tom Draper
 Author-email: Tom Draper <tomjdraper1@gmail.com>
