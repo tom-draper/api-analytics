@@ -5,7 +5,7 @@ from typing import Callable
 from flask import Flask, Request, Response
 from flask_http_middleware import BaseHTTPMiddleware, MiddlewareManager
 
-from analytics.core import log_request
+from api_analytics.core import log_request
 
 
 def add_middleware(app: Flask, api_key: str) -> None:

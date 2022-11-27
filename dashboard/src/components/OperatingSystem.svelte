@@ -1,12 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  function thisWeek(date: Date): boolean {
-    let weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    return date > weekAgo;
-  }
-
   function getOS(userAgent: string): string {
     if (userAgent.match(/Win16/)) {
         return 'Windows 3.11'
@@ -133,17 +127,6 @@
       plotData.config
     );
   }
-
-  // function build() {
-  //   let totalRequests = 0;
-  //   for (let i = 0; i < data.length; i++) {
-  //     let date = new Date(data[i].created_at);
-  //     if (thisWeek(date)) {
-  //       totalRequests++;
-  //     }
-  //   }
-  //   requestsPerHour = ((24 * 7) / totalRequests).toFixed(2);
-  // }
 
   let plotDiv;
   onMount(() => {

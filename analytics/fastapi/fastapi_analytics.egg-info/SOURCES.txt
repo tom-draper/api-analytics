@@ -1,0 +1,11 @@
+LICENSE
+README.md
+pyproject.toml
+setup.py
+api_analytics/core.py
+api_analytics/fastapi.py
+fastapi_analytics.egg-info/PKG-INFO
+fastapi_analytics.egg-info/SOURCES.txt
+fastapi_analytics.egg-info/dependency_links.txt
+fastapi_analytics.egg-info/requires.txt
+fastapi_analytics.egg-info/top_level.txt

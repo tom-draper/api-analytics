@@ -2,8 +2,6 @@
 
 A lightweight API analytics solution, complete with a dashboard.
 
-Currently available for FastAPI and Flask.
-
 ## Getting Started
 
 ### 1. Generate a new API key
@@ -53,24 +51,3 @@ def root():
 ### 3. View your analytics
 
 Your API will log requests on all valid routes. Head over to https://my-api-analytics.vercel.app/dashboard and paste in your API key to view your dashboard.
-
-## Data and Security
-
-All data is stored securely in compliance with The EU General Data Protection Regulation (GDPR).
-
-For any given request to your API, data recorded is limited to only:
- - API hostname
- - Path requested by user
- - User's operating system
- - User's browser
- - Request method (GET, POST, PUT, etc.)
- - Time of request
- - Status code
- - Response time
- - API framework (FastAPI, Flask, etc.)
-
-Data collected is only used by the analytics dashboard.
-
-When using API Analytics to collect analytics for your API, you are anonymous, with the API key the only link between you and you API's analytics. Should you lose your API key, you will have no method to access your API analytics.
-
-You can use the same API key across multiple APIs, but all your data will appear in the same dashboard.

@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask
 
-from analytics.flask import add_middleware
+from api_analytics.flask import add_middleware
 
 
 load_dotenv()

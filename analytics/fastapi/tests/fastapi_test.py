@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
-from analytics.fastapi import Analytics
+from api_analytics.fastapi import Analytics
 
 load_dotenv()
 api_key = os.environ.get("API_KEY")

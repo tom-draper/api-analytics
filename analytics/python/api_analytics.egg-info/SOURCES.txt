@@ -1,0 +1,12 @@
+LICENSE
+README.md
+pyproject.toml
+setup.py
+api_analytics/core.py
+api_analytics/fastapi.py
+api_analytics/flask.py
+api_analytics.egg-info/PKG-INFO
+api_analytics.egg-info/SOURCES.txt
+api_analytics.egg-info/dependency_links.txt
+api_analytics.egg-info/requires.txt
+api_analytics.egg-info/top_level.txt
