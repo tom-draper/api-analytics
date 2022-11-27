@@ -19,7 +19,7 @@ license = {file = "LICENSE"}
 name = "fastapi-analytics"
 readme = "README.md"
 requires-python = ">=3.7"
-version = "1.0.2"
+version = "1.0.3"
 
 [project.optional-dependencies]
 build = ["build", "twine"]
