@@ -3,8 +3,8 @@
 A lightweight API analytics solution, complete with a dashboard.
 
 Currently available for:
- - Python: Flask and FastAPI
- - Go: Gin
+ - Python: <b>Flask</b> and <b>FastAPI</b>
+ - Go: <b>Gin</b>
 
 ## Getting Started
 
