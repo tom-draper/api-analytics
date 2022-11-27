@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	a "github.com/tom-draper/api-analytics/go"
+	a "github.com/tom-draper/api-analytics/analytics/go"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
