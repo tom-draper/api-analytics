@@ -58,7 +58,7 @@ Your API will log requests on all valid routes. Head over to https://my-api-anal
 
 All data is stored securely in compliance with The EU General Data Protection Regulation (GDPR).
 
-For any given request to your API, data recorded is limited to only:
+For any given request to your API, data recorded is limited to:
  - API hostname
  - Path requested by user
  - User's operating system
