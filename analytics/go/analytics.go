@@ -3,7 +3,6 @@ package analytics
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
