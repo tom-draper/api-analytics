@@ -64,7 +64,6 @@ package main
 import (
 	analytics "github.com/tom-draper/api-analytics/analytics/go"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 )
