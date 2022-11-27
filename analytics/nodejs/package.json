@@ -1,0 +1,7 @@
+{
+    "type": "module",
+    "dependencies": {
+        "express": "^4.18.2",
+        "node": "^19.1.0"
+    }
+}
