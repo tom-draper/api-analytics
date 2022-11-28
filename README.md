@@ -11,11 +11,11 @@ Currently compatible with:
 
 ### 1. Generate an API key
 
-Head to https://my-api-analytics.vercel.app/generate to generate your unique API key with a single click. This key is used to monitor your specific API, so keep it secret! It's also required in order to view your APIs analytics dashboard.
+Head to https://my-api-analytics.vercel.app/generate to generate your unique API key with a single click. This key is used to monitor your specific API, so keep it secret! It's also required in order to view your API analytics dashboard.
 
 ### 2. Add middleware to your API
 
-Add our lightweight middleware to your API. Almost all processing is handled by our servers so there should be virtually no impact on your APIs performance.
+Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on your APIs performance.
 
 #### FastAPI
 
