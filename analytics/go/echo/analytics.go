@@ -1,4 +1,4 @@
-package echoAnalytics
+package echoAnalyticss
 
 import (
 	"fmt"
