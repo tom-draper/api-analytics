@@ -86,9 +86,7 @@ npm i node-api-analytics
 import Fastify from 'fastify';
 import { fastifyAnalytics } from 'node-api-analytics;
 
-const fastify = Fastify({
-  logger: true,
-})
+const fastify = Fastify()
 
 fastify.addHook('onRequest', fastifyAnalytics(<api_key>));
 
