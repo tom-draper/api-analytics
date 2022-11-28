@@ -5,7 +5,7 @@ A lightweight API analytics solution, complete with a dashboard.
 Currently compatible with:
  - Python: <b>Flask</b> and <b>FastAPI</b>
  - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
- - Go: <b>Gin</b> and <b>Echo</b>
+ - Go: <b>Gin</b>, <b>Echo</b> and <b>Chi</b>
 
 ## Getting Started
 
@@ -186,6 +186,41 @@ func main() {
 
 	router.GET("/", root)
 	router.Logger.Fatal(router.Start("localhost:8080"))
+}
+```
+
+#### Chi
+
+```bash
+go get -u github.com/tom-draper/api-analytics/analytics/go/chi
+```
+
+```go
+package main
+
+import (
+	"net/http"
+	"os"
+
+	analytics "github.com/tom-draper/api-analytics/analytics/go/chi"
+
+	chi "github.com/go-chi/chi/v5"
+)
+
+func root(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	jsonData := []byte(`{"message": "Hello World!"}`)
+	w.Write(jsonData)
+}
+
+func main() {
+	router := chi.NewRouter()
+
+	router.Use(analytics.Analytics(apiKey))
+
+	router.GET("/", root)
+	router.Run("localhost:8080")
 }
 ```
 
