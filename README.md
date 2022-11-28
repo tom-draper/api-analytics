@@ -206,7 +206,7 @@ For any given request to your API, data recorded is limited to:
  - Time of request
  - Status code
  - Response time
- - API framework (FastAPI, Flask, etc.)
+ - API framework (FastAPI, Flask, Express etc.)
 
 Data collected is only used by the analytics dashboard.
 
