@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/tom-draper/api-analytics/analytics/go/core"
 )
 
 func Analytics(APIKey string) func(next http.Handler) http.Handler {
@@ -19,20 +17,20 @@ func Analytics(APIKey string) func(next http.Handler) http.Handler {
 
 			fmt.Println(elapsed)
 
-			data := core.Data{
-				APIKey:       APIKey,
-				Hostname:     r.Host,
-				Path:         r.URL.Path,
-				UserAgent:    r.UserAgent(),
-				Method:       core.MethodMap[r.Method],
-				ResponseTime: elapsed,
-				Status:       r.Response.StatusCode,
-				Framework:    7,
-			}
+			// data := core.Data{
+			// 	APIKey:       APIKey,
+			// 	Hostname:     r.Host,
+			// 	Path:         r.URL.Path,
+			// 	UserAgent:    r.UserAgent(),
+			// 	Method:       core.MethodMap[r.Method],
+			// 	ResponseTime: elapsed,
+			// 	Status:       r.Response.StatusCode,
+			// 	Framework:    7,
+			// }
 
-			fmt.Println(data)
+			// fmt.Println(data)
 
-			go core.LogRequest(data)
+			// go core.LogRequest(data)
 		})
 	}
 }
