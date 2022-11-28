@@ -1,4 +1,4 @@
-module gotest
+module ginExample
 
 go 1.19
 
