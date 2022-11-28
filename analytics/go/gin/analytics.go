@@ -1,4 +1,4 @@
-package ginAnalytics
+package analytics
 
 import (
 	"time"
