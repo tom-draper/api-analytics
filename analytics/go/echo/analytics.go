@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/labstack/echo/v4"
-	"github.com/tom-draper/api-analytics/analytics/go/core"
+	echo "github.com/labstack/echo/v4"
+	core "github.com/tom-draper/api-analytics/analytics/go/core"
 )
 
-func GinAnalytics(APIKey string) echo.MiddlewareFunc {
+func Analytics(APIKey string) echo.MiddlewareFunc {
 	return func(c echo.Context) {
 		start := time.Now()
 		c.Next()

@@ -7,7 +7,7 @@ import (
 	"github.com/tom-draper/api-analytics/analytics/go/core"
 )
 
-func GinAnalytics(APIKey string) gin.HandlerFunc {
+func Analytics(APIKey string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		c.Next()

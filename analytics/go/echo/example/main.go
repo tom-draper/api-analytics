@@ -1,10 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
-	"github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v4"
 	analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
 
 	"github.com/joho/godotenv"
@@ -27,6 +28,7 @@ func root(c echo.Context) {
 
 func main() {
 	apiKey := getAPIKey()
+	fmt.Println(apiKey)
 
 	e := echo.New()
 
