@@ -1,2 +1,6 @@
+github.com/ajg/form v1.5.1 h1:t9c7v8JUKu/XxOGBU0yjNpaMloxGEJhUkqFRq0ibGeU=
+github.com/ajg/form v1.5.1/go.mod h1:uL1WgH+h2mgNtvBq0339dVnzXdBETtL2LeUXaIv25UY=
+github.com/go-chi/render v1.0.2 h1:4ER/udB0+fMWB2Jlf15RV3F4A2FDuYi/9f+lFttR/Lg=
+github.com/go-chi/render v1.0.2/go.mod h1:/gr3hVkmYR0YlEy3LxCuVRFzEu9Ruok+gFqbIofjao0=
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20221128162931-53e570b914f1 h1:g7+oEFkCMXuNImqQnaDDAhm9V/k99pvAp8ts34lieHs=
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20221128162931-53e570b914f1/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=
