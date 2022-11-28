@@ -1,11 +1,10 @@
 package analytics
 
 import (
-	"fmt"
 	"time"
 
 	echo "github.com/labstack/echo/v4"
-	core "github.com/tom-draper/api-analytics/analytics/go/core"
+	"github.com/tom-draper/api-analytics/analytics/go/core"
 )
 
 func Analytics(APIKey string) echo.MiddlewareFunc {
@@ -25,8 +24,6 @@ func Analytics(APIKey string) echo.MiddlewareFunc {
 				Status:       c.Response().Status,
 				Framework:    3,
 			}
-
-			fmt.Println(data)
 
 			go core.LogRequest(data)
 			return err

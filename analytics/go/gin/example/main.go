@@ -29,9 +29,7 @@ func main() {
 	apiKey := getAPIKey()
 
 	router := gin.Default()
-
 	router.Use(analytics.Analytics(apiKey))
-
 	router.GET("/", root)
 	router.Run("localhost:8080")
 }
