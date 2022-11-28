@@ -1,9 +1,11 @@
-module github.com/tom-draper/api-analytics/analytics/go/gin 
+module github.com/tom-draper/api-analytics/analytics/go/gin
 
 go 1.19
 
-
-require github.com/gin-gonic/gin v1.8.1
+require (
+	github.com/gin-gonic/gin v1.8.1
+	github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20221128193235-141034cce438
+)
 
 require (
 	github.com/gin-contrib/sse v0.1.0 // indirect

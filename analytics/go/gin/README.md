@@ -1,4 +1,4 @@
-# API Analytics
+# Gin Analytics
 
 A lightweight API analytics solution, complete with a dashboard.
 

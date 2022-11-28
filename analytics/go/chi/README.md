@@ -1,4 +1,4 @@
-# API Analytics
+# Chi Analytics
 
 A lightweight API analytics solution, complete with a dashboard.
 
@@ -13,28 +13,32 @@ Head to https://my-api-analytics.vercel.app/generate to generate your unique API
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there should be virtually no impact on your APIs performance.
 
 ```bash
-go get -u github.com/tom-draper/api-analytics/analytics/go/gin
+go get -u github.com/tom-draper/api-analytics/analytics/go/chi
 ```
 
 ```go
 package main
 
 import (
-	analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
 	"net/http"
+	"os"
 
-	"github.com/gin-gonic/gin"
+	analytics "github.com/tom-draper/api-analytics/analytics/go/chi"
+
+	chi "github.com/go-chi/chi/v5"
 )
 
-func root(c *gin.Context) {
+func root(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	jsonData := []byte(`{"message": "Hello World!"}`)
-	c.Data(http.StatusOK, "application/json", jsonData)
+	w.Write(jsonData)
 }
 
 func main() {
-	router := gin.Default()
-	
-	router.Use(analytics.Analytics(<api_key>))
+	router := chi.NewRouter()
+
+	router.Use(analytics.Analytics(apiKey))
 
 	router.GET("/", root)
 	router.Run("localhost:8080")

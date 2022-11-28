@@ -1,4 +1,4 @@
-# API Analytics
+# Node API Analytics
 
 A lightweight API analytics solution, complete with a dashboard.
 

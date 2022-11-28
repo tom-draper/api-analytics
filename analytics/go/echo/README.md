@@ -1,4 +1,4 @@
-# API Analytics
+# Echo Analytics
 
 A lightweight API analytics solution, complete with a dashboard.
 
