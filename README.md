@@ -4,6 +4,7 @@ A lightweight API analytics solution, complete with a dashboard.
 
 Currently available for:
  - Python: <b>Flask</b> and <b>FastAPI</b>
+ - Node.js: <b>Express</b> and <b>Fastify</b>
  - Go: <b>Gin</b>
 
 ## Getting Started
@@ -50,6 +51,81 @@ add_middleware(app, <api_key>)
 @app.get("/")
 def root():
     return {"message": "Hello World!"}
+```
+
+#### Express
+
+```bash
+npm i node-api-analytics
+```
+
+```js
+import express from 'express';
+import { expressAnalytics } from 'node-api-analytics';
+
+const app = express()
+
+app.use(analytics(<api_key>))
+
+app.get("/", (req, res) => {
+    res.send({message: "Hello World"});
+});
+
+app.listen(8080, () => {
+    console.log('Server listening at http://localhost:8080');
+})
+```
+
+#### Fastify
+
+```bash
+npm i node-api-analytics
+```
+
+```js
+import Fastify from 'fastify';
+import { fastifyAnalytics } from 'node-api-analytics;
+
+const fastify = Fastify({
+  logger: true,
+})
+
+fastify.addHook('onRequest', fastifyAnalytics(<api_key>));
+
+fastify.get('/', function (request, reply) {
+  reply.send({ message: 'Hello World!' });
+})
+
+fastify.listen({ port: 8080 }, function (err, address) {
+  console.log('Server listening at http://localhost:8080')
+  if (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
+})
+```
+
+#### Koa
+
+```bash
+npm i node-api-analytics
+```
+
+```js
+import Koa from "koa";
+import { koaAnalytics } from "node-api-analytics";
+
+const app = new Koa();
+
+app.use(koaAnalytics(<api_key>));
+
+app.use((ctx) => {
+  ctx.body = { message: "Hello World!" };
+});
+
+app.listen(8080, () =>
+  console.log('Server listening at https://localhost:8080')
+);
 ```
 
 #### Gin

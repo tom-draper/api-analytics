@@ -40,7 +40,7 @@ func logRequest(data data) {
 	http.Post("https://api-analytics-server.vercel.app/api/log-request", "application/json", bytes.NewBuffer(reqBody))
 }
 
-func Analytics(APIKey string) gin.HandlerFunc {
+func GinAnalytics(APIKey string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		c.Next()
