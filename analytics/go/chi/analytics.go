@@ -1,6 +1,7 @@
 package analytics
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -26,7 +27,7 @@ func Analytics(APIKey string) func(next http.Handler) http.Handler {
 				Framework:    7,
 			}
 
-			fmt.PrinlN(data)
+			fmt.Println(data)
 
 			go core.LogRequest(data)
 		})
