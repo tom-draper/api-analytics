@@ -78,7 +78,7 @@ export function koaAnalytics(apiKey) {
       status: ctx.status,
       method: methodMap[ctx.method],
       response_time: elapsed,
-      framework: 5,
+      framework: 6,
     };
 
     logRequest(data);

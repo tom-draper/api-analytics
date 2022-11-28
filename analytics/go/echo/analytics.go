@@ -23,7 +23,7 @@ func Analytics(APIKey string) echo.MiddlewareFunc {
 				Method:       core.MethodMap[c.Request().Method],
 				ResponseTime: elapsed,
 				Status:       c.Response().Status,
-				Framework:    2,
+				Framework:    3,
 			}
 
 			fmt.Println(data)
