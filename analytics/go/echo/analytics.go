@@ -1,6 +1,7 @@
 package echoAnalytics
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -8,7 +9,7 @@ import (
 )
 
 func GinAnalytics(APIKey string) echo.MiddlewareFunc {
-	return func(c *echo.Context) {
+	return func(c echo.Context) {
 		start := time.Now()
 		c.Next()
 		elapsed := time.Since(start).Milliseconds()
@@ -23,6 +24,8 @@ func GinAnalytics(APIKey string) echo.MiddlewareFunc {
 			Status:       c.Writer.Status(),
 			Framework:    2,
 		}
+
+		fmt.Println(data)
 
 		go core.LogRequest(data)
 	}
