@@ -8,7 +8,7 @@
   import PastMonth from "../components/PastMonth.svelte";
   import Browser from "../components/Browser.svelte";
   import OperatingSystem from "../components/OperatingSystem.svelte";
-  import Device from "../components/Device.svelte";
+  import Version from "../components/Version.svelte";
 
   function formatUUID(userID: string): string {
     return `${userID.slice(0, 8)}-${userID.slice(8, 12)}-${userID.slice(
@@ -58,7 +58,7 @@
         <div class="row">
           <OperatingSystem {data} />
           <Browser {data} />
-          <!-- <Device {data} /> -->
+          <Version {data} />
         </div>
       </div>
     </div>
