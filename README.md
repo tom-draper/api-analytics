@@ -2,9 +2,9 @@
 
 A lightweight API analytics solution, complete with a dashboard.
 
-Currently available for:
+Currently compatible with:
  - Python: <b>Flask</b> and <b>FastAPI</b>
- - Node.js: <b>Express</b> and <b>Fastify</b>
+ - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
  - Go: <b>Gin</b>
 
 ## Getting Started
