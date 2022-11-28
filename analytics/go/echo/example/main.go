@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 
@@ -28,15 +27,12 @@ func root(c echo.Context) {
 
 func main() {
 	apiKey := getAPIKey()
-	fmt.Println(apiKey)
 
 	e := echo.New()
 
 	e.Use(analytics.Analytics(apiKey))
 
-	// Routes
 	e.GET("/", root)
 
-	// Start server
-	e.Logger.Fatal(e.Start(":1323"))
+	e.Logger.Fatal(e.Start(":8080"))
 }

@@ -5,7 +5,7 @@ A lightweight API analytics solution, complete with a dashboard.
 Currently compatible with:
  - Python: <b>Flask</b> and <b>FastAPI</b>
  - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
- - Go: <b>Gin</b>
+ - Go: <b>Gin</b> and <b>Echo</b>
 
 ## Getting Started
 
@@ -30,9 +30,9 @@ from api_analytics.fastapi import Analytics
 app = FastAPI()
 app.add_middleware(Analytics, api_key=<api_key>)
 
-@app.get("/")
+@app.get('/')
 async def root():
-    return {"message": "Hello World!"}
+    return {'message': 'Hello World!'}
 ```
 
 #### Flask
@@ -48,9 +48,9 @@ from api_analytics.flask import add_middleware
 app = Flask(__name__)
 add_middleware(app, <api_key>)
 
-@app.get("/")
+@app.get('/')
 def root():
-    return {"message": "Hello World!"}
+    return {'message': 'Hello World!'}
 ```
 
 #### Express
@@ -67,8 +67,8 @@ const app = express()
 
 app.use(analytics(<api_key>))
 
-app.get("/", (req, res) => {
-    res.send({message: "Hello World"});
+app.get('/', (req, res) => {
+    res.send({ message: 'Hello World' });
 });
 
 app.listen(8080, () => {
@@ -113,14 +113,14 @@ npm i node-api-analytics
 
 ```js
 import Koa from "koa";
-import { koaAnalytics } from "node-api-analytics";
+import { koaAnalytics } from 'node-api-analytics';
 
 const app = new Koa();
 
 app.use(koaAnalytics(<api_key>));
 
 app.use((ctx) => {
-  ctx.body = { message: "Hello World!" };
+  ctx.body = { message: 'Hello World!' };
 });
 
 app.listen(8080, () =>
@@ -131,14 +131,14 @@ app.listen(8080, () =>
 #### Gin
 
 ```bash
-go get -u github.com/tom-draper/api-analytics/analytics/go
+go get -u github.com/tom-draper/api-analytics/analytics/go/gin
 ```
 
 ```go
 package main
 
 import (
-	analytics "github.com/tom-draper/api-analytics/analytics/go"
+	analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -156,6 +156,38 @@ func main() {
 
 	router.GET("/", root)
 	router.Run("localhost:8080")
+}
+```
+
+#### Echo
+
+```bash
+go get -u github.com/tom-draper/api-analytics/analytics/go/echo
+```
+
+```go
+package main
+
+import (
+	"net/http"
+	"os"
+
+	"github.com/labstack/echo/v4"
+	analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
+)
+
+func root(c echo.Context) {
+	jsonData := []byte(`{"message": "Hello World!"}`)
+	c.Data(http.StatusOK, "application/json", jsonData)
+}
+
+func main() {
+	router := echo.New()
+
+	router.Use(analytics.Analytics(<api_key>))
+
+	router.GET("/", root)
+	router.Logger.Fatal(router.Start("localhost:8080"))
 }
 ```
 

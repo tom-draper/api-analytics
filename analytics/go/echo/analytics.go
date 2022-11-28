@@ -9,24 +9,27 @@ import (
 )
 
 func Analytics(APIKey string) echo.MiddlewareFunc {
-	return func(c echo.Context) {
-		start := time.Now()
-		c.Next()
-		elapsed := time.Since(start).Milliseconds()
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			start := time.Now()
+			err := next(c)
+			elapsed := time.Since(start).Milliseconds()
 
-		data := core.Data{
-			APIKey:       APIKey,
-			Hostname:     c.Request.Host,
-			Path:         c.Request.URL.Path,
-			UserAgent:    c.Request.UserAgent(),
-			Method:       core.MethodMap[c.Request.Method],
-			ResponseTime: elapsed,
-			Status:       c.Writer.Status(),
-			Framework:    2,
+			data := core.Data{
+				APIKey:       APIKey,
+				Hostname:     c.Request().Host,
+				Path:         c.Request().URL.Path,
+				UserAgent:    c.Request().UserAgent(),
+				Method:       core.MethodMap[c.Request().Method],
+				ResponseTime: elapsed,
+				Status:       c.Response().Status,
+				Framework:    2,
+			}
+
+			fmt.Println(data)
+
+			go core.LogRequest(data)
+			return err
 		}
-
-		fmt.Println(data)
-
-		go core.LogRequest(data)
 	}
 }
