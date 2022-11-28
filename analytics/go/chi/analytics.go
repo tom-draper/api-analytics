@@ -14,8 +14,10 @@ func Analytics(APIKey string) func(next http.Handler) http.Handler {
 			ctx := r.Context()
 			fmt.Println(ctx)
 			start := time.Now()
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(w, r.WithContext(ctx))
 			elapsed := time.Since(start).Milliseconds()
+
+			fmt.Println(elapsed)
 
 			data := core.Data{
 				APIKey:       APIKey,
