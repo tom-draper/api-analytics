@@ -1,4 +1,4 @@
-module echoAnalytics
+module github.com/tom-draper/api-analytics/analytics/go/echo
 
 go 1.19
 
