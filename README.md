@@ -217,7 +217,7 @@ func root(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := chi.NewRouter()
 
-	router.Use(analytics.Analytics(apiKey))
+	router.Use(analytics.Analytics(<api_key>))
 
 	router.GET("/", root)
 	router.Run("localhost:8080")

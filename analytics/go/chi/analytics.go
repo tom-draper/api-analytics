@@ -7,6 +7,7 @@ import (
 	core "github.com/tom-draper/api-analytics/analytics/go/core"
 )
 
+// Wrapper to store status code
 type responseWriter struct {
 	http.ResponseWriter
 	status      int
@@ -37,7 +38,7 @@ func Analytics(APIKey string) func(next http.Handler) http.Handler {
 			}()
 
 			ctx := r.Context()
-			rw := createResponseWriter(w)
+			rw := createResponseWriter(w) // Wrap to store status code
 
 			start := time.Now()
 			next.ServeHTTP(rw, r.WithContext(ctx))
