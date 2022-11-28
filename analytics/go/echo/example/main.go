@@ -28,11 +28,11 @@ func root(c echo.Context) {
 func main() {
 	apiKey := getAPIKey()
 
-	e := echo.New()
+	router := echo.New()
 
-	e.Use(analytics.Analytics(apiKey))
+	router.Use(analytics.Analytics(apiKey))
 
-	e.GET("/", root)
+	router.GET("/", root)
 
-	e.Logger.Fatal(e.Start(":8080"))
+	router.Logger.Fatal(router.Start(":8080"))
 }
