@@ -1,8 +1,9 @@
-use actix_web::http::header::{HeaderValue, USER_AGENT};
+use actix_web::http::header::{HeaderValue, USER_AGENT, HOST};
 use actix_web::{
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
     Error,
 };
+use std::thread::spawn;
 use futures::future::LocalBoxFuture;
 use serde::{Deserialize, Serialize};
 use std::future::{ready, Ready};
@@ -67,7 +68,7 @@ impl Data {
             "CONNECT" => return 6,
             "HEAD" => return 7,
             "TRACE" => return 8,
-            &_ => todo!(),
+            _ => panic!("invalid method"),
         }
     }
 
@@ -104,7 +105,7 @@ impl HeaderValueExt for HeaderValue {
 }
 
 fn log_request(data: Data) {
-    reqwest::Client::new()
+    let _ = reqwest::Client::new()
         .post("https://api-analytics.vercel.app/log-request")
         .json(&data)
         .send();
@@ -124,14 +125,14 @@ where
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
         let api_key = self.api_key.clone();
-        let hostname = "".to_string();
+        let hostname = req.headers().get(HOST).map(|x| x.to_string()).unwrap();
         let path = req.path().to_string();
+        let method = req.method().to_string();
         let user_agent: String = req
             .headers()
             .get(USER_AGENT)
             .map(|x| x.to_string())
             .unwrap();
-        let method = req.method().to_string();
 
         let now = Instant::now();
         let fut = self.service.call(req);
@@ -139,7 +140,6 @@ where
         Box::pin(async move {
             let res = fut.await?;
             let elapsed = now.elapsed().as_millis();
-            let status = res.status().as_u16();
 
             let data = Data::new(
                 api_key,
@@ -148,9 +148,10 @@ where
                 user_agent,
                 method,
                 elapsed.try_into().unwrap(),
-                status,
+                res.status().as_u16(),
             );
-            log_request(data);
+
+            spawn(|| log_request(data));
             Ok(res)
         })
     }
