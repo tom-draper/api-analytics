@@ -14,8 +14,8 @@ pub struct Analytics {
 }
 
 impl Analytics {
-    pub fn new(api_key: &str) -> Self {
-        Self { api_key: api_key.to_owned() }
+    pub fn new(api_key: String) -> Self {
+        Self { api_key }
     }
 }
 
