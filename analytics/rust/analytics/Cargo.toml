@@ -4,7 +4,7 @@ version = "1.0.0"
 edition = "2021"
 description= "Monitoring and analytics for Actix web applications."
 license = "MIT"
-keywords = ["api", "analytics", "actix" , "monitoring", "dashboard", "middleware"]
+keywords = ["api", "analytics", "actix" , "dashboard", "middleware"]
 categories = ["api-analytics", "middleware", "server-analytics"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
