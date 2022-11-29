@@ -3,7 +3,7 @@ package analytics
 import (
 	"time"
 
-	echo "github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4"
 	"github.com/tom-draper/api-analytics/analytics/go/core"
 )
 

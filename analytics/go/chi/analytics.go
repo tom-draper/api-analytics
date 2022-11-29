@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	core "github.com/tom-draper/api-analytics/analytics/go/core"
+	"github.com/tom-draper/api-analytics/analytics/go/core"
 )
 
 // http.ResponseWriter wrapper to store status code
