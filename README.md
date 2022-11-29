@@ -279,10 +279,16 @@ func main() {
 
 #### Actix
 
+In `Cargo.toml`:
+
+```toml
+actix-analytics = "1.0.3"
+```
+
 ```rust
 use actix_web::{get, web, Responder, Result};
 use serde::Serialize;
-use api_analytics::Analytics
+use actix_analytics::Analytics;
 
 #[derive(Serialize)]
 struct JsonData {
