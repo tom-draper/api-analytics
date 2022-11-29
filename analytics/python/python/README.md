@@ -18,7 +18,9 @@ python -m pip install api-analytics
 
 #### Django
 
-Set you API key as an environment variable. In `settings.py`:
+Set you API key as an environment variable.
+
+In `settings.py`:
 
 ```py
 from os import getenv
