@@ -277,6 +277,41 @@ func main() {
 }
 ```
 
+#### Actix
+
+```rust
+use actix_web::{get, web, Responder, Result};
+use serde::Serialize;
+use api_analytics::Analytics
+
+#[derive(Serialize)]
+struct JsonData {
+    message: String,
+}
+
+#[get("/")]
+async fn index() -> Result<impl Responder> {
+    let json_data = JsonData {
+        message: "Hello World!".to_string(),
+    };
+    Ok(web::Json(json_data))
+}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    use actix_web::{App, HttpServer};
+
+    HttpServer::new(|| {
+        App::new()
+            .wrap(Analytics::new(<api_key>))
+            .service(index)
+    })
+    .bind(("127.0.0.1", 8080))?
+    .run()
+    .await
+}
+```
+
 ### 3. View your analytics
 
 Your API will log and store request data on all valid routes. Head over to https://my-api-analytics.vercel.app/dashboard and paste in your API key to view your dashboard.

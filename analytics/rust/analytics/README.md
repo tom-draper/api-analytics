@@ -15,7 +15,7 @@ Add our lightweight middleware to your API. Almost all processing is handled by 
 ```rust
 use actix_web::{get, web, Responder, Result};
 use serde::Serialize;
-mod analytics;
+use api_analytics::Analytics
 
 #[derive(Serialize)]
 struct JsonData {
@@ -36,7 +36,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(|| {
         App::new()
-            .wrap(analytics::Analytics::new("hello".to_string()))
+            .wrap(Analytics::new(<api_key>))
             .service(index)
     })
     .bind(("127.0.0.1", 8080))?

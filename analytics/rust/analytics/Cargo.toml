@@ -1,8 +1,21 @@
 [package]
-name = "analytics"
+name = "actix-analytics"
 version = "0.1.0"
 edition = "2021"
+description= "Monitoring and analytics for Actix web applications."
+license = "MIT"
+keywords = ["postgres", "database", "wrapper" , "postgres-library"]
+categories = ["database-utilities", "database-wrapper"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+path = "src/analytics.rs"    # The source file of the target.
+crate-type = ["lib"]   # The crate types to generate.
+
+
 [dependencies]
+actix-web = "4"
+futures = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+reqwest = { version = "0.10", features = ["json"] }
