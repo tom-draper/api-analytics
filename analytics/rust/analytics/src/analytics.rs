@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use std::future::{ready, Ready};
 use std::time::Instant;
 
+
 pub struct Analytics {
     api_key: String,
 }
@@ -105,8 +106,8 @@ impl HeaderValueExt for HeaderValue {
 }
 
 fn log_request(data: Data) {
-    let _ = reqwest::Client::new()
-        .post("https://api-analytics.vercel.app/log-request")
+    let _ = reqwest::blocking::Client::new()
+        .post("https://api-analytics-server.vercel.app/api/log-request")
         .json(&data)
         .send();
 }
@@ -152,4 +153,5 @@ where
         })
     }
 }
+
 
