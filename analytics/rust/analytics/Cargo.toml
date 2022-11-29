@@ -1,6 +1,6 @@
 [package]
 name = "actix-analytics"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 description= "Monitoring and analytics for Actix web applications."
 license = "MIT"
