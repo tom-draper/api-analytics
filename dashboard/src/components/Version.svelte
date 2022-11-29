@@ -5,7 +5,6 @@
     let v: Set<string> = new Set();
     for (let i = 0; i < data.length; i++) {
       let match = data[i].path.match(/[^a-z0-9](v\d)[^a-z0-9]/i);
-      console.log(match);
       if (match) {
         v.add(match[1]);
       }
@@ -61,15 +60,14 @@
       count.push(versionCount[version]);
     }
 
-    console.log(versions, count);
     return [
       {
         values: count,
         labels: versions,
         type: "pie",
-        // marker: {
-        //   colors: colors,
-        // },
+        marker: {
+          colors: colors,
+        },
       },
     ];
   }
@@ -106,7 +104,7 @@
     }
   });
 
-  export let data: any;
+  export let data: RequestsData;
 </script>
 
 {#if versions != undefined && versions.size > 1}

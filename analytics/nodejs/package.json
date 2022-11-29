@@ -1,16 +1,16 @@
 {
-  "name": "analytics",
-  "version": "1.0.0",
-  "description": "Monitoring and analytics for APIs.",
+  "name": "node-api-analytics",
+  "version": "1.0.5",
+  "description": "Monitoring and analytics for node API applications.",
   "main": "analytics.js",
+  "type": "module",
   "directories": {
     "test": "tests"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "node": "^19.1.0"
+    "node": "^19.1.0",
+    "node-fetch": "^3.3.0"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

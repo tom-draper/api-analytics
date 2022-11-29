@@ -17,7 +17,7 @@ class Analytics(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         start = time()
-        response: Response = await call_next(request)
+        response = await call_next(request)
         elapsed = time() - start
         
         json = {
@@ -26,9 +26,9 @@ class Analytics(BaseHTTPMiddleware):
             'path': request.url.path,
             'user_agent': request.headers['user-agent'],
             'method': request.method,
-            'status': int(response.status_code),
+            'status': response.status_code,
             'response_time': int(elapsed * 1000),
-            'framework': 'FastAPI'
+            'framework': 0
         }
         threading.Thread(target=log_request, args=(json,)).start()
         return response

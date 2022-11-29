@@ -90,12 +90,12 @@
     );
   }
 
-  let plotDiv;
+  let plotDiv: HTMLDivElement;
   onMount(() => {
     genPlot();
   });
 
-  export let data: any;
+  export let data: RequestsData;
 </script>
 
 <div class="card" title="Last week">

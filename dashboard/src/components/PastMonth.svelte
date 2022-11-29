@@ -239,7 +239,7 @@
     build();
   });
 
-  export let data: any;
+  export let data: RequestsData;
 </script>
 
 <div class="card">

@@ -22,7 +22,7 @@ async function logRequest(data) {
   });
 }
 
-export default function analytics(apiKey) {
+export function expressAnalytics(apiKey) {
   return (req, res, next) => {
     let start = performance.now();
     next();
@@ -37,6 +37,48 @@ export default function analytics(apiKey) {
       method: methodMap[req.method],
       response_time: elapsed,
       framework: 4,
+    };
+
+    logRequest(data);
+  };
+}
+
+export function fastifyAnalytics(apiKey) {
+  return (req, reply, done) => {
+    let start = performance.now();
+    done();
+    let elapsed = Math.round((performance.now() - start) / 1000);
+
+    let data = {
+      api_key: apiKey,
+      hostname: req.headers.host,
+      user_agent: req.headers["user-agent"],
+      path: req.url,
+      status: reply.statusCode,
+      method: methodMap[req.method],
+      response_time: elapsed,
+      framework: 5,
+    };
+
+    logRequest(data);
+  };
+}
+
+export function koaAnalytics(apiKey) {
+  return async (ctx, next) => {
+    let start = performance.now();
+    await next();
+    let elapsed = Math.round((performance.now() - start) / 1000);
+
+    let data = {
+      api_key: apiKey,
+      hostname: ctx.headers.host,
+      user_agent: ctx.headers["user-agent"],
+      path: ctx.url,
+      status: ctx.status,
+      method: methodMap[ctx.method],
+      response_time: elapsed,
+      framework: 6,
     };
 
     logRequest(data);
