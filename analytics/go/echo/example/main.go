@@ -33,6 +33,5 @@ func main() {
 	router.Use(analytics.Analytics(apiKey))
 
 	router.GET("/", root)
-
-	router.Logger.Fatal(router.Start(":8080"))
+	router.Start(":8080")
 }

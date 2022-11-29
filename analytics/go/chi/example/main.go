@@ -35,5 +35,5 @@ func main() {
 	router.Use(analytics.Analytics(apiKey))
 
 	router.Get("/", root)
-	http.ListenAndServe(":3000", router)
+	http.ListenAndServe(":8080", router)
 }

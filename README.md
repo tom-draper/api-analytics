@@ -5,7 +5,7 @@ A lightweight API analytics solution, complete with a dashboard.
 Currently compatible with:
  - Python: <b>Flask</b> and <b>FastAPI</b>
  - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
- - Go: <b>Gin</b>, <b>Echo</b> and <b>Chi</b>
+ - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
 
 ## Getting Started
 
@@ -185,7 +185,39 @@ func main() {
 	router.Use(analytics.Analytics(<api_key>))
 
 	router.GET("/", root)
-	router.Logger.Fatal(router.Start("localhost:8080"))
+	router.Start("localhost:8080")
+}
+```
+
+#### Fiber
+
+```bash
+go get -u github.com/tom-draper/api-analytics/analytics/go/fiber
+```
+
+```go
+package main
+
+import (
+	"os"
+
+	analytics "github.com/tom-draper/api-analytics/analytics/go/fiber"
+
+	"github.com/gofiber/fiber/v2"
+)
+
+func root(c *fiber.Ctx) error {
+	jsonData := []byte(`{"message": "Hello World!"}`)
+	return c.SendString(string(jsonData))
+}
+
+func main() {
+	app := fiber.New()
+
+	app.Use(analytics.Analytics(<api_key>))
+
+	app.Get("/", root)
+	app.Listen(":8080")
 }
 ```
 

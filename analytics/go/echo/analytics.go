@@ -7,7 +7,7 @@ import (
 	"github.com/tom-draper/api-analytics/analytics/go/core"
 )
 
-func Analytics(APIKey string) echo.MiddlewareFunc {
+func Analytics(apiKey string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			start := time.Now()
@@ -15,7 +15,7 @@ func Analytics(APIKey string) echo.MiddlewareFunc {
 			elapsed := time.Since(start).Milliseconds()
 
 			data := core.Data{
-				APIKey:       APIKey,
+				APIKey:       apiKey,
 				Hostname:     c.Request().Host,
 				Path:         c.Request().URL.Path,
 				UserAgent:    c.Request().UserAgent(),

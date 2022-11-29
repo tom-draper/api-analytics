@@ -7,7 +7,7 @@ import (
 	core "github.com/tom-draper/api-analytics/analytics/go/core"
 )
 
-// Wrapper to store status code
+// http.ResponseWriter wrapper to store status code
 type responseWriter struct {
 	http.ResponseWriter
 	status      int
@@ -28,7 +28,7 @@ func (rw *responseWriter) WriteHeader(code int) {
 	rw.wroteHeader = true
 }
 
-func Analytics(APIKey string) func(next http.Handler) http.Handler {
+func Analytics(apiKey string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			defer func() {
@@ -45,7 +45,7 @@ func Analytics(APIKey string) func(next http.Handler) http.Handler {
 			elapsed := time.Since(start).Milliseconds()
 
 			data := core.Data{
-				APIKey:       APIKey,
+				APIKey:       apiKey,
 				Hostname:     r.Host,
 				Path:         r.URL.Path,
 				UserAgent:    r.UserAgent(),
