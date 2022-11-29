@@ -34,7 +34,7 @@
     }
   }
 
-  let data: any;
+  let data: RequestsData;
   let failed = false;
   onMount(() => {
     fetchData();

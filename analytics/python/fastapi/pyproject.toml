@@ -14,12 +14,12 @@ classifiers = [
 ]
 dependencies = ["fastapi", "requests"]
 description = "Monitoring and analytics for FastAPI applications."
-keywords = ["analytics", "api", "dashboard"]
+keywords = ["analytics", "api", "dashboard", "fastapi", "middleware"]
 license = {file = "LICENSE"}
 name = "fastapi-analytics"
 readme = "README.md"
 requires-python = ">=3.7"
-version = "1.0.5"
+version = "1.0.8"
 
 [project.optional-dependencies]
 build = ["build", "twine"]

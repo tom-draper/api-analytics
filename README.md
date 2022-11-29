@@ -3,7 +3,7 @@
 A lightweight API analytics solution, complete with a dashboard.
 
 Currently compatible with:
- - Python: <b>Flask</b> and <b>FastAPI</b>
+ - Python: <b>Django</b>, <b>Flask</b> and <b>FastAPI</b>
  - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
  - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
 
@@ -16,6 +16,25 @@ Head to https://my-api-analytics.vercel.app/generate to generate your unique API
 ### 2. Add middleware to your API
 
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on your APIs performance.
+
+#### Django
+
+```bash
+python -m pip install api-analytics
+```
+
+Set you API key as an environment variable. In `settings.py`:
+
+```py
+from os import getenv
+
+ANALYTICS_API_KEY = getenv("API_KEY")
+
+MIDDLEWARE = [
+    'api_analytics.django.Analytics',
+    ...
+]
+```
 
 #### FastAPI
 

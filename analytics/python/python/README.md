@@ -12,11 +12,26 @@ Head to https://my-api-analytics.vercel.app/generate to generate your unique API
 
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there should be virtually no impact on your APIs performance.
 
-#### FastAPI
-
 ```bash
 python -m pip install api-analytics
 ```
+
+#### Django
+
+Set you API key as an environment variable. In `settings.py`:
+
+```py
+from os import getenv
+
+ANALYTICS_API_KEY = getenv("API_KEY")
+
+MIDDLEWARE = [
+    'api_analytics.django.Analytics',
+    ...
+]
+```
+
+#### FastAPI
 
 ```py
 from fastapi import FastAPI
@@ -31,10 +46,6 @@ async def root():
 ```
 
 #### Flask
-
-```bash
-python -m pip install api-analytics
-```
 
 ```py
 from flask import Flask

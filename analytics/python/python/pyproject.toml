@@ -12,14 +12,14 @@ classifiers = [
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
 ]
-dependencies = ["fastapi", "Flask", "requests"]
+dependencies = ["Django", "fastapi", "Flask", "requests"]
 description = "Monitoring and analytics for Python API frameworks."
-keywords = ["analytics", "api", "dashboard"]
+keywords = ["analytics", "api", "dashboard", "django", "fastapi", "flask", "middleware"]
 license = {file = "LICENSE"}
 name = "api-analytics"
 readme = "README.md"
 requires-python = ">=3.7"
-version = "1.0.5"
+version = "1.0.8"
 
 [project.optional-dependencies]
 build = ["build", "twine"]
