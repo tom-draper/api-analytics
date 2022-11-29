@@ -128,11 +128,7 @@ where
         let hostname = req.headers().get(HOST).map(|x| x.to_string()).unwrap();
         let path = req.path().to_string();
         let method = req.method().to_string();
-        let user_agent: String = req
-            .headers()
-            .get(USER_AGENT)
-            .map(|x| x.to_string())
-            .unwrap();
+        let user_agent = req.headers().get(USER_AGENT).map(|x| x.to_string()).unwrap();
 
         let now = Instant::now();
         let fut = self.service.call(req);
