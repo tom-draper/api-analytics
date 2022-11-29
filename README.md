@@ -20,7 +20,7 @@ Add our lightweight middleware to your API. Almost all processing is handled by 
 #### Django
 
 ```bash
-python -m pip install api-analytics
+pip install api-analytics
 ```
 
 Set you API key as an environment variable.

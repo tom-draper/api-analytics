@@ -13,7 +13,7 @@ Head to https://my-api-analytics.vercel.app/generate to generate your unique API
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there should be virtually no impact on your APIs performance.
 
 ```bash
-python -m pip install api-analytics
+pip install api-analytics
 ```
 
 #### Django
