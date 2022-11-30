@@ -1,4 +1,4 @@
-# Actum Analytics
+# Axum Analytics
 
 A lightweight API analytics solution, complete with a dashboard.
 
@@ -13,7 +13,7 @@ Head to https://my-api-analytics.vercel.app/generate to generate your unique API
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there should be virtually no impact on your APIs performance.
 
 ```bash
-cargo add actum-analytics
+cargo add axum-analytics
 ```
 
 ```rust
