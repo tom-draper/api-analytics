@@ -7,7 +7,7 @@ setup(
     version="1.0.9",
     author="Tom Draper",
     author_email="tomjdraper1@gmail.com",
-    license="MIT",
+    license="GPL-3.0-or-later",
     description="Monitoring and analytics for FastAPI applications.",
     long_description=long_description,
     long_description_content_type="text/markdown",
