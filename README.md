@@ -279,10 +279,8 @@ func main() {
 
 #### Actix
 
-In `Cargo.toml`:
-
-```toml
-actix-analytics = "1.0.3"
+```bash
+cargo add actix-analytics
 ```
 
 ```rust

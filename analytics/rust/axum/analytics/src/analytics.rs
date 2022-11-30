@@ -1,51 +1,18 @@
-use actix_web::http::header::{HeaderValue, USER_AGENT, HOST};
-use actix_web::{
-    dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
-    Error,
+use axum::{
+    response::Response,
+    body::Body,
+    http::Request,
 };
+use http::header::{HOST, USER_AGENT, HeaderValue};
+use futures::future::BoxFuture;
+use tower::{Service, Layer};
+use std::task::{Context, Poll};
 use std::thread::spawn;
-use futures::future::LocalBoxFuture;
-use serde::{Deserialize, Serialize};
-use std::future::{ready, Ready};
 use std::time::Instant;
+use serde::Serialize;
 
 
-pub struct Analytics {
-    api_key: String,
-}
-
-impl Analytics {
-    pub fn new(api_key: String) -> Self {
-        Self { api_key }
-    }
-}
-
-impl<S, B> Transform<S, ServiceRequest> for Analytics
-where
-    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
-    S::Future: 'static,
-    B: 'static,
-{
-    type Response = ServiceResponse<B>;
-    type Error = Error;
-    type InitError = ();
-    type Transform = AnalyticsMiddleware<S>;
-    type Future = Ready<Result<Self::Transform, Self::InitError>>;
-
-    fn new_transform(&self, service: S) -> Self::Future {
-        ready(Ok(AnalyticsMiddleware {
-            api_key: self.api_key.clone(),
-            service,
-        }))
-    }
-}
-
-pub struct AnalyticsMiddleware<S> {
-    api_key: String,
-    service: S,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 struct Data {
     api_key: String,
     hostname: String,
@@ -90,9 +57,34 @@ impl Data {
             method: Data::method_map(&method),
             response_time,
             status,
-            framework: 9,
+            framework: 10,
         }
     }
+}
+
+#[derive(Clone)]
+pub struct Analytics {
+    api_key: String,
+}
+
+impl Analytics {
+    pub fn new(api_key: String) -> Self {
+        Self { api_key }
+    }
+}
+
+impl<S> Layer<S> for Analytics {
+    type Service = AnalyticsMiddleware<S>;
+
+    fn layer(&self, inner: S) -> Self::Service {
+        AnalyticsMiddleware { api_key: self.api_key.clone(), inner }
+    }
+}
+
+#[derive(Clone)]
+pub struct AnalyticsMiddleware<S> {
+    api_key: String,
+    inner: S,
 }
 
 pub trait HeaderValueExt {
@@ -112,30 +104,32 @@ fn log_request(data: Data) {
         .send();
 }
 
-impl<S, B> Service<ServiceRequest> for AnalyticsMiddleware<S>
+
+impl<S> Service<Request<Body>> for AnalyticsMiddleware<S>
 where
-    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
-    S::Future: 'static,
-    B: 'static,
+    S: Service<Request<Body>, Response = Response> + Send + 'static,
+    S::Future: Send + 'static,
 {
-    type Response = ServiceResponse<B>;
-    type Error = Error;
-    type Future = LocalBoxFuture<'static, Result<Self::Response, Self::Error>>;
+    type Response = S::Response;
+    type Error = S::Error;
+    type Future = BoxFuture<'static, Result<Self::Response, Self::Error>>;
 
-    forward_ready!(service);
+    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        self.inner.poll_ready(cx)
+    }
 
-    fn call(&self, req: ServiceRequest) -> Self::Future {
+    fn call(&mut self, req: Request<Body>) -> Self::Future {
         let api_key = self.api_key.clone();
         let hostname = req.headers().get(HOST).map(|x| x.to_string()).unwrap();
-        let path = req.path().to_string();
+        let path = req.uri().path().to_owned();
         let method = req.method().to_string();
         let user_agent = req.headers().get(USER_AGENT).map(|x| x.to_string()).unwrap();
 
         let now = Instant::now();
-        let fut = self.service.call(req);
+        let future = self.inner.call(req);
 
         Box::pin(async move {
-            let res = fut.await?;
+            let res: Response = future.await?;
             let elapsed = now.elapsed().as_millis();
 
             let data = Data::new(
@@ -153,5 +147,3 @@ where
         })
     }
 }
-
-
