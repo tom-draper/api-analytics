@@ -13,7 +13,7 @@ Head to https://my-api-analytics.vercel.app/generate to generate your unique API
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there should be virtually no impact on your APIs performance.
 
 ```bash
-pip install api-analytics
+pip install tornado-analytics
 ```
 
 Modify your handler to inherit from `Analytics`. Create a `__init__()` method on your handler, passing along the application and response along with your unique API key.
@@ -22,7 +22,7 @@ Modify your handler to inherit from `Analytics`. Create a `__init__()` method on
 import asyncio
 from tornado.web import Application
 
-from api_analytics.tornado import Analytics
+from tornado_analytics.tornado import Analytics
 
 # Inherit from middleware class
 class MainHandler(Analytics):
