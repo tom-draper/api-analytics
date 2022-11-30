@@ -24,7 +24,7 @@ Add our lightweight middleware to your API. Almost all processing is handled by 
 pip install api-analytics
 ```
 
-Store your API key as `ANALYTICS_API_KEY` in `settings.py` and add the Analytics middleware to the top of your middleware stack.
+Assign your API key to `ANALYTICS_API_KEY` in `settings.py` and add the Analytics middleware to the top of your middleware stack.
 
 ```py
 ANALYTICS_API_KEY = <api_key>
