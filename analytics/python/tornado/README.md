@@ -1,4 +1,4 @@
-# FastAPI Analytics
+# Tornado Analytics
 
 A lightweight API analytics solution, complete with a dashboard.
 
@@ -16,16 +16,34 @@ Add our lightweight middleware to your API. Almost all processing is handled by 
 pip install api-analytics
 ```
 
+Modify your handler to inherit from `Analytics`. Create a `__init__()` method on your handler, passing along the application and response along with your unique API key.
+
 ```py
-from fastapi import FastAPI
-from api_analytics.fastapi import Analytics
+import asyncio
+from tornado.web import Application
 
-app = FastAPI()
-app.add_middleware(Analytics, <api_key>)  # Add middleware
+from api_analytics.tornado import Analytics
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+# Inherit from middleware class
+class MainHandler(Analytics):
+    def __init__(self, app, res):
+        super().__init__(app, res, <api_key>)  # Pass api key to super
+
+    def get(self):
+        self.write({'message': 'Hello World!'})
+
+def make_app():
+    return Application([
+        (r"/", MainHandler),
+    ])
+
+async def main():
+    app = make_app()
+    app.listen(8080)
+    await asyncio.Event().wait()
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ### 3. View your analytics
