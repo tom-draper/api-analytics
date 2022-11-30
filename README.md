@@ -6,7 +6,7 @@ Currently compatible with:
  - Python: <b>Django</b>, <b>Flask</b> and <b>FastAPI</b>
  - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
  - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
- - Rust: <b>Actix</b>
+ - Rust: <b>Actix</b>, <b>Axum</b>
 
 ## Getting Started
 
@@ -314,6 +314,49 @@ async fn main() -> std::io::Result<()> {
     .bind(("127.0.0.1", 8080))?
     .run()
     .await
+}
+```
+
+#### Axum
+
+```bash
+cargo add axum-analytics
+```
+
+```rust
+use axum::{
+    routing::get,
+    Json, Router,
+};
+use serde::Serialize;
+use std::net::SocketAddr;
+use tokio;
+use actum_analytics::Analytics;
+
+#[derive(Serialize)]
+struct JsonData {
+    message: String,
+}
+
+// basic handler that responds with a static string
+async fn root() -> Json<JsonData> {
+    let json_data = JsonData {
+        message: "Hello World!".to_string(),
+    };
+    Json(json_data)
+}
+
+#[tokio::main]
+async fn main() {
+    let app = Router::new()
+        .layer(Analytics::new(<api_key>))
+        .route("/", get(root));
+
+    let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
+    axum::Server::bind(&addr)
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
 }
 ```
 
