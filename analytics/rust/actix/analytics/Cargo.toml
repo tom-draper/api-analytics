@@ -1,8 +1,9 @@
 [package]
 name = "actix-analytics"
-version = "1.0.3"
+version = "1.0.4"
 edition = "2021"
 description= "Monitoring and analytics for Actix web applications."
+repository = "https://github.com/tom-draper/api-analytics"
 license = "MIT"
 keywords = ["api", "analytics", "actix" , "dashboard", "middleware"]
 categories = ["web-programming", "visualization"]
@@ -18,4 +19,4 @@ crate-type = ["lib"]   # The crate types to generate.
 actix-web = "4"
 futures = "0.3"
 serde = { version = "1.0", features = ["derive"] }
-reqwest = { version = "0.10", features = ["json", "blocking"] }
+reqwest = { version = "0.11", features = ["json", "blocking"] }

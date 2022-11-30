@@ -5,47 +5,12 @@ use actix_web::{
 };
 use std::thread::spawn;
 use futures::future::LocalBoxFuture;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::future::{ready, Ready};
 use std::time::Instant;
 
 
-pub struct Analytics {
-    api_key: String,
-}
-
-impl Analytics {
-    pub fn new(api_key: String) -> Self {
-        Self { api_key }
-    }
-}
-
-impl<S, B> Transform<S, ServiceRequest> for Analytics
-where
-    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
-    S::Future: 'static,
-    B: 'static,
-{
-    type Response = ServiceResponse<B>;
-    type Error = Error;
-    type InitError = ();
-    type Transform = AnalyticsMiddleware<S>;
-    type Future = Ready<Result<Self::Transform, Self::InitError>>;
-
-    fn new_transform(&self, service: S) -> Self::Future {
-        ready(Ok(AnalyticsMiddleware {
-            api_key: self.api_key.clone(),
-            service,
-        }))
-    }
-}
-
-pub struct AnalyticsMiddleware<S> {
-    api_key: String,
-    service: S,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 struct Data {
     api_key: String,
     hostname: String,
@@ -56,7 +21,6 @@ struct Data {
     status: u16,
     framework: u32,
 }
-
 impl Data {
     fn method_map(method: &str) -> u32 {
         match method {
@@ -93,6 +57,41 @@ impl Data {
             framework: 9,
         }
     }
+}
+
+pub struct Analytics {
+    api_key: String,
+}
+
+impl Analytics {
+    pub fn new(api_key: String) -> Self {
+        Self { api_key }
+    }
+}
+
+impl<S, B> Transform<S, ServiceRequest> for Analytics
+where
+    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
+    S::Future: 'static,
+    B: 'static,
+{
+    type Response = ServiceResponse<B>;
+    type Error = Error;
+    type InitError = ();
+    type Transform = AnalyticsMiddleware<S>;
+    type Future = Ready<Result<Self::Transform, Self::InitError>>;
+
+    fn new_transform(&self, service: S) -> Self::Future {
+        ready(Ok(AnalyticsMiddleware {
+            api_key: self.api_key.clone(),
+            service,
+        }))
+    }
+}
+
+pub struct AnalyticsMiddleware<S> {
+    api_key: String,
+    service: S,
 }
 
 pub trait HeaderValueExt {
@@ -132,10 +131,10 @@ where
         let user_agent = req.headers().get(USER_AGENT).map(|x| x.to_string()).unwrap();
 
         let now = Instant::now();
-        let fut = self.service.call(req);
+        let future = self.service.call(req);
 
         Box::pin(async move {
-            let res = fut.await?;
+            let res = future.await?;
             let elapsed = now.elapsed().as_millis();
 
             let data = Data::new(
