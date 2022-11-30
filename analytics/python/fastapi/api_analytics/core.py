@@ -14,4 +14,4 @@ method_map = {
 
 def log_request(json: dict):
     json['method'] = method_map[json['method']]
-    requests.post('https://api-analytics-server.vercel.app/api/log-request', json=json, timeout=5, verify=False)
+    requests.post('https://api-analytics-server.vercel.app/api/log-request', json=json, timeout=5)

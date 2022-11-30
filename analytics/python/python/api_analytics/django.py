@@ -16,7 +16,6 @@ class Analytics:
     def __call__(self, request: WSGIRequest) -> HttpResponse:
         start = time()
         response = self.get_response(request)
-        elapsed = time() - start
 
         json = {
             'api_key': self.api_key,
@@ -25,8 +24,8 @@ class Analytics:
             'user_agent': request.headers['user-agent'],
             'method': request.method,
             'status': response.status_code,
-            'response_time': int(elapsed * 1000),
-            'framework': 9
+            'framework': 9,
+            'response_time': int((time() - start) * 1000),
         }
 
         threading.Thread(target=log_request, args=(json,)).start()
