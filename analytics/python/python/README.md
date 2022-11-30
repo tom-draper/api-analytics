@@ -18,17 +18,13 @@ pip install api-analytics
 
 #### Django
 
-Set you API key as an environment variable.
-
-In `settings.py`:
+Assign your API key to `ANALYTICS_API_KEY` in `settings.py` and add the Analytics middleware to the top of your middleware stack.
 
 ```py
-from os import getenv
-
-ANALYTICS_API_KEY = getenv("API_KEY")
+ANALYTICS_API_KEY = <api_key>
 
 MIDDLEWARE = [
-    'api_analytics.django.Analytics',  # Add middleware
+    'api_analytics.django.Analytics',
     ...
 ]
 ```
