@@ -38,7 +38,7 @@ func root(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := chi.NewRouter()
 
-	router.Use(analytics.Analytics(<api_key>))
+	router.Use(analytics.Analytics(<api_key>)) // Add middleware
 
 	router.GET("/", root)
 	router.Run("localhost:8080")
