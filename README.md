@@ -89,7 +89,7 @@ from tornado.web import Application
 
 from api_analytics.tornado import Analytics
 
-# Inherit from middleware class
+# Inherit from Analytics middleware class
 class MainHandler(Analytics):
     def __init__(self, app, res):
         super().__init__(app, res, <api_key>)  # Pass api key to super
