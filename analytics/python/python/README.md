@@ -28,7 +28,7 @@ from os import getenv
 ANALYTICS_API_KEY = getenv("API_KEY")
 
 MIDDLEWARE = [
-    'api_analytics.django.Analytics',
+    'api_analytics.django.Analytics',  # Add middleware
     ...
 ]
 ```
