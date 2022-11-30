@@ -24,7 +24,7 @@ import { expressAnalytics } from 'node-api-analytics';
 
 const app = express();
 
-app.use(expressAnalytics(<api_key>));
+app.use(expressAnalytics(<api_key>));  // Add middleware
 
 app.get("/", (req, res) => {
     res.send({message: "Hello World"});
@@ -45,14 +45,14 @@ const fastify = Fastify({
   logger: true,
 })
 
-fastify.addHook('onRequest', fastifyAnalytics(<api_key>));
+fastify.addHook('onRequest', fastifyAnalytics(<api_key>));  // Add middleware
 
 fastify.get('/', function (request, reply) {
   reply.send({ message: 'Hello World!' });
 })
 
 fastify.listen({ port: 8080 }, function (err, address) {
-  console.log('Server listening at https://localhost:8080')
+  console.log('Server listening at https://localhost:8080');
   if (err) {
     fastify.log.error(err);
     process.exit(1);
@@ -68,7 +68,7 @@ import { koaAnalytics } from "node-api-analytics";
 
 const app = new Koa();
 
-app.use(koaAnalytics(<api_key>));
+app.use(koaAnalytics(<api_key>));  // Add middleware
 
 app.use((ctx) => {
   ctx.body = { message: "Hello World!" };
