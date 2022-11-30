@@ -58,6 +58,7 @@ impl Data {
         }
     }
 }
+
 pub struct Analytics {
     api_key: String,
 }
@@ -92,10 +93,6 @@ pub struct AnalyticsMiddleware<S> {
     api_key: String,
     service: S,
 }
-
-
-
-
 
 pub trait HeaderValueExt {
     fn to_string(&self) -> String;

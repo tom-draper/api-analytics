@@ -53,6 +53,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "axum-analytics"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "756ad3b51b894445b8f04aba287f41b99b48bd80cd4d0991027bc66bd30c48a4"
+dependencies = [
+ "axum",
+ "futures",
+ "http",
+ "reqwest",
+ "serde",
+ "tower",
+]
+
+[[package]]
 name = "axum-core"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -153,13 +167,10 @@ name = "example"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "axum-analytics",
  "dotenv",
- "futures",
- "http",
- "reqwest",
  "serde",
  "tokio 1.22.0",
- "tower",
 ]
 
 [[package]]

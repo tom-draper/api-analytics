@@ -6,7 +6,7 @@ use serde::Serialize;
 use std::net::SocketAddr;
 use tokio;
 use dotenv::dotenv;
-mod analytics;
+use axum_analytics::Analytics;
 
 #[derive(Serialize)]
 struct JsonData {
@@ -28,9 +28,9 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(root))
-        .layer(analytics::Analytics::new(api_key));
+        .layer(Analytics::new(api_key));
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await

@@ -3,6 +3,7 @@ name = "actix-analytics"
 version = "1.0.3"
 edition = "2021"
 description= "Monitoring and analytics for Actix web applications."
+repository = "https://github.com/tom-draper/api-analytics"
 license = "MIT"
 keywords = ["api", "analytics", "actix" , "dashboard", "middleware"]
 categories = ["web-programming", "visualization"]

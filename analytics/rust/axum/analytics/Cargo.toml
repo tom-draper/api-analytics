@@ -3,6 +3,7 @@ name = "axum-analytics"
 version = "1.0.0"
 edition = "2021"
 description= "Monitoring and analytics for Axum web applications."
+repository = "https://github.com/tom-draper/api-analytics"
 license = "MIT"
 keywords = ["api", "analytics", "axum" , "dashboard", "middleware"]
 categories = ["web-programming", "visualization"]

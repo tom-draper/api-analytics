@@ -7,10 +7,7 @@ edition = "2021"
 
 [dependencies]
 axum = "0.6.1"
-futures = "0.3"
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1.0", features = ["full"] }
 dotenv = "0.15.0"
-reqwest = { version = "0.10", features = ["json", "blocking"] }
-http = "0.2.8"
-tower = "0.4.13"
+axum-analytics = "1.0.0"

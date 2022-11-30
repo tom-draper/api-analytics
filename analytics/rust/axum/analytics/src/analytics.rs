@@ -104,7 +104,6 @@ fn log_request(data: Data) {
         .send();
 }
 
-
 impl<S> Service<Request<Body>> for AnalyticsMiddleware<S>
 where
     S: Service<Request<Body>, Response = Response> + Send + 'static,
