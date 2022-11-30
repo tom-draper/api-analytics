@@ -3,7 +3,7 @@
 A lightweight API analytics solution, complete with a dashboard.
 
 Currently compatible with:
- - Python: <b>Django</b>, <b>Flask</b> and <b>FastAPI</b>
+ - Python: <b>Django</b>, <b>FastAPI</b>, <b>Flask</b> and <b>Tornado</b>
  - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
  - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
 
@@ -72,6 +72,42 @@ add_middleware(app, <api_key>)
 @app.get('/')
 def root():
     return {'message': 'Hello World!'}
+```
+
+#### Tornado
+
+```bash
+pip install api-analytics
+```
+
+Modify your handler to inherit from `Analytics`. Create a `__init__()` method on your handler, passing along the application and response along with your unique API key.
+
+```py
+import asyncio
+from tornado.web import Application
+
+from api_analytics.tornado import Analytics
+
+# Inherit from middleware class
+class MainHandler(Analytics):
+    def __init__(self, app, res):
+        super().__init__(app, res, <api_key>)  # Pass api key to super
+
+    def get(self):
+        self.write({'message': 'Hello World!'})
+
+def make_app():
+    return Application([
+        (r"/", MainHandler),
+    ])
+
+async def main():
+    app = make_app()
+    app.listen(8080)
+    await asyncio.Event().wait()
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 #### Express
