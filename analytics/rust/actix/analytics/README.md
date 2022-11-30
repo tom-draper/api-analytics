@@ -40,7 +40,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(|| {
         App::new()
-            .wrap(Analytics::new(<api_key>))
+            .wrap(Analytics::new(<api_key>))  // Add middleware
             .service(index)
     })
     .bind(("127.0.0.1", 8080))?

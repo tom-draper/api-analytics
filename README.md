@@ -172,7 +172,7 @@ func root(c *gin.Context) {
 func main() {
 	router := gin.Default()
 	
-	router.Use(analytics.Analytics(<api_key>))  // Add middleware
+	router.Use(analytics.Analytics(<api_key>)) // Add middleware
 
 	router.GET("/", root)
 	router.Run("localhost:8080")
@@ -204,7 +204,7 @@ func root(c echo.Context) {
 func main() {
 	router := echo.New()
 
-	router.Use(analytics.Analytics(<api_key>))  // Add middleware
+	router.Use(analytics.Analytics(<api_key>)) // Add middleware
 
 	router.GET("/", root)
 	router.Start("localhost:8080")
@@ -236,7 +236,7 @@ func root(c *fiber.Ctx) error {
 func main() {
 	app := fiber.New()
 
-	app.Use(analytics.Analytics(<api_key>))  // Add middleware
+	app.Use(analytics.Analytics(<api_key>)) // Add middleware
 
 	app.Get("/", root)
 	app.Listen(":8080")
@@ -271,7 +271,7 @@ func root(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := chi.NewRouter()
 
-	router.Use(analytics.Analytics(<api_key>))  // Add middleware
+	router.Use(analytics.Analytics(<api_key>)) // Add middleware
 
 	router.GET("/", root)
 	router.Run("localhost:8080")

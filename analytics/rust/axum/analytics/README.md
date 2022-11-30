@@ -41,7 +41,7 @@ async fn root() -> Json<JsonData> {
 #[tokio::main]
 async fn main() {
     let app = Router::new()
-        .layer(Analytics::new(<api_key>))
+        .layer(Analytics::new(<api_key>))  // Add middleware
         .route("/", get(root));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
