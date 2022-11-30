@@ -50,7 +50,7 @@ from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
 
 app = FastAPI()
-app.add_middleware(Analytics, api_key=<api_key>)
+app.add_middleware(Analytics, api_key=<api_key>)  # Add middleware
 
 @app.get('/')
 async def root():
@@ -68,7 +68,7 @@ from flask import Flask
 from api_analytics.flask import add_middleware
 
 app = Flask(__name__)
-add_middleware(app, <api_key>)
+add_middleware(app, <api_key>)  # Add middleware
 
 @app.get('/')
 def root():
@@ -85,9 +85,9 @@ npm i node-api-analytics
 import express from 'express';
 import { expressAnalytics } from 'node-api-analytics';
 
-const app = express()
+const app = express();
 
-app.use(analytics(<api_key>))
+app.use(analytics(<api_key>));  // Add middleware
 
 app.get('/', (req, res) => {
     res.send({ message: 'Hello World' });
@@ -110,7 +110,7 @@ import { fastifyAnalytics } from 'node-api-analytics;
 
 const fastify = Fastify()
 
-fastify.addHook('onRequest', fastifyAnalytics(<api_key>));
+fastify.addHook('onRequest', fastifyAnalytics(<api_key>));  // Add middleware
 
 fastify.get('/', function (request, reply) {
   reply.send({ message: 'Hello World!' });
@@ -137,7 +137,7 @@ import { koaAnalytics } from 'node-api-analytics';
 
 const app = new Koa();
 
-app.use(koaAnalytics(<api_key>));
+app.use(koaAnalytics(<api_key>));  // Add middleware
 
 app.use((ctx) => {
   ctx.body = { message: 'Hello World!' };
@@ -172,7 +172,7 @@ func root(c *gin.Context) {
 func main() {
 	router := gin.Default()
 	
-	router.Use(analytics.Analytics(<api_key>))
+	router.Use(analytics.Analytics(<api_key>))  // Add middleware
 
 	router.GET("/", root)
 	router.Run("localhost:8080")
@@ -204,7 +204,7 @@ func root(c echo.Context) {
 func main() {
 	router := echo.New()
 
-	router.Use(analytics.Analytics(<api_key>))
+	router.Use(analytics.Analytics(<api_key>))  // Add middleware
 
 	router.GET("/", root)
 	router.Start("localhost:8080")
@@ -236,7 +236,7 @@ func root(c *fiber.Ctx) error {
 func main() {
 	app := fiber.New()
 
-	app.Use(analytics.Analytics(<api_key>))
+	app.Use(analytics.Analytics(<api_key>))  // Add middleware
 
 	app.Get("/", root)
 	app.Listen(":8080")
@@ -271,7 +271,7 @@ func root(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := chi.NewRouter()
 
-	router.Use(analytics.Analytics(<api_key>))
+	router.Use(analytics.Analytics(<api_key>))  // Add middleware
 
 	router.GET("/", root)
 	router.Run("localhost:8080")
@@ -308,7 +308,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(|| {
         App::new()
-            .wrap(Analytics::new(<api_key>))
+            .wrap(Analytics::new(<api_key>))  // Add middleware
             .service(index)
     })
     .bind(("127.0.0.1", 8080))?
@@ -348,7 +348,7 @@ async fn root() -> Json<JsonData> {
 #[tokio::main]
 async fn main() {
     let app = Router::new()
-        .layer(Analytics::new(<api_key>))
+        .layer(Analytics::new(<api_key>))  // Add middleware
         .route("/", get(root));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
