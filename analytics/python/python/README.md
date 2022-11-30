@@ -40,7 +40,7 @@ from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
 
 app = FastAPI()
-app.add_middleware(Analytics, <api_key>)
+app.add_middleware(Analytics, <api_key>)  # Add middleware
 
 @app.get("/")
 async def root():
@@ -54,7 +54,7 @@ from flask import Flask
 from api_analytics.flask import add_middleware
 
 app = Flask(__name__)
-add_middleware(app, <api_key>)
+add_middleware(app, <api_key>)  # Add middleware
 
 @app.get("/")
 def root():
