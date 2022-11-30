@@ -34,7 +34,7 @@ func root(c *gin.Context) {
 func main() {
 	router := gin.Default()
 	
-	router.Use(analytics.Analytics(<api_key>))  // Add middleware
+	router.Use(analytics.Analytics(<api_key>)) // Add middleware
 
 	router.GET("/", root)
 	router.Run("localhost:8080")
