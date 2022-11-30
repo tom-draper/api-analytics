@@ -60,15 +60,19 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 			panic(err)
 		}
 
-		// Insert request data into database
-		var result []interface{}
-		err := supabase.DB.From("Requests").Insert(request).Execute(&result)
-		if err != nil {
-			panic(err)
-		}
+		if request.APIKey == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
+		} else {
+			// Insert request data into database
+			var result []interface{}
+			err := supabase.DB.From("Requests").Insert(request).Execute(&result)
+			if err != nil {
+				panic(err)
+			}
 
-		// Return success response
-		c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "API request logged successfully."})
+			// Return success response
+			c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "API request logged successfully."})
+		}
 	}
 
 	return gin.HandlerFunc(logRequest)
@@ -78,8 +82,6 @@ func GetUserIDHandler(supabase *supa.Client) gin.HandlerFunc {
 	getUserID := func(c *gin.Context) {
 		// Collect API key sent via POST request
 		apiKey := c.Param("apiKey")
-
-		fmt.Println(apiKey)
 
 		// Fetch user ID corresponding with API key
 		var result []struct {

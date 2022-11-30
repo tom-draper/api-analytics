@@ -31,7 +31,6 @@ struct JsonData {
     message: String,
 }
 
-// basic handler that responds with a static string
 async fn root() -> Json<JsonData> {
     let json_data = JsonData {
         message: "Hello World!".to_string(),
