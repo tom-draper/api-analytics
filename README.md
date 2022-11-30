@@ -24,14 +24,10 @@ Add our lightweight middleware to your API. Almost all processing is handled by 
 pip install api-analytics
 ```
 
-Set you API key as an environment variable.
-
-In `settings.py`:
+Assign your API key to `ANALYTICS_API_KEY` in `settings.py` and add the Analytics middleware to the top of your middleware stack.
 
 ```py
-from os import getenv
-
-ANALYTICS_API_KEY = getenv("API_KEY")
+ANALYTICS_API_KEY = <api_key>
 
 MIDDLEWARE = [
     'api_analytics.django.Analytics',
@@ -89,10 +85,10 @@ from tornado.web import Application
 
 from api_analytics.tornado import Analytics
 
-# Inherit from middleware class
+# Inherit from the Analytics middleware class
 class MainHandler(Analytics):
     def __init__(self, app, res):
-        super().__init__(app, res, <api_key>)  # Pass api key to super
+        super().__init__(app, res, <api_key>)  # Pass api key
 
     def get(self):
         self.write({'message': 'Hello World!'})
