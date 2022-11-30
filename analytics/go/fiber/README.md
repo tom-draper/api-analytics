@@ -35,7 +35,7 @@ func root(c *fiber.Ctx) error {
 func main() {
 	app := fiber.New()
 
-	app.Use(analytics.Analytics(<api_key>))  // Add middleware
+	app.Use(analytics.Analytics(<api_key>)) // Add middleware
 
 	app.Get("/", root)
 	app.Listen(":8080")
