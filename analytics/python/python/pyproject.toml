@@ -9,7 +9,7 @@ requires = [
 name = "api-analytics"
 authors = [{name = "Tom Draper", email = "tomjdraper1@gmail.com"}]
 classifiers = [
-  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
 ]
@@ -19,7 +19,7 @@ keywords = ["analytics", "api", "dashboard", "django", "fastapi", "flask", "torn
 license = {file = "LICENSE"}
 readme = "README.md"
 requires-python = ">=3.7"
-version = "1.0.13"
+version = "1.0.14"
 
 [project.optional-dependencies]
 build = ["build", "twine"]

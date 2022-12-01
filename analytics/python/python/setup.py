@@ -4,10 +4,10 @@ long_description = open("README.md").read()
 
 setup(
     name="api-analytics",
-    version="1.0.13",
+    version="1.0.14",
     author="Tom Draper",
     author_email="tomjdraper1@gmail.com",
-    license="GPL-3.0-or-later",
+    license="MIT",
     description="Monitoring and analytics for Python API frameworks.",
     long_description=long_description,
     long_description_content_type="text/markdown",

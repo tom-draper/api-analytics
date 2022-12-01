@@ -9,7 +9,7 @@ requires = [
 name = "fastapi-analytics"
 authors = [{name = "Tom Draper", email = "tomjdraper1@gmail.com"}]
 classifiers = [
-  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
 ]
@@ -19,7 +19,7 @@ keywords = ["analytics", "api", "dashboard", "fastapi", "middleware"]
 license = {file = "LICENSE"}
 readme = "README.md"
 requires-python = ">=3.7"
-version = "1.0.11"
+version = "1.0.12"
 
 [project.optional-dependencies]
 build = ["build", "twine"]

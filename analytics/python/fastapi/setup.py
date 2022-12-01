@@ -4,10 +4,10 @@ long_description = open("README.md").read()
 
 setup(
     name="fastapi-analytics",
-    version="1.0.11",
+    version="1.0.12",
     author="Tom Draper",
     author_email="tomjdraper1@gmail.com",
-    license="GPL-3.0-or-later",
+    license="MIT",
     description="Monitoring and analytics for FastAPI applications.",
     long_description=long_description,
     long_description_content_type="text/markdown",

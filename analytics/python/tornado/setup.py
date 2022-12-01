@@ -4,10 +4,10 @@ long_description = open("README.md").read()
 
 setup(
     name="tornado-analytics",
-    version="1.0.3",
+    version="1.0.4",
     author="Tom Draper",
     author_email="tomjdraper1@gmail.com",
-    license="GPL-3.0-or-later",
+    license="MIT",
     description="Monitoring and analytics for Tornado applications.",
     long_description=long_description,
     long_description_content_type="text/markdown",
