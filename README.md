@@ -77,7 +77,7 @@ def root():
 pip install api-analytics
 ```
 
-Modify your handler to inherit from `Analytics`. Create a `__init__()` method on your handler, passing along the application and response along with your unique API key.
+Modify your handler to inherit from `Analytics`. Create a `__init__()` method, passing along the application and response along with your unique API key.
 
 ```py
 import asyncio
