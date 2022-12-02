@@ -14,7 +14,8 @@
     place-items: center;
   }
   .logo {
-    width: 700px;
+    max-width: 700px;
+    width: 90vw;
     margin-bottom: -50px;
   }
 

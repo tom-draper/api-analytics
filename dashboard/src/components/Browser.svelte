@@ -136,4 +136,10 @@
   #plotDiv {
     margin-right: 20px;
   }
+  @media screen and (max-width: 1480px){
+    .card {
+        margin: 0 0 2em;
+        width: 100%;
+      }
+  }
 </style>
