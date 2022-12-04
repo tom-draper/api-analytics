@@ -19,15 +19,15 @@ class Analytics(BaseHTTPMiddleware):
         start = time()
         response = await call_next(request)
         
-        json = {
+        data = {
             'api_key': self.api_key,
             'hostname': request.url.hostname,
             'path': request.url.path,
             'user_agent': request.headers['user-agent'],
             'method': request.method,
             'status': response.status_code,
-            'framework': 0,
+            'framework': 'FastAPI',
             'response_time': int((time() - start) * 1000),
         }
-        threading.Thread(target=log_request, args=(json,)).start()
+        threading.Thread(target=log_request, args=(data,)).start()
         return response

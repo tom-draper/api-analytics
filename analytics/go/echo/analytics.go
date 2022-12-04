@@ -12,17 +12,16 @@ func Analytics(apiKey string) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			start := time.Now()
 			err := next(c)
-			elapsed := time.Since(start).Milliseconds()
 
 			data := core.Data{
 				APIKey:       apiKey,
 				Hostname:     c.Request().Host,
 				Path:         c.Request().URL.Path,
 				UserAgent:    c.Request().UserAgent(),
-				Method:       core.MethodMap[c.Request().Method],
-				ResponseTime: elapsed,
+				Method:       c.Request().Method,
 				Status:       c.Response().Status,
-				Framework:    3,
+				Framework:    "Echo",
+				ResponseTime: time.Since(start).Milliseconds(),
 			}
 
 			go core.LogRequest(data)

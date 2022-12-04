@@ -1,4 +1,4 @@
-ipy -m twine upload dist/*iMIT License
+MIT License
 
 Copyright (c) 2022 Tom Draper
 

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -40,7 +41,18 @@ func GenAPIKeyHandler(supabase *supa.Client) gin.HandlerFunc {
 	return gin.HandlerFunc(genAPIKey)
 }
 
-type Request struct {
+type RequestData struct {
+	APIKey       string `json:"api_key"`
+	Path         string `json:"path"`
+	Hostname     string `json:"hostname"`
+	UserAgent    string `json:"user_agent"`
+	Method       string `json:"method"`
+	Status       int16  `json:"status"`
+	ResponseTime int16  `json:"response_time"`
+	Framework    string `json:"framework"`
+}
+
+type RequestInsert struct {
 	APIKey       string `json:"api_key"`
 	Path         string `json:"path"`
 	Hostname     string `json:"hostname"`
@@ -51,20 +63,101 @@ type Request struct {
 	Framework    int16  `json:"framework"`
 }
 
+func methodMap(method string) (int16, error) {
+	switch method {
+	case "GET":
+		return 0, nil
+	case "POST":
+		return 1, nil
+	case "PUT":
+		return 2, nil
+	case "PATCH":
+		return 3, nil
+	case "DELETE":
+		return 4, nil
+	case "OPTIONS":
+		return 5, nil
+	case "CONNECT":
+		return 6, nil
+	case "HEAD":
+		return 7, nil
+	case "TRACE":
+		return 8, nil
+	default:
+		return -1, fmt.Errorf("error: invalid method")
+	}
+}
+
+func frameworkMap(framework string) (int16, error) {
+	switch framework {
+	case "FastAPI":
+		return 0, nil
+	case "Flask":
+		return 1, nil
+	case "Gin":
+		return 2, nil
+	case "Echo":
+		return 3, nil
+	case "Express":
+		return 4, nil
+	case "Fastify":
+		return 5, nil
+	case "Koa":
+		return 6, nil
+	case "Chi":
+		return 7, nil
+	case "Fiber":
+		return 8, nil
+	case "Actix":
+		return 9, nil
+	case "Axum":
+		return 10, nil
+	case "Tornado":
+		return 11, nil
+	case "Django":
+		return 12, nil
+	case "Rails":
+		return 13, nil
+	default:
+		return -1, fmt.Errorf("error: invalid framework")
+	}
+}
+
 func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 	logRequest := func(c *gin.Context) {
 		// Collect API request data sent via POST request
-		var request Request
-		if err := c.BindJSON(&request); err != nil {
+		var requestData RequestData
+		if err := c.BindJSON(&requestData); err != nil {
 			panic(err)
 		}
 
-		if request.APIKey == "" {
+		if requestData.APIKey == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
+			return
 		} else {
+			method, err := methodMap(requestData.Method)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid method."})
+				return
+			}
+			framework, err := frameworkMap(requestData.Framework)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid framework."})
+				return
+			}
+			request := RequestInsert{
+				APIKey:       requestData.APIKey,
+				Path:         requestData.Path,
+				Hostname:     requestData.Hostname,
+				UserAgent:    requestData.UserAgent,
+				Status:       requestData.Status,
+				ResponseTime: requestData.ResponseTime,
+				Method:       method,
+				Framework:    framework,
+			}
 			// Insert request data into database
 			var result []interface{}
-			err := supabase.DB.From("Requests").Insert(request).Execute(&result)
+			err = supabase.DB.From("Requests").Insert(request).Execute(&result)
 			if err != nil {
 				panic(err)
 			}
@@ -151,7 +244,7 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
-func registerRouter(r *gin.RouterGroup, supabase *supa.Client) {
+func RegisterRouter(r *gin.RouterGroup, supabase *supa.Client) {
 	r.GET("/generate-api-key", GenAPIKeyHandler(supabase))
 	r.POST("/log-request", LogRequestHandler(supabase))
 	r.GET("/user-id/:apiKey", GetUserIDHandler(supabase))
@@ -174,7 +267,7 @@ func init() {
 
 	// r.Use(CORSMiddleware())
 	r.Use(cors.Default())
-	registerRouter(r, supabase) // Register route
+	RegisterRouter(r, supabase) // Register route
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {

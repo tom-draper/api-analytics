@@ -19,7 +19,7 @@ keywords = ["analytics", "api", "dashboard", "fastapi", "middleware"]
 license = {file = "LICENSE"}
 readme = "README.md"
 requires-python = ">=3.7"
-version = "1.0.12"
+version = "1.0.13"
 
 [project.optional-dependencies]
 build = ["build", "twine"]

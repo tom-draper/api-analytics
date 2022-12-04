@@ -16,27 +16,12 @@ struct Data {
     hostname: String,
     path: String,
     user_agent: String,
-    method: u32,
+    method: String,
     response_time: u32,
     status: u16,
-    framework: u32,
+    framework: String,
 }
 impl Data {
-    fn method_map(method: &str) -> u32 {
-        match method {
-            "GET" => return 0,
-            "POST" => return 1,
-            "PUT" => return 2,
-            "PATCH" => return 3,
-            "DELETE" => return 4,
-            "OPTIONS" => return 5,
-            "CONNECT" => return 6,
-            "HEAD" => return 7,
-            "TRACE" => return 8,
-            _ => panic!("invalid method"),
-        }
-    }
-
     pub fn new(
         api_key: String,
         hostname: String,
@@ -51,10 +36,10 @@ impl Data {
             hostname,
             path,
             user_agent,
-            method: Data::method_map(&method),
+            method,
             response_time,
             status,
-            framework: 9,
+            framework: "Actix".to_string(),
         }
     }
 }

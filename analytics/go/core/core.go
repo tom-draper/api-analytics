@@ -11,22 +11,10 @@ type Data struct {
 	Hostname     string `json:"hostname"`
 	Path         string `json:"path"`
 	UserAgent    string `json:"user_agent"`
-	Method       int    `json:"method"`
+	Method       string `json:"method"`
 	ResponseTime int64  `json:"response_time"`
 	Status       int    `json:"status"`
-	Framework    int8   `json:"framework"`
-}
-
-var MethodMap = map[string]int{
-	"GET":     0,
-	"POST":    1,
-	"PUT":     2,
-	"PATCH":   3,
-	"DELETE":  4,
-	"OPTIONS": 5,
-	"CONNECT": 6,
-	"HEAD":    7,
-	"TRACE":   8,
+	Framework    string `json:"framework"`
 }
 
 func LogRequest(data Data) {

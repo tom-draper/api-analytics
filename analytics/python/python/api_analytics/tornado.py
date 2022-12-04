@@ -16,16 +16,16 @@ class Analytics(RequestHandler):
         self.start = time()
 
     def on_finish(self):
-        json = {
+        data = {
             'api_key': self.api_key,
             'hostname': self.request.host,
             'path': self.request.path,
             'user_agent': self.request.headers['user-agent'],
             'method': self.request.method,
             'status': self.get_status(),
-            'framework': 11,
+            'framework': 'Tornado',
             'response_time': int((time() - self.start) * 1000),
         }
 
-        threading.Thread(target=log_request, args=(json,)).start()
+        threading.Thread(target=log_request, args=(data,)).start()
         self.start = None
