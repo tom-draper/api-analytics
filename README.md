@@ -140,7 +140,7 @@ npm i node-api-analytics
 import Fastify from 'fastify';
 import { fastifyAnalytics } from 'node-api-analytics;
 
-const fastify = Fastify()
+const fastify = Fastify();
 
 fastify.addHook('onRequest', fastifyAnalytics(<api_key>));  // Add middleware
 
