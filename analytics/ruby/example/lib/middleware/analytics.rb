@@ -32,7 +32,7 @@ module Middleware
     private
 
     def log_request(json)
-      uri = URI('http://localhost:8080/api/log-request')
+      uri = URI('https://api-analytics-server.vercel.app/api/log-request')
       http = Net::HTTP.new(uri.host, uri.port)
       Rails.logger.info("#{uri.host} #{uri.port} #{uri.path}")
       req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
