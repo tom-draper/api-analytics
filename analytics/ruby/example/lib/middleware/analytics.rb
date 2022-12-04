@@ -12,7 +12,7 @@ module Middleware
       status, headers, response = @app.call(env)
 
       json = {
-        api_key: "9e8820b1-6308-40f8-8423-d913c203b92d",
+        api_key: "",
         hostname: env['HTTP_HOST'],
         path: env['REQUEST_PATH'],
         user_agent: env['HTTP_USER_AGENT'],
