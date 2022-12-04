@@ -5,14 +5,18 @@ module Middleware
   class Analytics
     def initialize(app)
       @app = app
+      @api_key = Rails.application.secrets.ANALYTICS_API_KEY
+      raise StandardError.new 'ANALYTICS_API_KEY secret unset.' if @api_key.nil?
     end
 
     def call(env)
       start = Time.now
       status, headers, response = @app.call(env)
 
+      Rails.logger.info("#{@api_key}")
+
       json = {
-        api_key: "",
+        api_key: @api_key,
         hostname: env['HTTP_HOST'],
         path: env['REQUEST_PATH'],
         user_agent: env['HTTP_USER_AGENT'],

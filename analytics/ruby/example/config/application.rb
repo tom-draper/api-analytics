@@ -12,11 +12,8 @@ require "action_mailbox/engine"
 require "action_text/engine"
 require "action_view/railtie"
 require "action_cable/engine"
-# require "sprockets/railtie"
 require "rails/test_unit/railtie"
 
-# require_relative '../lib/middleware/measure_logs'
-# require_relative '../lib/middleware/log_request_id'
 require_relative '../lib/middleware/analytics'
 
 # Require the gems listed in Gemfile, including any gems
@@ -41,8 +38,6 @@ module RailsMiddleware
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
-    # config.middleware.use ::Middleware::MeasureLogs
-    # config.middleware.use ::Middleware::LogRequestId
     config.middleware.use ::Middleware::Analytics
   end
 end
