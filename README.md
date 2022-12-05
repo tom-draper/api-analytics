@@ -7,6 +7,7 @@ Currently compatible with:
  - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
  - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
  - Rust: <b>Actix</b>, <b>Axum</b>
+ - Ruby: <b>Rails</b> and <b>Sinatra</b>
 
 ## Getting Started
 
@@ -389,6 +390,51 @@ async fn main() {
         .await
         .unwrap();
 }
+```
+
+#### Rails
+
+```bash
+gem install api_analytics
+```
+
+Add the analytics middleware to your rails application in `config/application.rb`.
+
+```ruby
+require 'rails'
+require 'api_analytics'
+
+Bundler.require(*Rails.groups)
+
+module RailsMiddleware
+  class Application < Rails::Application
+    config.load_defaults 6.1
+    config.api_only = true
+
+    config.middleware.use ::Analytics::Rails, <api_key> # Add middleware
+  end
+end
+```
+
+#### Sinatra
+
+```bash
+gem install api_analytics
+```
+
+```ruby
+require 'sinatra'
+require 'api_analytics'
+
+use Analytics::Sinatra, <api_key>
+
+before do
+    content_type 'application/json'
+end
+
+get '/' do
+    {message: 'Hello World!'}.to_json
+end
 ```
 
 ### 3. View your analytics
