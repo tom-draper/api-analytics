@@ -141,7 +141,7 @@ npm i node-api-analytics
 import Fastify from 'fastify';
 import { fastifyAnalytics } from 'node-api-analytics;
 
-const fastify = Fastify()
+const fastify = Fastify();
 
 fastify.addHook('onRequest', fastifyAnalytics(<api_key>));  // Add middleware
 
@@ -150,7 +150,7 @@ fastify.get('/', function (request, reply) {
 })
 
 fastify.listen({ port: 8080 }, function (err, address) {
-  console.log('Server listening at http://localhost:8080')
+  console.log('Server listening at http://localhost:8080');
   if (err) {
     fastify.log.error(err);
     process.exit(1);
