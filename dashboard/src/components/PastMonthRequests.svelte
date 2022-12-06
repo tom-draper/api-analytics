@@ -3,9 +3,9 @@
 
   function defaultLayout() {
     let monthAgo = new Date();
-    monthAgo.setDate(monthAgo.getDate() - 30);
+    monthAgo.setDate(monthAgo.getDate() - 31);
     let tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setDate(tomorrow.getDate());
     return {
       title: false,
       autosize: true,

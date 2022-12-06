@@ -85,6 +85,7 @@
   .errors {
     display: flex;
     margin-top: 8px;
+    margin: 0 20px 0 45px;
   }
   .error {
     background: var(--highlight);
@@ -98,6 +99,9 @@
     font-size: 0.9em;
     color: #707070;
     /* color: rgb(68, 68, 68); */
+  }
+  .success-rate-title {
+    margin: 0 0 3px 45px;
   }
   .success-rate-container {
     margin: 1.5em 2em 2em;

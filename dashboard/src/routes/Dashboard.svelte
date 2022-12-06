@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import Requests from "../components/Requests.svelte";
+  import Welcome from "../components/Welcome.svelte";
+  import RequestsPerHour from "../components/RequestsPerHour.svelte";
   import ResponseTimes from "../components/ResponseTimes.svelte";
   import Endpoints from "../components/Endpoints.svelte";
   import Footer from "../components/Footer.svelte";
@@ -46,18 +48,22 @@
   <div class="dashboard">
     <div class="left">
       <div class="row">
-        <Requests {data} />
+        <Welcome />
         <SuccessRate {data} />
+      </div>
+      <div class="row">
+        <Requests {data} />
+        <RequestsPerHour {data} />
       </div>
       <ResponseTimes {data} />
       <Endpoints {data} />
+      <Version {data} />
     </div>
     <div class="right">
       <PastMonth {data} />
       <div class="grid-row">
         <OperatingSystem {data} />
         <Browser {data} />
-        <Version {data} />
       </div>
     </div>
   </div>
