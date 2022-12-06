@@ -197,7 +197,7 @@ app.listen(8080, () =>
 
 #### Gin
 
-[![Gin](https://img.shields.io/badge/Gin-go.mod-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/gin)
+[![Gin](https://img.shields.io/badge/go.mod-Gin-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/gin)
 
 ```bash
 go get -u github.com/tom-draper/api-analytics/analytics/go/gin
@@ -230,7 +230,7 @@ func main() {
 
 #### Echo
 
-[![Echo](https://img.shields.io/badge/Echo-go.mod-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/echo)
+[![Echo](https://img.shields.io/badge/go.mod-Echo-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/echo)
 
 
 ```bash
@@ -265,7 +265,7 @@ func main() {
 
 #### Fiber
 
-[![Fiber](https://img.shields.io/badge/Fiber-go.mod-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/fiber)
+[![Fiber](https://img.shields.io/badge/go.mod-Fiber-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/fiber)
 
 ```bash
 go get -u github.com/tom-draper/api-analytics/analytics/go/fiber
@@ -299,7 +299,7 @@ func main() {
 
 #### Chi
 
-[![Chi](https://img.shields.io/badge/Chi-go.mod-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/chi)
+[![Chi](https://img.shields.io/badge/go.mod-Chi-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/chi)
 
 ```bash
 go get -u github.com/tom-draper/api-analytics/analytics/go/chi
