@@ -412,7 +412,7 @@ async fn main() {
 
 #### Rails
 
-![Gem version](https://img.shields.io/gem/v/api_analytics)
+[![Gem version](https://img.shields.io/gem/v/api_analytics)](https://rubygems.org/gems/api_analytics)
 
 ```bash
 gem install api_analytics
@@ -438,7 +438,7 @@ end
 
 #### Sinatra
 
-![Gem version](https://img.shields.io/gem/v/api_analytics)
+[![Gem version](https://img.shields.io/gem/v/api_analytics)](https://rubygems.org/gems/api_analytics)
 
 ```bash
 gem install api_analytics
