@@ -197,8 +197,6 @@ app.listen(8080, () =>
 
 #### Gin
 
-[![Go version](https://img.shields.io/github/go-mod/go-version/gomods/athens.svg)](https://github.com/gomods/athens)
-
 ```bash
 go get -u github.com/tom-draper/api-analytics/analytics/go/gin
 ```
