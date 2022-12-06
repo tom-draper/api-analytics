@@ -327,7 +327,7 @@ func main() {
 
 #### Actix
 
-[![Crates.io](https://img.shields.io/crates/v/actix-analytics.svg)](https://crates.io/crates/cargo-readme)
+[![Crates.io](https://img.shields.io/crates/v/actix-analytics.svg)](https://crates.io/crates/actix-analytics)
 
 ```bash
 cargo add actix-analytics
@@ -368,7 +368,7 @@ async fn main() -> std::io::Result<()> {
 
 #### Axum
 
-[![Crates.io](https://img.shields.io/crates/v/actix-analytics.svg)](https://crates.io/crates/cargo-readme)
+[![Crates.io](https://img.shields.io/crates/v/axum-analytics.svg)](https://crates.io/crates/axum-analytics)
 
 ```bash
 cargo add axum-analytics
