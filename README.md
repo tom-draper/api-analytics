@@ -19,7 +19,9 @@ Head to https://my-api-analytics.vercel.app/generate to generate your unique API
 
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on your APIs performance.
 
-#### Django
+#### Django 
+
+[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
 ```bash
 pip install api-analytics
@@ -37,6 +39,8 @@ MIDDLEWARE = [
 ```
 
 #### FastAPI
+
+[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
 ```bash
 pip install api-analytics
@@ -56,6 +60,8 @@ async def root():
 
 #### Flask
 
+[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
+
 ```bash
 pip install api-analytics
 ```
@@ -73,6 +79,8 @@ def root():
 ```
 
 #### Tornado
+
+[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
 ```bash
 pip install api-analytics
@@ -110,6 +118,8 @@ if __name__ == "__main__":
 
 #### Express
 
+[![Npm package version](https://badgen.net/npm/v/node-api-analytics)](https://npmjs.com/package/node-api-analytics)
+
 ```bash
 npm i node-api-analytics
 ```
@@ -132,6 +142,8 @@ app.listen(8080, () => {
 ```
 
 #### Fastify
+
+[![Npm package version](https://badgen.net/npm/v/node-api-analytics)](https://npmjs.com/package/node-api-analytics)
 
 ```bash
 npm i node-api-analytics
@@ -160,6 +172,8 @@ fastify.listen({ port: 8080 }, function (err, address) {
 
 #### Koa
 
+[![Npm package version](https://badgen.net/npm/v/node-api-analytics)](https://npmjs.com/package/node-api-analytics)
+
 ```bash
 npm i node-api-analytics
 ```
@@ -182,6 +196,8 @@ app.listen(8080, () =>
 ```
 
 #### Gin
+
+[![Gin](https://img.shields.io/badge/go.mod-Gin-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/gin)
 
 ```bash
 go get -u github.com/tom-draper/api-analytics/analytics/go/gin
@@ -213,6 +229,9 @@ func main() {
 ```
 
 #### Echo
+
+[![Echo](https://img.shields.io/badge/go.mod-Echo-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/echo)
+
 
 ```bash
 go get -u github.com/tom-draper/api-analytics/analytics/go/echo
@@ -246,6 +265,8 @@ func main() {
 
 #### Fiber
 
+[![Fiber](https://img.shields.io/badge/go.mod-Fiber-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/fiber)
+
 ```bash
 go get -u github.com/tom-draper/api-analytics/analytics/go/fiber
 ```
@@ -277,6 +298,8 @@ func main() {
 ```
 
 #### Chi
+
+[![Chi](https://img.shields.io/badge/go.mod-Chi-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/chi)
 
 ```bash
 go get -u github.com/tom-draper/api-analytics/analytics/go/chi
@@ -312,6 +335,8 @@ func main() {
 ```
 
 #### Actix
+
+[![Crates.io](https://img.shields.io/crates/v/actix-analytics.svg)](https://crates.io/crates/actix-analytics)
 
 ```bash
 cargo add actix-analytics
@@ -351,6 +376,8 @@ async fn main() -> std::io::Result<()> {
 ```
 
 #### Axum
+
+[![Crates.io](https://img.shields.io/crates/v/axum-analytics.svg)](https://crates.io/crates/axum-analytics)
 
 ```bash
 cargo add axum-analytics
@@ -394,6 +421,8 @@ async fn main() {
 
 #### Rails
 
+[![Gem version](https://img.shields.io/gem/v/api_analytics)](https://rubygems.org/gems/api_analytics)
+
 ```bash
 gem install api_analytics
 ```
@@ -417,6 +446,8 @@ end
 ```
 
 #### Sinatra
+
+[![Gem version](https://img.shields.io/gem/v/api_analytics)](https://rubygems.org/gems/api_analytics)
 
 ```bash
 gem install api_analytics
