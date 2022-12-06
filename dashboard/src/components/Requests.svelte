@@ -2,7 +2,7 @@
   export let data: RequestsData;
 </script>
 
-<div class="card">
+<div class="card" title="Total">
   <div class="card-title">
     Requests
   </div>

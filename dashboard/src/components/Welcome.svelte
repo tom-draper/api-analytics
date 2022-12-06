@@ -2,7 +2,7 @@
 
 </script>
 
-<div class="card">
+<div class="card" title="API Analytics">
   <img src="../img/logo.png" alt="">
   <!-- <div class="text">Welcome</div> -->
 </div>

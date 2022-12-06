@@ -7,7 +7,7 @@
 </script>
 
 <div class="card">
-  <div class="card-title">Past Month</div>
+  <div class="card-title">Past 60 days</div>
   <PastMonthRequests {data} />
   <PastMonthResponseTime {data} />
   <PastMonthSuccessRate {data} />

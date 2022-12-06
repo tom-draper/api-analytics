@@ -3,7 +3,7 @@
 
   function defaultLayout() {
     let monthAgo = new Date();
-    monthAgo.setDate(monthAgo.getDate() - 31);
+    monthAgo.setDate(monthAgo.getDate() - 60);
     let tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate());
     return {

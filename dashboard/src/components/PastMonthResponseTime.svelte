@@ -3,7 +3,7 @@
 
   function defaultLayout() {
     let monthAgo = new Date();
-    monthAgo.setDate(monthAgo.getDate() - 31);
+    monthAgo.setDate(monthAgo.getDate() - 60);
     let tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate());
     return {
@@ -41,8 +41,6 @@
         responseTimes[date] = {total: 0, count: 0}
     }
 
-    console.log(responseTimes)
-
     for (let i = 0; i < data.length; i++) {
       let date = new Date(data[i].created_at);
       date.setHours(0, 0, 0, 0);
@@ -64,7 +62,6 @@
       return a[0] - b[0];
     });
 
-    console.log(requestFreqArr)
 
     let dates = [];
     let requests = [];

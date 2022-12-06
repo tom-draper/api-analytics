@@ -11,6 +11,7 @@
   import Browser from "../components/Browser.svelte";
   import OperatingSystem from "../components/OperatingSystem.svelte";
   import Version from "../components/Version.svelte";
+  import RequestTime from "../components/RequestTime.svelte";
 
   function formatUUID(userID: string): string {
     return `${userID.slice(0, 8)}-${userID.slice(8, 12)}-${userID.slice(
@@ -65,6 +66,7 @@
         <OperatingSystem {data} />
         <Browser {data} />
       </div>
+      <RequestTime {data} />
     </div>
   </div>
 {:else if failed}

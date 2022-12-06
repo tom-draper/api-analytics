@@ -261,6 +261,7 @@ func init() {
 	supabaseURL, supabaseKey := getDBLogin()
 	supabase := supa.CreateClient(supabaseURL, supabaseKey)
 
+	gin.SetMode(gin.ReleaseMode)
 	app = gin.New()
 
 	r := app.Group("/api") // Vercel - must be /api/xxx

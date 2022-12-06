@@ -15,6 +15,7 @@
         totalRequests++;
       }
     }
+    console.log(totalRequests)
     requestsPerHour = ((24 * 7) / totalRequests).toFixed(2);
   }
 

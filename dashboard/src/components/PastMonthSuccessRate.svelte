@@ -3,7 +3,7 @@
 
   function pastMonth(date: Date): boolean {
     let monthAgo = new Date();
-    monthAgo.setDate(monthAgo.getDate() - 30);
+    monthAgo.setDate(monthAgo.getDate() - 60);
     return date > monthAgo;
   }
 
@@ -85,7 +85,7 @@
   .errors {
     display: flex;
     margin-top: 8px;
-    margin: 0 20px 0 45px;
+    margin: 0 15px 0 40px;
   }
   .error {
     background: var(--highlight);
