@@ -1,0 +1,12 @@
+[package]
+name = "example"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = "4"
+serde = { version = "1.0", features = ["derive"] }
+actix-analytics = "1.0.3"
+dotenv = "0.15.0"

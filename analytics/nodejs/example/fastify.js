@@ -1,6 +1,6 @@
 import Fastify from "fastify";
-import { fastifyAnalytics } from "../analytics.js";
-// import { fastifyAnalytics } from "node-api-analytics";
+// import { fastifyAnalytics } from "../analytics.js";
+import { fastifyAnalytics } from "node-api-analytics";
 import * as dotenv from "dotenv";
 dotenv.config();
 

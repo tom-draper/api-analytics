@@ -24,13 +24,17 @@ func main() {
 	supabaseURL, supabaseKey := GetDBLogin()
 	supabase := supa.CreateClient(supabaseURL, supabaseKey)
 
-	router := gin.Default()
+	app := gin.New()
 
-	router.Use(api.CORSMiddleware())
-	router.GET("/generate-api-key", api.GenAPIKeyHandler(supabase))
-	router.POST("/log-request", api.LogRequestHandler(supabase))
-	router.GET("/user-id/:apiKey", api.GetUserIDHandler(supabase))
-	router.GET("/data/:userID", api.GetDataHandler(supabase))
+	r := app.Group("/api") // Vercel - must be /api/xxx
 
-	router.Run("localhost:8080")
+	r.Use(api.CORSMiddleware())
+
+	// r.GET("/generate-api-key", api.GenAPIKeyHandler(supabase))
+	// r.POST("/log-request", api.LogRequestHandler(supabase))
+	// r.GET("/user-id/:apiKey", api.GetUserIDHandler(supabase))
+	// r.GET("/data/:userID", api.GetDataHandler(supabase))
+
+	api.RegisterRouter(r, supabase) // Register route
+	app.Run("localhost:8080")
 }

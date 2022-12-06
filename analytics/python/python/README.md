@@ -13,19 +13,15 @@ Head to https://my-api-analytics.vercel.app/generate to generate your unique API
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there should be virtually no impact on your APIs performance.
 
 ```bash
-python -m pip install api-analytics
+pip install api-analytics
 ```
 
 #### Django
 
-Set you API key as an environment variable.
-
-In `settings.py`:
+Assign your API key to `ANALYTICS_API_KEY` in `settings.py` and add the Analytics middleware to the top of your middleware stack.
 
 ```py
-from os import getenv
-
-ANALYTICS_API_KEY = getenv("API_KEY")
+ANALYTICS_API_KEY = <api_key>
 
 MIDDLEWARE = [
     'api_analytics.django.Analytics',
@@ -40,7 +36,7 @@ from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
 
 app = FastAPI()
-app.add_middleware(Analytics, <api_key>)
+app.add_middleware(Analytics, <api_key>)  # Add middleware
 
 @app.get("/")
 async def root():
@@ -54,11 +50,43 @@ from flask import Flask
 from api_analytics.flask import add_middleware
 
 app = Flask(__name__)
-add_middleware(app, <api_key>)
+add_middleware(app, <api_key>)  # Add middleware
 
 @app.get("/")
 def root():
     return {"message": "Hello World"}
+```
+
+#### Tornado
+
+Modify your handler to inherit from `Analytics`. Create a `__init__()` method on your handler, passing along the application and response along with your unique API key.
+
+```py
+import asyncio
+from tornado.web import Application
+
+from api_analytics.tornado import Analytics
+
+# Inherit from the Analytics middleware class
+class MainHandler(Analytics):
+    def __init__(self, app, res):
+        super().__init__(app, res, <api_key>)  # Pass api key
+
+    def get(self):
+        self.write({'message': 'Hello World!'})
+
+def make_app():
+    return Application([
+        (r"/", MainHandler),
+    ])
+
+async def main():
+    app = make_app()
+    app.listen(8080)
+    await asyncio.Event().wait()
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ### 3. View your analytics

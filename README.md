@@ -3,9 +3,11 @@
 A lightweight API analytics solution, complete with a dashboard.
 
 Currently compatible with:
- - Python: <b>Django</b>, <b>Flask</b> and <b>FastAPI</b>
+ - Python: <b>Django</b>, <b>FastAPI</b>, <b>Flask</b> and <b>Tornado</b>
  - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
  - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
+ - Rust: <b>Actix</b>, <b>Axum</b>
+ - Ruby: <b>Rails</b> and <b>Sinatra</b>
 
 ## Getting Started
 
@@ -17,20 +19,18 @@ Head to https://my-api-analytics.vercel.app/generate to generate your unique API
 
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on your APIs performance.
 
-#### Django
+#### Django 
+
+[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
 ```bash
-python -m pip install api-analytics
+pip install api-analytics
 ```
 
-Set you API key as an environment variable.
-
-In `settings.py`:
+Assign your API key to `ANALYTICS_API_KEY` in `settings.py` and add the Analytics middleware to the top of your middleware stack.
 
 ```py
-from os import getenv
-
-ANALYTICS_API_KEY = getenv("API_KEY")
+ANALYTICS_API_KEY = <api_key>
 
 MIDDLEWARE = [
     'api_analytics.django.Analytics',
@@ -39,6 +39,8 @@ MIDDLEWARE = [
 ```
 
 #### FastAPI
+
+[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
 ```bash
 pip install api-analytics
@@ -49,7 +51,7 @@ from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
 
 app = FastAPI()
-app.add_middleware(Analytics, api_key=<api_key>)
+app.add_middleware(Analytics, api_key=<api_key>)  # Add middleware
 
 @app.get('/')
 async def root():
@@ -57,6 +59,8 @@ async def root():
 ```
 
 #### Flask
+
+[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
 ```bash
 pip install api-analytics
@@ -67,14 +71,54 @@ from flask import Flask
 from api_analytics.flask import add_middleware
 
 app = Flask(__name__)
-add_middleware(app, <api_key>)
+add_middleware(app, <api_key>)  # Add middleware
 
 @app.get('/')
 def root():
     return {'message': 'Hello World!'}
 ```
 
+#### Tornado
+
+[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
+
+```bash
+pip install api-analytics
+```
+
+Modify your handler to inherit from `Analytics`. Create a `__init__()` method, passing along the application and response along with your unique API key.
+
+```py
+import asyncio
+from tornado.web import Application
+
+from api_analytics.tornado import Analytics
+
+# Inherit from the Analytics middleware class
+class MainHandler(Analytics):
+    def __init__(self, app, res):
+        super().__init__(app, res, <api_key>)  # Pass api key
+
+    def get(self):
+        self.write({'message': 'Hello World!'})
+
+def make_app():
+    return Application([
+        (r"/", MainHandler),
+    ])
+
+async def main():
+    app = make_app()
+    app.listen(8080)
+    await asyncio.Event().wait()
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
 #### Express
+
+[![Npm package version](https://badgen.net/npm/v/node-api-analytics)](https://npmjs.com/package/node-api-analytics)
 
 ```bash
 npm i node-api-analytics
@@ -84,9 +128,9 @@ npm i node-api-analytics
 import express from 'express';
 import { expressAnalytics } from 'node-api-analytics';
 
-const app = express()
+const app = express();
 
-app.use(analytics(<api_key>))
+app.use(analytics(<api_key>));  // Add middleware
 
 app.get('/', (req, res) => {
     res.send({ message: 'Hello World' });
@@ -99,6 +143,8 @@ app.listen(8080, () => {
 
 #### Fastify
 
+[![Npm package version](https://badgen.net/npm/v/node-api-analytics)](https://npmjs.com/package/node-api-analytics)
+
 ```bash
 npm i node-api-analytics
 ```
@@ -107,16 +153,16 @@ npm i node-api-analytics
 import Fastify from 'fastify';
 import { fastifyAnalytics } from 'node-api-analytics;
 
-const fastify = Fastify()
+const fastify = Fastify();
 
-fastify.addHook('onRequest', fastifyAnalytics(<api_key>));
+fastify.addHook('onRequest', fastifyAnalytics(<api_key>));  // Add middleware
 
 fastify.get('/', function (request, reply) {
   reply.send({ message: 'Hello World!' });
 })
 
 fastify.listen({ port: 8080 }, function (err, address) {
-  console.log('Server listening at http://localhost:8080')
+  console.log('Server listening at http://localhost:8080');
   if (err) {
     fastify.log.error(err);
     process.exit(1);
@@ -125,6 +171,8 @@ fastify.listen({ port: 8080 }, function (err, address) {
 ```
 
 #### Koa
+
+[![Npm package version](https://badgen.net/npm/v/node-api-analytics)](https://npmjs.com/package/node-api-analytics)
 
 ```bash
 npm i node-api-analytics
@@ -136,7 +184,7 @@ import { koaAnalytics } from 'node-api-analytics';
 
 const app = new Koa();
 
-app.use(koaAnalytics(<api_key>));
+app.use(koaAnalytics(<api_key>));  // Add middleware
 
 app.use((ctx) => {
   ctx.body = { message: 'Hello World!' };
@@ -148,6 +196,8 @@ app.listen(8080, () =>
 ```
 
 #### Gin
+
+[![Gin](https://img.shields.io/badge/go.mod-Gin-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/gin)
 
 ```bash
 go get -u github.com/tom-draper/api-analytics/analytics/go/gin
@@ -171,7 +221,7 @@ func root(c *gin.Context) {
 func main() {
 	router := gin.Default()
 	
-	router.Use(analytics.Analytics(<api_key>))
+	router.Use(analytics.Analytics(<api_key>)) // Add middleware
 
 	router.GET("/", root)
 	router.Run("localhost:8080")
@@ -179,6 +229,9 @@ func main() {
 ```
 
 #### Echo
+
+[![Echo](https://img.shields.io/badge/go.mod-Echo-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/echo)
+
 
 ```bash
 go get -u github.com/tom-draper/api-analytics/analytics/go/echo
@@ -203,7 +256,7 @@ func root(c echo.Context) {
 func main() {
 	router := echo.New()
 
-	router.Use(analytics.Analytics(<api_key>))
+	router.Use(analytics.Analytics(<api_key>)) // Add middleware
 
 	router.GET("/", root)
 	router.Start("localhost:8080")
@@ -211,6 +264,8 @@ func main() {
 ```
 
 #### Fiber
+
+[![Fiber](https://img.shields.io/badge/go.mod-Fiber-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/fiber)
 
 ```bash
 go get -u github.com/tom-draper/api-analytics/analytics/go/fiber
@@ -235,7 +290,7 @@ func root(c *fiber.Ctx) error {
 func main() {
 	app := fiber.New()
 
-	app.Use(analytics.Analytics(<api_key>))
+	app.Use(analytics.Analytics(<api_key>)) // Add middleware
 
 	app.Get("/", root)
 	app.Listen(":8080")
@@ -243,6 +298,8 @@ func main() {
 ```
 
 #### Chi
+
+[![Chi](https://img.shields.io/badge/go.mod-Chi-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/chi)
 
 ```bash
 go get -u github.com/tom-draper/api-analytics/analytics/go/chi
@@ -270,11 +327,145 @@ func root(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := chi.NewRouter()
 
-	router.Use(analytics.Analytics(<api_key>))
+	router.Use(analytics.Analytics(<api_key>)) // Add middleware
 
 	router.GET("/", root)
 	router.Run("localhost:8080")
 }
+```
+
+#### Actix
+
+[![Crates.io](https://img.shields.io/crates/v/actix-analytics.svg)](https://crates.io/crates/actix-analytics)
+
+```bash
+cargo add actix-analytics
+```
+
+```rust
+use actix_web::{get, web, Responder, Result};
+use serde::Serialize;
+use actix_analytics::Analytics;
+
+#[derive(Serialize)]
+struct JsonData {
+    message: String,
+}
+
+#[get("/")]
+async fn index() -> Result<impl Responder> {
+    let json_data = JsonData {
+        message: "Hello World!".to_string(),
+    };
+    Ok(web::Json(json_data))
+}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    use actix_web::{App, HttpServer};
+
+    HttpServer::new(|| {
+        App::new()
+            .wrap(Analytics::new(<api_key>))  // Add middleware
+            .service(index)
+    })
+    .bind(("127.0.0.1", 8080))?
+    .run()
+    .await
+}
+```
+
+#### Axum
+
+[![Crates.io](https://img.shields.io/crates/v/axum-analytics.svg)](https://crates.io/crates/axum-analytics)
+
+```bash
+cargo add axum-analytics
+```
+
+```rust
+use axum::{
+    routing::get,
+    Json, Router,
+};
+use serde::Serialize;
+use std::net::SocketAddr;
+use tokio;
+use actum_analytics::Analytics;
+
+#[derive(Serialize)]
+struct JsonData {
+    message: String,
+}
+
+async fn root() -> Json<JsonData> {
+    let json_data = JsonData {
+        message: "Hello World!".to_string(),
+    };
+    Json(json_data)
+}
+
+#[tokio::main]
+async fn main() {
+    let app = Router::new()
+        .layer(Analytics::new(<api_key>))  // Add middleware
+        .route("/", get(root));
+
+    let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
+    axum::Server::bind(&addr)
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
+}
+```
+
+#### Rails
+
+[![Gem version](https://img.shields.io/gem/v/api_analytics)](https://rubygems.org/gems/api_analytics)
+
+```bash
+gem install api_analytics
+```
+
+Add the analytics middleware to your rails application in `config/application.rb`.
+
+```ruby
+require 'rails'
+require 'api_analytics'
+
+Bundler.require(*Rails.groups)
+
+module RailsMiddleware
+  class Application < Rails::Application
+    config.load_defaults 6.1
+    config.api_only = true
+
+    config.middleware.use ::Analytics::Rails, <api_key> # Add middleware
+  end
+end
+```
+
+#### Sinatra
+
+[![Gem version](https://img.shields.io/gem/v/api_analytics)](https://rubygems.org/gems/api_analytics)
+
+```bash
+gem install api_analytics
+```
+
+```ruby
+require 'sinatra'
+require 'api_analytics'
+
+use Analytics::Sinatra, <api_key>
+
+before do
+    content_type 'application/json'
+end
+
+get '/' do
+    {message: 'Hello World!'}.to_json
+end
 ```
 
 ### 3. View your analytics

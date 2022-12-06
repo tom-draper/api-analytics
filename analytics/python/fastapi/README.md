@@ -13,15 +13,15 @@ Head to https://my-api-analytics.vercel.app/generate to generate your unique API
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there should be virtually no impact on your APIs performance.
 
 ```bash
-python -m pip install api-analytics
+pip install fastapi-analytics
 ```
 
 ```py
 from fastapi import FastAPI
-from api_analytics.fastapi import Analytics
+from fastapi_analytics.fastapi import Analytics
 
 app = FastAPI()
-app.add_middleware(Analytics, <api_key>)
+app.add_middleware(Analytics, <api_key>)  # Add middleware
 
 @app.get("/")
 async def root():

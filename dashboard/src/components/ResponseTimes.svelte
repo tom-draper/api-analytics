@@ -64,7 +64,7 @@
 
 <div class="card">
   <div class="card-title">
-    Response Times <span class="milliseconds">(ms)</span>
+    Response times <span class="milliseconds">(ms)</span>
   </div>
   <div class="values">
     <div class="value lower-quartile">{LQ}</div>

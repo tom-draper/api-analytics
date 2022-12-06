@@ -42,17 +42,16 @@ func Analytics(apiKey string) func(next http.Handler) http.Handler {
 
 			start := time.Now()
 			next.ServeHTTP(rw, r.WithContext(ctx))
-			elapsed := time.Since(start).Milliseconds()
 
 			data := core.Data{
 				APIKey:       apiKey,
 				Hostname:     r.Host,
 				Path:         r.URL.Path,
 				UserAgent:    r.UserAgent(),
-				Method:       core.MethodMap[r.Method],
-				ResponseTime: elapsed,
+				Method:       r.Method,
 				Status:       rw.status,
-				Framework:    7,
+				Framework:    "Chi",
+				ResponseTime: time.Since(start).Milliseconds(),
 			}
 
 			go core.LogRequest(data)

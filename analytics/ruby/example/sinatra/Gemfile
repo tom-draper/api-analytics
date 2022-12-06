@@ -1,0 +1,6 @@
+source 'https://rubygems.org'
+
+gem 'sinatra'
+gem 'sinatra-contrib'
+gem 'api_analytics'
+gem 'dotenv'

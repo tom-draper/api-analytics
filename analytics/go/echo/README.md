@@ -35,7 +35,7 @@ func root(c echo.Context) {
 func main() {
 	router := echo.New()
 
-	router.Use(analytics.Analytics(<api_key>))
+	router.Use(analytics.Analytics(<api_key>)) // Add middleware
 
 	router.GET("/", root)
 	router.Logger.Fatal(router.Start("localhost:8080"))

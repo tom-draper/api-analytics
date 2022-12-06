@@ -6,6 +6,7 @@ requires = [
 ]
 
 [project]
+name = "fastapi-analytics"
 authors = [{name = "Tom Draper", email = "tomjdraper1@gmail.com"}]
 classifiers = [
   "License :: OSI Approved :: MIT License",
@@ -16,10 +17,9 @@ dependencies = ["fastapi", "requests"]
 description = "Monitoring and analytics for FastAPI applications."
 keywords = ["analytics", "api", "dashboard", "fastapi", "middleware"]
 license = {file = "LICENSE"}
-name = "fastapi-analytics"
 readme = "README.md"
 requires-python = ">=3.7"
-version = "1.0.8"
+version = "1.0.14"
 
 [project.optional-dependencies]
 build = ["build", "twine"]

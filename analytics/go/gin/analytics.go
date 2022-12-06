@@ -11,17 +11,16 @@ func Analytics(apiKey string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		c.Next()
-		elapsed := time.Since(start).Milliseconds()
 
 		data := core.Data{
 			APIKey:       apiKey,
 			Hostname:     c.Request.Host,
 			Path:         c.Request.URL.Path,
 			UserAgent:    c.Request.UserAgent(),
-			Method:       core.MethodMap[c.Request.Method],
-			ResponseTime: elapsed,
+			Method:       c.Request.Method,
 			Status:       c.Writer.Status(),
-			Framework:    2,
+			Framework:    "Gin",
+			ResponseTime: time.Since(start).Milliseconds(),
 		}
 
 		go core.LogRequest(data)

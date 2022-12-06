@@ -31,7 +31,7 @@
 </script>
 
 <div class="card" title="Last week">
-  <div class="card-title">Success Rate</div>
+  <div class="card-title">Success rate</div>
   {#if successRate != undefined}
     <div
       class="value"
@@ -48,7 +48,7 @@
 <style>
   .card {
     width: calc(200px - 1em);
-    margin: 0 0 0 1em;
+    margin: 0 0 2em 1em;
   }
 
   .value {

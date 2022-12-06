@@ -21,17 +21,16 @@ class Analytics(BaseHTTPMiddleware):
     def dispatch(self, request: Request, call_next: Callable[[Request], Response]):
         start = time()
         response = call_next(request)
-        elapsed = time() - start
 
-        json = {
+        data = {
             'api_key': self.api_key,
             'hostname': request.host,
             'path': request.path,
             'user_agent': request.headers['user-agent'],
             'method': request.method,
             'status': response.status_code,
-            'response_time': int(elapsed * 1000),
-            'framework': 1
+            'framework': 'Flask',
+            'response_time': int((time() - start) * 1000),
         }
-        threading.Thread(target=log_request, args=(json,)).start()
+        threading.Thread(target=log_request, args=(data,)).start()
         return response
