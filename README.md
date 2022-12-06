@@ -21,7 +21,7 @@ Add our lightweight middleware to your API. Almost all processing is handled by 
 
 #### Django
 
-[![PyPi version](https://badgen.net/pypi/v/pip/)](https://pypi.org/project/api-analytics)
+[![PyPi version](https://pypi.org/project/api-analytics)](https://pypi.org/project/api-analytics)
 
 ```bash
 pip install api-analytics
