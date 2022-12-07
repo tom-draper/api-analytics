@@ -116,4 +116,9 @@
         flex-direction: column;
       }
   }
+  @media screen and (max-width: 1100px) {
+    .dashboard {
+      margin: 2em 0;
+    }
+  }
 </style>
