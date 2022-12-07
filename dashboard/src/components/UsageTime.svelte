@@ -48,7 +48,7 @@
         theta: dates,
         marker: { color: "#3fcf8e" },
         type: "barpolar",
-        // showlegend: false,
+        hovertemplate: `<b>%{r}</b> requests at <b>%{theta}</b><extra></extra>`,
       },
     ];
   }

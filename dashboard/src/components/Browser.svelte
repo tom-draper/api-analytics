@@ -37,7 +37,7 @@
     return {
       title: false,
       autosize: true,
-      margin: { r: 35, l: 70, t: 10, b: 20, pad: 0 },
+      margin: { r: 35, l: 70, t: 20, b: 20, pad: 0 },
       hovermode: "closest",
       plot_bgcolor: "transparent",
       paper_bgcolor: "transparent",
@@ -57,8 +57,13 @@
 
   let colors = [
     "#3FCF8E",  // Green
-    "#E46161",   // Red
+    "#5784BA",  // Blue
     "#EBEB81",  // Yellow
+    "#218B82",  // Sea green
+    "#FFD6A5",  // Orange
+    "#F9968B",  // Salmon
+    "#B1A2CA",  // Purple
+    "#E46161",  // Red
   ];
 
   function pieChart() {
@@ -118,14 +123,14 @@
   export let data: RequestsData;
 </script>
 
-<div class="card" title="Last week">
-  <div class="card-title">Browser</div>
+<!-- <div class="card">
+  <div class="card-title">Browser</div> -->
   <div id="plotly">
     <div id="plotDiv" bind:this={plotDiv}>
       <!-- Plotly chart will be drawn inside this DIV -->
     </div>
   </div>
-</div>
+<!-- </div> -->
 
 <style>
   .card {
