@@ -11,7 +11,8 @@
   import Browser from "../components/Browser.svelte";
   import OperatingSystem from "../components/OperatingSystem.svelte";
   import Version from "../components/Version.svelte";
-  import RequestTime from "../components/RequestTime.svelte";
+  import UsageTime from "../components/UsageTime.svelte";
+  import Growth from "../components/Growth.svelte";
 
   function formatUUID(userID: string): string {
     return `${userID.slice(0, 8)}-${userID.slice(8, 12)}-${userID.slice(
@@ -62,11 +63,12 @@
     </div>
     <div class="right">
       <PastMonth {data} />
+      <!-- <Growth {data} /> -->
       <div class="grid-row">
         <OperatingSystem {data} />
         <Browser {data} />
       </div>
-      <RequestTime {data} />
+      <UsageTime {data} />
     </div>
   </div>
 {:else if failed}

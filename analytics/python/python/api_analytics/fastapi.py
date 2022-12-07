@@ -29,5 +29,6 @@ class Analytics(BaseHTTPMiddleware):
             'framework': 'FastAPI',
             'response_time': int((time() - start) * 1000),
         }
+        
         threading.Thread(target=log_request, args=(data,)).start()
         return response
