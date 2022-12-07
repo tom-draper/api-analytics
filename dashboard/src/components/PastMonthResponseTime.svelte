@@ -13,7 +13,7 @@
       hovermode: "closest",
       plot_bgcolor: "transparent",
       paper_bgcolor: "transparent",
-      height: 150,
+      height: 161,
       yaxis: {
         title: { text: "Response time (ms)" },
         gridcolor: "gray",
