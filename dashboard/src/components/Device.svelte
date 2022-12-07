@@ -1,119 +1,70 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import Browser from "./Browser.svelte";
+  import OperatingSystem from "./OperatingSystem.svelte";
+  import DeviceType from "./DeviceType.svelte";
 
-  function getDevice(userAgent: string): string {
-    if (userAgent.match(/iPhone/)) {
-        return 'iPhone'
-    } else if (userAgent.match(/Android/)) {
-        return 'Android'
-    } else if (userAgent.match(/Tizen\//)) {
-        return 'Samsung'
-    } else {
-        return 'Other'
-    }
+  function setBtn(target: string) {
+    activeBtn = target
   }
 
-  function devicePlotLayout() {
-    return {
-      title: false,
-      autosize: true,
-      margin: { r: 35, l: 70, t: 10, b: 20, pad: 0 },
-      hovermode: "closest",
-      plot_bgcolor: "transparent",
-      paper_bgcolor: "transparent",
-      height: 180,
-      yaxis: {
-        title: { text: "Requests" },
-        gridcolor: "gray",
-        showgrid: false,
-        fixedrange: true,
-      },
-      xaxis: {
-        visible: false,
-      },
-      dragmode: false,
-    };
-  }
-
-  let colors = [
-    "#3FCF8E",  // Green
-    "#E46161",   // Red
-    "#EBEB81",  // Yellow
-  ];
-
-  function pieChart() {
-    let deviceCount = {}
-    for (let i = 0; i < data.length; i++) {
-        let browser = getDevice(data[i].user_agent)
-        if (!(browser in deviceCount)) {
-            deviceCount[browser] = 0
-        }
-        deviceCount[browser]++
-    }
-
-    let device = [];
-    let count = [];
-    for (let browser in deviceCount) {
-        device.push(browser);
-        count.push(deviceCount[browser])
-    }
-    return [{
-    values: count,
-        labels: device,
-        type: 'pie',
-          marker: {
-            colors: colors
-        },
-    }];
-  }
-
-  function devicePlotData() {
-    return {
-      data: pieChart(),
-      layout: devicePlotLayout(),
-      config: {
-        responsive: true,
-        showSendToCloud: false,
-        displayModeBar: false,
-      },
-    };
-  }
-
-  function genPlot() {
-    let plotData = devicePlotData();
-    //@ts-ignore
-    new Plotly.newPlot(
-      plotDiv,
-      plotData.data,
-      plotData.layout,
-      plotData.config
-    );
-  }
-
-  let plotDiv: HTMLDivElement;
-  onMount(() => {
-    genPlot();
-  });
-
+  let activeBtn = "os";
   export let data: RequestsData;
 </script>
 
 <div class="card" title="Last week">
-  <div class="card-title">Device</div>
-  <div id="plotly">
-    <div id="plotDiv" bind:this={plotDiv}>
-      <!-- Plotly chart will be drawn inside this DIV -->
+  <div class="card-title">
+    Device
+  
+    <div class="toggle">
+      <button class="{activeBtn == 'os' ? 'active' : ''}" on:click="{() => {setBtn('os')}}">OS</button>
+      <button class="{activeBtn == 'browser' ? 'active' : ''}" on:click="{() => {setBtn('browser')}}">Browser</button>
+      <button class="{activeBtn == 'device' ? 'active' : ''}" on:click="{() => {setBtn('device')}}">Device</button>
     </div>
+  </div>
+  <div class="os" style="{activeBtn == 'os' ? 'display: initial' : ''}">
+    <OperatingSystem {data} />
+  </div>
+  <div class="browser" style="{activeBtn == 'browser' ? 'display: initial' : ''}">
+    <Browser {data} />
+  </div>
+  <div class="device" style="{activeBtn == 'device' ? 'display: initial' : ''}">
+    <DeviceType {data} />
   </div>
 </div>
 
 <style>
   .card {
-    margin: 2em 0;
-    padding-bottom: 1em;
+    margin: 2em 0 2em 1em;
     flex: 1;
+    padding-bottom: 1em;
+    width: 420px;
   }
-  #plotDiv {
-    margin-right: 20px;
+  .card-title {
+    display: flex;
+  }
+  .toggle {
+    margin-left: auto;
+  }
+  .active {
+    background: var(--highlight);
+  }
+  .os,
+  .browser,
+  .device {
+    display: none;
+  }
+  button {
+    border: none;
+    border-radius: 4px;
+    background: rgb(68, 68, 68);
+    cursor: pointer;
+    padding: 2px 6px;
+    margin-left: 5px;
+  }
+  @media screen and (max-width: 1580px){
+    .card {
+        margin: 0 0 2em;
+        width: 100%;
+      }
   }
 </style>

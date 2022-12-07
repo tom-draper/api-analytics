@@ -9,6 +9,6 @@
     color: var(--highlight);
   }
   .footer {
-    margin: 2em 0;
+    margin: 2em 0 3em;
   }
 </style>

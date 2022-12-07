@@ -1,13 +1,15 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
+  let methodMap = ['GET', 'POST']
+
   function endpointFreq(): any {
     let freq = {};
     for (let i = 0; i < data.length; i++) {
       let endpointID = data[i].path + data[i].status;
       if (!(endpointID in freq)) {
         freq[endpointID] = {
-          path: data[i].path,
+          path: `${methodMap[data[i].method]}  ${data[i].path}`,
           status: data[i].status,
           count: 0,
         };
@@ -16,6 +18,7 @@
     }
     return freq;
   }
+
 
   function build() {
     let freq = endpointFreq();
@@ -99,7 +102,7 @@
     min-height: 361px;
   }
   .endpoints {
-    margin: 1em 20px 0.6em;
+    margin: 0.9em 20px 0.6em;
   }
   .endpoint {
     border-radius: 3px;
@@ -107,6 +110,7 @@
     color: var(--light-background);
     text-align: left;
     position: relative;
+    font-size: 0.85em;
   }
   .endpoint-label {
     display: flex;
@@ -131,5 +135,6 @@
     margin: 6px 0;
     color: #707070;
     display: none;
+    font-size: 0.85em;
   }
 </style>

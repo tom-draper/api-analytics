@@ -8,7 +8,7 @@
   }
 
   let colors = [
-    "#444444", // Grey (no requests)
+    "rgb(40, 40, 40)", // Grey (no requests)
     "#E46161", // Red
     "#F18359",
     "#F5A65A",
@@ -74,7 +74,7 @@
         <div
           class="error"
           style="background: {colors[Math.floor(value * 10) + 1]}"
-          title="{(value * 100).toFixed(1)}%"
+          title="{value > 0 ? (value * 100).toFixed(1) + '%' : 'No data'}"
         />
       {/each}
     </div>
