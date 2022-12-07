@@ -5,6 +5,8 @@
 
   function setBtn(target: string) {
     activeBtn = target
+    // Resize window to trigger new plot resize to match current card size
+    window.dispatchEvent(new Event('resize'));
   }
 
   let activeBtn = "os";
@@ -35,7 +37,7 @@
 <style>
   .card {
     margin: 2em 0 2em 1em;
-    flex: 1;
+    /* flex: 1; */
     padding-bottom: 1em;
     width: 420px;
   }

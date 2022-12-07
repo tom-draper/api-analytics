@@ -42,6 +42,7 @@
       plot_bgcolor: "transparent",
       paper_bgcolor: "transparent",
       height: 180,
+      width: 411,
       yaxis: {
         title: { text: "Requests" },
         gridcolor: "gray",

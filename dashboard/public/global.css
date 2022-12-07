@@ -58,6 +58,10 @@ p {
   padding: 20px 20px 0;
 }
 
+.svg-container {
+  margin: auto !important;
+}
+
 .footer-logo {
   width: 12px;
   margin-top: 10px;
