@@ -8,8 +8,6 @@
   import Footer from "../components/Footer.svelte";
   import SuccessRate from "../components/SuccessRate.svelte";
   import PastMonth from "../components/PastMonth.svelte";
-  import Browser from "../components/Browser.svelte";
-  import OperatingSystem from "../components/OperatingSystem.svelte";
   import Version from "../components/Version.svelte";
   import UsageTime from "../components/UsageTime.svelte";
   import Growth from "../components/Growth.svelte";
@@ -67,9 +65,6 @@
       <div class="grid-row">
         <Growth {data} />
         <Device {data} />
-        <!-- <Device {data} /> -->
-        <!-- <OperatingSystem {data} /> -->
-        <!-- <Browser {data} /> -->
       </div>
       <UsageTime {data} />
     </div>

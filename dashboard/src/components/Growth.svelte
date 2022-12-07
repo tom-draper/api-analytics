@@ -36,14 +36,13 @@
       }
     }
 
-    requestsChange = (((thisWeek.requests + 1) / (prevWeek.requests + 1)) * 100);
-    successChange = ((((thisWeek.success + 1) / (thisWeek.requests + 1)) + 1) / (((prevWeek.success + 1) / (prevWeek.requests + 1)) + 1)) * 100
-    responseTimeChange = ((((thisWeek.responseTime + 1) / (thisWeek.requests + 1)) + 1) / (((prevWeek.responseTime + 1) / (prevWeek.requests + 1)) + 1)) * 100
+    let requestsChange = (((thisWeek.requests + 1) / (prevWeek.requests + 1)) * 100);
+    let successChange = ((((thisWeek.success + 1) / (thisWeek.requests + 1)) + 1) / (((prevWeek.success + 1) / (prevWeek.requests + 1)) + 1)) * 100
+    let responseTimeChange = ((((thisWeek.responseTime + 1) / (thisWeek.requests + 1)) + 1) / (((prevWeek.responseTime + 1) / (prevWeek.requests + 1)) + 1)) * 100
+    change = {requests: requestsChange, success: successChange, responseTime: responseTimeChange}
   }
 
-  let requestsChange: number;
-  let successChange: number;
-  let responseTimeChange: number;
+  let change: any;
   onMount(() => {
     buildWeek();
   });
@@ -54,18 +53,17 @@
 <div class="card">
   <div class="card-title">Growth</div>
   <div class="values">
-    {#if requestsChange != undefined}
+    {#if change != undefined}
         <div class="tile">
           <div class="tile-value">
             <span
-              style="color: {requestsChange > 0
+              style="color: {change.requests > 0
                 ? 'var(--highlight)'
-                : 'var(--red)'}">{requestsChange >= 0 ? '+' : '-'}{requestsChange.toFixed(1)}%</span
+                : 'var(--red)'}">{change.requests >= 0 ? '+' : '-'}{change.requests.toFixed(1)}%</span
             >
           </div>
           <div class="tile-label">Requests</div>
         </div>
-    {/if}
     <!-- {#if requestsChange != undefined}
         <div class="tile">
           <div class="tile-value">
@@ -78,25 +76,22 @@
           <div class="tile-label">Users</div>
         </div>
     {/if} -->
-    {#if successChange != undefined}
         <div class="tile">
           <div class="tile-value">
             <span
-              style="color: {successChange > 0
+              style="color: {change.success > 0
                 ? 'var(--highlight)'
-                : 'var(--red)'}">{successChange >= 0 ? '+' : '-'}{successChange.toFixed(1)}%</span
+                : 'var(--red)'}">{change.success >= 0 ? '+' : '-'}{change.success.toFixed(1)}%</span
             >
           </div>
           <div class="tile-label">Success rate</div>
         </div>
-    {/if}
-    {#if responseTimeChange != undefined}
         <div class="tile">
           <div class="tile-value">
             <span
-              style="color: {responseTimeChange > 0
+              style="color: {change.responseTime > 0
                 ? 'var(--highlight)'
-                : 'var(--red)'}">{responseTimeChange >= 0 ? '+' : '-'}{responseTimeChange.toFixed(1)}%</span
+                : 'var(--red)'}">{change.responseTime >= 0 ? '+' : '-'}{change.responseTime.toFixed(1)}%</span
             >
           </div>
           <div class="tile-label">Response time</div>
