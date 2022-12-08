@@ -130,6 +130,7 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 		if err := c.BindJSON(&requestData); err != nil {
 			panic(err)
 		}
+		fmt.Println(requestData)
 
 		if requestData.APIKey == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
