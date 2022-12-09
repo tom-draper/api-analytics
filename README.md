@@ -472,6 +472,8 @@ end
 
 Your API will log and store request data on all valid routes. Your logged data can be viewed using two methods: through visualizations and stats on our dashboard, or accessed directly via our data API.
 
+You can use the same API key across multiple APIs, but all your data will appear in the same dashboard. We recommend generating a new API key for each additional API you want analytics for.
+
 #### Dashboard
 
 Head over to https://my-api-analytics.vercel.app/dashboard and paste in your API key to view your dashboard.
@@ -511,9 +513,3 @@ For any given request to your API, data recorded is limited to:
 Data collected is only used by the analytics dashboard.
 
 When using API Analytics to collect analytics for your API, you are anonymous, with the API key the only link between you and you API's analytics. Should you lose your API key, you will have no method to access your API analytics.
-
-## Frequently Asked Questions
-
-### I have multiple APIs, can I used the same API key across all of them?
-
-You can use the same API key across multiple APIs, but all your data will appear in the same dashboard. We recommend generating a new API key for each additional API you want analytics for.
