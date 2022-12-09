@@ -439,9 +439,28 @@ end
 
 ### 3. View your analytics
 
-Your API will log and store request data on all valid routes. Head over to https://my-api-analytics.vercel.app/dashboard and paste in your API key to view your dashboard.
+Your API will log and store request data on all valid routes. Your logged data can be viewed using two methods: through visualizations and stats on our dashboard, or accessed directly via our data API.
+
+#### Dashboard
+
+Head over to https://my-api-analytics.vercel.app/dashboard and paste in your API key to view your dashboard.
 
 ![dashboard](https://user-images.githubusercontent.com/41476809/204396681-7f38558c-33df-4434-aae8-17703d4422fe.png)
+
+#### Data API
+
+The logged data for all requests can be accessed via our API. Simply send a GET request to `https://api-analytics-server/api/data` with your API key set as `API-Key` in headers.
+
+```py
+import requests
+
+headers = {
+ "API-Key": <api_key>
+}
+
+response = requests.get("https://api-analytics-server/api/data", headers=headers)
+print(response.json())
+```
 
 ## Data and Security
 
@@ -462,4 +481,8 @@ Data collected is only used by the analytics dashboard.
 
 When using API Analytics to collect analytics for your API, you are anonymous, with the API key the only link between you and you API's analytics. Should you lose your API key, you will have no method to access your API analytics.
 
-You can use the same API key across multiple APIs, but all your data will appear in the same dashboard.
+## Frequently Asked Questions
+
+### I have multiple APIs I want analytics for, can I used the same API key for all of them?
+
+You can use the same API key across multiple APIs, but all your data will appear in the same dashboard. We recommend generating a new API key for each additional API you want analytics for.

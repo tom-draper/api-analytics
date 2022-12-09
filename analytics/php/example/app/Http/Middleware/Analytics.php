@@ -13,8 +13,6 @@ class Analytics {
         $start = microtime(true);
         $response = $next($request);
 
-        echo $this->api_key;
-
         $data = array(
             'api_key' => $this->api_key,
             'host' => $request->host(),
