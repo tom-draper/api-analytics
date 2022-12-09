@@ -510,6 +510,4 @@ For any given request to your API, data recorded is limited to:
  - Response time
  - API framework (FastAPI, Flask, Express etc.)
 
-Data collected is only used by the analytics dashboard.
-
-When using API Analytics to collect analytics for your API, you are anonymous, with the API key the only link between you and you API's analytics. Should you lose your API key, you will have no method to access your API analytics.
+Data collected is only ever used by our analytics dashboard. Your data is anonymous, with the API key the only link between you and you API's analytics. Should you lose your API key, you will have no method to access your API analytics.
