@@ -6,7 +6,7 @@ Currently compatible with:
  - Python: <b>Django</b>, <b>FastAPI</b>, <b>Flask</b> and <b>Tornado</b>
  - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
  - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
- - Rust: <b>Actix</b>, <b>Axum</b>
+ - Rust: <b>Actix</b> and <b>Axum</b>
  - Ruby: <b>Rails</b> and <b>Sinatra</b>
 
 ## Getting Started
