@@ -514,6 +514,6 @@ When using API Analytics to collect analytics for your API, you are anonymous, w
 
 ## Frequently Asked Questions
 
-### I have multiple APIs I want analytics for, can I used the same API key for all of them?
+### I have multiple APIs, can I used the same API key across all of them?
 
 You can use the same API key across multiple APIs, but all your data will appear in the same dashboard. We recommend generating a new API key for each additional API you want analytics for.
