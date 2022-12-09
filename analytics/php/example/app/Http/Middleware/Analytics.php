@@ -6,12 +6,17 @@ use Closure;
  
 class Analytics {
 
+    public function __construct() {
+        $this->api_key = getenv("ANALYTICS_API_KEY");
+    }
     public function handle($request, Closure $next) {
         $start = microtime(true);
         $response = $next($request);
- 
+
+        echo $this->api_key;
+
         $data = array(
-            'api_key' => '',
+            'api_key' => $this->api_key,
             'host' => $request->host(),
             'path' => $request->path(),
             'method' => $request->method(),
@@ -29,18 +34,22 @@ class Analytics {
     private function log_request($data) {
         $url = "http://localhost:8080/api/log-request";
     
-        $context = stream_context_create(array(
-            'http' => array(
-                'header'  => "Content-type: application/json\r\n",
-                'method'  => 'POST',
-                'content' => json_encode($data),
-                // 'timeout' => .01  // Don't wait for response
-            )
-            ));
+        $options = array(
+                'http' => array(
+                    'header'  => "Content-type: application/json\r\n",
+                    'method'  => 'POST',
+                    'content' => json_encode($data),
+                    // 'timeout' => .01  // Don't wait for response
+                )
+        );
+        
         try {
-            file_get_contents($url, false, $context);
-        } catch( Exception $e ){
-            // Fail silently
+            $context = stream_context_create($options);
+            if (($result = file_get_contents($url, false, $context)) === false) {
+                var_dump($http_response_header);
+            }
+        }  catch (Exception $e) {
+            // Fails silently
         }
     }
 }

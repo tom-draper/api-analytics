@@ -118,6 +118,8 @@ func frameworkMap(framework string) (int16, error) {
 		return 12, nil
 	case "Rails":
 		return 13, nil
+	case "Laravel":
+		return 14, nil
 	default:
 		return -1, fmt.Errorf("error: invalid framework")
 	}
@@ -130,7 +132,6 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 		if err := c.BindJSON(&requestData); err != nil {
 			panic(err)
 		}
-		fmt.Println(requestData)
 
 		if requestData.APIKey == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
@@ -160,7 +161,8 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 			var result []interface{}
 			err = supabase.DB.From("Requests").Insert(request).Execute(&result)
 			if err != nil {
-				panic(err)
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+				return
 			}
 
 			// Return success response
