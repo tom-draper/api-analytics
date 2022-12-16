@@ -45,11 +45,11 @@
       <div class="loader" style="display: {loading ? 'initial' : 'none'}" />
     </div>
 
-    <div class="details">
-      <div class="keep-secure">Keep your API key safe and secure.</div>
-      <div class="highlight logo">API Analytics</div>
-      <img class="footer-logo" src="img/logo.png" alt="">
-    </div>
+  </div>
+  <div class="details">
+    <div class="keep-secure">Keep your API key safe and secure.</div>
+    <div class="highlight logo">API Analytics</div>
+    <img class="footer-logo" src="img/logo.png" alt="">
   </div>
 </div>
 
@@ -71,13 +71,14 @@
     padding: 3.5em 4em 4em;
     border-radius: 9px;
     margin: 20vh 0 2vh;
+    height: 400px;
   }
   input {
     background: #1c1c1c;
     background: #343434;
     border: none;
     padding: 0 20px;
-    width: 300px;
+    width: 310px;
     font-size: 1em;
     text-align: center;
     height: 40px;
@@ -125,7 +126,7 @@
 
   .spinner {
     height: 7em;
-    margin-bottom: 5em;
+    /* margin-bottom: 5em; */
   }
   #generateBtn {
     background: #3fcf8e;

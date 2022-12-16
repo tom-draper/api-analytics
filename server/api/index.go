@@ -118,6 +118,8 @@ func frameworkMap(framework string) (int16, error) {
 		return 12, nil
 	case "Rails":
 		return 13, nil
+	case "Laravel":
+		return 14, nil
 	default:
 		return -1, fmt.Errorf("error: invalid framework")
 	}
@@ -159,7 +161,8 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 			var result []interface{}
 			err = supabase.DB.From("Requests").Insert(request).Execute(&result)
 			if err != nil {
-				panic(err)
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+				return
 			}
 
 			// Return success response
@@ -206,9 +209,9 @@ type RequestRow struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
-func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
+func GetUserDataHandler(supabase *supa.Client) gin.HandlerFunc {
 	getData := func(c *gin.Context) {
-		// Collect user ID sent via POST request
+		// Collect user ID from params
 		userID := c.Param("userID")
 
 		// Fetch all API request data associated with this account
@@ -218,7 +221,8 @@ func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
 		}
 		err := supabase.DB.From("Users").Select("api_key, Requests!inner(*)").Eq("user_id", userID).Execute(&result)
 		if err != nil {
-			panic(err)
+			c.JSON(400, gin.H{"message": "Invalid user ID."})
+			return
 		}
 
 		// Return API request data
@@ -228,27 +232,61 @@ func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
 	return gin.HandlerFunc(getData)
 }
 
-func CORSMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
+	getData := func(c *gin.Context) {
+		// Collect API key sent in header request
+		apiKey := c.GetHeader("API-Key")
 
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
+		// Fetch all API request data associated with this account
+		var result []RequestRow
+		err := supabase.DB.From("Requests").Select("hostname", "path", "user_agent", "method", "created_at", "responses", "framework", "status").Eq("api_key", apiKey).Execute(&result)
+		if err != nil {
+			c.JSON(400, gin.H{"message": "Invalid API key."})
 			return
 		}
 
-		c.Next()
+		// Return API request data
+		c.JSON(200, gin.H{"value": result})
 	}
+
+	return gin.HandlerFunc(getData)
+}
+
+func DeleteDataHandler(supabase *supa.Client) gin.HandlerFunc {
+	getData := func(c *gin.Context) {
+		// Collect API key sent in header request
+		apiKey := c.Param("apiKey")
+
+		// Delete all API request data associated with this account
+		var requestResult []RequestRow
+		err := supabase.DB.From("Requests").Delete().Eq("api_key", apiKey).Execute(&requestResult)
+		if err != nil {
+			c.JSON(400, gin.H{"message": "Invalid API key."})
+			return
+		}
+
+		// // Delete user account record
+		var userResult []User
+		err = supabase.DB.From("Users").Delete().Eq("api_key", apiKey).Execute(&userResult)
+		if err != nil {
+			c.JSON(400, gin.H{"message": "Invalid API key."})
+			return
+		}
+
+		// Return API request data
+		c.JSON(200, gin.H{"status": 200})
+	}
+
+	return gin.HandlerFunc(getData)
 }
 
 func RegisterRouter(r *gin.RouterGroup, supabase *supa.Client) {
 	r.GET("/generate-api-key", GenAPIKeyHandler(supabase))
 	r.POST("/log-request", LogRequestHandler(supabase))
 	r.GET("/user-id/:apiKey", GetUserIDHandler(supabase))
-	r.GET("/data/:userID", GetDataHandler(supabase))
+	r.GET("/data", GetDataHandler(supabase))
+	r.GET("/user-data/:userID", GetUserDataHandler(supabase))
+	r.GET("/delete/:apiKey", DeleteDataHandler(supabase))
 }
 
 func getDBLogin() (string, string) {
@@ -266,7 +304,6 @@ func init() {
 
 	r := app.Group("/api") // Vercel - must be /api/xxx
 
-	// r.Use(CORSMiddleware())
 	r.Use(cors.Default())
 	RegisterRouter(r, supabase) // Register route
 }

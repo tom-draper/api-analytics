@@ -4,6 +4,7 @@ import (
 	"os"
 	api "server/api"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	supa "github.com/nedpals/supabase-go"
@@ -28,12 +29,7 @@ func main() {
 
 	r := app.Group("/api") // Vercel - must be /api/xxx
 
-	r.Use(api.CORSMiddleware())
-
-	// r.GET("/generate-api-key", api.GenAPIKeyHandler(supabase))
-	// r.POST("/log-request", api.LogRequestHandler(supabase))
-	// r.GET("/user-id/:apiKey", api.GetUserIDHandler(supabase))
-	// r.GET("/data/:userID", api.GetDataHandler(supabase))
+	r.Use(cors.Default())
 
 	api.RegisterRouter(r, supabase) // Register route
 	app.Run("localhost:8080")

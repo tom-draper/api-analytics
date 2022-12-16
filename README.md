@@ -6,7 +6,7 @@ Currently compatible with:
  - Python: <b>Django</b>, <b>FastAPI</b>, <b>Flask</b> and <b>Tornado</b>
  - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
  - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
- - Rust: <b>Actix</b>, <b>Axum</b>
+ - Rust: <b>Actix</b> and <b>Axum</b>
  - Ruby: <b>Rails</b> and <b>Sinatra</b>
 
 ## Getting Started
@@ -470,9 +470,30 @@ end
 
 ### 3. View your analytics
 
-Your API will log and store request data on all valid routes. Head over to https://my-api-analytics.vercel.app/dashboard and paste in your API key to view your dashboard.
+Your API will log and store request data on all valid routes. Your logged data can be viewed using two methods: through visualizations and stats on our dashboard, or accessed directly via our data API.
+
+You can use the same API key across multiple APIs, but all your data will appear in the same dashboard. We recommend generating a new API key for each additional API you want analytics for.
+
+#### Dashboard
+
+Head over to https://my-api-analytics.vercel.app/dashboard and paste in your API key to view your dashboard.
 
 ![dashboard](https://user-images.githubusercontent.com/41476809/204396681-7f38558c-33df-4434-aae8-17703d4422fe.png)
+
+#### Data API
+
+The logged data for all requests can be accessed via our API. Simply send a GET request to `https://api-analytics-server/api/data` with your API key set as `API-Key` in headers.
+
+```py
+import requests
+
+headers = {
+ "API-Key": <api_key>
+}
+
+response = requests.get("https://api-analytics-server/api/data", headers=headers)
+print(response.json())
+```
 
 ## Data and Security
 
@@ -489,8 +510,6 @@ For any given request to your API, data recorded is limited to:
  - Response time
  - API framework (FastAPI, Flask, Express etc.)
 
-Data collected is only used by the analytics dashboard.
+Data collected is only ever used by our analytics dashboard. Your data is anonymous, with the API key the only link between you and you API's analytics. Should you lose your API key, you will have no method to access your API analytics.
 
-When using API Analytics to collect analytics for your API, you are anonymous, with the API key the only link between you and you API's analytics. Should you lose your API key, you will have no method to access your API analytics.
-
-You can use the same API key across multiple APIs, but all your data will appear in the same dashboard.
+To delete all stored data associated with your API key, head to https://my-api-analytics.vercel.app/delete and enter your API key.
