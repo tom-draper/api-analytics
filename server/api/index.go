@@ -252,12 +252,41 @@ func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
 	return gin.HandlerFunc(getData)
 }
 
+func DeleteDataHandler(supabase *supa.Client) gin.HandlerFunc {
+	getData := func(c *gin.Context) {
+		// Collect API key sent in header request
+		apiKey := c.Param("apiKey")
+
+		// Delete all API request data associated with this account
+		var requestResult []RequestRow
+		err := supabase.DB.From("Requests").Delete().Eq("api_key", apiKey).Execute(&requestResult)
+		if err != nil {
+			c.JSON(400, gin.H{"message": "Invalid API key."})
+			return
+		}
+
+		// // Delete user account record
+		var userResult []User
+		err = supabase.DB.From("Users").Delete().Eq("api_key", apiKey).Execute(&userResult)
+		if err != nil {
+			c.JSON(400, gin.H{"message": "Invalid API key."})
+			return
+		}
+
+		// Return API request data
+		c.JSON(200, gin.H{"status": 200})
+	}
+
+	return gin.HandlerFunc(getData)
+}
+
 func RegisterRouter(r *gin.RouterGroup, supabase *supa.Client) {
 	r.GET("/generate-api-key", GenAPIKeyHandler(supabase))
 	r.POST("/log-request", LogRequestHandler(supabase))
 	r.GET("/user-id/:apiKey", GetUserIDHandler(supabase))
 	r.GET("/data", GetDataHandler(supabase))
-	r.GET("/data/:userID", GetUserDataHandler(supabase))
+	r.GET("/user-data/:userID", GetUserDataHandler(supabase))
+	r.GET("/delete/:apiKey", DeleteDataHandler(supabase))
 }
 
 func getDBLogin() (string, string) {

@@ -1,17 +1,18 @@
 <script lang="ts">
   let apiKey = "";
   let loading = false
+  let message = '';
   async function genAPIKey() {
     loading = true;
     // Fetch page ID
     const response = await fetch(
-      `https://api-analytics-server.vercel.app/api/user-id/${apiKey}`
+      `https://api-analytics-server.vercel.app/api/delete/${apiKey}`
     );
-    console.log(response);
 
     if (response.status == 200) {
-      const data = await response.json();
-      window.location.href = `/dashboard/${data.value.replaceAll("-", "")}`;
+      message = 'Deleted successfully'
+    } else {
+      message = 'Error: API key invalid'
     }
     loading = false;
   }
@@ -19,15 +20,16 @@
 
 <div class="generate">
   <div class="content">
-    <h2>Dashboard</h2>
+    <h2>Delete all stored data</h2>
     <input type="text" bind:value={apiKey} placeholder="Enter API key"/>
-    <button id="generateBtn" on:click={genAPIKey}>Load</button>
+    <button id="generateBtn" on:click={genAPIKey}>Delete</button>
+    <div class="notification">{message}</div>
     <div class="spinner">
       <div class="loader" style="display: {loading ? 'initial' : 'none'}" />
     </div>
   </div>
   <div class="details">
-    <div class="keep-secure">Keep your API key safe and secure.</div>
+    <!-- <div class="keep-secure">Keep your API key safe and secure.</div> -->
     <div class="highlight logo">API Analytics</div>
     <img class="footer-logo" src="img/logo.png" alt="">
   </div>
@@ -81,10 +83,12 @@
   .details {
     /* margin-top: 15rem; */
     font-size: 0.8em;
+    margin-top: calc(15px + 1em);
   }
-  .keep-secure {
-    color: #5a5a5a;
-    margin-bottom: 1em;
+  .notification {
+    color: #3fcf8e;
+    margin-top: 32px;
+    height: 16px;
   }
   #generateBtn {
     background: #3fcf8e;
