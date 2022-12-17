@@ -1,28 +1,24 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  function thisWeek(date: Date): boolean {
-    let weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    return date > weekAgo;
-  }
-
   function build() {
     let totalRequests = 0;
     for (let i = 0; i < data.length; i++) {
-      let date = new Date(data[i].created_at);
-      if (thisWeek(date)) {
-        totalRequests++;
-      }
+      totalRequests++;
     }
-    console.log(totalRequests)
-    requestsPerHour = ((24 * 7) / totalRequests).toFixed(2);
+    if (totalRequests > 0) {
+      requestsPerHour = ((24 * 7) / totalRequests).toFixed(2);
+    } else {
+      requestsPerHour = '0';
+    }
   }
 
   let requestsPerHour: string;
   onMount(() => {
     build();
   });
+
+  $: data && build();
 
   export let data: RequestsData;
 </script>

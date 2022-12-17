@@ -1,31 +1,28 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  function pastWeek(date: Date): boolean {
-    let weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    return date > weekAgo;
-  }
-
   function build() {
     let totalRequests = 0;
     let successfulRequests = 0;
     for (let i = 0; i < data.length; i++) {
-      let date = new Date(data[i].created_at);
-      if (pastWeek(date)) {
-        if (data[i].status >= 200 && data[i].status <= 299) {
-          successfulRequests++;
-        }
-        totalRequests++;
+      if (data[i].status >= 200 && data[i].status <= 299) {
+        successfulRequests++;
       }
+      totalRequests++;
     }
-    successRate = (successfulRequests / totalRequests) * 100;
+    if (totalRequests > 0) {
+      successRate = (successfulRequests / totalRequests) * 100;
+    } else {
+      successRate = 100;
+    }
   }
 
   let successRate: number;
   onMount(() => {
     build();
   });
+
+  $: data && build();
 
   export let data: RequestsData;
 </script>

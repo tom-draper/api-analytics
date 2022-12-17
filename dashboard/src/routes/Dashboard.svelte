@@ -7,7 +7,7 @@
   import Endpoints from "../components/Endpoints.svelte";
   import Footer from "../components/Footer.svelte";
   import SuccessRate from "../components/SuccessRate.svelte";
-  import PastMonth from "../components/PastMonth.svelte";
+  import Activity from "../components/Activity.svelte";
   import Version from "../components/Version.svelte";
   import UsageTime from "../components/UsageTime.svelte";
   import Growth from "../components/Growth.svelte";
@@ -25,19 +25,70 @@
     // Fetch page ID
     try {
       const response = await fetch(
-        `https://api-analytics-server.vercel.app/api/data/${userID}`
+        `https://api-analytics-server.vercel.app/api/user-data/${userID}`
       );
       if (response.status == 200) {
         const json = await response.json();
         data = json.value;
         console.log(data);
+        setPeriod('month');
       }
     } catch (e) {
       failed = true;
     }
   }
 
+  function daysAgo(date: Date, days: number): boolean {
+    let monthAgo = new Date();
+    monthAgo.setDate(monthAgo.getDate() - days);
+    return date > monthAgo;
+  }
+
+  function allTimePeriod(date: Date) {
+    return true
+  }
+
+  function periodToDays(period: string): number {
+    if (period == '24-hours') {
+      return 1
+    } else if (period == 'week') {
+      return 8
+    } else if (period == 'month') {
+      return 30
+    } else if (period == '3-months') {
+      return 30*3
+    } else if (period == '6-months') {
+      return 30*6
+    } else if (period == 'year') {
+      return 365
+    } else {
+      return null
+    }
+  }
+  
+  function setPeriod(value: string) {
+    period = value;
+
+    let days = periodToDays(period);
+
+    let inPeriod = allTimePeriod
+    if (days != null) {
+      inPeriod = (date) => {return daysAgo(date, days)}
+    }
+    
+    let dataSubset = [];
+    for (let i = 0; i < data.length; i++) {
+      let date = new Date(data[i].created_at);
+      if (inPeriod(date)) {
+        dataSubset.push(data[i])
+      }
+    }
+    periodData = dataSubset;
+  }
+
   let data: RequestsData;
+  let periodData: RequestsData;
+  let period = 'month';
   let failed = false;
   onMount(() => {
     fetchData();
@@ -45,28 +96,51 @@
   export let userID: string;
 </script>
 
-{#if data != undefined}
+{#if periodData != undefined}
   <div class="dashboard">
+    <div class="time-period">
+      <button class="time-period-btn {period == '24-hours' ? 'time-period-btn-active' : ''}" on:click="{() => {setPeriod('24-hours')}}">
+        24 Hours
+      </button>
+      <button class="time-period-btn {period == 'week' ? 'time-period-btn-active' : ''}" on:click="{() => {setPeriod('week')}}">
+        Week
+      </button>
+      <button class="time-period-btn {period == 'month' ? 'time-period-btn-active' : ''}" on:click="{() => {setPeriod('month')}}">
+        Month
+      </button>
+      <button class="time-period-btn {period == '3-months' ? 'time-period-btn-active' : ''}" on:click="{() => {setPeriod('3-months')}}">
+        3 Months
+      </button>
+      <button class="time-period-btn {period == '6-months' ? 'time-period-btn-active' : ''}" on:click="{() => {setPeriod('6-months')}}">
+        6 Months
+      </button>
+      <button class="time-period-btn {period == 'year' ? 'time-period-btn-active' : ''}" on:click="{() => {setPeriod('year')}}">
+        Year
+      </button>
+      <button class="time-period-btn {period == 'all-time' ? 'time-period-btn-active' : ''}" on:click="{() => {setPeriod('all-time')}}">
+        All time
+      </button>
+    </div>
     <div class="left">
       <div class="row">
         <Welcome />
-        <SuccessRate {data} />
+        <SuccessRate data={periodData} />
       </div>
       <div class="row">
-        <Requests {data} />
-        <RequestsPerHour {data} />
+        <Requests data={periodData} />
+        <RequestsPerHour data={periodData} />
       </div>
-      <ResponseTimes {data} />
-      <Endpoints {data} />
-      <Version {data} />
+      <ResponseTimes data={periodData} />
+      <Endpoints data={periodData} />
+      <Version data={periodData} />
     </div>
     <div class="right">
-      <PastMonth {data} />
+      <Activity data={periodData} {period} />
       <div class="grid-row">
-        <Growth {data} />
-        <Device {data} />
+        <Growth data={periodData} />
+        <Device data={periodData} />
       </div>
-      <UsageTime {data} />
+      <UsageTime data={periodData} />
     </div>
   </div>
 {:else if failed}
@@ -88,6 +162,7 @@
   .dashboard {
     margin: 5em;
     display: flex;
+    position: relative;
   }
   .row {
     display: flex;
@@ -110,6 +185,25 @@
     min-height: 85vh;
     display: grid;
     place-items: center;
+  }
+  .time-period {
+    position: absolute;
+    display: flex;
+    right: 2em;
+    top: -2em;
+  }
+  .time-period-btn {
+    background: #232323;
+    padding: 2px 8px;
+    margin-left: 6px;
+    border-radius: 3px;
+    border: 1px solid #2E2E2E;
+    color: #707070;
+    cursor: pointer;
+  }
+  .time-period-btn-active {
+    background: var(--highlight);
+    color: black;
   }
   @media screen and (max-width: 1580px){
     .grid-row {

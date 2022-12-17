@@ -47,6 +47,8 @@
     buildWeek();
   });
 
+  $: data && buildWeek();
+
   export let data: RequestsData;
 </script>
 

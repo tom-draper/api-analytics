@@ -36,7 +36,10 @@
       return b.count - a.count;
     });
     endpoints = freqArr;
+    
+    setTimeout(setEndpointLabels, 50);
   }
+  
   function setEndpointLabelVisibility(idx: number) {
     let endpoint = document.getElementById(`endpoint-label-${idx}`);
     let endpointPath = document.getElementById(`endpoint-path-${idx}`);
@@ -57,10 +60,12 @@
   }
   onMount(() => {
     build();
-    setTimeout(setEndpointLabels, 50);
   });
   let endpoints: any[];
   let maxCount: number;
+
+  $: data && build();
+
   export let data: RequestsData;
 </script>
 

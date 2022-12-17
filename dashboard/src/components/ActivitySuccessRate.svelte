@@ -1,10 +1,22 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  function pastMonth(date: Date): boolean {
-    let monthAgo = new Date();
-    monthAgo.setDate(monthAgo.getDate() - 60);
-    return date > monthAgo;
+  function periodToDays(period: string): number {
+    if (period == "24-hours") {
+      return 1;
+    } else if (period == "week") {
+      return 8;
+    } else if (period == "month") {
+      return 30;
+    } else if (period == "3-months") {
+      return 30 * 3;
+    } else if (period == "6-months") {
+      return 30 * 6;
+    } else if (period == "year") {
+      return 365;
+    } else {
+      return null;
+    }
   }
 
   let colors = [
@@ -27,25 +39,32 @@
 
   function setSuccessRate() {
     let success = {};
+    let minDate = Number.POSITIVE_INFINITY;
     for (let i = 0; i < data.length; i++) {
       let date = new Date(data[i].created_at);
-      if (pastMonth(date)) {
-        date.setHours(0, 0, 0, 0);
+      date.setHours(0, 0, 0, 0);
+      // @ts-ignore
+      if (!(date in success)) {
         // @ts-ignore
-        if (!(date in success)) {
-          // @ts-ignore
-          success[date] = { total: 0, successful: 0 };
-        }
-        if (data[i].status >= 200 && data[i].status <= 299) {
-          // @ts-ignore
-          success[date].successful++;
-        }
+        success[date] = { total: 0, successful: 0 };
+      }
+      if (data[i].status >= 200 && data[i].status <= 299) {
         // @ts-ignore
-        success[date].total++;
+        success[date].successful++;
+      }
+      // @ts-ignore
+      success[date].total++;
+      if (date as any < minDate) {
+        minDate = date as any;
       }
     }
 
-    let successArr = new Array(60).fill(-0.1); // -0.1 -> 0
+    let days = periodToDays(period);
+    if (days == null) {
+      days = daysAgo(minDate as any);
+    }
+
+    let successArr = new Array(days).fill(-0.1); // -0.1 -> 0
     for (let date in success) {
       let idx = daysAgo(new Date(date));
       successArr[successArr.length - idx] =
@@ -59,11 +78,15 @@
   }
 
   let successRate: any[];
+  let setup = false;
   onMount(() => {
     build();
+    setup = true;
   });
 
-  export let data: RequestsData;
+  $: data && setup && build();
+
+  export let data: RequestsData, period: string;
 </script>
 
 <div class="success-rate-container">
@@ -91,7 +114,7 @@
     background: var(--highlight);
     flex: 1;
     height: 40px;
-    margin: 0 1px;
+    margin: 0 0.1%;
     border-radius: 1px;
   }
   .success-rate-container {

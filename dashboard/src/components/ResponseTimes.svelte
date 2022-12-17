@@ -19,10 +19,12 @@
     const pos = (sorted.length - 1) * q;
     const base = Math.floor(pos);
     const rest = pos - base;
-    if (sorted[base + 1] !== undefined) {
+    if (sorted[base + 1] != undefined) {
       return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
-    } else {
+    } else if (sorted[base] != undefined) {
       return sorted[base];
+    } else {
+      return 0
     }
   }
 
@@ -53,11 +55,17 @@
     setMarkerPosition(median);
   }
 
-  let median: number, LQ: number, UQ: number;
+  let setup = false;
+  let median: number ;
+  let LQ: number;
+  let UQ: number ;
   let marker: HTMLDivElement;
   onMount(() => {
     build();
+    setup = true;
   });
+  
+  $: data && setup && build();
 
   export let data: RequestsData;
 </script>
