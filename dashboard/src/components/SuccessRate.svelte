@@ -19,7 +19,11 @@
         totalRequests++;
       }
     }
-    successRate = (successfulRequests / totalRequests) * 100;
+    if (totalRequests > 0) {
+      successRate = (successfulRequests / totalRequests) * 100;
+    } else {
+      successRate = 100;
+    }
   }
 
   let successRate: number;

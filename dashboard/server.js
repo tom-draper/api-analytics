@@ -14,6 +14,7 @@ server.get("*", function(req, res) {
     <link rel='stylesheet' href='/global.css'>
     <link rel='stylesheet' href='/bundle.css'>
     <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>API Analytics</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js" type="text/javascript"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <div id="app">${html}</div>

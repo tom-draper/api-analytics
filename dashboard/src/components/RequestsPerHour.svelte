@@ -15,8 +15,11 @@
         totalRequests++;
       }
     }
-    console.log(totalRequests)
-    requestsPerHour = ((24 * 7) / totalRequests).toFixed(2);
+    if (totalRequests > 0) {
+      requestsPerHour = ((24 * 7) / totalRequests).toFixed(2);
+    } else {
+      requestsPerHour = 0;
+    }
   }
 
   let requestsPerHour: string;

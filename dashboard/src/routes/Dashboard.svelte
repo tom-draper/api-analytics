@@ -25,7 +25,7 @@
     // Fetch page ID
     try {
       const response = await fetch(
-        `https://api-analytics-server.vercel.app/api/data/${userID}`
+        `https://api-analytics-server.vercel.app/api/user-data/${userID}`
       );
       if (response.status == 200) {
         const json = await response.json();
