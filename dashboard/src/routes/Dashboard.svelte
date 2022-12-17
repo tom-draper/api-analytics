@@ -38,10 +38,10 @@
     }
   }
 
-  function daysAgo(date: Date, days: number): boolean {
-    let monthAgo = new Date();
-    monthAgo.setDate(monthAgo.getDate() - days);
-    return date > monthAgo;
+  function inPeriod(date: Date, days: number): boolean {
+    let periodAgo = new Date();
+    periodAgo.setDate(periodAgo.getDate() - days);
+    return date > periodAgo;
   }
 
   function allTimePeriod(date: Date) {
@@ -65,15 +65,39 @@
       return null
     }
   }
-  
-  function setPeriod(value: string) {
-    period = value;
 
+  function setPeriodData() {
     let days = periodToDays(period);
+  
+    let counted = allTimePeriod
+    if (days != null) {
+      counted = (date) => {return inPeriod(date, days)}
+    }
+    
+    let dataSubset = [];
+    for (let i = 0; i < data.length; i++) {
+      let date = new Date(data[i].created_at);
+      if (counted(date)) {
+        dataSubset.push(data[i])
+      }
+    }
+    periodData = dataSubset;
+  }
 
+  function inPrevPeriod(date: Date, days: number): boolean {
+    let startPeriodAgo = new Date();
+    startPeriodAgo.setDate(startPeriodAgo.getDate() - days*2);
+    let endPeriodAgo = new Date();
+    endPeriodAgo.setDate(endPeriodAgo.getDate() - days);
+    return startPeriodAgo < date && date < endPeriodAgo;
+  }
+
+  function setPrevPeriodData() {
+    let days = periodToDays(period);
+  
     let inPeriod = allTimePeriod
     if (days != null) {
-      inPeriod = (date) => {return daysAgo(date, days)}
+      inPeriod = (date) => {return inPrevPeriod(date, days)}
     }
     
     let dataSubset = [];
@@ -83,11 +107,18 @@
         dataSubset.push(data[i])
       }
     }
-    periodData = dataSubset;
+    prevPeriodData = dataSubset;
+  }
+  
+  function setPeriod(value: string) {
+    period = value;
+    setPeriodData();
+    setPrevPeriodData();
   }
 
   let data: RequestsData;
   let periodData: RequestsData;
+  let prevPeriodData: RequestsData;
   let period = 'month';
   let failed = false;
   onMount(() => {
@@ -100,7 +131,7 @@
   <div class="dashboard">
     <div class="time-period">
       <button class="time-period-btn {period == '24-hours' ? 'time-period-btn-active' : ''}" on:click="{() => {setPeriod('24-hours')}}">
-        24 Hours
+        24 hours
       </button>
       <button class="time-period-btn {period == 'week' ? 'time-period-btn-active' : ''}" on:click="{() => {setPeriod('week')}}">
         Week
@@ -109,10 +140,10 @@
         Month
       </button>
       <button class="time-period-btn {period == '3-months' ? 'time-period-btn-active' : ''}" on:click="{() => {setPeriod('3-months')}}">
-        3 Months
+        3 months
       </button>
       <button class="time-period-btn {period == '6-months' ? 'time-period-btn-active' : ''}" on:click="{() => {setPeriod('6-months')}}">
-        6 Months
+        6 months
       </button>
       <button class="time-period-btn {period == 'year' ? 'time-period-btn-active' : ''}" on:click="{() => {setPeriod('year')}}">
         Year
@@ -137,7 +168,7 @@
     <div class="right">
       <Activity data={periodData} {period} />
       <div class="grid-row">
-        <Growth data={periodData} />
+        <Growth data={periodData} prevData={prevPeriodData} />
         <Device data={periodData} />
       </div>
       <UsageTime data={periodData} />
@@ -190,7 +221,7 @@
     position: absolute;
     display: flex;
     right: 2em;
-    top: -2em;
+    top: -2.2em;
   }
   .time-period-btn {
     background: #232323;

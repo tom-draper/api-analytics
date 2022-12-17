@@ -127,6 +127,6 @@
     margin: 0 0 4px 45px;
   }
   .success-rate-container {
-    margin: 1.5em 2em 2em;
+    margin: 1.5em 2.5em 2em;
   }
 </style>

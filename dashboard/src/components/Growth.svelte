@@ -1,44 +1,26 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  function pastWeek(date: Date): boolean {
-    let weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    return date > weekAgo;
-  }
-
-  function lastWeek(date: Date): boolean {
-    let weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    let fortnightAgo = new Date();
-    fortnightAgo.setDate(weekAgo.getDate() - 14);
-    return date < weekAgo && date > fortnightAgo;
+  function periodData(data: RequestsData): any {
+    let period = { requests: 0, success: 0, responseTime: 0 };
+    for (let i = 0; i < data.length; i++) {
+      // @ts-ignore
+      period.requests++;
+      if (data[i].status >= 200 && data[i].status <= 299) {
+        period.success++;
+      }
+      period.responseTime += data[i].response_time
+    }
+    return period;
   }
 
   function buildWeek() {
-    let thisWeek = { requests: 0, success: 0, responseTime: 0 };
-    let prevWeek = { requests: 0, success: 0, responseTime: 0 };
-    for (let i = 0; i < data.length; i++) {
-      let date = new Date(data[i].created_at);
-      if (pastWeek(date)) {
-        // @ts-ignore
-        thisWeek.requests++;
-        if (data[i].status >= 200 && data[i].status <= 299) {
-          thisWeek.success++;
-        }
-        thisWeek.responseTime += data[i].response_time
-      } else if (lastWeek(date)) {
-        prevWeek.requests++;
-        if (data[i].status >= 200 && data[i].status <= 299) {
-          prevWeek.success++;
-        }
-        prevWeek.responseTime  += data[i].response_time
-      }
-    }
+    let thisPeriod = periodData(data);
+    let lastPeriod = periodData(prevData);
 
-    let requestsChange = (((thisWeek.requests + 1) / (prevWeek.requests + 1)) * 100);
-    let successChange = ((((thisWeek.success + 1) / (thisWeek.requests + 1)) + 1) / (((prevWeek.success + 1) / (prevWeek.requests + 1)) + 1)) * 100
-    let responseTimeChange = ((((thisWeek.responseTime + 1) / (thisWeek.requests + 1)) + 1) / (((prevWeek.responseTime + 1) / (prevWeek.requests + 1)) + 1)) * 100
+    let requestsChange = (((thisPeriod.requests + 1) / (lastPeriod.requests + 1)) * 100);
+    let successChange = ((((thisPeriod.success + 1) / (thisPeriod.requests + 1)) + 1) / (((lastPeriod.success + 1) / (lastPeriod.requests + 1)) + 1)) * 100
+    let responseTimeChange = ((((thisPeriod.responseTime + 1) / (thisPeriod.requests + 1)) + 1) / (((lastPeriod.responseTime + 1) / (lastPeriod.requests + 1)) + 1)) * 100
     change = {requests: requestsChange, success: successChange, responseTime: responseTimeChange}
   }
 
@@ -49,7 +31,7 @@
 
   $: data && buildWeek();
 
-  export let data: RequestsData;
+  export let data: RequestsData, prevData: RequestsData;
 </script>
 
 <div class="card">
