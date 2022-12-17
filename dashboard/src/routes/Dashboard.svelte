@@ -159,7 +159,7 @@
       </div>
       <div class="row">
         <Requests data={periodData} />
-        <RequestsPerHour data={periodData} />
+        <RequestsPerHour data={periodData} {period} />
       </div>
       <ResponseTimes data={periodData} />
       <Endpoints data={periodData} />
