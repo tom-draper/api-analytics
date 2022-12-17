@@ -97,7 +97,7 @@
         <div
           class="error"
           style="background: {colors[Math.floor(value * 10) + 1]}"
-          title="{value > 0 ? (value * 100).toFixed(1) + '%' : 'No data'}"
+          title="{value >= 0 ? (value * 100).toFixed(1) + '%' : 'No requests'}"
         />
       {/each}
     </div>
