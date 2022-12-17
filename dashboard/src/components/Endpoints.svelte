@@ -111,7 +111,7 @@
   }
   .endpoint {
     border-radius: 3px;
-    margin: 6px 0;
+    margin: 5px 0;
     color: var(--light-background);
     text-align: left;
     position: relative;
@@ -137,7 +137,7 @@
     padding: 3px 15px;
     left: 40px;
     top: 0;
-    margin: 6px 0;
+    margin: 5px 0;
     color: #707070;
     display: none;
     font-size: 0.85em;

@@ -97,7 +97,7 @@
         <div
           class="error"
           style="background: {colors[Math.floor(value * 10) + 1]}"
-          title="{value > 0 ? (value * 100).toFixed(1) + '%' : 'No data'}"
+          title="{value >= 0 ? (value * 100).toFixed(1) + '%' : 'No requests'}"
         />
       {/each}
     </div>
@@ -127,6 +127,6 @@
     margin: 0 0 4px 45px;
   }
   .success-rate-container {
-    margin: 1.5em 2em 2em;
+    margin: 1.5em 2.5em 2em;
   }
 </style>

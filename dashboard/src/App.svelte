@@ -5,6 +5,7 @@
   import SignIn from "./routes/SignIn.svelte";
   import Dashboard from "./routes/Dashboard.svelte";
   import Delete from "./routes/Delete.svelte";
+  import Monitoring from "./routes/Monitoring.svelte";
 
   // Used for SSR. A falsy value is ignored by the Router.
   export let url = "";
@@ -15,6 +16,7 @@
     <Route path="/generate" component={Generate} />
     <Route path="/dashboard" component={SignIn} />
     <Route path="/dashboard/:userID" component={Dashboard} />
+    <Route path="/monitoring/:userID" component={Monitoring} />
     <Route path="/delete" component={Delete} />
 </Router>
 
