@@ -54,16 +54,14 @@
       }
       // @ts-ignore
       success[date].total++;
-      // @ts-ignore
-      if (date < minDate) {
-        // @ts-ignore
-        minDate = date;
+      if (date as any < minDate) {
+        minDate = date as any;
       }
     }
 
     let days = periodToDays(period);
     if (days == null) {
-      days = daysAgo(minDate as Date);
+      days = daysAgo(minDate as any);
     }
 
     let successArr = new Array(days).fill(-0.1); // -0.1 -> 0
