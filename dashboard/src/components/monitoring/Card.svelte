@@ -26,11 +26,11 @@
     if (period == '24h') {
       return 24*2;
     } else if (period == '7d') {
-      return 24*7;
+      return 12*7;
     } else if (period == '30d') {
-      return 30*2;
-    } else if (period == '90d') {
-      return 90;
+      return 30*4;
+    } else if (period == '60d') {
+      return 60*2;
     } else {
       return null;
     }

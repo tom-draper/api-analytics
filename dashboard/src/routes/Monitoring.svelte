@@ -94,12 +94,12 @@
             30d
           </button>
           <button
-            class="period-btn {period == '90d' ? 'active' : ''}"
+            class="period-btn {period == '60d' ? 'active' : ''}"
             on:click={() => {
-              setPeriod("90d");
+              setPeriod("60d");
             }}
           >
-            90d
+            60d
           </button>
         </div>
       </div>
