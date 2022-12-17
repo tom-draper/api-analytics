@@ -39,21 +39,35 @@
   function setMeasurements() {
     let markers = periodToMarkers(period)
     measurements = Array(markers).fill({status: 'success'})
+    measurements[measurements.length-1] = {status: 'error'}
+  }
+
+  function setError() {
+    error = measurements[measurements.length-1].status == 'error'
+    anyError = anyError || error
+  }
+
+  function build() {
+      setMeasurements();
+      setError();
+      setUptime();
+
   }
 
   let uptime = "";
+  let error = false;
   let measurements: any[];
   onMount(() => {
-    setMeasurements();
-    setUptime();
+    build();
   });
 
-  $: period && setMeasurements();
+  $: period && build();
+  
 
-  export let data: any[], period: string;
+  export let data: any[], period: string, anyError: boolean;
 </script>
 
-<div class="card">
+<div class="card" class:card-error={error}>
   <div class="card-text">
     <div class="card-text-left">
       <div class="card-status">
@@ -76,7 +90,7 @@
   .card {
     width: min(100%, 1000px);
     border: 1px solid #2e2e2e;
-    margin: 2.5em auto;
+    margin: 2.2em auto;
   }
   .card-error {
     box-shadow: rgba(228, 98, 98, 0.5) 0px 15px 110px 0px,

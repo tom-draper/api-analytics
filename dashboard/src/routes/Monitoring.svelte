@@ -30,13 +30,13 @@
 
   function setPeriod(value: string) {
     period = value;
+    error = false;
   }
 
+  let error = false;
   let period = "30d";
-  let operational = true;
   let data: RequestsData;
   let measurements = Array(100).fill({ status: "success" });
-  let failed = false;
   onMount(() => {
     fetchData();
   });
@@ -46,16 +46,16 @@
 
 <div class="monitoring">
   <div class="status">
-    {#if operational}
-      <div class="status-image">
-        <img id="status-image" src="/img/bigtick.png" alt="" />
-        <div class="status-text">Operational</div>
-      </div>
+    {#if error}
+    <div class="status-image">
+      <img id="status-image" src="/img/bigcross.png" alt="" />
+      <div class="status-text">Systems down</div>
+    </div>
     {:else}
-      <div class="status-image">
-        <img id="status-image" src="/img/bigcross.png" alt="" />
-        <div class="status-text">Systems down</div>
-      </div>
+    <div class="status-image">
+      <img id="status-image" src="/img/bigtick.png" alt="" />
+      <div class="status-text">Operational</div>
+    </div>
     {/if}
   </div>
   <div class="cards-container">
@@ -105,9 +105,9 @@
       </div>
     </div>
 
-    <Card data={measurements} {period} />
-    <Card data={measurements} {period} />
-    <Card data={measurements} {period} />
+    <Card data={measurements} {period} bind:anyError={error}/>
+    <Card data={measurements} {period} bind:anyError={error} />
+    <Card data={measurements} {period} bind:anyError={error}/>
   </div>
 </div>
 <Footer />
@@ -139,6 +139,7 @@
   .cards-container {
     width: 60%;
     margin: auto;
+    padding-bottom: 1em;
   }
 
   .controls {
