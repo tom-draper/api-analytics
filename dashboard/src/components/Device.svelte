@@ -10,6 +10,7 @@
   }
 
   let activeBtn = "os";
+
   export let data: RequestsData;
 </script>
 

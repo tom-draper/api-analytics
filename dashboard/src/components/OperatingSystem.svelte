@@ -135,9 +135,13 @@
   }
 
   let plotDiv: HTMLDivElement;
+  let setup = false;
   onMount(() => {
     genPlot();
+    setup = true;
   });
+
+  $: data && setup && genPlot();
 
   export let data: RequestsData;
 </script>

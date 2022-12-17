@@ -10,6 +10,10 @@
       }
     }
     versions = v;
+    
+    if (versions.size > 1) {
+      setTimeout(genPlot, 1000);
+    }
   }
 
   function versionPlotLayout() {
@@ -93,7 +97,7 @@
     let plotData = versionPlotData();
     //@ts-ignore
     new Plotly.newPlot(
-      plotDiv2,
+      plotDiv,
       plotData.data,
       plotData.layout,
       plotData.config
@@ -101,13 +105,12 @@
   }
 
   let versions: Set<string>;
-  let plotDiv2: HTMLDivElement;
+  let plotDiv: HTMLDivElement;
   onMount(() => {
     setVersions();
-    if (versions.size > 1) {
-      setTimeout(genPlot, 1000);
-    }
   });
+
+  $: data && setVersions();
 
   export let data: RequestsData;
 </script>
@@ -116,7 +119,7 @@
   <div class="card">
     <div class="card-title">Versions</div>
     <div id="plotly">
-      <div id="plotDiv" bind:this={plotDiv2}>
+      <div id="plotDiv" bind:this={plotDiv}>
         <!-- Plotly chart will be drawn inside this DIV -->
       </div>
     </div>
