@@ -518,7 +518,7 @@ For any given request to your API, data recorded is limited to:
  - Response time
  - API framework (FastAPI, Flask, Express etc.)
 
-Data collected is only ever used by our analytics dashboard. Your data is anonymous, with the API key the only link between you and you API's analytics. Should you lose your API key, you will have no method to access your API analytics.
+Data collected is only ever used to populate your analytics dashboard. Your data is anonymous, with the API key the only link between you and you API's analytics. Should you lose your API key, you will have no method to access your API analytics.
 
 ### Delete Data
 
