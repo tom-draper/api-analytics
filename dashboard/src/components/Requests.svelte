@@ -26,7 +26,7 @@
   <div class="card-title">
     Requests
   </div>
-  <div class="value">{data.length.toFixed(0)}</div>
+  <div class="value">{data.length.toLocaleString()}</div>
 </div>
 
 <style>

@@ -12,6 +12,7 @@
   import UsageTime from "../components/UsageTime.svelte";
   import Growth from "../components/Growth.svelte";
   import Device from "../components/Device.svelte";
+  import genDemoData from "../demo";
 
   function formatUUID(userID: string): string {
     return `${userID.slice(0, 8)}-${userID.slice(8, 12)}-${userID.slice(
@@ -36,65 +37,6 @@
     } catch (e) {
       failed = true;
     }
-  }
-
-  function addDemoSamples(
-    demoData: any[],
-    endpoint: string,
-    status: number,
-    count: number
-  ) {
-    for (let i = 0; i < count; i++) {
-      let date = new Date();
-      date.setDate(date.getDate() - Math.floor(Math.random() * 650));
-      date.setHours(Math.floor(Math.random() * 24));
-      demoData.push({
-        hostname: "demo-api.com",
-        path: endpoint,
-        user_agent:
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
-        method: 0,
-        status: status,
-        response_time: Math.floor(Math.random() * 240 + 55),
-        created_at: date.toISOString(),
-      });
-    }
-  }
-  
-  function genDemoData() {
-    let demoData = [];
-
-    addDemoSamples(demoData, "/v1/", 200, 18000);
-    addDemoSamples(demoData, "/v1/", 400, 1000);
-    addDemoSamples(demoData, "/v1/account", 200, 8000);
-    addDemoSamples(demoData, "/v1/account", 400, 1200);
-    addDemoSamples(demoData, "/v1/help", 200, 700);
-    addDemoSamples(demoData, "/v1/help", 400, 70);
-    addDemoSamples(demoData, "/v2/", 200, 34000);
-    addDemoSamples(demoData, "/v2/", 400, 200);
-    addDemoSamples(demoData, "/v2/account", 200, 7000);
-    addDemoSamples(demoData, "/v2/account", 400, 1000);
-
-    // for (let i = 0; i < 100; i++) {
-    //   let date = new Date();
-    //   date.setDate(date.getDate() - Math.floor(Math.random() * 250) + 100);
-    //   date.setHours(Math.floor(Math.random() * 24));
-    //   demoData.push({
-    //     hostname: "demo-api.com",
-    //     path: '/v2/',
-    //     user_agent:
-    //       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
-    //     method: 0,
-    //     status: 200,
-    //     response_time: Math.floor(Math.random() * 240 + 55),
-    //     created_at: date.toISOString(),
-    //   });
-    // }
-
-    console.log(demoData);
-
-    data = demoData;
-    setPeriod("month");
   }
 
   function inPeriod(date: Date, days: number): boolean {
@@ -186,7 +128,8 @@
   let failed = false;
   onMount(() => {
     if (demo) {
-      genDemoData();
+      data = genDemoData();
+      setPeriod('month')
     } else {
       fetchData();
     }
@@ -304,10 +247,6 @@
 <style>
   .dashboard {
     min-height: 90vh;
-    /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif; */
-    /* font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
-    Helvetica, Arial, "Lucida Grande", sans-serif; */
   }
   .dashboard {
     margin: 5em;
@@ -348,9 +287,6 @@
   .time-period-btn {
     background: #232323;
     padding: 3px 12px;
-    /* margin-left: 6px; */
-    /* border-radius: 3px; */
-    /* border: 1px solid #2E2E2E; */
     border: none;
     color: #707070;
     cursor: pointer;

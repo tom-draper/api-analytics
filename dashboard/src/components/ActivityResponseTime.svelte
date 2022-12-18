@@ -137,13 +137,12 @@
   }
 
   let plotDiv: HTMLDivElement;
-  let setup = false;
+  let mounted = false;
   onMount(() => {
-    genPlot();
-    setup = true;
+    mounted = true;
   });
 
-  $: data && setup && genPlot();
+  $: data && mounted && genPlot();
 
   export let data: RequestsData, period: string;
 </script>
