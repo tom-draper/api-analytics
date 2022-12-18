@@ -482,7 +482,7 @@ Head over to https://my-api-analytics.vercel.app/dashboard and paste in your API
 
 #### Data API
 
-The logged data for all requests can be accessed via our API. Simply send a GET request to `https://api-analytics-server/api/data` with your API key set as `API-Key` in headers.
+Logged data for all requests can be accessed via our API. Simply send a GET request to `https://api-analytics-server/api/data` with your API key set as `API-Key` in headers.
 
 ```py
 import requests
