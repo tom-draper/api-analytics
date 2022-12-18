@@ -45,11 +45,16 @@
   let failed = false;
 
   for (let i = 0; i < measurements.length; i++) {
-    measurements[i] = [];
-    for (let j = 0; j < 100; j++) {
-      measurements[i].push({ status: "success", response_time: Math.random() })
+    measurements[i] = {name: 'persona-api.vercel.app/v1/england', measurements: []};
+    for (let j = 0; j < 140; j++) {
+      measurements[i].measurements.push({ status: "success", response_time: Math.random() * 10 + 5 })
     }
   }
+
+  for (let i = 50; i < 58; i++) {
+    measurements[0].measurements[i] = {status: 'error', response_time: 0}
+  }
+  measurements[1].name = 'persona-api.vercel.app/v1/england/features'
 
   let showTrackNew = false;
   onMount(() => {
@@ -69,7 +74,7 @@
     {:else}
       <div class="status-image">
         <img id="status-image" src="/img/bigtick.png" alt="" />
-        <div class="status-text">Operational</div>
+        <div class="status-text">Systems Online</div>
       </div>
     {/if}
   </div>

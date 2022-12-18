@@ -495,6 +495,10 @@ response = requests.get("https://api-analytics-server/api/data", headers=headers
 print(response.json())
 ```
 
+## Monitoring (coming soon)
+
+
+
 ## Data and Security
 
 All data is stored securely in compliance with The EU General Data Protection Regulation (GDPR).

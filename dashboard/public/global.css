@@ -97,7 +97,7 @@ p {
 
 :root {
   --highlight: #3fcf8e;
-  --red: #e46161;
+  --red: rgb(228, 97, 97);
   --yellow: #ebeb81;
   --light-background: #232323;
   --faded-text: #ededed;

@@ -40,9 +40,9 @@
   function setMeasurements() {
     let markers = periodToMarkers(period);
     measurements = Array(markers).fill({ status: null, response_time: 0});
-    let start = markers - data.length;
-    for (let i = 0; i < data.length; i++) {
-      measurements[i + start] = data[i];
+    let start = markers - data.measurements.length;
+    for (let i = 0; i < data.measurements.length; i++) {
+      measurements[i + start] = data.measurements[i];
     }
   }
 
@@ -79,7 +79,7 @@
           <img src="/img/smalltick.png" alt="" />
         {/if}
       </div>
-      <div class="endpoint">endpoint/foo/bar</div>
+      <div class="endpoint">{data.name}</div>
     </div>
     <div class="card-text-right">
       <div class="uptime">Uptime: {uptime}%</div>
