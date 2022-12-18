@@ -117,7 +117,7 @@
 
 {#if versions != undefined && versions.size > 1}
   <div class="card">
-    <div class="card-title">Versions</div>
+    <div class="card-title">Version</div>
     <div id="plotly">
       <div id="plotDiv" bind:this={plotDiv}>
         <!-- Plotly chart will be drawn inside this DIV -->

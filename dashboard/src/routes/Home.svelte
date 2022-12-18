@@ -1,3 +1,7 @@
+<script>
+  import Footer from "../components/Footer.svelte";
+
+</script>
 <div class="home">
   <div class="landing-page-container">
     <div class="landing-page">
@@ -57,6 +61,7 @@
     <img class="dashboard-img" src="img/monitoring.png" alt="" />
   </div>
 </div>
+<Footer />
 
 <style scoped>
   .landing-page {

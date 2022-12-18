@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+
   function periodToDays(period: string): number {
     if (period == '24-hours') {
       return 1
@@ -22,7 +23,6 @@
     for (let i = 0; i < data.length; i++) {
       totalRequests++;
     }
-    console.log(totalRequests);
     if (totalRequests > 0) {
       let days = periodToDays(period);
       if (days != null) {
@@ -33,12 +33,13 @@
     }
   }
 
+  let mounted = false;
   let requestsPerHour: string;
   onMount(() => {
-    build();
+    mounted = true;
   });
 
-  $: data && build();
+  $: data && mounted && build();
 
   export let data: RequestsData, period: string;
 </script>

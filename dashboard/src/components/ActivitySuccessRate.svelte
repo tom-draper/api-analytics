@@ -67,8 +67,7 @@
     let successArr = new Array(days).fill(-0.1); // -0.1 -> 0
     for (let date in success) {
       let idx = daysAgo(new Date(date));
-      successArr[successArr.length - idx] =
-        success[date].successful / success[date].total;
+      successArr[successArr.length-1 - idx] = success[date].successful / success[date].total;
     }
     successRate = successArr;
   }
@@ -78,13 +77,12 @@
   }
 
   let successRate: any[];
-  let setup = false;
+  let mounted = false;
   onMount(() => {
-    build();
-    setup = true;
+    mounted = true;
   });
 
-  $: data && setup && build();
+  $: data && mounted && build();
 
   export let data: RequestsData, period: string;
 </script>
