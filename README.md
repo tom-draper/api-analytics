@@ -476,9 +476,9 @@ You can use the same API key across multiple APIs, but all your data will appear
 
 #### Dashboard
 
-Head over to https://my-api-analytics.vercel.app/dashboard and paste in your API key to view your dashboard.
+Head to https://my-api-analytics.vercel.app/dashboard and paste in your API key to access your dashboard.
 
-![dashboard](https://user-images.githubusercontent.com/41476809/204396681-7f38558c-33df-4434-aae8-17703d4422fe.png)
+![Dashboard](https://user-images.githubusercontent.com/41476809/204396681-7f38558c-33df-4434-aae8-17703d4422fe.png)
 
 #### Data API
 
@@ -497,7 +497,9 @@ print(response.json())
 
 ## Monitoring (coming soon)
 
+Opt-in active API monitoring is coming soon. Our servers will regularly ping your API endpoints to monitor uptime and response time. Optional email alerts to notify you when your endpoints are down will also be available.
 
+![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)
 
 ## Data and Security
 
