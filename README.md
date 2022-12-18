@@ -478,6 +478,8 @@ You can use the same API key across multiple APIs, but all your data will appear
 
 Head to https://my-api-analytics.vercel.app/dashboard and paste in your API key to access your dashboard.
 
+Demo: https://my-api-analytics.vercel.app/dashboard/demo
+
 ![Dashboard](https://user-images.githubusercontent.com/41476809/208324779-008f95fe-3fbc-4901-9cd0-5653a56913e5.png)
 
 #### Data API
