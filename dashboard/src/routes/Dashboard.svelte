@@ -222,13 +222,17 @@
     display: flex;
     right: 2em;
     top: -2.2em;
+    border: 1px solid #2E2E2E;
+    border-radius: 4px;
+    overflow: hidden;
   }
   .time-period-btn {
     background: #232323;
-    padding: 2px 8px;
-    margin-left: 6px;
-    border-radius: 3px;
-    border: 1px solid #2E2E2E;
+    padding: 3px 12px;
+    /* margin-left: 6px; */
+    /* border-radius: 3px; */
+    /* border: 1px solid #2E2E2E; */
+    border: none;
     color: #707070;
     cursor: pointer;
   }

@@ -3,6 +3,7 @@
 
   import Footer from "../components/Footer.svelte";
   import Card from "../components/monitoring/Card.svelte";
+  import TrackNew from "../components/monitoring/TrackNew.svelte";
 
   function formatUUID(userID: string): string {
     return `${userID.slice(0, 8)}-${userID.slice(8, 12)}-${userID.slice(
@@ -33,10 +34,24 @@
     error = false;
   }
 
+  function toggleShowTrackNew() {
+    showTrackNew = !showTrackNew;
+  }
+
   let error = false;
   let period = "30d";
   let data: RequestsData;
-  let measurements = Array(100).fill({ status: "success" });
+  let measurements = Array(3);
+  let failed = false;
+
+  for (let i = 0; i < measurements.length; i++) {
+    measurements[i] = [];
+    for (let j = 0; j < 100; j++) {
+      measurements[i].push({ status: "success", response_time: Math.random() })
+    }
+  }
+
+  let showTrackNew = false;
   onMount(() => {
     fetchData();
   });
@@ -47,21 +62,21 @@
 <div class="monitoring">
   <div class="status">
     {#if error}
-    <div class="status-image">
-      <img id="status-image" src="/img/bigcross.png" alt="" />
-      <div class="status-text">Systems down</div>
-    </div>
+      <div class="status-image">
+        <img id="status-image" src="/img/bigcross.png" alt="" />
+        <div class="status-text">Systems down</div>
+      </div>
     {:else}
-    <div class="status-image">
-      <img id="status-image" src="/img/bigtick.png" alt="" />
-      <div class="status-text">Operational</div>
-    </div>
+      <div class="status-image">
+        <img id="status-image" src="/img/bigtick.png" alt="" />
+        <div class="status-text">Operational</div>
+      </div>
     {/if}
   </div>
   <div class="cards-container">
     <div class="controls">
       <div class="add-new">
-        <button class="add-new-btn"
+        <button class="add-new-btn" on:click={toggleShowTrackNew}
           ><div class="add-new-text">
             <span class="plus">+</span> New
           </div>
@@ -104,20 +119,18 @@
         </div>
       </div>
     </div>
-
-    <Card data={measurements} {period} bind:anyError={error}/>
-    <Card data={measurements} {period} bind:anyError={error} />
-    <Card data={measurements} {period} bind:anyError={error}/>
+    {#if showTrackNew || measurements.length == 0}
+      <TrackNew />
+    {/if}
+    <Card data={measurements[0]} {period} bind:anyError={error} />
+    <Card data={measurements[1]} {period} bind:anyError={error} />
+    <Card data={measurements[2]} {period} bind:anyError={error} />
   </div>
 </div>
 <Footer />
 
 <style scoped>
   .monitoring {
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system,
-      BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
-      "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-      "Segoe UI Symbol", "Noto Color Emoji";
     font-weight: 600;
   }
   .status {
