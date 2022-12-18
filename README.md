@@ -514,4 +514,4 @@ Data collected is only ever used by our analytics dashboard. Your data is anonym
 
 ### Delete Data
 
-To delete all stored data associated with your API key at any time, go to https://my-api-analytics.vercel.app/delete and enter your API key.
+At any time, you can delete all stored data associated with your API key by going to https://my-api-analytics.vercel.app/delete and entering your API key.
