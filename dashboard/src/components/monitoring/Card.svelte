@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import ResponseTime from "./ResponseTime.svelte";
 
   function setUptime() {
     let success = 0;
@@ -14,44 +15,46 @@
       total++;
     }
 
-    let per = ((success / total) * 100);
+    let per = (success / total) * 100;
     if (per == 100) {
-        uptime = '100';
+      uptime = "100";
     } else {
-        uptime = per.toFixed(1);
+      uptime = per.toFixed(1);
     }
   }
 
   function periodToMarkers(period: string): number {
-    if (period == '24h') {
-      return 24*2;
-    } else if (period == '7d') {
-      return 12*7;
-    } else if (period == '30d') {
-      return 30*4;
-    } else if (period == '60d') {
-      return 60*2;
+    if (period == "24h") {
+      return 24 * 2;
+    } else if (period == "7d") {
+      return 12 * 7;
+    } else if (period == "30d") {
+      return 30 * 4;
+    } else if (period == "60d") {
+      return 60 * 2;
     } else {
       return null;
     }
   }
 
   function setMeasurements() {
-    let markers = periodToMarkers(period)
-    measurements = Array(markers).fill({status: 'success'})
-    measurements[measurements.length-1] = {status: 'error'}
+    let markers = periodToMarkers(period);
+    measurements = Array(markers).fill({ status: null, response_time: 0});
+    let start = markers - data.measurements.length;
+    for (let i = 0; i < data.measurements.length; i++) {
+      measurements[i + start] = data.measurements[i];
+    }
   }
 
   function setError() {
-    error = measurements[measurements.length-1].status == 'error'
-    anyError = anyError || error
+    error = measurements[measurements.length - 1].status == "error";
+    anyError = anyError || error;
   }
 
   function build() {
-      setMeasurements();
-      setError();
-      setUptime();
-
+    setMeasurements();
+    setError();
+    setUptime();
   }
 
   let uptime = "";
@@ -62,7 +65,6 @@
   });
 
   $: period && build();
-  
 
   export let data: any[], period: string, anyError: boolean;
 </script>
@@ -71,9 +73,13 @@
   <div class="card-text">
     <div class="card-text-left">
       <div class="card-status">
-        <img src="/img/smalltick.png" alt="" />
+        {#if error}
+          <img src="/img/smallcross.png" alt="" />
+        {:else}
+          <img src="/img/smalltick.png" alt="" />
+        {/if}
       </div>
-      <div class="endpoint">endpoint/foo/bar</div>
+      <div class="endpoint">{data.name}</div>
     </div>
     <div class="card-text-right">
       <div class="uptime">Uptime: {uptime}%</div>
@@ -83,6 +89,9 @@
     {#each measurements as measurement}
       <div class="measurement {measurement.status}" />
     {/each}
+  </div>
+  <div class="response-time">
+    <ResponseTime data={measurements} {period} />
   </div>
 </div>
 
@@ -100,6 +109,7 @@
   .card-text {
     display: flex;
     margin: 2em 2em 0;
+    font-size: 0.9em;
   }
   .card-text-left {
     flex-grow: 1;
@@ -129,6 +139,9 @@
   }
   .error {
     background: rgb(228, 98, 98);
+  }
+  .null {
+    color: #707070;
   }
   .uptime {
     color: #707070;

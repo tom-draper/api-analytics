@@ -158,7 +158,7 @@
         <SuccessRate data={periodData} />
       </div>
       <div class="row">
-        <Requests data={periodData} />
+        <Requests data={periodData} prevData={prevPeriodData} />
         <RequestsPerHour data={periodData} {period} />
       </div>
       <ResponseTimes data={periodData} />
@@ -189,6 +189,10 @@
 <style>
   .dashboard {
     min-height: 90vh;
+    /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif; */
+        /* font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
+    Helvetica, Arial, "Lucida Grande", sans-serif; */
   }
   .dashboard {
     margin: 5em;
@@ -222,13 +226,17 @@
     display: flex;
     right: 2em;
     top: -2.2em;
+    border: 1px solid #2E2E2E;
+    border-radius: 4px;
+    overflow: hidden;
   }
   .time-period-btn {
     background: #232323;
-    padding: 2px 8px;
-    margin-left: 6px;
-    border-radius: 3px;
-    border: 1px solid #2E2E2E;
+    padding: 3px 12px;
+    /* margin-left: 6px; */
+    /* border-radius: 3px; */
+    /* border: 1px solid #2E2E2E; */
+    border: none;
     color: #707070;
     cursor: pointer;
   }

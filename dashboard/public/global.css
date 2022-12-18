@@ -1,6 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Secular+One&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
+
 body {
-  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
-    Helvetica, Arial, "Lucida Grande", sans-serif;
+
+  font-family: 'Noto Sans';
+   /* font-family: 'Secular One', sans-serif; */
+
   font-weight: 300;
   font-size: 16px;
   margin: 0;
@@ -55,7 +63,7 @@ p {
 
 .card-title {
   text-align: left;
-  padding: 20px 20px 0;
+  padding: 16px 20px 0;
 }
 
 .svg-container {
@@ -96,7 +104,7 @@ p {
 
 :root {
   --highlight: #3fcf8e;
-  --red: #e46161;
+  --red: rgb(228, 97, 97);
   --yellow: #ebeb81;
   --light-background: #232323;
   --faded-text: #ededed;

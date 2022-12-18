@@ -476,13 +476,13 @@ You can use the same API key across multiple APIs, but all your data will appear
 
 #### Dashboard
 
-Head over to https://my-api-analytics.vercel.app/dashboard and paste in your API key to view your dashboard.
+Head to https://my-api-analytics.vercel.app/dashboard and paste in your API key to access your dashboard.
 
-![dashboard](https://user-images.githubusercontent.com/41476809/204396681-7f38558c-33df-4434-aae8-17703d4422fe.png)
+![Dashboard](https://user-images.githubusercontent.com/41476809/204396681-7f38558c-33df-4434-aae8-17703d4422fe.png)
 
 #### Data API
 
-The logged data for all requests can be accessed via our API. Simply send a GET request to `https://api-analytics-server/api/data` with your API key set as `API-Key` in headers.
+Logged data for all requests can be accessed via our API. Simply send a GET request to `https://api-analytics-server/api/data` with your API key set as `API-Key` in headers.
 
 ```py
 import requests
@@ -494,6 +494,12 @@ headers = {
 response = requests.get("https://api-analytics-server/api/data", headers=headers)
 print(response.json())
 ```
+
+## Monitoring (coming soon)
+
+Opt-in active API monitoring is coming soon. Our servers will regularly ping your API endpoints to monitor uptime and response time. Optional email alerts to notify you when your endpoints are down will also be available.
+
+![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)
 
 ## Data and Security
 
@@ -514,4 +520,4 @@ Data collected is only ever used by our analytics dashboard. Your data is anonym
 
 ### Delete Data
 
-To delete all stored data associated with your API key at any time, go to https://my-api-analytics.vercel.app/delete and enter your API key.
+At any time, you can delete all stored data associated with your API key by going to https://my-api-analytics.vercel.app/delete and entering your API key.
