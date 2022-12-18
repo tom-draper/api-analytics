@@ -66,7 +66,7 @@
 
   $: period && build();
 
-  export let data: any[], period: string, anyError: boolean;
+  export let data: {name: string, measurements: any[]}, period: string, anyError: boolean;
 </script>
 
 <div class="card" class:card-error={error}>

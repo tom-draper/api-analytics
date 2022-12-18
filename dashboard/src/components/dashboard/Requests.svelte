@@ -5,7 +5,7 @@
     if (prevData.length == 0) {
       percentageChange = null
     } else {
-      percentageChange = (data.length / prevData.length) * 100;
+      percentageChange = (data.length / prevData.length) * 100 - 100;
     }
   }
   
