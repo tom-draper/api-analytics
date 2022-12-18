@@ -17,12 +17,13 @@
     }
   }
 
+  let mounted = false;
   let successRate: number;
   onMount(() => {
-    build();
+    mounted = true;
   });
 
-  $: data && build();
+  $: data && mounted && build();
 
   export let data: RequestsData;
 </script>

@@ -15,7 +15,8 @@
     <Route path="/" component={Home} />
     <Route path="/generate" component={Generate} />
     <Route path="/dashboard" component={SignIn} />
-    <Route path="/dashboard/:userID" component={Dashboard} />
+    <Route path="/dashboard/demo" component={Dashboard} demo={true} userID={null} />
+    <Route path="/dashboard/:userID" component={Dashboard} demo={false} />
     <Route path="/monitoring/:userID" component={Monitoring} />
     <Route path="/delete" component={Delete} />
 </Router>

@@ -2,20 +2,20 @@
   import { onMount } from "svelte";
 
   function periodToDays(period: string): number {
-    if (period == '24-hours') {
-      return 1
-    } else if (period == 'week') {
-      return 8
-    } else if (period == 'month') {
-      return 30
-    } else if (period == '3-months') {
-      return 30*3
-    } else if (period == '6-months') {
-      return 30*6
-    } else if (period == 'year') {
-      return 365
+    if (period == "24-hours") {
+      return 1;
+    } else if (period == "week") {
+      return 8;
+    } else if (period == "month") {
+      return 30;
+    } else if (period == "3-months") {
+      return 30 * 3;
+    } else if (period == "6-months") {
+      return 30 * 6;
+    } else if (period == "year") {
+      return 365;
     } else {
-      return null
+      return null;
     }
   }
 
@@ -36,15 +36,16 @@
       hovermode: "closest",
       plot_bgcolor: "transparent",
       paper_bgcolor: "transparent",
-      height: 169,
+      height: 170,
       yaxis: {
-        title: { text: "Requests" },
+        title: { text: "Response time (ms)" },
         gridcolor: "gray",
         showgrid: false,
         fixedrange: true,
       },
       xaxis: {
         title: { text: "Date" },
+        showgrid: false,
         fixedrange: true,
         range: [periodAgo, tomorrow],
         visible: false,
@@ -54,15 +55,16 @@
   }
 
   function bars() {
-    let requestFreq = {};
+    console.log(data)
+    let responseTimes = {};
     let days = periodToDays(period);
     if (days) {
       for (let i = 0; i < days; i++) {
-          let date = new Date()
-          date.setHours(0, 0, 0, 0);
-          date.setDate(date.getDate() - i);
-          // @ts-ignore
-          requestFreq[date] = 0;
+        let date = new Date();
+        date.setHours(0, 0, 0, 0);
+        date.setDate(date.getDate() - i);
+        // @ts-ignore
+        responseTimes[date] = { total: 0, count: 0 };
       }
     }
 
@@ -70,17 +72,23 @@
       let date = new Date(data[i].created_at);
       date.setHours(0, 0, 0, 0);
       // @ts-ignore
-      if (!(date in requestFreq)) {
+      if (!(date in responseTimes)) {
         // @ts-ignore
-        requestFreq[date] = 0;
+        responseTimes[date] = { total: 0, count: 0 };
       }
       // @ts-ignore
-      requestFreq[date]++;
+      responseTimes[date].total += data[i].response_time;
+      // @ts-ignore
+      responseTimes[date].count++;
     }
 
     let requestFreqArr = [];
-    for (let date in requestFreq) {
-      requestFreqArr.push([new Date(date), requestFreq[date]]);
+    for (let date in responseTimes) {
+      let point = [new Date(date), 0];
+      if (responseTimes[date].count > 0) {
+        point[1] = responseTimes[date].total / responseTimes[date].count;
+      }
+      requestFreqArr.push(point);
     }
     requestFreqArr.sort((a, b) => {
       return a[0] - b[0];
@@ -97,9 +105,10 @@
       {
         x: dates,
         y: requests,
-        type: "bar",
-        marker: { color: "#3fcf8e" },
-        hovertemplate: `<b>%{y} requests</b><br>%{x|%d %b %Y}</b><extra></extra>`,
+        type: "lines",
+        marker: { color: "#707070" },
+        fill: "tonexty",
+        hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
         showlegend: false,
       },
     ];
@@ -117,7 +126,6 @@
     };
   }
 
-  let plotDiv;
   function genPlot() {
     let plotData = buildPlotData();
     //@ts-ignore
@@ -129,13 +137,13 @@
     );
   }
 
-  let setup = false;
+  let plotDiv: HTMLDivElement;
+  let mounted = false;
   onMount(() => {
-    genPlot();
-    setup = true;
+    mounted = true;
   });
 
-  $: data && setup && genPlot();
+  $: data && mounted && genPlot();
 
   export let data: RequestsData, period: string;
 </script>

@@ -5,7 +5,7 @@
     if (prevData.length == 0) {
       percentageChange = null
     } else {
-      percentageChange = (data.length / prevData.length) * 100;
+      percentageChange = (data.length / prevData.length) * 100 - 100;
     }
   }
   
@@ -26,7 +26,7 @@
   <div class="card-title">
     Requests
   </div>
-  <div class="value">{data.length.toFixed(1)}</div>
+  <div class="value">{data.length.toLocaleString()}</div>
 </div>
 
 <style>

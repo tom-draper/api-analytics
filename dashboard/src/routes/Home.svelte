@@ -1,3 +1,7 @@
+<script>
+  import Footer from "../components/Footer.svelte";
+
+</script>
 <div class="home">
   <div class="landing-page-container">
     <div class="landing-page">
@@ -6,7 +10,7 @@
         <h2>Monitoring and analytics for API frameworks.</h2>
         <div class="links">
           <a href="/generate" class="link"> <div class="text">Try now - it's <span class="italic">free</span></div></a>
-          <a href="/generate" class="link secondary"> <div class="text">Demo</div></a>
+          <a href="/dashboard/demo" class="link secondary"> <div class="text">Demo</div></a>
         </div>
         <!-- <div class="lower-links">
           <a href="/dashboard" class="link lower-link tertiary"> <div class="text">Dashboard</div></a>
@@ -30,7 +34,7 @@
       <div class="dashboard-btn-container">
         <a href="/dashboard" class="dashboard-btn secondary">
           <div class="dashboard-btn-text">
-            Open
+            View
           </div>
         </a>
       </div>
@@ -57,6 +61,7 @@
     <img class="dashboard-img" src="img/monitoring.png" alt="" />
   </div>
 </div>
+<Footer />
 
 <style scoped>
   .landing-page {
