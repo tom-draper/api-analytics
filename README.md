@@ -495,7 +495,7 @@ response = requests.get("https://api-analytics-server/api/data", headers=headers
 print(response.json())
 ```
 
-## Monitoring (coming soon)
+## Active Monitoring (coming soon)
 
 Opt-in active API monitoring is coming soon. Our servers will regularly ping your API endpoints to monitor uptime and response time. Optional email alerts to notify you when your endpoints are down will also be available.
 
