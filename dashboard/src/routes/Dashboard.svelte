@@ -189,6 +189,10 @@
 <style>
   .dashboard {
     min-height: 90vh;
+    /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif; */
+        /* font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
+    Helvetica, Arial, "Lucida Grande", sans-serif; */
   }
   .dashboard {
     margin: 5em;

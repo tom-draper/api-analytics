@@ -109,6 +109,7 @@
   .card-text {
     display: flex;
     margin: 2em 2em 0;
+    font-size: 0.9em;
   }
   .card-text-left {
     flex-grow: 1;

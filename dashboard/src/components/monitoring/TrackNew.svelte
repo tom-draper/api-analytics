@@ -47,7 +47,8 @@
   }
   button {
     background: var(--highlight);
-    padding: 4px 20px;
+    padding: 5px 20px;
     border-radius: 4px;
+    border: none;
   }
 </style>

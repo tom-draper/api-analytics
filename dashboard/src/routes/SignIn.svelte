@@ -39,8 +39,8 @@
     place-items: center;
   }
   h2 {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, */
+      /* Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif; */
     margin: 0 0 1em;
     font-size: 2em;
   }

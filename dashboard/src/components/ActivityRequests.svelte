@@ -36,7 +36,7 @@
       hovermode: "closest",
       plot_bgcolor: "transparent",
       paper_bgcolor: "transparent",
-      height: 161,
+      height: 169,
       yaxis: {
         title: { text: "Requests" },
         gridcolor: "gray",
