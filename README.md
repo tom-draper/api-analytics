@@ -497,7 +497,7 @@ print(response.json())
 
 ## Monitoring (coming soon)
 
-Opt-in active API monitoring is coming soon. Our servers will regulalrly ping your API endpoints to monitor uptime and response time. Optional email alerts to notify you when your endpoints are down will also be available.
+Opt-in active API monitoring is coming soon. Our servers will regularly ping your API endpoints to monitor uptime and response time. Optional email alerts to notify you when your endpoints are down will also be available.
 
 ![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)
 
