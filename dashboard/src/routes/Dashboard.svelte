@@ -162,6 +162,30 @@
     }
   }
 
+  function randomChoice(p: number[]): number {
+    let rnd = p.reduce((a, b) => a + b) * Math.random();
+    return p.findIndex((a) => (rnd -= a) < 0);
+  }
+
+  function randomChoices(p: number[], count: number): number[] {
+    return Array.from(Array(count), randomChoice.bind(null, p));
+  }
+
+  function getHour(): number {
+    let p = Array(24).fill(1);
+    for (let i = 0; i < 3; i++) {
+      for (let j = 5+i; j < 11-i; j++) {
+        p[j] += 0.15;
+      }
+    }
+    for (let i = 0; i < 4; i++) {
+      for (let j = 11+i; j < 21-i; j++) {
+        p[j] += 0.15;
+      }
+    }
+    return randomChoices(p, 1)[0];
+  }
+
   function addDemoSamples(
     demoData: any[],
     endpoint: string,
@@ -177,7 +201,7 @@
       date.setDate(
         date.getDate() - Math.floor(Math.random() * maxDaysAgo + minDaysAgo)
       );
-      date.setHours(Math.floor(Math.random() * 24));
+      date.setHours(getHour());
       demoData.push({
         hostname: "demo-api.com",
         path: endpoint,

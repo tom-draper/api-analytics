@@ -82,7 +82,7 @@
   {#if successRate != undefined}
     <div class="success-rate-title">Success rate</div>
     <div class="errors">
-      {#each successRate as value, _}
+      {#each successRate as value}
         <div
           class="error level-{Math.floor(value * 10) + 1}"
           title={value >= 0 ? (value * 100).toFixed(1) + "%" : "No requests"}
