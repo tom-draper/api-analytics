@@ -480,7 +480,7 @@ Head to https://my-api-analytics.vercel.app/dashboard and paste in your API key 
 
 Demo: https://my-api-analytics.vercel.app/dashboard/demo
 
-![Dashboard](https://user-images.githubusercontent.com/41476809/208438967-628702f7-8dbe-4528-ad0a-b7294f3bb5ae.png)
+![Dashboard](https://user-images.githubusercontent.com/41476809/208440202-966a6930-3d2e-40c5-afc7-2fd0107d6b4f.png)
 
 #### Data API
 
