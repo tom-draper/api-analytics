@@ -41,7 +41,7 @@
       }
       // @ts-ignore
       success[date].total++;
-      if (date as any < minDate) {
+      if ((date as any) < minDate) {
         minDate = date as any;
       }
     }
@@ -54,7 +54,8 @@
     let successArr = new Array(days).fill(-0.1); // -0.1 -> 0
     for (let date in success) {
       let idx = daysAgo(new Date(date));
-      successArr[successArr.length-1 - idx] = success[date].successful / success[date].total;
+      successArr[successArr.length - 1 - idx] =
+        success[date].successful / success[date].total;
     }
 
     successRate = successArr;
@@ -83,8 +84,8 @@
     <div class="errors">
       {#each successRate as value, _}
         <div
-          class="error level-{Math.floor(value*10)+1}"
-          title="{value >= 0 ? (value * 100).toFixed(1) + '%' : 'No requests'}"
+          class="error level-{Math.floor(value * 10) + 1}"
+          title={value >= 0 ? (value * 100).toFixed(1) + "%" : "No requests"}
         />
       {/each}
     </div>
@@ -119,30 +120,30 @@
     background: rgb(40, 40, 40);
   }
   .level-1 {
-    background: #E46161;
+    background: #e46161;
   }
   .level-2 {
-    background: #F18359;
+    background: #f18359;
   }
   .level-3 {
-    background: #F5A65A;
+    background: #f5a65a;
   }
   .level-4 {
-    background: #F3C966;
+    background: #f3c966;
   }
   .level-5 {
-    background: #EBEB81;
+    background: #ebeb81;
   }
   .level-6 {
-    background: #C7E57D;
+    background: #c7e57d;
   }
   .level-7 {
-    background: #A1DF7E;
+    background: #a1df7e;
   }
   .level-8 {
-    background: #77D884;
+    background: #77d884;
   }
   .level-9 {
-    background: #3FCF8E;
+    background: #3fcf8e;
   }
 </style>

@@ -114,7 +114,7 @@
         x: dates,
         y: Array(requests.length).fill(Math.max(Math.min(...requests) - 5, 0)),
         type: "lines",
-        marker: { color: "transparent"},
+        marker: { color: "transparent" },
         fill: "tonexty",
         fillcolor: "#4A4A4A",
         hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,

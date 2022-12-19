@@ -44,11 +44,11 @@
     let markers = periodToMarkers(period);
     let dates = [];
     for (let i = 0; i < markers; i++) {
-        dates.push(i)
+      dates.push(i);
     }
     let requests = [];
     for (let i = 0; i < markers; i++) {
-        requests.push(data[i].response_time)
+      requests.push(data[i].response_time);
     }
 
     return [

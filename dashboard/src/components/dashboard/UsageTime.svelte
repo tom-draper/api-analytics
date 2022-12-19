@@ -8,10 +8,10 @@
       height: 500,
       margin: { r: 35, l: 70, t: 20, b: 50, pad: 0 },
       polar: {
-          bargap: 0,
-          bgcolor: "transparent",
-        angularaxis: { direction: "clockwise", showgrid: false},
-        radialaxis: { gridcolor: "#303030"}
+        bargap: 0,
+        bgcolor: "transparent",
+        angularaxis: { direction: "clockwise", showgrid: false },
+        radialaxis: { gridcolor: "#303030" },
       },
     };
   }
@@ -38,7 +38,7 @@
     let dates = [];
     let requests = [];
     for (let i = 0; i < requestFreqArr.length; i++) {
-      dates.push(requestFreqArr[i][0].toString() + ':00');
+      dates.push(requestFreqArr[i][0].toString() + ":00");
       requests.push(requestFreqArr[i][1]);
     }
 
@@ -87,7 +87,7 @@
 </script>
 
 <div class="card">
-    <div class="card-title">Usage time</div>
+  <div class="card-title">Usage time</div>
   <div id="plotly">
     <div id="plotDiv" bind:this={plotDiv}>
       <!-- Plotly chart will be drawn inside this DIV -->

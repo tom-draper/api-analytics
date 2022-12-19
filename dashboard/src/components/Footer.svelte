@@ -1,6 +1,9 @@
 <div class="footer">
+  <a class="github-link" target="_blank" href="https://github.com/tom-draper/api-analytics">
+    <img class="github-logo" src="../img/github.png" alt="" />
+  </a>
   <div class="logo">API Analytics</div>
-  <img class="footer-logo" src="../img/logo.png" alt="">
+  <img class="footer-logo" src="../img/logo.png" alt="" />
 </div>
 
 <style scoped>
@@ -9,6 +12,11 @@
     color: var(--highlight);
   }
   .footer {
-    margin: 2em 0 3em;
+    margin: 1.5em 0 3em;
+  }
+  .github-logo {
+    height: 30px;
+    filter: invert(0.22);
+    margin-bottom: 30px;
   }
 </style>

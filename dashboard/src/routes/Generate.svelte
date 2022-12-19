@@ -44,12 +44,11 @@
     <div class="spinner">
       <div class="loader" style="display: {loading ? 'initial' : 'none'}" />
     </div>
-
   </div>
   <div class="details">
     <div class="keep-secure">Keep your API key safe and secure.</div>
     <div class="highlight logo">API Analytics</div>
-    <img class="footer-logo" src="img/logo.png" alt="">
+    <img class="footer-logo" src="img/logo.png" alt="" />
   </div>
 </div>
 
@@ -59,7 +58,6 @@
     place-items: center;
   }
   h2 {
-
     margin: 0 0 1em;
     font-size: 2em;
   }

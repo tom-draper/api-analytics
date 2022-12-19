@@ -3,13 +3,13 @@
 
   function getDevice(userAgent: string): string {
     if (userAgent.match(/iPhone/)) {
-        return 'iPhone'
+      return "iPhone";
     } else if (userAgent.match(/Android/)) {
-        return 'Android'
+      return "Android";
     } else if (userAgent.match(/Tizen\//)) {
-        return 'Samsung'
+      return "Samsung";
     } else {
-        return 'Other'
+      return "Other";
     }
   }
 
@@ -37,35 +37,37 @@
   }
 
   let colors = [
-    "#3FCF8E",  // Green
-    "#E46161",   // Red
-    "#EBEB81",  // Yellow
+    "#3FCF8E", // Green
+    "#E46161", // Red
+    "#EBEB81", // Yellow
   ];
 
   function pieChart() {
-    let deviceCount = {}
+    let deviceCount = {};
     for (let i = 0; i < data.length; i++) {
-        let browser = getDevice(data[i].user_agent)
-        if (!(browser in deviceCount)) {
-            deviceCount[browser] = 0
-        }
-        deviceCount[browser]++
+      let browser = getDevice(data[i].user_agent);
+      if (!(browser in deviceCount)) {
+        deviceCount[browser] = 0;
+      }
+      deviceCount[browser]++;
     }
 
     let device = [];
     let count = [];
     for (let browser in deviceCount) {
-        device.push(browser);
-        count.push(deviceCount[browser])
+      device.push(browser);
+      count.push(deviceCount[browser]);
     }
-    return [{
-    values: count,
+    return [
+      {
+        values: count,
         labels: device,
-        type: 'pie',
-          marker: {
-            colors: colors
+        type: "pie",
+        marker: {
+          colors: colors,
         },
-    }];
+      },
+    ];
   }
 
   function devicePlotData() {
@@ -102,21 +104,13 @@
   export let data: RequestsData;
 </script>
 
-<!-- <div class="card" title="Last week"> -->
-  <!-- <div class="card-title">Device</div> -->
-  <div id="plotly">
-    <div id="plotDiv" bind:this={plotDiv}>
-      <!-- Plotly chart will be drawn inside this DIV -->
-    </div>
+<div id="plotly">
+  <div id="plotDiv" bind:this={plotDiv}>
+    <!-- Plotly chart will be drawn inside this DIV -->
   </div>
-<!-- </div> -->
+</div>
 
 <style>
-  /* .card {
-    margin: 2em 0;
-    padding-bottom: 1em;
-    flex: 1;
-  } */
   #plotDiv {
     margin-right: 20px;
   }
