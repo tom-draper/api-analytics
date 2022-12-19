@@ -1,4 +1,5 @@
 <script>
+  let framework = 'Django'
   import Footer from "../components/Footer.svelte";
 </script>
 
@@ -24,6 +25,24 @@
       </div>
     </div>
   </div>
+  <!-- <div class="add-middleware">
+    <div class="add-middleware-content">
+      <div class="select-framework">
+        <div class="working-with">
+          <div class="line-starter">></div>
+          <div class="div">
+            I'm working with <span class="framework-name">{framework}</span>
+          </div> 
+        </div>
+      </div>
+      <div class="instructions-container">
+        <div class="instructions">
+          <code class="installation">pip install api-analytics</code>
+          <code class="code">import api_analytics</code>
+        </div>
+      </div>
+    </div>
+  </div> -->
   <div class="dashboard">
     <div class="dashboard-title-container">
       <img class="lightning-top" src="img/logo.png" alt="" />
@@ -116,7 +135,7 @@
     color: var(--highlight);
   }
   .secondary:hover {
-    background: #222222;
+    background: #081d13;
   }
 
   .lightning-top {
@@ -178,6 +197,59 @@
   .dashboard-btn-text {
     text-align: center;
   }
+
+  .add-middleware {
+    margin: auto;
+    width: 850px;
+    margin-bottom: 7em;
+    background: var(--light-background);
+    border-radius: 6px;
+    border: 1px solid #2E2E2E
+  }
+
+  .line-starter {
+    font-weight: 900;
+    color: var(--highlight);
+    font-size: 1.5em;
+    margin-right: 20px;
+  }
+  .framework-name {
+    color: var(--highlight);
+    border-bottom: 3px solid var(--highlight);
+  }
+
+  .select-framework {
+    display: flex;
+    padding: 1.5em 2.6em 0;
+    text-align: left;
+  }
+
+  .working-with {
+    width: 100%;
+    font-size: 1.8em;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    align-items: center;
+  }
+
+
+  .instructions-container {
+    padding: 1.5em 2em 2em;
+  }
+  .instructions {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+  }
+  code {
+    background: #151515;
+    padding: 1em 2em;
+    border-radius: 0.5em;
+    margin: 5px;
+    color: white;
+  }
+
   @media screen and (max-width: 1500px) {
     .landing-page-container {
       margin: 0 6% 0 7%;

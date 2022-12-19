@@ -155,7 +155,6 @@ function setCircleColor(circle) {
 function addCenterCircle(svg) {
   let svgNS = svg.namespaceURI;
   let circle = document.createElementNS(svgNS, "circle");
-  // circle.setAttribute("radius", 1000);
   circle.setAttributeNS(null, "cx", 500);
   circle.setAttributeNS(null, "cy", 500);
   circle.setAttributeNS(null, "r", 50);
@@ -168,7 +167,6 @@ function addRedCircles(svg) {
   let svgNS = svg.namespaceURI;
   for (let i = 0; i < 50; i++) {
     let circle = document.createElementNS(svgNS, "circle");
-    // circle.setAttribute("radius", 1000);
   
     setCirclePosition(circle, 500, 200);
     setCircleSize(circle);
@@ -182,7 +180,6 @@ function addCircles(svg) {
   let svgNS = svg.namespaceURI;
   for (let i = 0; i < 100000; i++) {
     let circle = document.createElementNS(svgNS, "circle");
-    // circle.setAttribute("radius", 1000);
     setCirclePosition(circle, 500, 100);
     setCircleSize(circle);
     setCircleColor(circle);
@@ -191,7 +188,7 @@ function addCircles(svg) {
   }
 
   addRedCircles(svg)
-  addCenterCircle(svg)
+  // addCenterCircle(svg)
 }
 
 
