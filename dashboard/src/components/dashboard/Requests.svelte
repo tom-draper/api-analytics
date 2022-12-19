@@ -10,18 +10,19 @@
   }
   
   let percentageChange: number;
+  let mounted = false;
   onMount(() => {
-    setPercentageChange()
+    mounted = true;
   })
   
-  $: data && setPercentageChange();
+  $: data && mounted && setPercentageChange();
 
   export let data: RequestsData, prevData: RequestsData;
 </script>
 
 <div class="card" title="Total">
   {#if percentageChange != null}
-    <div class="percentage-change" class:positive={percentageChange > 0} class:negative={percentageChange < 0}>(+{percentageChange.toFixed(1)}%)</div>
+    <div class="percentage-change" class:positive={percentageChange > 0} class:negative={percentageChange < 0}>({percentageChange > 0 ? '+' : ''}{percentageChange.toFixed(1)}%)</div>
   {/if}
   <div class="card-title">
     Requests

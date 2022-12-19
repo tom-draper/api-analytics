@@ -25,11 +25,12 @@
   }
 
   let change: any;
+  let mounted = false;
   onMount(() => {
-    buildWeek();
+    mounted = true;
   });
 
-  $: data && buildWeek();
+  $: data && mounted && buildWeek();
 
   export let data: RequestsData, prevData: RequestsData;
 </script>

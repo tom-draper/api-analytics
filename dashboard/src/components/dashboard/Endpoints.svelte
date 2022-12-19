@@ -52,19 +52,24 @@
       externalLabel.style.display = "flex";
       endpointPath.style.display = "none";
     }
+    if (endpoint.clientWidth < endpointCount.clientWidth) {
+      endpointCount.style.display = "none"
+    }
   }
   function setEndpointLabels() {
     for (let i = 0; i < endpoints.length; i++) {
       setEndpointLabelVisibility(i);
     }
   }
-  onMount(() => {
-    build();
-  });
+
   let endpoints: any[];
   let maxCount: number;
+  let mounted = false;
+  onMount(() => {
+    mounted = true;
+  });
 
-  $: data && build();
+  $: data && mounted && build();
 
   export let data: RequestsData;
 </script>
@@ -78,13 +83,14 @@
           <div
             class="endpoint"
             id="endpoint-{i}"
+            title={endpoint.count}
             style="width: {(endpoint.count / maxCount) *
               100}%; background: {endpoint.status >= 200 &&
             endpoint.status <= 299
               ? 'var(--highlight)'
               : '#e46161'}"
           >
-            <div class="endpoint-label" id="endpoint-label-{i}">
+            <div class="endpoint-label" id="endpoint-label-{i}" >
               <div class="path" id="endpoint-path-{i}">
                 {endpoint.path}
               </div>
@@ -129,6 +135,7 @@
   }
   .path {
     flex-grow: 1;
+    white-space: nowrap;
   }
   .endpoint-container {
     display: flex;

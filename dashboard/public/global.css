@@ -72,7 +72,6 @@ p {
   display: grid;
   place-items: center;
   height: 10em;
-  /* margin-bottom: 5em; */
 }
 
 .loader {

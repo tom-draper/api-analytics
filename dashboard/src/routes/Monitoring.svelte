@@ -146,7 +146,7 @@
   #status-image {
     width: 130px;
     margin-bottom: 1em;
-    filter: saturate(1.5);
+    filter: saturate(1.3);
   }
   .status-text {
     font-size: 2.2em;

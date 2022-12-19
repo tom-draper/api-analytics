@@ -83,6 +83,14 @@
         dataSubset.push(data[i]);
       }
     }
+
+    let count = 0;
+    for (let i = 0; i < dataSubset.length; i++) {
+      if (dataSubset[i].status >= 400 && dataSubset[i].status < 500) {
+        count++
+      }
+    }
+    console.log(count)
     periodData = dataSubset;
   }
 
@@ -187,10 +195,14 @@
     addDemoSamples(demoData, "/v1/help", 400, 70);
     addDemoSamples(demoData, "/v2/", 200, 34000);
     addDemoSamples(demoData, "/v2/", 400, 200);
-    addDemoSamples(demoData, "/v2/account", 200, 7000);
-    addDemoSamples(demoData, "/v2/account", 400, 1000);
+    addDemoSamples(demoData, "/v2/account", 200, 14000);
+    addDemoSamples(demoData, "/v2/account", 400, 3000);
+    addDemoSamples(demoData, "/v2/account/update", 200, 6000);
+    addDemoSamples(demoData, "/v2/account/update", 400, 400);
+    addDemoSamples(demoData, "/v2/help", 200, 6000);
+    addDemoSamples(demoData, "/v2/help", 400, 400);
 
-    console.log("adding")
+    // Add down period
     for (let i = 0; i < 1000; i++) {
       let date = new Date();
       date.setDate(date.getDate() - Math.floor(Math.random() * 50 + 30));
