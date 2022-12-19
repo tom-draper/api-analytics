@@ -166,11 +166,15 @@
     demoData: any[],
     endpoint: string,
     status: number,
-    count: number
+    count: number,
+    maxDaysAgo: number,
+    minDaysAgo: number,
+    maxResponseTime: number,
+    minResponseTime: number
   ) {
     for (let i = 0; i < count; i++) {
       let date = new Date();
-      date.setDate(date.getDate() - Math.floor(Math.random() * 650));
+      date.setDate(date.getDate() - Math.floor(Math.random() * maxDaysAgo + minDaysAgo));
       date.setHours(Math.floor(Math.random() * 24));
       demoData.push({
         hostname: "demo-api.com",
@@ -178,7 +182,7 @@
         user_agent: getDemoUserAgent(),
         method: 0,
         status: getDemoStatus(date, status),
-        response_time: Math.floor(Math.random() * 240 + 55),
+        response_time: Math.floor(Math.random() * maxResponseTime + minResponseTime),
         created_at: date.toISOString(),
       });
     }
@@ -187,37 +191,45 @@
   function genDemoData() {
     let demoData = [];
 
-    addDemoSamples(demoData, "/v1/", 200, 18000);
-    addDemoSamples(demoData, "/v1/", 400, 1000);
-    addDemoSamples(demoData, "/v1/account", 200, 8000);
-    addDemoSamples(demoData, "/v1/account", 400, 1200);
-    addDemoSamples(demoData, "/v1/help", 200, 700);
-    addDemoSamples(demoData, "/v1/help", 400, 70);
-    addDemoSamples(demoData, "/v2/", 200, 34000);
-    addDemoSamples(demoData, "/v2/", 400, 200);
-    addDemoSamples(demoData, "/v2/account", 200, 14000);
-    addDemoSamples(demoData, "/v2/account", 400, 3000);
-    addDemoSamples(demoData, "/v2/account/update", 200, 6000);
-    addDemoSamples(demoData, "/v2/account/update", 400, 400);
-    addDemoSamples(demoData, "/v2/help", 200, 6000);
-    addDemoSamples(demoData, "/v2/help", 400, 400);
+    addDemoSamples(demoData, "/v1/", 200, 18000, 650, 0, 240, 55);
+    addDemoSamples(demoData, "/v1/", 400, 1000, 650, 0, 240, 55);
+    addDemoSamples(demoData, "/v1/account", 200, 8000, 650, 0, 240, 55);
+    addDemoSamples(demoData, "/v1/account", 400, 1200, 650, 0, 240, 55);
+    addDemoSamples(demoData, "/v1/help", 200, 700, 650, 0, 240, 55);
+    addDemoSamples(demoData, "/v1/help", 400, 70, 650, 0, 240, 55);
+    addDemoSamples(demoData, "/v2/", 200, 35000, 650, 0, 240, 55);
+    addDemoSamples(demoData, "/v2/", 400, 200, 650, 0, 240, 55);
+    addDemoSamples(demoData, "/v2/account", 200, 14000, 650, 0, 240, 55);
+    addDemoSamples(demoData, "/v2/account", 400, 3000, 650, 0, 240, 55);
+    addDemoSamples(demoData, "/v2/account/update", 200, 6000, 650, 0, 240, 55);
+    addDemoSamples(demoData, "/v2/account/update", 400, 400, 650, 0, 240, 55);
+    addDemoSamples(demoData, "/v2/help", 200, 6000, 650, 0, 240, 55);
+    addDemoSamples(demoData, "/v2/help", 400, 400, 650, 0, 240, 55);
+    
+    addDemoSamples(demoData, "/v2/account", 200, 16000, 450, 0, 100, 30);
+    addDemoSamples(demoData, "/v2/account", 400, 2000, 450, 0, 100, 30);
 
-    // Add down period
-    for (let i = 0; i < 1000; i++) {
-      let date = new Date();
-      date.setDate(date.getDate() - Math.floor(Math.random() * 50 + 30));
-      date.setHours(Math.floor(Math.random() * 24));
-      demoData.push({
-        hostname: "demo-api.com",
-        path: "/v2/",
-        user_agent:
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
-        method: 0,
-        status: 200,
-        response_time: Math.floor(Math.random() * 500 + 130),
-        created_at: date.toISOString(),
-      });
-    }
+    addDemoSamples(demoData, "/v2/help", 200, 8000, 300, 0, 100, 30);
+    addDemoSamples(demoData, "/v2/help", 400, 800, 300, 0, 100, 30);
+
+    addDemoSamples(demoData, "/v2/", 200, 4000, 200, 0, 100, 30);
+    addDemoSamples(demoData, "/v2/", 400, 800, 200, 0, 100, 30);
+
+    addDemoSamples(demoData, "/v2/", 200, 3000, 100, 0, 100, 30);
+    addDemoSamples(demoData, "/v2/", 400, 500, 100, 0, 100, 30);
+
+    addDemoSamples(demoData, "/v2/", 200, 1000, 60, 0, 100, 30);
+    addDemoSamples(demoData, "/v2/", 400, 50, 60, 0, 100, 30);
+
+    addDemoSamples(demoData, "/v2/", 200, 500, 40, 0, 100, 30);
+    addDemoSamples(demoData, "/v2/", 400, 25, 40, 0, 100, 30);
+
+    addDemoSamples(demoData, "/v2/", 200, 250, 10, 0, 100, 30);
+    addDemoSamples(demoData, "/v2/", 400, 20, 10, 0, 100, 30);
+
+    addDemoSamples(demoData, "/v2/", 200, 125, 5, 0, 100, 30);
+    addDemoSamples(demoData, "/v2/", 400, 10, 5, 0, 100, 30);
+
 
     data = demoData;
     setPeriod("month");

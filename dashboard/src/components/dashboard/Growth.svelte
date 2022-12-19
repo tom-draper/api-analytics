@@ -74,7 +74,7 @@
         <div class="tile">
           <div class="tile-value">
             <span
-              style="color: {change.responseTime > 0
+              style="color: {change.responseTime < 0
                 ? 'var(--highlight)'
                 : 'var(--red)'}">{change.responseTime > 0 ? '+' : ''}{change.responseTime.toFixed(1)}%</span
             >
