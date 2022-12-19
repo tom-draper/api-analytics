@@ -1,7 +1,7 @@
 <script>
   import Footer from "../components/Footer.svelte";
-
 </script>
+
 <div class="home">
   <div class="landing-page-container">
     <div class="landing-page">
@@ -9,13 +9,15 @@
         <h1>API Analytics</h1>
         <h2>Monitoring and analytics for API frameworks.</h2>
         <div class="links">
-          <a href="/generate" class="link"> <div class="text">Try now - it's <span class="italic">free</span></div></a>
-          <a href="/dashboard/demo" class="link secondary"> <div class="text">Demo</div></a>
+          <a href="/generate" class="link">
+            <div class="text">
+              Try now - it's <span class="italic">free</span>
+            </div></a
+          >
+          <a href="/dashboard/demo" class="link secondary">
+            <div class="text">Demo</div></a
+          >
         </div>
-        <!-- <div class="lower-links">
-          <a href="/dashboard" class="link lower-link tertiary"> <div class="text">Dashboard</div></a>
-          <a href="/monitoring" class="link lower-link tertiary"> <div class="text">Monitoring</div></a>
-        </div> -->
       </div>
       <div class="right">
         <img class="logo" src="img/home-logo2.png" alt="" />
@@ -29,13 +31,12 @@
     </div>
     <div class="dashboard-content">
       <div class="dashboard-content-text">
-        An all-in-one analytics dashboard. Real-time insight into your API's usage.
+        An all-in-one analytics dashboard. Real-time insight into your API's
+        usage.
       </div>
       <div class="dashboard-btn-container">
         <a href="/dashboard" class="dashboard-btn secondary">
-          <div class="dashboard-btn-text">
-            View
-          </div>
+          <div class="dashboard-btn-text">View</div>
         </a>
       </div>
     </div>
@@ -52,9 +53,7 @@
       </div>
       <div class="dashboard-btn-container">
         <a href="/" class="dashboard-btn secondary">
-          <div class="dashboard-btn-text">
-            Coming Soon
-          </div>
+          <div class="dashboard-btn-text">Coming Soon</div>
         </a>
       </div>
     </div>
@@ -82,10 +81,6 @@
     display: grid;
     place-items: center;
   }
-  /* .left,
-  .right {
-    padding-bottom: 6em;
-  } */
   .logo {
     max-width: 1400px;
     width: 700px;
@@ -94,7 +89,6 @@
 
   h1 {
     font-size: 3.4em;
-    /* font-family: 'Zilla Slab' */
   }
 
   h2 {
@@ -104,22 +98,11 @@
   .links {
     color: #707070;
     display: flex;
-    /* width:  400px; */
     margin-top: 30px;
     text-align: left;
   }
-  .lower-links {
-    margin-top: 60px;
-    display: flex;
-    flex-direction: column;
-  }
-  .lower-link {
-    margin-bottom: 20px;
-    width: 200px;
-  }
   .link {
     width: fit-content;
-    /* margin: 10px auto; */
     margin-right: 20px;
     font-size: 0.9;
   }
@@ -134,15 +117,6 @@
   }
   .secondary:hover {
     background: #222222;
-    /* background: var(--highlight); */
-    /* color: black; */
-  }
-
-  .tertiary {
-    background: rgb(201, 201, 201);
-    width: 250px;
-    display: grid;
-    place-items: center;
   }
 
   .lightning-top {
@@ -169,8 +143,6 @@
     width: 80%;
     border-radius: 10px;
     margin: auto;
-    /* background: var(--highlight); */
-    /* height: 100vh; */
     margin-bottom: 8em;
     overflow: hidden;
     position: relative;
@@ -181,16 +153,11 @@
     margin: 0.2em 1em auto 1em;
   }
   .dashboard-title-container {
-    
     place-content: center;
   }
   .dashboard-img {
     width: 81%;
-    /* position: absolute; */
-    /* right: 9%; */
-    /* bottom: -1%; */
     border-radius: 10px;
-    /* border: 2px solid var(--highlight); */
     box-shadow: 0px 24px 120px -25px var(--highlight);
     margin-bottom: -1%;
   }
@@ -206,11 +173,9 @@
   .dashboard-btn-container {
     display: flex;
     justify-content: center;
-    margin-top: 2em
+    margin-top: 2em;
   }
   .dashboard-btn-text {
-    /* padding: 12px 20px; */
-    width: 100px;
     text-align: center;
   }
   @media screen and (max-width: 1500px) {
@@ -238,7 +203,7 @@
       width: 100%;
     }
   }
-  
+
   @media screen and (max-width: 900px) {
     .home {
       font-size: 0.85em;
