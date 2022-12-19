@@ -10,7 +10,7 @@
       }
     }
     versions = v;
-    
+
     if (versions.size > 1) {
       setTimeout(genPlot, 1000);
     }
@@ -39,16 +39,16 @@
   }
 
   let colors = [
-    "#3FCF8E",  // Green
-    "#5784BA",  // Blue
-    "#EBEB81",  // Yellow
-    "#218B82",  // Sea green
-    "#FFD6A5",  // Orange
-    "#F9968B",  // Salmon
-    "#B1A2CA",  // Purple
-    "#E46161",  // Red
+    "#3FCF8E", // Green
+    "#5784BA", // Blue
+    "#EBEB81", // Yellow
+    "#218B82", // Sea green
+    "#FFD6A5", // Orange
+    "#F9968B", // Salmon
+    "#B1A2CA", // Purple
+    "#E46161", // Red
   ];
-  
+
   function pieChart() {
     let versionCount = {};
     for (let i = 0; i < data.length; i++) {

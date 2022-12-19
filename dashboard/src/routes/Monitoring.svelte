@@ -45,16 +45,22 @@
   let failed = false;
 
   for (let i = 0; i < measurements.length; i++) {
-    measurements[i] = {name: 'persona-api.vercel.app/v1/england', measurements: []};
+    measurements[i] = {
+      name: "persona-api.vercel.app/v1/england",
+      measurements: [],
+    };
     for (let j = 0; j < 140; j++) {
-      measurements[i].measurements.push({ status: "success", response_time: Math.random() * 10 + 5 })
+      measurements[i].measurements.push({
+        status: "success",
+        response_time: Math.random() * 10 + 5,
+      });
     }
   }
 
   for (let i = 50; i < 58; i++) {
-    measurements[0].measurements[i] = {status: 'error', response_time: 0}
+    measurements[0].measurements[i] = { status: "error", response_time: 0 };
   }
-  measurements[1].name = 'persona-api.vercel.app/v1/england/features'
+  measurements[1].name = "persona-api.vercel.app/v1/england/features";
 
   let showTrackNew = false;
   onMount(() => {
@@ -153,7 +159,6 @@
     font-weight: 700;
     color: white;
   }
-
 
   .cards-container {
     width: 60%;

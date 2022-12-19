@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  let methodMap = ['GET', 'POST']
+  let methodMap = ["GET", "POST"];
 
   function endpointFreq(): any {
     let freq = {};
@@ -19,7 +19,6 @@
     return freq;
   }
 
-
   function build() {
     let freq = endpointFreq();
 
@@ -36,10 +35,10 @@
       return b.count - a.count;
     });
     endpoints = freqArr;
-    
+
     setTimeout(setEndpointLabels, 50);
   }
-  
+
   function setEndpointLabelVisibility(idx: number) {
     let endpoint = document.getElementById(`endpoint-label-${idx}`);
     let endpointPath = document.getElementById(`endpoint-path-${idx}`);
@@ -53,7 +52,7 @@
       endpointPath.style.display = "none";
     }
     if (endpoint.clientWidth < endpointCount.clientWidth) {
-      endpointCount.style.display = "none"
+      endpointCount.style.display = "none";
     }
   }
   function setEndpointLabels() {
@@ -90,7 +89,7 @@
               ? 'var(--highlight)'
               : '#e46161'}"
           >
-            <div class="endpoint-label" id="endpoint-label-{i}" >
+            <div class="endpoint-label" id="endpoint-label-{i}">
               <div class="path" id="endpoint-path-{i}">
                 {endpoint.path}
               </div>

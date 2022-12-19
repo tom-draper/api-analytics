@@ -36,7 +36,7 @@
       </div>
       <div class="dashboard-btn-container">
         <a href="/dashboard" class="dashboard-btn secondary">
-          <div class="dashboard-btn-text">View</div>
+          <div class="dashboard-btn-text">Open</div>
         </a>
       </div>
     </div>

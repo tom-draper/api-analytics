@@ -1,6 +1,6 @@
 <div class="footer">
   <div class="logo">API Analytics</div>
-  <img class="footer-logo" src="../img/logo.png" alt="">
+  <img class="footer-logo" src="../img/logo.png" alt="" />
 </div>
 
 <style scoped>

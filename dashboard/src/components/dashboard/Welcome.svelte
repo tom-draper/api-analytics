@@ -1,6 +1,5 @@
 <div class="card" title="API Analytics">
-  <img src="../img/logo.png" alt="">
-  <!-- <div class="text">Welcome</div> -->
+  <img src="../img/logo.png" alt="" />
 </div>
 
 <style>

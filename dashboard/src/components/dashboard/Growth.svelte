@@ -9,7 +9,7 @@
       if (data[i].status >= 200 && data[i].status <= 299) {
         period.success++;
       }
-      period.responseTime += data[i].response_time
+      period.responseTime += data[i].response_time;
     }
     return period;
   }
@@ -18,10 +18,23 @@
     let thisPeriod = periodData(data);
     let lastPeriod = periodData(prevData);
 
-    let requestsChange = (((thisPeriod.requests + 1) / (lastPeriod.requests + 1)) * 100) - 100;
-    let successChange = ((((thisPeriod.success + 1) / (thisPeriod.requests + 1)) + 1) / (((lastPeriod.success + 1) / (lastPeriod.requests + 1)) + 1)) * 100 - 100
-    let responseTimeChange = ((((thisPeriod.responseTime + 1) / (thisPeriod.requests + 1)) + 1) / (((lastPeriod.responseTime + 1) / (lastPeriod.requests + 1)) + 1)) * 100 - 100
-    change = {requests: requestsChange, success: successChange, responseTime: responseTimeChange}
+    let requestsChange =
+      ((thisPeriod.requests + 1) / (lastPeriod.requests + 1)) * 100 - 100;
+    let successChange =
+      (((thisPeriod.success + 1) / (thisPeriod.requests + 1) + 1) /
+        ((lastPeriod.success + 1) / (lastPeriod.requests + 1) + 1)) *
+        100 -
+      100;
+    let responseTimeChange =
+      (((thisPeriod.responseTime + 1) / (thisPeriod.requests + 1) + 1) /
+        ((lastPeriod.responseTime + 1) / (lastPeriod.requests + 1) + 1)) *
+        100 -
+      100;
+    change = {
+      requests: requestsChange,
+      success: successChange,
+      responseTime: responseTimeChange,
+    };
   }
 
   let change: any;
@@ -39,17 +52,18 @@
   <div class="card-title">Growth</div>
   <div class="values">
     {#if change != undefined}
-        <div class="tile">
-          <div class="tile-value">
-            <span
-              style="color: {change.requests > 0
-                ? 'var(--highlight)'
-                : 'var(--red)'}">{change.requests > 0 ? '+' : ''}{change.requests.toFixed(1)}%</span
-            >
-          </div>
-          <div class="tile-label">Requests</div>
+      <div class="tile">
+        <div class="tile-value">
+          <span
+            style="color: {change.requests > 0
+              ? 'var(--highlight)'
+              : 'var(--red)'}"
+            >{change.requests > 0 ? "+" : ""}{change.requests.toFixed(1)}%</span
+          >
         </div>
-    <!-- {#if requestsChange != undefined}
+        <div class="tile-label">Requests</div>
+      </div>
+      <!-- {#if requestsChange != undefined}
         <div class="tile">
           <div class="tile-value">
             <span
@@ -61,26 +75,30 @@
           <div class="tile-label">Users</div>
         </div>
     {/if} -->
-        <div class="tile">
-          <div class="tile-value">
-            <span
-              style="color: {change.success > 0
-                ? 'var(--highlight)'
-                : 'var(--red)'}">{change.success > 0 ? '+' : ''}{change.success.toFixed(1)}%</span
-            >
-          </div>
-          <div class="tile-label">Success rate</div>
+      <div class="tile">
+        <div class="tile-value">
+          <span
+            style="color: {change.success > 0
+              ? 'var(--highlight)'
+              : 'var(--red)'}"
+            >{change.success > 0 ? "+" : ""}{change.success.toFixed(1)}%</span
+          >
         </div>
-        <div class="tile">
-          <div class="tile-value">
-            <span
-              style="color: {change.responseTime < 0
-                ? 'var(--highlight)'
-                : 'var(--red)'}">{change.responseTime > 0 ? '+' : ''}{change.responseTime.toFixed(1)}%</span
-            >
-          </div>
-          <div class="tile-label">Response time</div>
+        <div class="tile-label">Success rate</div>
+      </div>
+      <div class="tile">
+        <div class="tile-value">
+          <span
+            style="color: {change.responseTime < 0
+              ? 'var(--highlight)'
+              : 'var(--red)'}"
+            >{change.responseTime > 0 ? "+" : ""}{change.responseTime.toFixed(
+              1
+            )}%</span
+          >
         </div>
+        <div class="tile-label">Response time</div>
+      </div>
     {/if}
   </div>
 </div>

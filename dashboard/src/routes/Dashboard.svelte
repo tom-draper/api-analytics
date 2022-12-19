@@ -87,10 +87,10 @@
     let count = 0;
     for (let i = 0; i < dataSubset.length; i++) {
       if (dataSubset[i].status >= 400 && dataSubset[i].status < 500) {
-        count++
+        count++;
       }
     }
-    console.log(count)
+    console.log(count);
     periodData = dataSubset;
   }
 
@@ -174,7 +174,9 @@
   ) {
     for (let i = 0; i < count; i++) {
       let date = new Date();
-      date.setDate(date.getDate() - Math.floor(Math.random() * maxDaysAgo + minDaysAgo));
+      date.setDate(
+        date.getDate() - Math.floor(Math.random() * maxDaysAgo + minDaysAgo)
+      );
       date.setHours(Math.floor(Math.random() * 24));
       demoData.push({
         hostname: "demo-api.com",
@@ -182,7 +184,9 @@
         user_agent: getDemoUserAgent(),
         method: 0,
         status: getDemoStatus(date, status),
-        response_time: Math.floor(Math.random() * maxResponseTime + minResponseTime),
+        response_time: Math.floor(
+          Math.random() * maxResponseTime + minResponseTime
+        ),
         created_at: date.toISOString(),
       });
     }
@@ -205,7 +209,7 @@
     addDemoSamples(demoData, "/v2/account/update", 400, 400, 650, 0, 240, 55);
     addDemoSamples(demoData, "/v2/help", 200, 6000, 650, 0, 240, 55);
     addDemoSamples(demoData, "/v2/help", 400, 400, 650, 0, 240, 55);
-    
+
     addDemoSamples(demoData, "/v2/account", 200, 16000, 450, 0, 100, 30);
     addDemoSamples(demoData, "/v2/account", 400, 2000, 450, 0, 100, 30);
 
@@ -229,7 +233,6 @@
 
     addDemoSamples(demoData, "/v2/", 200, 125, 5, 0, 100, 30);
     addDemoSamples(demoData, "/v2/", 400, 10, 5, 0, 100, 30);
-
 
     data = demoData;
     setPeriod("month");

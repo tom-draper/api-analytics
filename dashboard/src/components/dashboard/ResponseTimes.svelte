@@ -24,7 +24,7 @@
     } else if (sorted[base] != undefined) {
       return sorted[base];
     } else {
-      return 0
+      return 0;
     }
   }
 
@@ -55,15 +55,15 @@
     setMarkerPosition(median);
   }
 
-  let median: number ;
+  let median: number;
   let LQ: number;
-  let UQ: number ;
+  let UQ: number;
   let marker: HTMLDivElement;
   let mounted = false;
   onMount(() => {
     mounted = true;
   });
-  
+
   $: data && mounted && build();
 
   export let data: RequestsData;

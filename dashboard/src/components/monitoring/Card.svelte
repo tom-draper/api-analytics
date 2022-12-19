@@ -39,7 +39,7 @@
 
   function setMeasurements() {
     let markers = periodToMarkers(period);
-    measurements = Array(markers).fill({ status: null, response_time: 0});
+    measurements = Array(markers).fill({ status: null, response_time: 0 });
     let start = markers - data.measurements.length;
     for (let i = 0; i < data.measurements.length; i++) {
       measurements[i + start] = data.measurements[i];
@@ -66,7 +66,9 @@
 
   $: period && build();
 
-  export let data: {name: string, measurements: any[]}, period: string, anyError: boolean;
+  export let data: { name: string; measurements: any[] },
+    period: string,
+    anyError: boolean;
 </script>
 
 <div class="card" class:card-error={error}>

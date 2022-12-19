@@ -39,8 +39,6 @@
     place-items: center;
   }
   h2 {
-    /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, */
-      /* Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif; */
     margin: 0 0 1em;
     font-size: 2em;
   }
@@ -79,7 +77,6 @@
     color: #3fcf8e;
   }
   .details {
-    /* margin-top: 15rem; */
     font-size: 0.8em;
   }
   .keep-secure {

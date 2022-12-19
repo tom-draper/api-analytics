@@ -1,17 +1,19 @@
 <script lang="ts">
-
 </script>
 
 <div class="card">
   <div class="card-text">
     <div class="url">
-      <div class="url-text">
-        URL
-      </div>
+      <div class="url-text">URL</div>
       <input type="text" />
       <button>Add</button>
     </div>
-    <div class="detail">Endpoints are pinged by our servers every 30 mins and response <b>status</b> and response <b>time</b> are logged.</div>
+    <div class="detail">
+      Endpoints are pinged by our servers every 30 mins and response <b
+        >status</b
+      >
+      and response <b>time</b> are logged.
+    </div>
   </div>
 </div>
 
