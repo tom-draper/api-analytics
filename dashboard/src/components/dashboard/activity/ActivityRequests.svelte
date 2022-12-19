@@ -41,7 +41,6 @@
         title: { text: "Requests" },
         gridcolor: "gray",
         showgrid: false,
-        fixedrange: true,
       },
       xaxis: {
         title: { text: "Date" },
