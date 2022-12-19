@@ -19,19 +19,6 @@
     }
   }
 
-  let colors = [
-    "rgb(40, 40, 40)", // Grey (no requests)
-    "#E46161", // Red
-    "#F18359",
-    "#F5A65A",
-    "#F3C966",
-    "#EBEB81", // Yellow
-    "#C7E57D",
-    "#A1DF7E",
-    "#77D884",
-    "#3FCF8E", // Green
-  ];
-
   function daysAgo(date: Date): number {
     let now = new Date();
     return Math.floor((now.getTime() - date.getTime()) / (24 * 60 * 60 * 1000));
@@ -69,6 +56,7 @@
       let idx = daysAgo(new Date(date));
       successArr[successArr.length-1 - idx] = success[date].successful / success[date].total;
     }
+
     successRate = successArr;
   }
 
@@ -82,6 +70,8 @@
     mounted = true;
   });
 
+  $: successRate;
+
   $: data && mounted && build();
 
   export let data: RequestsData, period: string;
@@ -93,8 +83,7 @@
     <div class="errors">
       {#each successRate as value, _}
         <div
-          class="error"
-          style="background: {colors[Math.floor(value * 10) + 1]}"
+          class="error level-{Math.floor(value*10)+1}"
           title="{value >= 0 ? (value * 100).toFixed(1) + '%' : 'No requests'}"
         />
       {/each}
@@ -119,12 +108,41 @@
     text-align: left;
     font-size: 0.9em;
     color: #707070;
-    /* color: rgb(68, 68, 68); */
   }
   .success-rate-title {
-    margin: 0 0 4px 45px;
+    margin: 0 0 4px 43px;
   }
   .success-rate-container {
     margin: 1.5em 2.5em 2em;
+  }
+  .level-0 {
+    background: rgb(40, 40, 40);
+  }
+  .level-1 {
+    background: #E46161;
+  }
+  .level-2 {
+    background: #F18359;
+  }
+  .level-3 {
+    background: #F5A65A;
+  }
+  .level-4 {
+    background: #F3C966;
+  }
+  .level-5 {
+    background: #EBEB81;
+  }
+  .level-6 {
+    background: #C7E57D;
+  }
+  .level-7 {
+    background: #A1DF7E;
+  }
+  .level-8 {
+    background: #77D884;
+  }
+  .level-9 {
+    background: #3FCF8E;
   }
 </style>

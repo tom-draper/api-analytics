@@ -106,11 +106,12 @@
 
   let versions: Set<string>;
   let plotDiv: HTMLDivElement;
+  let mounted = false;
   onMount(() => {
-    setVersions();
+    mounted = true;
   });
 
-  $: data && setVersions();
+  $: data && mounted && setVersions();
 
   export let data: RequestsData;
 </script>

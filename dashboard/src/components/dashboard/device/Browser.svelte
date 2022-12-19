@@ -3,29 +3,29 @@
 
   function getBrowser(userAgent: string): string {
     if (userAgent.match(/Seamonkey\//)) {
-        return 'Seamonkey'
+      return "Seamonkey";
     } else if (userAgent.match(/Firefox\//)) {
-        return 'Firefox'
+      return "Firefox";
     } else if (userAgent.match(/Chrome\//)) {
-        return 'Chrome'
+      return "Chrome";
     } else if (userAgent.match(/Chromium\//)) {
-        return 'Chromium'
+      return "Chromium";
     } else if (userAgent.match(/Safari\//)) {
-        return 'Safari'
+      return "Safari";
     } else if (userAgent.match(/Edg\//)) {
-        return 'Edge'
+      return "Edge";
     } else if (userAgent.match(/OPR\//) || userAgent.match(/Opera\//)) {
-        return 'Opera'
+      return "Opera";
     } else if (userAgent.match(/; MSIE /) || userAgent.match(/Trident\//)) {
-        return 'Internet Explorer'
+      return "Internet Explorer";
     } else if (userAgent.match(/curl\//)) {
-        return 'Curl'
+      return "Curl";
     } else if (userAgent.match(/PostmanRuntime\//)) {
-        return 'Postman'
+      return "Postman";
     } else if (userAgent.match(/insomnia\//)) {
-        return 'Insomnia'
+      return "Insomnia";
     } else {
-        return 'Other'
+      return "Other";
     }
   }
 
@@ -57,40 +57,42 @@
   }
 
   let colors = [
-    "#3FCF8E",  // Green
-    "#5784BA",  // Blue
-    "#EBEB81",  // Yellow
-    "#218B82",  // Sea green
-    "#FFD6A5",  // Orange
-    "#F9968B",  // Salmon
-    "#B1A2CA",  // Purple
-    "#E46161",  // Red
+    "#3FCF8E", // Green
+    "#5784BA", // Blue
+    "#EBEB81", // Yellow
+    "#218B82", // Sea green
+    "#FFD6A5", // Orange
+    "#F9968B", // Salmon
+    "#B1A2CA", // Purple
+    "#E46161", // Red
   ];
 
   function pieChart() {
-    let browserCount = {}
+    let browserCount = {};
     for (let i = 0; i < data.length; i++) {
-        let browser = getBrowser(data[i].user_agent)
-        if (!(browser in browserCount)) {
-            browserCount[browser] = 0
-        }
-        browserCount[browser]++
+      let browser = getBrowser(data[i].user_agent);
+      if (!(browser in browserCount)) {
+        browserCount[browser] = 0;
+      }
+      browserCount[browser]++;
     }
 
     let browsers = [];
     let count = [];
     for (let browser in browserCount) {
-        browsers.push(browser);
-        count.push(browserCount[browser])
+      browsers.push(browser);
+      count.push(browserCount[browser]);
     }
-    return [{
-    values: count,
+    return [
+      {
+        values: count,
         labels: browsers,
-        type: 'pie',
-          marker: {
-            colors: colors
+        type: "pie",
+        marker: {
+          colors: colors,
         },
-    }];
+      },
+    ];
   }
 
   function browserPlotData() {
@@ -117,38 +119,23 @@
   }
 
   let plotDiv: HTMLDivElement;
-  let setup = false;
+  let mounted = false;
   onMount(() => {
-    genPlot();
-    setup = true;
+    mounted = true;
   });
 
-  $: data && setup && genPlot();
+  $: data && mounted && genPlot();
   export let data: RequestsData;
 </script>
 
-<!-- <div class="card">
-  <div class="card-title">Browser</div> -->
-  <div id="plotly">
-    <div id="plotDiv" bind:this={plotDiv}>
-      <!-- Plotly chart will be drawn inside this DIV -->
-    </div>
+<div id="plotly">
+  <div id="plotDiv" bind:this={plotDiv}>
+    <!-- Plotly chart will be drawn inside this DIV -->
   </div>
-<!-- </div> -->
+</div>
 
 <style>
-  .card {
-    margin: 2em 0 2em 0;
-    padding-bottom: 1em;
-    flex: 1;
-  }
   #plotDiv {
     margin-right: 20px;
-  }
-  @media screen and (max-width: 1480px){
-    .card {
-        margin: 0 0 2em;
-        width: 100%;
-      }
   }
 </style>

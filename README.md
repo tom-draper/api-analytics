@@ -470,7 +470,7 @@ end
 
 ### 3. View your analytics
 
-Your API will log and store request data on all valid routes. Your logged data can be viewed using two methods: through visualizations and stats on our dashboard, or accessed directly via our data API.
+Your API will now log and store incoming request data on all valid routes. Your logged data can be viewed using two methods: through visualizations and stats on our dashboard, or accessed directly via our data API.
 
 You can use the same API key across multiple APIs, but all your data will appear in the same dashboard. We recommend generating a new API key for each additional API you want analytics for.
 
@@ -499,7 +499,7 @@ print(response.json())
 
 ## Monitoring (coming soon)
 
-Opt-in active API monitoring is coming soon. Our servers will regularly ping your API endpoints to monitor uptime and response time. Optional email alerts to notify you when your endpoints are down will also be available.
+Opt-in active API monitoring is coming soon. Our servers will regularly ping your API endpoints to monitor uptime and response time. Optional email alerts to notify you when your endpoints are down can be subscribed to.
 
 ![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)
 
@@ -518,7 +518,7 @@ For any given request to your API, data recorded is limited to:
  - Response time
  - API framework (FastAPI, Flask, Express etc.)
 
-Data collected is only ever used by our analytics dashboard. Your data is anonymous, with the API key the only link between you and you API's analytics. Should you lose your API key, you will have no method to access your API analytics.
+Data collected is only ever used to populate your analytics dashboard. Your data is anonymous, with the API key the only link between you and you API's analytics. Should you lose your API key, you will have no method to access your API analytics. Inactive API keys (> 1 year) and its associated API request data may be deleted.
 
 ### Delete Data
 

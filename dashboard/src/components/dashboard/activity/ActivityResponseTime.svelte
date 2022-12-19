@@ -55,7 +55,6 @@
   }
 
   function bars() {
-    console.log(data)
     let responseTimes = {};
     let days = periodToDays(period);
     if (days) {

@@ -55,17 +55,16 @@
     setMarkerPosition(median);
   }
 
-  let setup = false;
   let median: number ;
   let LQ: number;
   let UQ: number ;
   let marker: HTMLDivElement;
+  let mounted = false;
   onMount(() => {
-    build();
-    setup = true;
+    mounted = true;
   });
   
-  $: data && setup && build();
+  $: data && mounted && build();
 
   export let data: RequestsData;
 </script>
