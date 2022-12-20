@@ -1,6 +1,6 @@
 <div class="footer">
-  <a class="github-link" target="_blank" href="https://github.com/tom-draper/api-analytics">
-    <img class="github-logo" src="../img/github.png" alt="" />
+  <a class="github-link" rel="noreferrer" target="_blank" href="https://github.com/tom-draper/api-analytics">
+    <img class="github-logo" height="30px" src="../img/github.png" alt="" />
   </a>
   <div class="logo">API Analytics</div>
   <img class="footer-logo" src="../img/logo.png" alt="" />
