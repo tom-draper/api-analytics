@@ -121,7 +121,7 @@ if __name__ == "__main__":
 [![Npm package version](https://badgen.net/npm/v/node-api-analytics)](https://npmjs.com/package/node-api-analytics)
 
 ```bash
-npm i node-api-analytics
+npm install node-api-analytics
 ```
 
 ```js
@@ -146,7 +146,7 @@ app.listen(8080, () => {
 [![Npm package version](https://badgen.net/npm/v/node-api-analytics)](https://npmjs.com/package/node-api-analytics)
 
 ```bash
-npm i node-api-analytics
+npm install node-api-analytics
 ```
 
 ```js
@@ -175,7 +175,7 @@ fastify.listen({ port: 8080 }, function (err, address) {
 [![Npm package version](https://badgen.net/npm/v/node-api-analytics)](https://npmjs.com/package/node-api-analytics)
 
 ```bash
-npm i node-api-analytics
+npm install node-api-analytics
 ```
 
 ```js
