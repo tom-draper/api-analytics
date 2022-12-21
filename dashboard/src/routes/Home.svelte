@@ -40,7 +40,7 @@
         <div class="links">
           <a href="/generate" class="link">
             <div class="text">
-              Try now - it's <span class="italic">free</span>
+              Try now – it's <span class="italic">free</span>
             </div></a
           >
           <a href="/dashboard/demo" class="link secondary">
