@@ -42,8 +42,9 @@ export default [
           watch: "public/App.js",
           delay: 200,
         }),
-      production && terser(),
+        production && terser(),
     ],
+
   },
   // Server bundle
   {
@@ -63,6 +64,7 @@ export default [
       json(),
       resolve(),
       commonjs(),
+      typescript(),
       production && terser(),
     ],
   },
