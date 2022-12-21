@@ -94,18 +94,22 @@ func pingMonitored(monitored []MonitorRow, client http.Client, supabase *supa.Cl
 	}
 }
 
-func main() {
-	supabaseURL, supabaseKey := GetDBLogin()
-	supabase := supa.CreateClient(supabaseURL, supabaseKey)
-
-	monitored := getMonitoredURLs(supabase)
-
+func getClient() http.Client {
 	dialer := net.Dialer{Timeout: 2 * time.Second}
 	var client = http.Client{
 		Transport: &http.Transport{
 			Dial: dialer.Dial,
 		},
 	}
+	return client
+}
 
+func main() {
+	supabaseURL, supabaseKey := GetDBLogin()
+	supabase := supa.CreateClient(supabaseURL, supabaseKey)
+
+	monitored := getMonitoredURLs(supabase)
+
+	client := getClient()
 	pingMonitored(monitored, client, supabase)
 }
