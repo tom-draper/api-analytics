@@ -178,9 +178,9 @@ function addRedCircles(svg) {
 
 function addCircles(svg) {
   let svgNS = svg.namespaceURI;
-  for (let i = 0; i < 500; i++) {
+  for (let i = 0; i < 700; i++) {
     let circle = document.createElementNS(svgNS, "circle");
-    setCirclePosition(circle, 500, 100);
+    setCirclePosition(circle, 500, 140);
     setCircleSize(circle);
     setCircleColor(circle);
 

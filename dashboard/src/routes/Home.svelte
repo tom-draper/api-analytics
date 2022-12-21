@@ -50,8 +50,8 @@
       </div>
       <div style="position: relative" class="right">
         <img class="logo" src="img/home-logo2.png" alt="" />
-        <img id="hover-1" style="position: absolute;" class="logo" src="img/animated.png" alt="" />
-        <img id="hover-2" style="position: absolute;" class="logo" src="img/animated2.png" alt="" />
+        <img id="hover-1" style="position: absolute;" class="logo" src="img/animated5.png" alt="" />
+        <img id="hover-2" style="position: absolute;" class="logo" src="img/animated6.png" alt="" />
       </div>
     </div>
   </div>
