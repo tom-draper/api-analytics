@@ -22,20 +22,29 @@ func GetDBLogin() (string, string) {
 	return supabaseURL, supabaseKey
 }
 
-func Ping(client http.Client, domain string, secure bool, ping bool) (int, time.Duration, error) {
+func getURL(domain string, secure bool) string {
 	var url string
 	if secure {
 		url = "https://" + domain
 	} else {
 		url = "http://" + domain
 	}
+	return url
+}
 
+func getMethod(ping bool) string {
 	var method string
 	if ping {
 		method = "HEAD"
 	} else {
 		method = "GET"
 	}
+	return method
+}
+
+func Ping(client http.Client, domain string, secure bool, ping bool) (int, time.Duration, error) {
+	url := getURL(domain, secure)
+	method := getMethod(ping)
 
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
