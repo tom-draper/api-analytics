@@ -63,6 +63,7 @@ export default [
       json(),
       resolve(),
       commonjs(),
+      typescript(),
       production && terser(),
     ],
   },
