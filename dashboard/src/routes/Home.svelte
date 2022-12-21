@@ -3,10 +3,26 @@
   import Footer from "../components/Footer.svelte";
 
   import codeStyle from "svelte-highlight/styles/a11y-dark";
+  import { onMount } from "svelte";
 
   function setFramework(value: string) {
     framework = value;
   }
+
+  function animate() {
+    translation = -translation
+    let el = document.getElementById('hover-1');
+    el.style.transform = `translateY(${translation}px)`;
+    let el2 = document.getElementById('hover-2');
+    el2.style.transform = `translateY(${-translation}px)`;
+
+    setTimeout(animate, 9000);
+  }
+  
+  let translation = 25;
+  onMount(() => {
+    setTimeout(animate, 10)
+  })
 
   let framework = "Django";
 </script>
@@ -32,8 +48,10 @@
           >
         </div>
       </div>
-      <div class="right">
+      <div style="position: relative" class="right">
         <img class="logo" src="img/home-logo2.png" alt="" />
+        <img id="hover-1" style="position: absolute;" class="logo" src="img/animated.png" alt="" />
+        <img id="hover-2" style="position: absolute;" class="logo" src="img/animated2.png" alt="" />
       </div>
     </div>
   </div>
@@ -409,7 +427,7 @@
 
   .add-middleware-title {
     color: var(--highlight);
-    font-size: 2em;
+    font-size: 2.1em;
     font-weight: 700;
     margin-bottom: 1.5em;
   }
@@ -485,6 +503,18 @@
     text-align: right;
     right: 2.5em;
     margin-bottom: -2em;
+  }
+
+  #hover-1 {
+    transform: translateY(30px);
+
+  }
+  #hover-2 {
+    transform: translateY(-30px);
+  }
+
+  img {
+   transition:all 10s ease-in-out;
   }
 
   @media screen and (max-width: 1500px) {
