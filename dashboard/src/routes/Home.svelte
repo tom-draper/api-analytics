@@ -1,18 +1,19 @@
 <script lang="ts">
+  import frameworkExamples from "../lib/framework";
   import Footer from "../components/Footer.svelte";
-  import frameworkExamples from '../lib/framework';
+
+  import codeStyle from "svelte-highlight/styles/a11y-dark";
 
   function setFramework(value: string) {
     framework = value;
   }
 
-  let framework = 'Django';
+  let framework = "Django";
 </script>
 
 <svelte:head>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.22.0/themes/prism.min.css" rel="stylesheet" />
+  {@html codeStyle}
 </svelte:head>
-
 
 <div class="home">
   <div class="landing-page-container">
@@ -73,33 +74,215 @@
     <img class="dashboard-img" src="img/monitoring.png" alt="" />
   </div>
   <div class="add-middleware">
-    <div class="add-middleware-title">
-      Getting Started
-    </div>
+    <div class="add-middleware-title">Getting Started</div>
     <div class="frameworks">
-      <button class="framework python" class:active="{framework == 'Django'}" on:click="{() => {setFramework('Django')}}">Django</button>
-      <button class="framework python" class:active="{framework == 'Flask'}" on:click="{() => {setFramework('Flask')}}">Flask</button>
-      <button class="framework python" class:active="{framework == 'FastAPI'}" on:click="{() => {setFramework('FastAPI')}}">FastAPI</button>
-      <button class="framework python" class:active="{framework == 'Tornado'}" on:click="{() => {setFramework('Tornado')}}">Tornado</button>
-      <button class="framework javascript" class:active="{framework == 'Express'}" on:click="{() => {setFramework('Express')}}">Express</button>
-      <button class="framework javascript" class:active="{framework == 'Fastify'}" on:click="{() => {setFramework('Fastify')}}">Fastify</button>
-      <button class="framework javascript" class:active="{framework == 'Koa'}" on:click="{() => {setFramework('Koa')}}">Koa</button>
-      <button class="framework golang" class:active="{framework == 'Gin'}" on:click="{() => {setFramework('Gin')}}">Gin</button>
-      <button class="framework golang" class:active="{framework == 'Echo'}" on:click="{() => {setFramework('Echo')}}">Echo</button>
-      <button class="framework golang" class:active="{framework == 'Fiber'}" on:click="{() => {setFramework('Fiber')}}">Fiber</button>
-      <button class="framework golang" class:active="{framework == 'Chi'}" on:click="{() => {setFramework('Chi')}}">Chi</button>
-      <button class="framework rust" class:active="{framework == 'Actix'}" on:click="{() => {setFramework('Actix')}}">Actix</button>
-      <button class="framework rust" class:active="{framework == 'Axum'}" on:click="{() => {setFramework('Axum')}}">Axum</button>
-      <button class="framework ruby" class:active="{framework == 'Rails'}" on:click="{() => {setFramework('Rails')}}">Rails</button>
-      <button class="framework ruby" class:active="{framework == 'Sinatra'}" on:click="{() => {setFramework('Sinatra')}}">Sinatra</button>
+      <button
+        class="framework python"
+        class:active={framework == "Django"}
+        on:click={() => {
+          setFramework("Django");
+        }}>Django</button
+      >
+      <button
+        class="framework python"
+        class:active={framework == "Flask"}
+        on:click={() => {
+          setFramework("Flask");
+        }}>Flask</button
+      >
+      <button
+        class="framework python"
+        class:active={framework == "FastAPI"}
+        on:click={() => {
+          setFramework("FastAPI");
+        }}>FastAPI</button
+      >
+      <button
+        class="framework python"
+        class:active={framework == "Tornado"}
+        on:click={() => {
+          setFramework("Tornado");
+        }}>Tornado</button
+      >
+      <button
+        class="framework javascript"
+        class:active={framework == "Express"}
+        on:click={() => {
+          setFramework("Express");
+        }}>Express</button
+      >
+      <button
+        class="framework javascript"
+        class:active={framework == "Fastify"}
+        on:click={() => {
+          setFramework("Fastify");
+        }}>Fastify</button
+      >
+      <button
+        class="framework javascript"
+        class:active={framework == "Koa"}
+        on:click={() => {
+          setFramework("Koa");
+        }}>Koa</button
+      >
+      <button
+        class="framework golang"
+        class:active={framework == "Gin"}
+        on:click={() => {
+          setFramework("Gin");
+        }}>Gin</button
+      >
+      <button
+        class="framework golang"
+        class:active={framework == "Echo"}
+        on:click={() => {
+          setFramework("Echo");
+        }}>Echo</button
+      >
+      <button
+        class="framework golang"
+        class:active={framework == "Fiber"}
+        on:click={() => {
+          setFramework("Fiber");
+        }}>Fiber</button
+      >
+      <button
+        class="framework golang"
+        class:active={framework == "Chi"}
+        on:click={() => {
+          setFramework("Chi");
+        }}>Chi</button
+      >
+      <button
+        class="framework rust"
+        class:active={framework == "Actix"}
+        on:click={() => {
+          setFramework("Actix");
+        }}>Actix</button
+      >
+      <button
+        class="framework rust"
+        class:active={framework == "Axum"}
+        on:click={() => {
+          setFramework("Axum");
+        }}>Axum</button
+      >
+      <button
+        class="framework ruby"
+        class:active={framework == "Rails"}
+        on:click={() => {
+          setFramework("Rails");
+        }}>Rails</button
+      >
+      <button
+        class="framework ruby"
+        class:active={framework == "Sinatra"}
+        on:click={() => {
+          setFramework("Sinatra");
+        }}>Sinatra</button
+      >
     </div>
     <div class="add-middleware-content">
       <div class="instructions-container">
         <div class="instructions">
           <div class="subtitle">Install</div>
-          <code class="installation">{frameworkExamples[framework].install}</code>
+          <code class="installation"
+            >{frameworkExamples[framework].install}</code
+          >
           <div class="subtitle">Add middleware to API</div>
-          <code id="code" class="code language-python">{frameworkExamples[framework].example}</code>
+          <!-- Render all code snippets to apply one-time syntax highlighting -->
+          <!-- TODO: dynamic syntax highlight rendering to only render the 
+            frameworks clicked on and reduce this code to one line -->
+          <code
+            id="code"
+            class="code language-python"
+            style="{framework == 'Django' ? 'display: initial' : ''} "
+            >{frameworkExamples["Django"].example}</code
+          >
+          <code
+            id="code"
+            class="code language-python"
+            style="{framework == 'FastAPI' ? 'display: initial' : ''} "
+            >{frameworkExamples["FastAPI"].example}</code
+          >
+          <code
+            id="code"
+            class="code language-python"
+            style="{framework == 'Flask' ? 'display: initial' : ''} "
+            >{frameworkExamples["Flask"].example}</code
+          >
+          <code
+            id="code"
+            class="code language-python"
+            style="{framework == 'Tornado' ? 'display: initial' : ''} "
+            >{frameworkExamples["Tornado"].example}</code
+          >
+          <code
+            id="code"
+            class="code language-javascript"
+            style="{framework == 'Express' ? 'display: initial' : ''} "
+            >{frameworkExamples["Express"].example}</code
+          >
+          <code
+            id="code"
+            class="code language-javascript"
+            style="{framework == 'Fastify' ? 'display: initial' : ''} "
+            >{frameworkExamples["Fastify"].example}</code
+          >
+          <code
+            id="code"
+            class="code language-javascript"
+            style="{framework == 'Koa' ? 'display: initial' : ''} "
+            >{frameworkExamples["Koa"].example}</code
+          >
+          <code
+            id="code"
+            class="code language-go"
+            style="{framework == 'Gin' ? 'display: initial' : ''} "
+            >{frameworkExamples["Gin"].example}</code
+          >
+          <code
+            id="code"
+            class="code language-go"
+            style="{framework == 'Echo' ? 'display: initial' : ''} "
+            >{frameworkExamples["Echo"].example}</code
+          >
+          <code
+            id="code"
+            class="code language-go"
+            style="{framework == 'Fiber' ? 'display: initial' : ''} "
+            >{frameworkExamples["Fiber"].example}</code
+          >
+          <code
+            id="code"
+            class="code language-go"
+            style="{framework == 'Chi' ? 'display: initial' : ''} "
+            >{frameworkExamples["Chi"].example}</code
+          >
+          <code
+            id="code"
+            class="code language-rust"
+            style="{framework == 'Actix' ? 'display: initial' : ''} "
+            >{frameworkExamples["Actix"].example}</code
+          >
+          <code
+            id="code"
+            class="code language-rust"
+            style="{framework == 'Axum' ? 'display: initial' : ''} "
+            >{frameworkExamples["Axum"].example}</code
+          >
+          <code
+            id="code"
+            class="code language-ruby"
+            style="{framework == 'Rails' ? 'display: initial' : ''} "
+            >{frameworkExamples["Rails"].example}</code
+          >
+          <code
+            id="code"
+            class="code language-ruby"
+            style="{framework == 'Sinatra' ? 'display: initial' : ''} "
+            >{frameworkExamples["Sinatra"].example}</code
+          >
         </div>
       </div>
     </div>
@@ -166,7 +349,6 @@
 
   .lightning-top {
     height: 70px;
-    /* margin-top: -30px; */
   }
 
   .dashboard-title-container {
@@ -232,16 +414,11 @@
   }
   .add-middleware {
     margin: auto;
-    /* width: 1000px; */
     margin-bottom: 7em;
-    /* background: var(--light-background); */
     border-radius: 6px;
-    /* border: 1px solid #2E2E2E */
   }
 
   .frameworks {
-        /* place-content: center; */
-    /* width: 100%; */
     margin: 0 10%;
     overflow-x: auto;
   }
@@ -252,6 +429,7 @@
     font-size: 1em;
     cursor: pointer;
     padding: 10px 18px;
+    border-bottom: 3px solid transparent;
   }
   .active {
     color: white;
@@ -276,34 +454,6 @@
     margin: 10px 0 2px 20px;
     font-size: 0.85em;
   }
-
-  .line-starter {
-    font-weight: 900;
-    color: var(--highlight);
-    font-size: 1.5em;
-    margin-right: 20px;
-  }
-  .framework-name {
-    color: var(--highlight);
-    border-bottom: 3px solid var(--highlight);
-  }
-
-  .select-framework {
-    display: flex;
-    padding: 1.5em 2.6em 0;
-    text-align: left;
-  }
-
-  .working-with {
-    width: 100%;
-    font-size: 1.8em;
-    font-weight: 600;
-    color: white;
-    display: flex;
-    align-items: center;
-  }
-
-
   .instructions-container {
     padding: 1.5em 2em 2em;
     width: 850px;
@@ -316,11 +466,14 @@
   }
   code {
     background: #151515;
-    padding: 1em 2em;
+    padding: 1.4em 2em;
     border-radius: 0.5em;
     margin: 5px;
-    color: white;
+    color: #ccc;
     white-space: pre-wrap;
+  }
+  .code {
+    display: none;
   }
 
   @media screen and (max-width: 1500px) {
@@ -366,9 +519,6 @@
     }
   }
   @media screen and (max-width: 700px) {
-    /* .home {
-      font-size: 0.75em;
-    } */
     h1 {
       font-size: 2.5em;
     }
@@ -386,6 +536,12 @@
     }
     .dashboard-img {
       margin-bottom: -3%;
+    }
+    .add-middleware-title {
+      margin-bottom: 0.5em;
+    }
+    .instructions-container {
+      padding-top: 0;
     }
   }
 </style>

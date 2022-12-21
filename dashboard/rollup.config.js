@@ -44,6 +44,7 @@ export default [
         }),
         production && terser(),
     ],
+
   },
   // Server bundle
   {
