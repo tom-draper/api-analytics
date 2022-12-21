@@ -69,7 +69,7 @@
   </div>
   <div class="add-middleware">
     <div class="add-middleware-title">
-      I'm working with...
+      Getting Started
     </div>
     <div class="frameworks">
       <button class="framework python" class:active="{framework == 'Django'}" on:click="{() => {setFramework('Django')}}">Django</button>
@@ -94,7 +94,7 @@
           <div class="subtitle">Install</div>
           <code class="installation">{frameworkExamples[framework].install}</code>
           <div class="subtitle">Add middleware to API</div>
-          <code id="code" class="code">{frameworkExamples[framework].example}</code>
+          <code id="code" class="code language-python">{frameworkExamples[framework].example}</code>
         </div>
       </div>
     </div>
