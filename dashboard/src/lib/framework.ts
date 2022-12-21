@@ -6,6 +6,7 @@
 let frameworkExamples = {
     Django: {
         install: "pip install api-analytics",
+        codeFile: 'settings.py',
         example: `ANALYTICS_API_KEY = <api_key>
 
 MIDDLEWARE = [
@@ -15,6 +16,7 @@ MIDDLEWARE = [
     },
     Flask: {
         install: "pip install api-analytics",
+        codeFile: '',
         example: `from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
 
@@ -27,6 +29,7 @@ async def root():
     },
     FastAPI: {
         install: "pip install api-analytics",
+        codeFile: '',
         example: `from flask import Flask
 from api_analytics.flask import add_middleware
 
@@ -39,6 +42,7 @@ def root():
     },
     Tornado: {
         install: "pip install api-analytics",
+        codeFile: '',
         example: `import asyncio
 from tornado.web import Application
 
@@ -67,6 +71,7 @@ if __name__ == "__main__":
     },
     Express: {
         install: 'npm install node-api-analytics',
+        codeFile: '',
         example: `import express from 'express';
 import { expressAnalytics } from 'node-api-analytics';
 
@@ -84,6 +89,7 @@ app.listen(8080, () => {
     },
     Fastify: {
         install: 'npm install node-api-analytics',
+        codeFile: '',
         example: `import Fastify from 'fastify';
 import { fastifyAnalytics } from 'node-api-analytics;
 
@@ -105,6 +111,7 @@ fastify.listen({ port: 8080 }, function (err, address) {
     },
     Koa: {
         install: 'npm install node-api-analytics',
+        codeFile: '',
         example: `import Koa from "koa";
 import { koaAnalytics } from 'node-api-analytics';
 
@@ -122,6 +129,7 @@ app.listen(8080, () =>
     },
     Gin: {
         install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/gin',
+        codeFile: '',
         example: `package main
 
 import (
@@ -147,6 +155,7 @@ func main() {
     },
     Echo: {
         install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/echo',
+        codeFile: '',
         example: `package main
 
 import (
@@ -173,6 +182,7 @@ func main() {
     },
     Fiber: {
         install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/fiber',
+        codeFile: '',
         example: `package main
 
 import (
@@ -199,6 +209,7 @@ func main() {
     },
     Chi: {
         install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/chi',
+        codeFile: '',
         example: `package main
 
 import (
@@ -228,6 +239,7 @@ func main() {
     },
     Actix: {
         install: 'cargo add actix-analytics',
+        codeFile: '',
         example: `use actix_web::{get, web, Responder, Result};
 use serde::Serialize;
 use actix_analytics::Analytics;
@@ -261,6 +273,7 @@ async fn main() -> std::io::Result<()> {
     },
     Axum: {
         install: 'cargo add axum-analytics',
+        codeFile: '',
         example: `use axum::{
     routing::get,
     Json, Router,
@@ -297,6 +310,7 @@ async fn main() {
     },
     Rails: {
         install: 'gem install api_analytics',
+        codeFile: 'config/application.rb',
         example: `require 'rails'
 require 'api_analytics'
 
@@ -313,6 +327,7 @@ end`
     },
     Sinatra: {
         install: 'gem install api_analytics',
+        codeFile: '',
         example: `require 'sinatra'
 require 'api_analytics'
 

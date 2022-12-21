@@ -193,6 +193,7 @@
           <!-- Render all code snippets to apply one-time syntax highlighting -->
           <!-- TODO: dynamic syntax highlight rendering to only render the 
             frameworks clicked on and reduce this code to one line -->
+          <div class="code-file">{frameworkExamples[framework].codeFile}</div>
           <code
             id="code"
             class="code language-python"
@@ -463,17 +464,27 @@
     text-align: left;
     display: flex;
     flex-direction: column;
+    position: relative;
   }
   code {
     background: #151515;
     padding: 1.4em 2em;
     border-radius: 0.5em;
     margin: 5px;
-    color: #ccc;
+    color: #dcdfe4;
     white-space: pre-wrap;
   }
   .code {
     display: none;
+  }
+  .code-file {
+    position: absolute;
+    font-size: 0.8em;
+    top: 160px;
+    color: rgb(97, 97, 97);
+    text-align: right;
+    right: 2.5em;
+    margin-bottom: -2em;
   }
 
   @media screen and (max-width: 1500px) {
@@ -508,6 +519,9 @@
     }
     .instructions-container {
       width: auto;
+    }
+    .code-file {
+      top: 140px;
     }
   }
   @media screen and (max-width: 800px) {
