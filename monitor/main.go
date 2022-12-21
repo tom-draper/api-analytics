@@ -5,8 +5,23 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"time"
+
+	"github.com/joho/godotenv"
+	supa "github.com/nedpals/supabase-go"
 )
+
+func GetDBLogin() (string, string) {
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic(err)
+	}
+
+	supabaseURL := os.Getenv("SUPABASE_URL")
+	supabaseKey := os.Getenv("SUPABASE_KEY")
+	return supabaseURL, supabaseKey
+}
 
 func Ping(client http.Client, domain string, secure bool, method string) (int, time.Duration, error) {
 	var url string
@@ -38,7 +53,30 @@ func Ping(client http.Client, domain string, secure bool, method string) (int, t
 	return resp.StatusCode, elapsed, nil
 }
 
+type MonitorRow struct {
+	APIKey    string    `json:"api_key"`
+	URL       string    `json:"url" `
+	Method    bool      `json:"method"`
+	Secure    bool      `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+func getMonitoredURLs(supabase *supa.Client) {
+	// Fetch all API request data associated with this account
+	var result []MonitorRow
+	err := supabase.DB.From("Monitor").Select("*").Execute(&result)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(result)
+}
+
 func main() {
+	supabaseURL, supabaseKey := GetDBLogin()
+	supabase := supa.CreateClient(supabaseURL, supabaseKey)
+
+	getMonitoredURLs(supabase)
+
 	dialer := net.Dialer{Timeout: 2 * time.Second}
 	var client = http.Client{
 		Transport: &http.Transport{
