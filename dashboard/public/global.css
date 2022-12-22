@@ -105,13 +105,14 @@ input {
   display: grid;
 }
 
-button {
+#formBtn {
   height: 40px;
   border-radius: 4px;
   padding: 0 20px;
   border: none;
   cursor: pointer;
   width: 100px;
+  background: #3fcf8e;
 }
 
 .highlight {
@@ -125,10 +126,6 @@ button {
 .keep-secure {
   color: #5a5a5a;
   margin-bottom: 1em;
-}
-
-#generateBtn {
-  background: #3fcf8e;
 }
 
 /* Spinner */

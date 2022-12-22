@@ -6,6 +6,7 @@
   import Dashboard from "./routes/Dashboard.svelte";
   import Delete from "./routes/Delete.svelte";
   import Monitoring from "./routes/Monitoring.svelte";
+  import Error from "./routes/Error.svelte";
 
   // Used for SSR. A falsy value is ignored by the Router.
   export let url = "";
@@ -19,6 +20,7 @@
     <Route path="/dashboard/:userID" component={Dashboard} demo={false} />
     <Route path="/monitoring/:userID" component={Monitoring} />
     <Route path="/delete" component={Delete} />
+    <Route path="/:err" component={Error} />
 </Router>
 
 <style>

@@ -33,7 +33,7 @@
   <div class="content">
     <h2>Generate API key</h2>
     <input type="text" readonly bind:value={apiKey} />
-    <button id="generateBtn" on:click={genAPIKey} bind:this={generateBtn}
+    <button id="formBtn" on:click={genAPIKey} bind:this={generateBtn}
       >Generate</button
     >
     <button id="copyBtn" on:click={copyToClipboard} bind:this={copyBtn}
@@ -53,6 +53,7 @@
 </div>
 
 <style scoped>
+
   #copyBtn {
     background: #1c1c1c;
     display: none;
