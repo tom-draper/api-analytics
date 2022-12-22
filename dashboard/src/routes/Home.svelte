@@ -199,6 +199,13 @@
           setFramework("Sinatra");
         }}>Sinatra</button
       >
+      <!-- <button
+        class="framework php"
+        class:active={framework == "Laravel"}
+        on:click={() => {
+          setFramework("Laravel");
+        }}>Laravel</button
+      > -->
     </div>
     <div class="add-middleware-content">
       <div class="instructions-container">
@@ -301,6 +308,12 @@
             class="code language-ruby"
             style="{framework == 'Sinatra' ? 'display: initial' : ''} "
             >{frameworkExamples["Sinatra"].example}</code
+          >
+          <code
+            id="code"
+            class="code language-php"
+            style="{framework == 'Laravel' ? 'display: initial' : ''} "
+            >{frameworkExamples["Laravel"].example}</code
           >
         </div>
       </div>
@@ -448,8 +461,10 @@
     border: none;
     font-size: 1em;
     cursor: pointer;
-    padding: 10px 18px;
+    padding: 10px 16px;
     border-bottom: 3px solid transparent;
+    height: auto;
+    width: auto;
   }
   .active {
     color: white;
@@ -468,6 +483,9 @@
   }
   .active.ruby {
     border-bottom: 3px solid #cd0000;
+  }
+  .active.php {
+    border-bottom: 3px solid #7377ad;
   }
   .subtitle {
     color: rgb(110, 110, 110);

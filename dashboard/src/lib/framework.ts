@@ -139,7 +139,6 @@ app.listen(8080, () =>
 import (
 	analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
 	"net/http"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -165,7 +164,6 @@ func main() {
 import (
 	"net/http"
 	"os"
-
 	"github.com/labstack/echo/v4"
 	analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
 )
@@ -191,9 +189,7 @@ func main() {
 
 import (
 	"os"
-
 	analytics "github.com/tom-draper/api-analytics/analytics/go/fiber"
-
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -219,9 +215,7 @@ func main() {
 import (
 	"net/http"
 	"os"
-
 	analytics "github.com/tom-draper/api-analytics/analytics/go/chi"
-
 	chi "github.com/go-chi/chi/v5"
 )
 
@@ -344,6 +338,14 @@ end
 get '/' do
     {message: 'Hello World!'}.to_json
 end`
+    },
+    Laravel: {
+        install: 'coming soon',
+        codeFile: 'app/Http/Kernel.php',
+        example:  `protected $middleware = [
+    \\App\\Http\\Middleware\\Analytics::class,
+    ...
+]`
     }
 }
 
