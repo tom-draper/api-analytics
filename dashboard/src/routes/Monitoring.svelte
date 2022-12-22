@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from "svelte";
-
   import Footer from "../components/Footer.svelte";
   import Card from "../components/monitoring/Card.svelte";
   import TrackNew from "../components/monitoring/TrackNew.svelte";

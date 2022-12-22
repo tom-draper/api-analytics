@@ -29,65 +29,16 @@
     </div>
   </div>
   <div class="details">
-    <!-- <div class="keep-secure">Keep your API key safe and secure.</div> -->
+    <div class="keep-secure">Keep your API key safe and secure.</div>
     <div class="highlight logo">API Analytics</div>
     <img class="footer-logo" src="img/logo.png" alt="" />
   </div>
 </div>
 
-<style>
-  .generate {
-    display: grid;
-    place-items: center;
-  }
-  h2 {
-    margin: 0 0 1em;
-    font-size: 2em;
-  }
-  .content {
-    width: fit-content;
-    background: #343434;
-    background: #1c1c1c;
-    padding: 3.5em 4em 4em;
-    border-radius: 9px;
-    margin: 20vh 0 2vh;
-    height: 400px;
-  }
-  input {
-    background: #1c1c1c;
-    background: #343434;
-    border: none;
-    padding: 0 20px;
-    width: 310px;
-    font-size: 1em;
-    text-align: center;
-    height: 40px;
-    border-radius: 4px;
-    margin-bottom: 2.5em;
-    color: white;
-    display: grid;
-  }
-  button {
-    height: 40px;
-    border-radius: 4px;
-    padding: 0 20px;
-    border: none;
-    cursor: pointer;
-    width: 100px;
-  }
-  .highlight {
-    color: #3fcf8e;
-  }
-  .details {
-    font-size: 0.8em;
-    margin-top: calc(15px + 1em);
-  }
+<style scoped>
   .notification {
     color: #3fcf8e;
     margin-top: 32px;
     height: 16px;
-  }
-  #generateBtn {
-    background: #3fcf8e;
   }
 </style>

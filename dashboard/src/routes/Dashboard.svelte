@@ -50,13 +50,6 @@
       }
     }
 
-    let count = 0;
-    for (let i = 0; i < dataSubset.length; i++) {
-      if (dataSubset[i].status >= 400 && dataSubset[i].status < 500) {
-        count++;
-      }
-    }
-    console.log(count);
     periodData = dataSubset;
   }
 
@@ -118,7 +111,7 @@
   let failed = false;
   onMount(() => {
     if (demo) {
-      data = genDemoData();
+      data = genDemoData() as RequestsData;
       setPeriod("month");
     } else {
       fetchData();
@@ -235,7 +228,7 @@
 {/if}
 <Footer />
 
-<style>
+<style scoped>
   .dashboard {
     min-height: 90vh;
   }

@@ -1,7 +1,11 @@
-// import hljs from "highlight.js";
 
-// import python from 'highlight.js/lib/languages/python';
-// hljs.registerLanguage('python', python);
+type frameworkExamples = {
+    [framework: string]: {
+        install: string,
+        codeFile: string,
+        example: string
+    }
+}
 
 let frameworkExamples = {
     Django: {

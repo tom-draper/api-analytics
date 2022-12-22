@@ -1,5 +1,5 @@
 
-function getDemoStatus(date: Date, status: number) {
+function getDemoStatus(date: Date, status: number): number {
     let start = new Date();
     start.setDate(start.getDate() - 100);
     let end = new Date();
@@ -12,7 +12,7 @@ function getDemoStatus(date: Date, status: number) {
     }
 }
 
-function getDemoUserAgent() {
+function getDemoUserAgent(): string {
     let p = Math.random();
     if (p < 0.19) {
         return "Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Mobile/15E148 Safari/604.1";
@@ -58,7 +58,7 @@ function getHour(): number {
 }
 
 function addDemoSamples(
-    demoData: any[],
+    demoData: DemoRequest[],
     endpoint: string,
     status: number,
     count: number,
@@ -87,7 +87,17 @@ function addDemoSamples(
     }
 }
 
-export default function genDemoData() {
+type DemoRequest = {
+    hostname: string,
+    path: string,
+    user_agent: string,
+    method: number,
+    status: number,
+    response_time: number,
+    created_at: string
+}
+
+export default function genDemoData(): DemoRequest[] {
     let demoData = [];
     
     addDemoSamples(demoData, "/v1/", 200, 18000, 650, 0, 240, 55);
