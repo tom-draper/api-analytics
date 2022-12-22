@@ -52,57 +52,7 @@
   </div>
 </div>
 
-<style>
-  .generate {
-    display: grid;
-    place-items: center;
-  }
-  h2 {
-    margin: 0 0 1em;
-    font-size: 2em;
-  }
-  .content {
-    width: fit-content;
-    background: #343434;
-    background: #1c1c1c;
-    padding: 3.5em 4em 4em;
-    border-radius: 9px;
-    margin: 20vh 0 2vh;
-    height: 400px;
-  }
-  input {
-    background: #1c1c1c;
-    background: #343434;
-    border: none;
-    padding: 0 20px;
-    width: 310px;
-    font-size: 1em;
-    text-align: center;
-    height: 40px;
-    border-radius: 4px;
-    margin-bottom: 2.5em;
-    color: white;
-    display: grid;
-  }
-  button {
-    height: 40px;
-    border-radius: 4px;
-    padding: 0 20px;
-    border: none;
-    cursor: pointer;
-    width: 100px;
-  }
-  .highlight {
-    color: #3fcf8e;
-  }
-  .details {
-    font-size: 0.8em;
-  }
-  .keep-secure {
-    color: #5a5a5a;
-    margin-bottom: 1em;
-  }
-
+<style scoped>
   #copyBtn {
     background: #1c1c1c;
     display: none;
@@ -120,12 +70,7 @@
     visibility: hidden;
     height: 1em;
   }
-
-  .spinner {
+  /* .spinner {
     height: 7em;
-    /* margin-bottom: 5em; */
-  }
-  #generateBtn {
-    background: #3fcf8e;
-  }
+  } */
 </style>
