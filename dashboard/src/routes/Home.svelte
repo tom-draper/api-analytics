@@ -12,14 +12,14 @@
   function animate() {
     translation = -translation
     let el = document.getElementById('hover-1');
-    el.style.transform = `translateY(${translation}px)`;
+    el.style.transform = `translateY(${translation}%)`;
     let el2 = document.getElementById('hover-2');
-    el2.style.transform = `translateY(${-translation}px)`;
+    el2.style.transform = `translateY(${-translation}%)`;
 
     setTimeout(animate, 9000);
   }
   
-  let translation = 25;
+  let translation = 3.7;
   onMount(() => {
     setTimeout(animate, 10)
   })
@@ -506,11 +506,11 @@
   }
 
   #hover-1 {
-    transform: translateY(30px);
+    transform: translateY(3.7%);
 
   }
   #hover-2 {
-    transform: translateY(-30px);
+    transform: translateY(-3.7%);
   }
 
   img {
