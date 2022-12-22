@@ -11,7 +11,7 @@ import (
 	supa "github.com/nedpals/supabase-go"
 )
 
-func GetDBLogin() (string, string) {
+func getDBLogin() (string, string) {
 	err := godotenv.Load(".env")
 	if err != nil {
 		panic(err)
@@ -42,7 +42,7 @@ func getMethod(ping bool) string {
 	return method
 }
 
-func Ping(client http.Client, domain string, secure bool, ping bool) (int, time.Duration, error) {
+func ping(client http.Client, domain string, secure bool, ping bool) (int, time.Duration, error) {
 	url := getURL(domain, secure)
 	method := getMethod(ping)
 
@@ -82,16 +82,37 @@ func getMonitoredURLs(supabase *supa.Client) []MonitorRow {
 	return result
 }
 
+type PingRow struct {
+	APIKey       string `json:"api_key"`
+	URL          string `json:"url"`
+	ResponseTime int    `json:"response_time"`
+	Status       int    `json:"status"`
+}
+
+func uploadPings(pings []PingRow, supabase *supa.Client) {
+	var result interface{}
+	err := supabase.DB.From("Pings").Insert(pings).Execute(&result)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 func pingMonitored(monitored []MonitorRow, client http.Client, supabase *supa.Client) {
-	for i, m := range monitored {
-		fmt.Println(i, m, m.URL)
-		res, elapsed, err := Ping(client, m.URL, m.Secure, m.Ping)
+	var pings []PingRow
+	for _, m := range monitored {
+		status, elapsed, err := ping(client, m.URL, m.Secure, m.Ping)
 		if err != nil {
 			fmt.Println(err)
-		} else {
-			fmt.Println(res, elapsed)
 		}
+		ping := PingRow{
+			APIKey:       m.APIKey,
+			URL:          m.URL,
+			ResponseTime: int(elapsed.Milliseconds()),
+			Status:       status,
+		}
+		pings = append(pings, ping)
 	}
+	uploadPings(pings, supabase)
 }
 
 func getClient() http.Client {
@@ -105,7 +126,7 @@ func getClient() http.Client {
 }
 
 func main() {
-	supabaseURL, supabaseKey := GetDBLogin()
+	supabaseURL, supabaseKey := getDBLogin()
 	supabase := supa.CreateClient(supabaseURL, supabaseKey)
 
 	monitored := getMonitoredURLs(supabase)

@@ -340,6 +340,7 @@
 
   h2 {
     color: white;
+    font-size: 1.5em;
   }
 
   .links {

@@ -22,7 +22,7 @@
   <div class="content">
     <h2>Delete all stored data</h2>
     <input type="text" bind:value={apiKey} placeholder="Enter API key" />
-    <button id="generateBtn" on:click={genAPIKey}>Delete</button>
+    <button id="formBtn" on:click={genAPIKey}>Delete</button>
     <div class="notification">{message}</div>
     <div class="spinner">
       <div class="loader" style="display: {loading ? 'initial' : 'none'}" />

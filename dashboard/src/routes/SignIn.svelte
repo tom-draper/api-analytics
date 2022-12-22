@@ -21,7 +21,7 @@
   <div class="content">
     <h2>Dashboard</h2>
     <input type="text" bind:value={apiKey} placeholder="Enter API key"/>
-    <button id="generateBtn" on:click={genAPIKey}>Load</button>
+    <button id="formBtn" on:click={genAPIKey}>Load</button>
     <div class="spinner">
       <div class="loader" style="display: {loading ? 'initial' : 'none'}" />
     </div>
@@ -32,7 +32,3 @@
     <img class="footer-logo" src="img/logo.png" alt="">
   </div>
 </div>
-
-<style scoped>
-
-</style>
