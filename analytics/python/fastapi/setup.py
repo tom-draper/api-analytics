@@ -4,7 +4,7 @@ long_description = open("README.md").read()
 
 setup(
     name="fastapi-analytics",
-    version="1.0.14",
+    version="1.0.15",
     author="Tom Draper",
     author_email="tomjdraper1@gmail.com",
     license="MIT",

@@ -2,7 +2,6 @@ import threading
 from time import time
 
 from api_analytics.core import log_request
-
 from tornado.web import RequestHandler
 
 

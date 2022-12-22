@@ -2,13 +2,12 @@ import threading
 from time import time
 from typing import Callable
 
+from api_analytics.core import log_request
 from flask import Flask, Request, Response
 from flask_http_middleware import BaseHTTPMiddleware, MiddlewareManager
 
-from api_analytics.core import log_request
 
-
-def add_middleware(app: Flask, api_key: str) -> None:
+def add_middleware(app: Flask, api_key: str):
     app.wsgi_app = MiddlewareManager(app)
     app.wsgi_app.add_middleware(Analytics, api_key=api_key)
 

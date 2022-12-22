@@ -19,7 +19,7 @@ keywords = ["analytics", "api", "dashboard", "tornado", "middleware"]
 license = {file = "LICENSE"}
 readme = "README.md"
 requires-python = ">=3.7"
-version = "1.0.5"
+version = "1.0.6"
 
 [project.optional-dependencies]
 build = ["build", "twine"]
