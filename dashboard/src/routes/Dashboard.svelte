@@ -201,7 +201,7 @@
         <SuccessRate data={periodData} />
       </div>
       <div class="row">
-        <Requests data={periodData} prevData={prevPeriodData} />
+        <Requests data={periodData} prevData={prevPeriodData} {period} />
         <RequestsPerHour data={periodData} {period} />
       </div>
       <ResponseTimes data={periodData} />

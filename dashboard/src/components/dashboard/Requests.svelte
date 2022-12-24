@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import periodToDays from "../../lib/period";
 
   function setPercentageChange() {
     if (prevData.length == 0) {
@@ -9,36 +10,70 @@
     }
   }
 
+  function togglePeriod() {
+    perHour = !perHour;
+  }
+
+  function build() {
+    let totalRequests = 0;
+    for (let i = 0; i < data.length; i++) {
+      totalRequests++;
+    }
+    if (totalRequests > 0) {
+      let days = periodToDays(period);
+      if (days != null) {
+        requestsPerHour = (totalRequests / (24 * days)).toFixed(2);
+      }
+    } else {
+      requestsPerHour = "0";
+    }
+  }
+  
+  let requestsPerHour: string;
+  let perHour = false;
   let percentageChange: number;
   let mounted = false;
   onMount(() => {
     mounted = true;
   });
-
+  
   $: data && mounted && setPercentageChange();
+  $: data && mounted && build();
 
-  export let data: RequestsData, prevData: RequestsData;
+  export let data: RequestsData, prevData: RequestsData, period: string;
 </script>
 
-<div class="card" title="Total">
-  {#if percentageChange != null}
-    <div
-      class="percentage-change"
-      class:positive={percentageChange > 0}
-      class:negative={percentageChange < 0}
-    >
-      ({percentageChange > 0 ? "+" : ""}{percentageChange.toFixed(1)}%)
+{#if perHour}
+  <button class="card" title="Last week" on:click="{togglePeriod}">
+    <div class="card-title">
+      Requests <span class="per-hour">/ hour</span>
     </div>
-  {/if}
-  <div class="card-title">Requests</div>
-  <div class="value">{data.length.toLocaleString()}</div>
-</div>
+    {#if requestsPerHour != undefined}
+      <div class="value">{requestsPerHour}</div>
+    {/if}
+  </button>
+{:else}
+  <button class="card" title="Total" on:click="{togglePeriod}">
+    {#if percentageChange != null}
+      <div
+        class="percentage-change"
+        class:positive={percentageChange > 0}
+        class:negative={percentageChange < 0}
+      >
+        ({percentageChange > 0 ? "+" : ""}{percentageChange.toFixed(1)}%)
+      </div>
+    {/if}
+    <div class="card-title">Requests</div>
+    <div class="value">{data.length.toLocaleString()}</div>
+  </button>
+{/if}
 
-<style>
+<style scoped>
   .card {
     width: calc(200px - 1em);
     margin: 0 1em 0 2em;
     position: relative;
+    cursor: pointer;
   }
   .value {
     margin: 20px 0;
@@ -56,5 +91,15 @@
   }
   .negative {
     color: rgb(228, 97, 97);
+  }
+
+  .per-hour {
+    color: var(--dim-text);
+    font-size: 0.8em;
+    margin-left: 4px;
+  }
+  button {
+    font-size: unset;
+    font-family: unset;
   }
 </style>
