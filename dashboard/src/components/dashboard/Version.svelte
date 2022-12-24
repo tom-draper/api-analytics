@@ -127,7 +127,7 @@
   </div>
 {/if}
 
-<style>
+<style scoped>
   .card {
     margin: 2em 0 2em 2em;
     padding-bottom: 1em;

@@ -107,7 +107,7 @@
   {/if}
 </div>
 
-<style>
+<style scoped>
   .card {
     min-height: 361px;
   }

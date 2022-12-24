@@ -37,7 +37,7 @@
   {/if}
 </div>
 
-<style>
+<style scoped>
   .card {
     width: calc(200px - 1em);
     margin: 0 2em 0 1em;

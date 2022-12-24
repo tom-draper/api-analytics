@@ -95,7 +95,7 @@
   </div>
 </div>
 
-<style>
+<style scoped>
   .card {
     width: 100%;
     margin: 0;

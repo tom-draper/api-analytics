@@ -91,7 +91,7 @@
   </div>
 </div>
 
-<style>
+<style scoped>
   .values {
     display: flex;
     color: var(--highlight);

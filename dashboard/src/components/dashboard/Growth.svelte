@@ -103,7 +103,7 @@
   </div>
 </div>
 
-<style>
+<style scoped>
   .card {
     /* width: 100%; */
     flex: 1.2;
