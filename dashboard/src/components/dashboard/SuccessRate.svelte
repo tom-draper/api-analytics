@@ -28,7 +28,7 @@
   export let data: RequestsData;
 </script>
 
-<div class="card" title="Last week">
+<div class="card">
   <div class="card-title">Success rate</div>
   {#if successRate != undefined}
     <div

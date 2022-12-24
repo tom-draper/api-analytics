@@ -28,7 +28,7 @@
   export let data: RequestsData, period: string;
 </script>
 
-<div class="card" title="Last week">
+<div class="card">
   <div class="card-title">
     Requests <span class="per-hour">/ hour</span>
   </div>

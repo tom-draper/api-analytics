@@ -44,7 +44,7 @@
 </script>
 
 {#if perHour}
-  <button class="card" title="Last week" on:click="{togglePeriod}">
+  <button class="card" on:click="{togglePeriod}">
     <div class="card-title">
       Requests <span class="per-hour">/ hour</span>
     </div>
@@ -53,7 +53,7 @@
     {/if}
   </button>
 {:else}
-  <button class="card" title="Total" on:click="{togglePeriod}">
+  <button class="card" on:click="{togglePeriod}">
     {#if percentageChange != null}
       <div
         class="percentage-change"

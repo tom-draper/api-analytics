@@ -1,4 +1,4 @@
-<div class="card" title="API Analytics">
+<div class="card">
   <img src="../img/logo.png" alt="" />
 </div>
 
