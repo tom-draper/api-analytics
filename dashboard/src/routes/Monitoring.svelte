@@ -16,11 +16,11 @@
     // Fetch page ID
     try {
       const response = await fetch(
-        `https://api-analytics-server.vercel.app/api/user-data/${userID}`
+        `https://api-analytics-server.vercel.app/api/pings/${userID}`
       );
       if (response.status == 200) {
         const json = await response.json();
-        data = json.value;
+        data = json;
         console.log(data);
       }
     } catch (e) {

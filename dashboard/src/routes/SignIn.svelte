@@ -7,11 +7,10 @@
     const response = await fetch(
       `https://api-analytics-server.vercel.app/api/user-id/${apiKey}`
     );
-    console.log(response);
 
     if (response.status == 200) {
-      const data = await response.json();
-      window.location.href = `/dashboard/${data.value.replaceAll("-", "")}`;
+      const userID = await response.json();
+      window.location.href = `/dashboard/${userID.replaceAll("-", "")}`;
     }
     loading = false;
   }

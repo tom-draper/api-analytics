@@ -28,7 +28,7 @@
   export let data: RequestsData;
 </script>
 
-<div class="card" title="Last week">
+<div class="card">
   <div class="card-title">Success rate</div>
   {#if successRate != undefined}
     <div
@@ -43,7 +43,7 @@
   {/if}
 </div>
 
-<style>
+<style scoped>
   .card {
     width: calc(200px - 1em);
     margin: 0 0 2em 1em;

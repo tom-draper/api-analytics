@@ -14,7 +14,7 @@
   export let data: RequestsData;
 </script>
 
-<div class="card" title="Last week">
+<div class="card">
   <div class="card-title">
     Device
 

@@ -1,17 +1,16 @@
 import threading
 from time import time
 
+from api_analytics.core import log_request
 from starlette.middleware.base import (BaseHTTPMiddleware,
                                        RequestResponseEndpoint)
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.types import ASGIApp
 
-from api_analytics.core import log_request
-
 
 class Analytics(BaseHTTPMiddleware):
-    def __init__(self, app: ASGIApp, api_key: str) -> None:
+    def __init__(self, app: ASGIApp, api_key: str):
         super().__init__(app)
         self.api_key = api_key
 

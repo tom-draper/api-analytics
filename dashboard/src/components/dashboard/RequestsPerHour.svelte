@@ -28,7 +28,7 @@
   export let data: RequestsData, period: string;
 </script>
 
-<div class="card" title="Last week">
+<div class="card">
   <div class="card-title">
     Requests <span class="per-hour">/ hour</span>
   </div>
@@ -37,7 +37,7 @@
   {/if}
 </div>
 
-<style>
+<style scoped>
   .card {
     width: calc(200px - 1em);
     margin: 0 2em 0 1em;

@@ -93,7 +93,7 @@
               <div class="path" id="endpoint-path-{i}">
                 {endpoint.path}
               </div>
-              <div class="count" id="endpoint-count-{i}">{endpoint.count}</div>
+              <div class="count" id="endpoint-count-{i}">{endpoint.count.toLocaleString()}</div>
             </div>
           </div>
           <div class="external-label" id="external-label-{i}">
@@ -107,7 +107,7 @@
   {/if}
 </div>
 
-<style>
+<style scoped>
   .card {
     min-height: 361px;
   }

@@ -9,7 +9,7 @@ from django.http.response import HttpResponse
 
 
 class Analytics:
-    def __init__(self, get_response: Callable[[WSGIRequest], HttpResponse]) -> None:
+    def __init__(self, get_response: Callable[[WSGIRequest], HttpResponse]):
         self.get_response = get_response
         self.api_key = getattr(conf.settings, "ANALYTICS_API_KEY", None)
 
