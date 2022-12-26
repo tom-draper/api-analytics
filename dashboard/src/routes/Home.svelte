@@ -1,9 +1,8 @@
 <script lang="ts">
-  import frameworkExamples from "../lib/framework";
-  import Footer from "../components/Footer.svelte";
-
-  import codeStyle from "svelte-highlight/styles/a11y-dark";
   import { onMount } from "svelte";
+  import frameworkExamples from "../lib/framework";
+  import codeStyle from "svelte-highlight/styles/a11y-dark";
+  import Footer from "../components/Footer.svelte";
 
   function setFramework(value: string) {
     framework = value;

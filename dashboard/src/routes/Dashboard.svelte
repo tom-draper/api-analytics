@@ -88,7 +88,6 @@
   }
   async function fetchData() {
     userID = formatUUID(userID);
-    // Fetch page ID
     try {
       const response = await fetch(
         `https://api-analytics-server.vercel.app/api/requests/${userID}`

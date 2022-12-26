@@ -207,7 +207,7 @@ type RequestRow struct {
 }
 
 func GetUserRequestsHandler(supabase *supa.Client) gin.HandlerFunc {
-	getData := func(c *gin.Context) {
+	getUserRequests := func(c *gin.Context) {
 		userID := c.Param("userID")
 
 		// Fetch all API request data associated with this account
@@ -225,7 +225,7 @@ func GetUserRequestsHandler(supabase *supa.Client) gin.HandlerFunc {
 		c.JSON(200, result[0].Requests)
 	}
 
-	return gin.HandlerFunc(getData)
+	return gin.HandlerFunc(getUserRequests)
 }
 
 func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
@@ -248,7 +248,7 @@ func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
 }
 
 func DeleteDataHandler(supabase *supa.Client) gin.HandlerFunc {
-	getData := func(c *gin.Context) {
+	deleteData := func(c *gin.Context) {
 		apiKey := c.Param("apiKey")
 
 		// Delete all API request data associated with this account
@@ -271,7 +271,7 @@ func DeleteDataHandler(supabase *supa.Client) gin.HandlerFunc {
 		c.JSON(200, gin.H{"status": 200})
 	}
 
-	return gin.HandlerFunc(getData)
+	return gin.HandlerFunc(deleteData)
 }
 
 type MonitorRow struct {
@@ -282,7 +282,7 @@ type MonitorRow struct {
 }
 
 func GetUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
-	getData := func(c *gin.Context) {
+	getUserMonitor := func(c *gin.Context) {
 		userID := c.Param("userID")
 
 		// Fetch all ping data associated with this account
@@ -298,10 +298,45 @@ func GetUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
 		}
 
 		// Return API request data
-		c.JSON(200, result[0].Monitor)
+		c.JSON(200, result[0])
 	}
 
-	return gin.HandlerFunc(getData)
+	return gin.HandlerFunc(getUserMonitor)
+}
+
+type MonitorInsertRow struct {
+	APIKey    string    `json:"api_key"`
+	URL       string    `json:"url"`
+	Secure    bool      `json:"secure"`
+	Ping      bool      `json:"ping"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+func InsertUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
+	insertUserMonitor := func(c *gin.Context) {
+		var monitor MonitorInsertRow
+		if err := c.BindJSON(&monitor); err != nil {
+			panic(err)
+		}
+
+		if monitor.APIKey == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
+			return
+		} else {
+			// Insert request data into database
+			var result []interface{}
+			err := supabase.DB.From("Requests").Insert(monitor).Execute(&result)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+				return
+			}
+
+			// Return success response
+			c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "New monitor added successfully."})
+		}
+	}
+
+	return gin.HandlerFunc(insertUserMonitor)
 }
 
 type PingsRow struct {
@@ -342,6 +377,7 @@ func RegisterRouter(r *gin.RouterGroup, supabase *supa.Client) {
 	r.GET("/delete/:apiKey", DeleteDataHandler(supabase))
 	r.GET("/pings/:userID", GetUserPingsHandler(supabase))
 	r.GET("/monitor/:userID", GetUserMonitorHandler(supabase))
+	r.POST("/add-monitor", InsertUserMonitorHandler(supabase))
 	r.GET("/data", GetDataHandler(supabase))
 }
 
