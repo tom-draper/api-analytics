@@ -13,14 +13,14 @@
 
   async function fetchData() {
     userID = formatUUID(userID);
-    // Fetch page ID
     try {
       const response = await fetch(
         `https://api-analytics-server.vercel.app/api/pings/${userID}`
       );
       if (response.status == 200) {
         const json = await response.json();
-        data = json;
+        data = json.pings;
+        apiKey = json.api_key;
         console.log(data);
       }
     } catch (e) {
@@ -37,9 +37,17 @@
     showTrackNew = !showTrackNew;
   }
 
+  type PingsData = {
+    url: string,
+    responseTime: number,
+    status: number,
+    createdAt: Date
+  }
+
   let error = false;
   let period = "30d";
-  let data: RequestsData;
+  let apiKey: string;
+  let data: PingsData[];
   let measurements = Array(3);
   let failed = false;
 
@@ -130,7 +138,7 @@
       </div>
     </div>
     {#if showTrackNew || measurements.length == 0}
-      <TrackNew />
+      <TrackNew {apiKey}/>
     {/if}
     <Card data={measurements[0]} {period} bind:anyError={error} />
     <Card data={measurements[1]} {period} bind:anyError={error} />

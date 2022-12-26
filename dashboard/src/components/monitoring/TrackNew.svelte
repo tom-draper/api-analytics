@@ -1,12 +1,62 @@
 <script lang="ts">
+  async function postMonitor() {
+    try {
+      console.log(apiKey)
+      const response = await fetch(
+        `https://api-analytics-server.vercel.app/api/add-monitor`,
+        // `http://localhost:8080/api/add-monitor`,
+        {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ api_key: apiKey, url: url, ping: pingType == "simple-ping", secure: false }),
+        }
+      );
+
+      if (response.status != 201) {
+        console.log("Error", response.status);
+      }
+    } catch (e) {
+      failed = true;
+    }
+  }
+
+  function setPingType(value: string) {
+    pingType = value;
+  }
+
+  let failed = false;
+  let url: string;
+  let pingType = "simple-ping";
+
+  export let apiKey: string;
 </script>
 
 <div class="card">
   <div class="card-text">
     <div class="url">
-      <div class="url-text">URL</div>
-      <input type="text" />
-      <button>Add</button>
+      <div class="start">HTTP://</div>
+      <input type="text" placeholder="example.com/endpoint/" bind:value="{url}" />
+      <button class="add" on:click="{postMonitor}">Add</button>
+    </div>
+    <div class="ping-types">
+      <button
+        class="ping-type"
+        on:click={() => setPingType("simple-ping")}
+        class:active={pingType == "simple-ping"}
+      >
+        Simple ping
+      </button>
+      <button
+        class="ping-type"
+        on:click={() => setPingType("get-request")}
+        class:active={pingType == "get-request"}
+      >
+        GET request
+      </button>
     </div>
     <div class="detail">
       Endpoints are pinged by our servers every 30 mins and response <b
@@ -32,13 +82,14 @@
     border: none;
     margin: 0 10px;
     width: 100%;
-    padding: 0 5px;
+    text-align: left;
+    padding: 0 10px;
     color: white;
   }
   .url {
     display: flex;
   }
-  .url-text {
+  .start {
     margin: auto;
   }
   .detail {
@@ -48,9 +99,22 @@
     font-size: 0.9em;
   }
   button {
+    border: none;
+    border-radius: 4px;
+    background: grey;
+    cursor: pointer;
+  }
+  .add {
     background: var(--highlight);
     padding: 5px 20px;
-    border-radius: 4px;
-    border: none;
+  }
+  .ping-types {
+    margin-top: 20px;
+  }
+  .ping-type {
+    padding: 5px 20px;
+  }
+  .active {
+    background: var(--highlight);
   }
 </style>
