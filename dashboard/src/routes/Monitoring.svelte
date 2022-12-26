@@ -19,7 +19,7 @@
       );
       if (response.status == 200) {
         const json = await response.json();
-        data = json.monitor;
+        data = json;
         console.log(data);
       }
     } catch (e) {
@@ -36,17 +36,16 @@
     showTrackNew = !showTrackNew;
   }
 
-  type MonitorData = {
-	  api_key: string,
+  type PingsData = {
     url: string,
-    secure: boolean,
-    ping: boolean,
-    created_at: Date
+    responseTime: number,
+    status: number,
+    createdAt: Date
   }
 
   let error = false;
   let period = "30d";
-  let data: {monitor: MonitorData[], api_key: string};
+  let data: {pings: PingsData[], api_key: string};
   let measurements = Array(3);
   let failed = false;
 

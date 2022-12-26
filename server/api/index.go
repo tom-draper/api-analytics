@@ -363,7 +363,7 @@ func GetUserPingsHandler(supabase *supa.Client) gin.HandlerFunc {
 		}
 
 		// Return API request data
-		c.JSON(200, result[0].Pings)
+		c.JSON(200, result[0])
 	}
 
 	return gin.HandlerFunc(getData)
