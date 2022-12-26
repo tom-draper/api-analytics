@@ -1,8 +1,10 @@
 <script lang="ts">
   async function postMonitor() {
     try {
+      console.log(apiKey)
       const response = await fetch(
         `https://api-analytics-server.vercel.app/api/add-monitor`,
+        // `http://localhost:8080/api/add-monitor`,
         {
           method: "POST",
           mode: "no-cors",
@@ -10,11 +12,11 @@
             Accept: "application/json",
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ api_key: api_key, url: url, ping: pingType == "simple-ping", secure: false }),
+          body: JSON.stringify({ api_key: apiKey, url: url, ping: pingType == "simple-ping", secure: false }),
         }
       );
 
-      if (response.status != 200) {
+      if (response.status != 201) {
         console.log("Error", response.status);
       }
     } catch (e) {
@@ -30,7 +32,7 @@
   let url: string;
   let pingType = "simple-ping";
 
-  export let api_key: string;
+  export let apiKey: string;
 </script>
 
 <div class="card">

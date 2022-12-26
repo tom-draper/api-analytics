@@ -19,7 +19,8 @@
       );
       if (response.status == 200) {
         const json = await response.json();
-        data = json;
+        data = json.pings;
+        apiKey = json.api_key;
         console.log(data);
       }
     } catch (e) {
@@ -45,7 +46,8 @@
 
   let error = false;
   let period = "30d";
-  let data: {pings: PingsData[], api_key: string};
+  let apiKey: string;
+  let data: PingsData[];
   let measurements = Array(3);
   let failed = false;
 
@@ -136,7 +138,7 @@
       </div>
     </div>
     {#if showTrackNew || measurements.length == 0}
-      <TrackNew api_key={data.api_key}/>
+      <TrackNew {apiKey}/>
     {/if}
     <Card data={measurements[0]} {period} bind:anyError={error} />
     <Card data={measurements[1]} {period} bind:anyError={error} />

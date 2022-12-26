@@ -305,11 +305,10 @@ func GetUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
 }
 
 type MonitorInsertRow struct {
-	APIKey    string    `json:"api_key"`
-	URL       string    `json:"url"`
-	Secure    bool      `json:"secure"`
-	Ping      bool      `json:"ping"`
-	CreatedAt time.Time `json:"created_at"`
+	APIKey string `json:"api_key"`
+	URL    string `json:"url"`
+	Secure bool   `json:"secure"`
+	Ping   bool   `json:"ping"`
 }
 
 func InsertUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
@@ -325,7 +324,7 @@ func InsertUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
 		} else {
 			// Insert request data into database
 			var result []interface{}
-			err := supabase.DB.From("Requests").Insert(monitor).Execute(&result)
+			err := supabase.DB.From("Monitor").Insert(monitor).Execute(&result)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 				return
