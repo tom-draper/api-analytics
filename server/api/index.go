@@ -35,7 +35,7 @@ func GenAPIKeyHandler(supabase *supa.Client) gin.HandlerFunc {
 		apiKey := result[0].APIKey
 
 		// Return API key
-		c.JSON(200, gin.H{"value": apiKey})
+		c.JSON(200, apiKey)
 	}
 
 	return gin.HandlerFunc(genAPIKey)
@@ -174,8 +174,8 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 }
 
 func GetUserIDHandler(supabase *supa.Client) gin.HandlerFunc {
+	// Get user ID associated with API key
 	getUserID := func(c *gin.Context) {
-		// Collect API key sent via POST request
 		apiKey := c.Param("apiKey")
 
 		// Fetch user ID corresponding with API key
@@ -190,28 +190,24 @@ func GetUserIDHandler(supabase *supa.Client) gin.HandlerFunc {
 		userID := result[0].UserID
 
 		// Return user ID
-		c.JSON(200, gin.H{"value": userID})
+		c.JSON(200, userID)
 	}
 
 	return gin.HandlerFunc(getUserID)
 }
 
 type RequestRow struct {
-	APIKey       string    `json:"api_key"`
-	RequestID    int16     `json:"request_id" `
 	Hostname     string    `json:"hostname"`
 	Path         string    `json:"path"`
 	UserAgent    string    `json:"user_agent"`
 	Method       int16     `json:"method"`
 	Status       int16     `json:"status"`
 	ResponseTime int16     `json:"response_time"`
-	Framework    int16     `json:"framework"`
 	CreatedAt    time.Time `json:"created_at"`
 }
 
-func GetUserDataHandler(supabase *supa.Client) gin.HandlerFunc {
+func GetUserRequestsHandler(supabase *supa.Client) gin.HandlerFunc {
 	getData := func(c *gin.Context) {
-		// Collect user ID from params
 		userID := c.Param("userID")
 
 		// Fetch all API request data associated with this account
@@ -219,14 +215,14 @@ func GetUserDataHandler(supabase *supa.Client) gin.HandlerFunc {
 			Requests []RequestRow `json:"Requests"`
 			APIKey   string       `json:"api_key"`
 		}
-		err := supabase.DB.From("Users").Select("api_key, Requests!inner(*)").Eq("user_id", userID).Execute(&result)
+		err := supabase.DB.From("Users").Select("api_key, Requests!inner(hostname, path, user_agent, method, status, response_time, created_at)").Eq("user_id", userID).Execute(&result)
 		if err != nil {
 			c.JSON(400, gin.H{"message": "Invalid user ID."})
 			return
 		}
 
 		// Return API request data
-		c.JSON(200, gin.H{"value": result[0].Requests})
+		c.JSON(200, result[0].Requests)
 	}
 
 	return gin.HandlerFunc(getData)
@@ -234,7 +230,6 @@ func GetUserDataHandler(supabase *supa.Client) gin.HandlerFunc {
 
 func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
 	getData := func(c *gin.Context) {
-		// Collect API key sent in header request
 		apiKey := c.GetHeader("API-Key")
 
 		// Fetch all API request data associated with this account
@@ -246,7 +241,7 @@ func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
 		}
 
 		// Return API request data
-		c.JSON(200, gin.H{"value": result})
+		c.JSON(200, result)
 	}
 
 	return gin.HandlerFunc(getData)
@@ -254,7 +249,6 @@ func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
 
 func DeleteDataHandler(supabase *supa.Client) gin.HandlerFunc {
 	getData := func(c *gin.Context) {
-		// Collect API key sent in header request
 		apiKey := c.Param("apiKey")
 
 		// Delete all API request data associated with this account
@@ -280,13 +274,75 @@ func DeleteDataHandler(supabase *supa.Client) gin.HandlerFunc {
 	return gin.HandlerFunc(getData)
 }
 
+type MonitorRow struct {
+	URL       string    `json:"url"`
+	Secure    bool      `json:"secure"`
+	Ping      bool      `json:"ping"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+func GetUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
+	getData := func(c *gin.Context) {
+		userID := c.Param("userID")
+
+		// Fetch all ping data associated with this account
+		var result []struct {
+			Monitor []MonitorRow `json:"monitor"`
+			APIKey  string       `json:"api_key"`
+		}
+		err := supabase.DB.From("Users").Select("api_key, Monitor!inner(url, secure, ping, created_at)").Eq("user_id", userID).Execute(&result)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(400, gin.H{"message": "Invalid user ID."})
+			return
+		}
+
+		// Return API request data
+		c.JSON(200, result[0].Monitor)
+	}
+
+	return gin.HandlerFunc(getData)
+}
+
+type PingsRow struct {
+	URL          string    `json:"url"`
+	ResponseTime int       `json:"response_time"`
+	Status       int       `json:"status"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+func GetUserPingsHandler(supabase *supa.Client) gin.HandlerFunc {
+	getData := func(c *gin.Context) {
+		userID := c.Param("userID")
+
+		// Fetch all ping data associated with this account
+		var result []struct {
+			Pings  []PingsRow `json:"pings"`
+			APIKey string     `json:"api_key"`
+		}
+		err := supabase.DB.From("Users").Select("api_key, Pings!inner(url, response_time, status, created_at)").Eq("user_id", userID).Execute(&result)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(400, gin.H{"message": "Invalid user ID."})
+			return
+		}
+
+		// Return API request data
+		c.JSON(200, result[0].Pings)
+	}
+
+	return gin.HandlerFunc(getData)
+}
+
 func RegisterRouter(r *gin.RouterGroup, supabase *supa.Client) {
 	r.GET("/generate-api-key", GenAPIKeyHandler(supabase))
 	r.POST("/log-request", LogRequestHandler(supabase))
 	r.GET("/user-id/:apiKey", GetUserIDHandler(supabase))
-	r.GET("/data", GetDataHandler(supabase))
-	r.GET("/user-data/:userID", GetUserDataHandler(supabase))
+	r.GET("/requests/:userID", GetUserRequestsHandler(supabase))
 	r.GET("/delete/:apiKey", DeleteDataHandler(supabase))
+	r.GET("/pings/:userID", GetUserPingsHandler(supabase))
+	r.GET("/monitor/:userID", GetUserMonitorHandler(supabase))
+	r.GET("/data", GetDataHandler(supabase))
 }
 
 func getDBLogin() (string, string) {

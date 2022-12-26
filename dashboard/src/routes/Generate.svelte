@@ -14,7 +14,7 @@
       if (response.status == 200) {
         const data = await response.json();
         generatedKey = true;
-        apiKey = data.value;
+        apiKey = data;
         generateBtn.style.display = "none";
         copyBtn.style.display = "grid";
       }
