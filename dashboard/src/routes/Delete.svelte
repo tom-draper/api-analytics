@@ -4,7 +4,6 @@
   let message = "";
   async function genAPIKey() {
     loading = true;
-    // Fetch page ID
     const response = await fetch(
       `https://api-analytics-server.vercel.app/api/delete/${apiKey}`
     );

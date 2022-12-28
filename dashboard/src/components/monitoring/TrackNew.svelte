@@ -1,10 +1,8 @@
 <script lang="ts">
   async function postMonitor() {
     try {
-      console.log(apiKey)
       const response = await fetch(
         `https://api-analytics-server.vercel.app/api/add-monitor`,
-        // `http://localhost:8080/api/add-monitor`,
         {
           method: "POST",
           mode: "no-cors",
@@ -83,7 +81,8 @@
     margin: 0 10px;
     width: 100%;
     text-align: left;
-    padding: 0 10px;
+    height: auto;
+    padding: 8px 15px;
     color: white;
   }
   .url {

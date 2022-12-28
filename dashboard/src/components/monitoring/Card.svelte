@@ -5,10 +5,13 @@
   function setUptime() {
     let success = 0;
     let total = 0;
-    for (let i = 0; i < measurements.length; i++) {
+    for (let i = 0; i < samples.length; i++) {
+      if (samples[i].status == 'no-request') {
+        continue;
+      }
       if (
-        measurements[i].status == "success" ||
-        measurements[i].status == "delay"
+        samples[i].status == "success" ||
+        samples[i].status == "delay"
       ) {
         success++;
       }
@@ -37,38 +40,68 @@
     }
   }
 
-  function setMeasurements() {
+  function periodSample() {
+    /* Sample ping recordings at regular intervals if number of bars fewer than 
+    total recordings the current period length */
+    let sample = []
+    if (period == "30d") {
+      // Sample 1 in 4
+      for (let i = 0; i < data.length; i++) {
+        if (i % 4 == 0) {
+          sample.push(data[i])
+        }
+      }
+    } else if (period == "60d") {
+      // Sample 1 in 8
+      for (let i = 0; i < data.length; i++) {
+        if (i % 8 == 0) {
+          sample.push(data[i])
+        }
+      }
+    } else {
+      // No sampling - use all
+      sample = data
+    }
+    return sample
+  }
+
+  function setSamples() {
     let markers = periodToMarkers(period);
-    measurements = Array(markers).fill({ status: null, response_time: 0 });
-    let start = markers - data.measurements.length;
-    for (let i = 0; i < data.measurements.length; i++) {
-      measurements[i + start] = data.measurements[i];
+    samples = Array(markers).fill({ status: 'no-request', responseTime: 0 });
+    let sampledData = periodSample();
+    let start = markers - sampledData.length;
+
+    for (let i = 0; i < sampledData.length; i++) {
+      samples[i + start] = {status: 'no-request', responseTime: sampledData[i].responseTime};
+      if (sampledData[i].status >= 200 && sampledData[i].status <= 299) {
+        samples[i + start].status = 'success';
+      } else if (sampledData[i].status != null) {
+        samples[i + start].status = 'error';
+      }
     }
   }
 
   function setError() {
-    error = measurements[measurements.length - 1].status == "error";
+    error = samples[samples.length - 1].status == "error";
     anyError = anyError || error;
   }
 
   function build() {
-    setMeasurements();
+    setSamples();
     setError();
     setUptime();
   }
 
-  let uptime = "";
+  let uptime = '';
   let error = false;
-  let measurements: any[];
+  let samples: any[];
   onMount(() => {
     build();
   });
 
   $: period && build();
 
-  export let data: { name: string; measurements: any[] },
-    period: string,
-    anyError: boolean;
+  export let url: string, data: any, period: string, anyError: boolean;
 </script>
 
 <div class="card" class:card-error={error}>
@@ -81,20 +114,22 @@
           <img src="/img/smalltick.png" alt="" />
         {/if}
       </div>
-      <div class="endpoint">{data.name}</div>
+      <div class="endpoint">{url}</div>
     </div>
     <div class="card-text-right">
       <div class="uptime">Uptime: {uptime}%</div>
     </div>
   </div>
-  <div class="measurements">
-    {#each measurements as measurement}
-      <div class="measurement {measurement.status}" />
-    {/each}
-  </div>
-  <div class="response-time">
-    <ResponseTime data={measurements} {period} />
-  </div>
+  {#if samples != undefined}
+    <div class="measurements">
+      {#each samples as sample}
+        <div class="measurement {sample.status}" />
+      {/each}
+    </div>
+    <div class="response-time">
+      <ResponseTime data={samples} {period} />
+    </div>
+  {/if}
 </div>
 
 <style scoped>
@@ -142,7 +177,7 @@
   .error {
     background: rgb(228, 98, 98);
   }
-  .null {
+  .no-request {
     color: #707070;
   }
   .uptime {

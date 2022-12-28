@@ -3,7 +3,6 @@
   let loading = false
   async function genAPIKey() {
     loading = true;
-    // Fetch page ID
     const response = await fetch(
       `https://api-analytics-server.vercel.app/api/user-id/${apiKey}`
     );
