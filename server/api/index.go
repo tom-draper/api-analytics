@@ -235,7 +235,6 @@ func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
 		// Fetch all API request data associated with this account
 		var result []RequestRow
 		err := supabase.DB.From("Requests").Select("hostname", "path", "user_agent", "method", "created_at", "response_time", "framework", "status").Eq("api_key", apiKey).Execute(&result)
-		fmt.Println(result, err)
 		if err != nil {
 			c.JSON(400, gin.H{"message": "Invalid API key."})
 			return
