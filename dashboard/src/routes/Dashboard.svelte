@@ -14,13 +14,7 @@
   import Device from "../components/dashboard/device/Device.svelte";
   import periodToDays from "../lib/period";
   import genDemoData from "../lib/demo";
-
-  function formatUUID(userID: string): string {
-    return `${userID.slice(0, 8)}-${userID.slice(8, 12)}-${userID.slice(
-      12,
-      16
-    )}-${userID.slice(16, 20)}-${userID.slice(20)}`;
-  }
+  import formatUUID from "../lib/uuid";
 
   function inPeriod(date: Date, days: number): boolean {
     let periodAgo = new Date();
