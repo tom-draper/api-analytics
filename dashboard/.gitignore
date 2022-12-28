@@ -2,5 +2,4 @@ public/App.js
 public/bundle.js
 public/*.map
 public/bundle.css
-!public/prism.js
 node_modules
