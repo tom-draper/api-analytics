@@ -487,7 +487,7 @@ headers = {
  "API-Key": <api_key>
 }
 
-response = requests.get("https://api-analytics-server/api/data", headers=headers)
+response = requests.get("https://api-analytics-server.vercel.app/api/data", headers=headers)
 print(response.json())
 ```
 
