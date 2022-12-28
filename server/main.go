@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	api "server/api"
 
@@ -32,5 +33,6 @@ func main() {
 	r.Use(cors.Default())
 
 	api.RegisterRouter(r, supabase) // Register route
+	fmt.Println("Running on: localhost:8080")
 	app.Run("localhost:8080")
 }

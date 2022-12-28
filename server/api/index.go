@@ -8,7 +8,6 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-
 	supa "github.com/nedpals/supabase-go"
 )
 
@@ -130,7 +129,8 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 		// Collect API request data sent via POST request
 		var requestData RequestData
 		if err := c.BindJSON(&requestData); err != nil {
-			panic(err)
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
+			return
 		}
 
 		if requestData.APIKey == "" {
@@ -234,7 +234,8 @@ func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
 
 		// Fetch all API request data associated with this account
 		var result []RequestRow
-		err := supabase.DB.From("Requests").Select("hostname", "path", "user_agent", "method", "created_at", "responses", "framework", "status").Eq("api_key", apiKey).Execute(&result)
+		err := supabase.DB.From("Requests").Select("hostname", "path", "user_agent", "method", "created_at", "response_time", "framework", "status").Eq("api_key", apiKey).Execute(&result)
+		fmt.Println(result, err)
 		if err != nil {
 			c.JSON(400, gin.H{"message": "Invalid API key."})
 			return
