@@ -37,41 +37,43 @@
     showTrackNew = !showTrackNew;
   }
 
-  type PingsData = {
-    url: string,
-    responseTime: number,
-    status: number,
-    createdAt: Date
+  function groupByUrl() {
+    let group = {};
+    for (let i = 0; i < data.length; i++) {
+      if (!(data[i].url in group)) {
+        group[data[i].url] = [];
+      }
+      group[data[i].url].push({
+        status: data[i].status,
+        responseTime: data[i].response_time,
+      });
+    }
+    return group;
   }
+
+  type PingsData = {
+    url: string;
+    response_time: number;
+    status: number;
+    created_at: Date;
+  };
+
+  type MonitorSample = {
+    status: number;
+    responseTime: number;
+  };
 
   let error = false;
   let period = "30d";
   let apiKey: string;
   let data: PingsData[];
-  let measurements = Array(3);
+  let monitorData: { [url: string]: MonitorSample[] };
   let failed = false;
 
-  for (let i = 0; i < measurements.length; i++) {
-    measurements[i] = {
-      name: "persona-api.vercel.app/v1/england",
-      measurements: [],
-    };
-    for (let j = 0; j < 140; j++) {
-      measurements[i].measurements.push({
-        status: "success",
-        response_time: Math.random() * 10 + 5,
-      });
-    }
-  }
-
-  for (let i = 50; i < 58; i++) {
-    measurements[0].measurements[i] = { status: "error", response_time: 0 };
-  }
-  measurements[1].name = "persona-api.vercel.app/v1/england/features";
-
   let showTrackNew = false;
-  onMount(() => {
-    fetchData();
+  onMount(async () => {
+    await fetchData();
+    monitorData = groupByUrl();
   });
 
   export let userID: string;
@@ -79,11 +81,16 @@
 
 <div class="monitoring">
   <div class="status">
-    {#if error}
-      <div class="status-image">
-        <img id="status-image" src="/img/bigcross.png" alt="" />
-        <div class="status-text">Systems down</div>
-      </div>
+    {#if monitorData != undefined && Object.keys(monitorData).length == 0}
+    <div class="status-image">
+      <img id="status-image" src="/img/logo.png" alt="" />
+      <div class="status-text">Setup required</div>
+    </div>
+    {:else if error}
+    <div class="status-image">
+      <img id="status-image" src="/img/bigcross.png" alt="" />
+      <div class="status-text">Systems down</div>
+    </div>
     {:else}
       <div class="status-image">
         <img id="status-image" src="/img/bigtick.png" alt="" />
@@ -137,12 +144,18 @@
         </div>
       </div>
     </div>
-    {#if showTrackNew || measurements.length == 0}
-      <TrackNew {apiKey}/>
+    {#if monitorData != undefined}
+      {#if showTrackNew || Object.keys(monitorData).length == 0}
+        <TrackNew {apiKey} />
+      {/if}
+      {#each Object.entries(monitorData) as [url, samples]}
+        <Card {url} data={samples} {period} bind:anyError={error} />
+      {/each}
+    {:else}
+      <div class="spinner">
+        <div class="loader" />
+      </div>
     {/if}
-    <Card data={measurements[0]} {period} bind:anyError={error} />
-    <Card data={measurements[1]} {period} bind:anyError={error} />
-    <Card data={measurements[2]} {period} bind:anyError={error} />
   </div>
 </div>
 <Footer />
@@ -157,7 +170,7 @@
     place-items: center;
   }
   #status-image {
-    width: 130px;
+    height: 130px;
     margin-bottom: 1em;
     filter: saturate(1.3);
   }
@@ -218,5 +231,8 @@
   }
   .plus {
     padding-right: 0.6em;
+  }
+  .spinner {
+    margin: 3em 0 10em;
   }
 </style>

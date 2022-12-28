@@ -81,7 +81,8 @@
     margin: 0 10px;
     width: 100%;
     text-align: left;
-    padding: 0 10px;
+    height: auto;
+    padding: 8px 15px;
     color: white;
   }
   .url {
