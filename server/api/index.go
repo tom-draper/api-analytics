@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/JGLTechnologies/gin-rate-limit"
+	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	supa "github.com/nedpals/supabase-go"
@@ -35,7 +35,7 @@ func GenAPIKeyHandler(supabase *supa.Client) gin.HandlerFunc {
 		apiKey := result[0].APIKey
 
 		// Return API key
-		c.JSON(200, apiKey)
+		c.JSON(http.StatusOK, apiKey)
 	}
 
 	return gin.HandlerFunc(genAPIKey)
@@ -191,7 +191,7 @@ func GetUserIDHandler(supabase *supa.Client) gin.HandlerFunc {
 		userID := result[0].UserID
 
 		// Return user ID
-		c.JSON(200, userID)
+		c.JSON(http.StatusOK, userID)
 	}
 
 	return gin.HandlerFunc(getUserID)
@@ -218,12 +218,12 @@ func GetUserRequestsHandler(supabase *supa.Client) gin.HandlerFunc {
 		}
 		err := supabase.DB.From("Users").Select("api_key, Requests!inner(hostname, path, user_agent, method, status, response_time, created_at)").Eq("user_id", userID).Execute(&result)
 		if err != nil {
-			c.JSON(400, gin.H{"message": "Invalid user ID."})
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
 
 		// Return API request data
-		c.JSON(200, result[0].Requests)
+		c.JSON(http.StatusOK, result[0].Requests)
 	}
 
 	return gin.HandlerFunc(getUserRequests)
@@ -237,12 +237,12 @@ func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
 		var result []RequestRow
 		err := supabase.DB.From("Requests").Select("hostname", "path", "user_agent", "method", "created_at", "response_time", "framework", "status").Eq("api_key", apiKey).Execute(&result)
 		if err != nil {
-			c.JSON(400, gin.H{"message": "Invalid API key."})
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 			return
 		}
 
 		// Return API request data
-		c.JSON(200, result)
+		c.JSON(http.StatusOK, result)
 	}
 
 	return gin.HandlerFunc(getData)
@@ -256,7 +256,7 @@ func DeleteDataHandler(supabase *supa.Client) gin.HandlerFunc {
 		var requestResult []RequestRow
 		err := supabase.DB.From("Requests").Delete().Eq("api_key", apiKey).Execute(&requestResult)
 		if err != nil {
-			c.JSON(400, gin.H{"message": "Invalid API key."})
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 			return
 		}
 
@@ -264,12 +264,12 @@ func DeleteDataHandler(supabase *supa.Client) gin.HandlerFunc {
 		var userResult []User
 		err = supabase.DB.From("Users").Delete().Eq("api_key", apiKey).Execute(&userResult)
 		if err != nil {
-			c.JSON(400, gin.H{"message": "Invalid API key."})
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 			return
 		}
 
 		// Return API request data
-		c.JSON(200, gin.H{"status": 200})
+		c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "message": "Account data deleted successfully."})
 	}
 
 	return gin.HandlerFunc(deleteData)
@@ -294,12 +294,12 @@ func GetUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
 		err := supabase.DB.From("Users").Select("api_key, Monitor!inner(url, secure, ping, created_at)").Eq("user_id", userID).Execute(&result)
 		if err != nil {
 			fmt.Println(err)
-			c.JSON(400, gin.H{"message": "Invalid user ID."})
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
 
 		// Return API request data
-		c.JSON(200, result[0])
+		c.JSON(http.StatusOK, result[0])
 	}
 
 	return gin.HandlerFunc(getUserMonitor)
@@ -357,13 +357,12 @@ func GetUserPingsHandler(supabase *supa.Client) gin.HandlerFunc {
 		}
 		err := supabase.DB.From("Users").Select("api_key, Pings!inner(url, response_time, status, created_at)").Eq("user_id", userID).Execute(&result)
 		if err != nil {
-			fmt.Println(err)
-			c.JSON(400, gin.H{"message": "Invalid user ID."})
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
 
 		// Return API request data
-		c.JSON(200, result[0])
+		c.JSON(http.StatusOK, result[0])
 	}
 
 	return gin.HandlerFunc(getData)
@@ -392,7 +391,7 @@ func keyFunc(c *gin.Context) string {
 }
 
 func errorHandler(c *gin.Context, info ratelimit.Info) {
-	c.String(429, "Too many requests. Try again in "+time.Until(info.ResetTime).String())
+	c.String(http.StatusTooManyRequests, "Too many requests. Try again in "+time.Until(info.ResetTime).String())
 }
 
 func init() {
