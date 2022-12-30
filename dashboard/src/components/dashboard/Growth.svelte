@@ -63,18 +63,6 @@
         </div>
         <div class="tile-label">Requests</div>
       </div>
-      <!-- {#if requestsChange != undefined}
-        <div class="tile">
-          <div class="tile-value">
-            <span
-              style="color: {requestsChange > 0
-                ? 'var(--highlight)'
-                : 'var(--red)'}">+{requestsChange}%</span
-            >
-          </div>
-          <div class="tile-label">Users</div>
-        </div>
-    {/if} -->
       <div class="tile">
         <div class="tile-value">
           <span

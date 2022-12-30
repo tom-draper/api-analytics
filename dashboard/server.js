@@ -20,7 +20,6 @@ server.get("*", function(req, res) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <div id="app">${html}</div>
     <link href="prism.css" rel="stylesheet" />
-    <script src="prism.js"></script>
     <script src="/bundle.js"></script>
   `);
 
