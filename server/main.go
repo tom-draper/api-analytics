@@ -1,9 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"os"
-	api "server/api"
+	"server/api"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
