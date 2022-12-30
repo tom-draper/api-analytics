@@ -53,7 +53,6 @@
 </div>
 
 <style scoped>
-
   #copyBtn {
     background: #1c1c1c;
     display: none;
@@ -71,7 +70,4 @@
     visibility: hidden;
     height: 1em;
   }
-  /* .spinner {
-    height: 7em;
-  } */
 </style>

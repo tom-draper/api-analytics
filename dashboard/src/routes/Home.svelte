@@ -24,10 +24,29 @@
   });
 
   let currentFramework = "Django";
-  let frameworks = [['python', 'Django'], ['python', 'FastAPI'], ['python', 'Flask'], ['python', 'Tornado'], ['javascript', 'Express'], ['javascript', 'Fastify'], ['javascript', 'Koa'], ['golang', 'Gin'], ['golang', 'Echo'], ['golang', 'Fiber'], ['golang', 'Chi'], ['rust', 'Actix'], ['rust', 'Axum'], ['ruby', 'Rails'], ['ruby', 'Sinatra']]
+  let frameworks = [
+    ["python", "Django"],
+    ["python", "FastAPI"],
+    ["python", "Flask"],
+    ["python", "Tornado"],
+    ["javascript", "Express"],
+    ["javascript", "Fastify"],
+    ["javascript", "Koa"],
+    ["go", "Gin"],
+    ["go", "Echo"],
+    ["go", "Fiber"],
+    ["go", "Chi"],
+    ["rust", "Actix"],
+    ["rust", "Axum"],
+    ["ruby", "Rails"],
+    ["ruby", "Sinatra"],
+  ];
 </script>
 
 <svelte:head>
+  <!-- <link rel="stylesheet" href="/tutorial/dark-theme.css"> -->
+
+  <script src="prism.js"></script>
   {@html codeStyle}
 </svelte:head>
 
@@ -127,7 +146,9 @@
           <!-- Render all code snippets to apply one-time syntax highlighting -->
           <!-- TODO: dynamic syntax highlight rendering to only render the 
             frameworks clicked on and reduce this code to one line -->
-          <div class="code-file">{frameworkExamples[currentFramework].codeFile}</div>
+          <div class="code-file">
+            {frameworkExamples[currentFramework].codeFile}
+          </div>
           {#each frameworks as [language, framework]}
             <code
               id="code"
@@ -293,7 +314,7 @@
   .active.python {
     border-bottom: 3px solid #4b8bbe;
   }
-  .active.golang {
+  .active.go {
     border-bottom: 3px solid #00a7d0;
   }
   .active.javascript {
@@ -429,6 +450,9 @@
     }
     .instructions-container {
       padding: 0 4%;
+    }
+    .logo {
+      margin-bottom: 0;
     }
   }
 </style>
