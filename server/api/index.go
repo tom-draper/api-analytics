@@ -415,7 +415,7 @@ func init() {
 	r := app.Group("/api", mw) // Vercel - must be /api/xxx
 
 	r.Use(cors.Default())
-	RegisterRouter(r, supabase) // Register route
+	RegisterRouter(r, supabase)
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
