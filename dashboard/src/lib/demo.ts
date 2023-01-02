@@ -104,9 +104,9 @@ type DemoRequest = {
 export default function genDemoData(): DemoRequest[] {
     let demoData = [];
     
-    addDemoSamples(demoData, "/v1/", 200, 18000, 650, 0, 240, 55, 0, 1654);
-    addDemoSamples(demoData, "/v1/", 400, 1000, 650, 0, 240, 55, 0, 1654);
-    addDemoSamples(demoData, "/v1/account", 200, 8000, 650, 0, 240, 55, 0, 1654);
+    addDemoSamples(demoData, "/v1/", 200, 18000, 650, 0, 240, 55, 0, 3956);
+    addDemoSamples(demoData, "/v1/", 400, 1000, 650, 0, 240, 55, 0, 2041);
+    addDemoSamples(demoData, "/v1/account", 200, 8000, 650, 0, 240, 55, 0, 1854);
     addDemoSamples(demoData, "/v1/account", 400, 1200, 650, 0, 240, 55, 0, 1654);
     addDemoSamples(demoData, "/v1/help", 200, 700, 650, 0, 240, 55, 0, 1654);
     addDemoSamples(demoData, "/v1/help", 400, 70, 650, 0, 240, 55, 0, 1654);
