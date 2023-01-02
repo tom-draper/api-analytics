@@ -16,6 +16,7 @@ func Analytics(apiKey string) echo.MiddlewareFunc {
 			data := core.Data{
 				APIKey:       apiKey,
 				Hostname:     c.Request().Host,
+				IPAddress:    c.RealIP(),
 				Path:         c.Request().URL.Path,
 				UserAgent:    c.Request().UserAgent(),
 				Method:       c.Request().Method,
