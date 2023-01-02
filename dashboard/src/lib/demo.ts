@@ -65,7 +65,9 @@ function addDemoSamples(
     maxDaysAgo: number,
     minDaysAgo: number,
     maxResponseTime: number,
-    minResponseTime: number
+    minResponseTime: number,
+    minUser: number,
+    maxUser: number,
 ) {
     for (let i = 0; i < count; i++) {
         let date = new Date();
@@ -76,6 +78,7 @@ function addDemoSamples(
         demoData.push({
             hostname: "demo-api.com",
             path: endpoint,
+            ip_address: Math.floor(Math.random() * maxUser + minUser).toString(),
             user_agent: getDemoUserAgent(),
             method: 0,
             status: getDemoStatus(date, status),
@@ -90,6 +93,7 @@ function addDemoSamples(
 type DemoRequest = {
     hostname: string,
     path: string,
+    ip_address: string,
     user_agent: string,
     method: number,
     status: number,
@@ -100,44 +104,44 @@ type DemoRequest = {
 export default function genDemoData(): DemoRequest[] {
     let demoData = [];
     
-    addDemoSamples(demoData, "/v1/", 200, 18000, 650, 0, 240, 55);
-    addDemoSamples(demoData, "/v1/", 400, 1000, 650, 0, 240, 55);
-    addDemoSamples(demoData, "/v1/account", 200, 8000, 650, 0, 240, 55);
-    addDemoSamples(demoData, "/v1/account", 400, 1200, 650, 0, 240, 55);
-    addDemoSamples(demoData, "/v1/help", 200, 700, 650, 0, 240, 55);
-    addDemoSamples(demoData, "/v1/help", 400, 70, 650, 0, 240, 55);
-    addDemoSamples(demoData, "/v2/", 200, 35000, 650, 0, 240, 55);
-    addDemoSamples(demoData, "/v2/", 400, 200, 650, 0, 240, 55);
-    addDemoSamples(demoData, "/v2/account", 200, 14000, 650, 0, 240, 55);
-    addDemoSamples(demoData, "/v2/account", 400, 3000, 650, 0, 240, 55);
-    addDemoSamples(demoData, "/v2/account/update", 200, 6000, 650, 0, 240, 55);
-    addDemoSamples(demoData, "/v2/account/update", 400, 400, 650, 0, 240, 55);
-    addDemoSamples(demoData, "/v2/help", 200, 6000, 650, 0, 240, 55);
-    addDemoSamples(demoData, "/v2/help", 400, 400, 650, 0, 240, 55);
+    addDemoSamples(demoData, "/v1/", 200, 18000, 650, 0, 240, 55, 0, 1654);
+    addDemoSamples(demoData, "/v1/", 400, 1000, 650, 0, 240, 55, 0, 1654);
+    addDemoSamples(demoData, "/v1/account", 200, 8000, 650, 0, 240, 55, 0, 1654);
+    addDemoSamples(demoData, "/v1/account", 400, 1200, 650, 0, 240, 55, 0, 1654);
+    addDemoSamples(demoData, "/v1/help", 200, 700, 650, 0, 240, 55, 0, 1654);
+    addDemoSamples(demoData, "/v1/help", 400, 70, 650, 0, 240, 55, 0, 1654);
+    addDemoSamples(demoData, "/v2/", 200, 35000, 650, 0, 240, 55, 0, 1654);
+    addDemoSamples(demoData, "/v2/", 400, 200, 650, 0, 240, 55, 0, 1654);
+    addDemoSamples(demoData, "/v2/account", 200, 14000, 650, 0, 240, 55, 0, 1654);
+    addDemoSamples(demoData, "/v2/account", 400, 3000, 650, 0, 240, 55, 0, 1654);
+    addDemoSamples(demoData, "/v2/account/update", 200, 6000, 650, 0, 240, 55, 0, 1654);
+    addDemoSamples(demoData, "/v2/account/update", 400, 400, 650, 0, 240, 55, 0, 1654);
+    addDemoSamples(demoData, "/v2/help", 200, 6000, 650, 0, 240, 55, 0, 1654);
+    addDemoSamples(demoData, "/v2/help", 400, 400, 650, 0, 240, 55, 0, 1654);
 
-    addDemoSamples(demoData, "/v2/account", 200, 16000, 450, 0, 100, 30);
-    addDemoSamples(demoData, "/v2/account", 400, 2000, 450, 0, 100, 30);
+    addDemoSamples(demoData, "/v2/account", 200, 16000, 450, 0, 100, 30, 0, 1654);
+    addDemoSamples(demoData, "/v2/account", 400, 2000, 450, 0, 100, 30, 0, 1654);
 
-    addDemoSamples(demoData, "/v2/help", 200, 8000, 300, 0, 100, 30);
-    addDemoSamples(demoData, "/v2/help", 400, 800, 300, 0, 100, 30);
+    addDemoSamples(demoData, "/v2/help", 200, 8000, 300, 0, 100, 30, 0, 1654);
+    addDemoSamples(demoData, "/v2/help", 400, 800, 300, 0, 100, 30, 0, 1654);
 
-    addDemoSamples(demoData, "/v2/", 200, 4000, 200, 0, 100, 30);
-    addDemoSamples(demoData, "/v2/", 400, 800, 200, 0, 100, 30);
+    addDemoSamples(demoData, "/v2/", 200, 4000, 200, 0, 100, 30, 0, 1654);
+    addDemoSamples(demoData, "/v2/", 400, 800, 200, 0, 100, 30, 0, 1654);
 
-    addDemoSamples(demoData, "/v2/", 200, 3000, 100, 0, 100, 30);
-    addDemoSamples(demoData, "/v2/", 400, 500, 100, 0, 100, 30);
+    addDemoSamples(demoData, "/v2/", 200, 3000, 100, 0, 100, 30, 0, 1654);
+    addDemoSamples(demoData, "/v2/", 400, 500, 100, 0, 100, 30, 0, 1654);
 
-    addDemoSamples(demoData, "/v2/", 200, 1000, 60, 0, 100, 30);
-    addDemoSamples(demoData, "/v2/", 400, 50, 60, 0, 100, 30);
+    addDemoSamples(demoData, "/v2/", 200, 1000, 60, 0, 100, 30, 0, 1654);
+    addDemoSamples(demoData, "/v2/", 400, 50, 60, 0, 100, 30, 0, 1654);
 
-    addDemoSamples(demoData, "/v2/", 200, 500, 40, 0, 100, 30);
-    addDemoSamples(demoData, "/v2/", 400, 25, 40, 0, 100, 30);
+    addDemoSamples(demoData, "/v2/", 200, 500, 40, 0, 100, 30, 0, 1654);
+    addDemoSamples(demoData, "/v2/", 400, 25, 40, 0, 100, 30, 0, 1654);
 
-    addDemoSamples(demoData, "/v2/", 200, 250, 10, 0, 100, 30);
-    addDemoSamples(demoData, "/v2/", 400, 20, 10, 0, 100, 30);
+    addDemoSamples(demoData, "/v2/", 200, 250, 10, 0, 100, 30, 0, 1654);
+    addDemoSamples(demoData, "/v2/", 400, 20, 10, 0, 100, 30, 0, 1654);
 
-    addDemoSamples(demoData, "/v2/", 200, 125, 5, 0, 100, 30);
-    addDemoSamples(demoData, "/v2/", 400, 10, 5, 0, 100, 30);
+    addDemoSamples(demoData, "/v2/", 200, 125, 5, 0, 100, 30, 0, 1654);
+    addDemoSamples(demoData, "/v2/", 400, 10, 5, 0, 100, 30, 0, 1654);
 
     return demoData
 }
