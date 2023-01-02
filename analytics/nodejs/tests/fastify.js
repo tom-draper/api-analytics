@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-import { fastifyAnalytics } from "node-api-analytics";
+import { fastifyAnalytics } from "../analytics.js";
 import * as dotenv from "dotenv";
 dotenv.config();
 
