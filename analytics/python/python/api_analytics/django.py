@@ -16,10 +16,11 @@ class Analytics:
     def __call__(self, request: WSGIRequest) -> HttpResponse:
         start = time()
         response = self.get_response(request)
-
+        
         data = {
             'api_key': self.api_key,
             'hostname': request.get_host(),
+            'ip_address': request.META.get('REMOTE_ADDR'),
             'path': request.path,
             'user_agent': request.headers['user-agent'],
             'method': request.method,

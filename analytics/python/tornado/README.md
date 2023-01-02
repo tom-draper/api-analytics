@@ -22,28 +22,28 @@ Modify your handler to inherit from `Analytics`. Create a `__init__()` method on
 import asyncio
 from tornado.web import Application
 
-from tornado_analytics.tornado import Analytics
+from api_analytics.tornado import Analytics
 
 # Inherit from the Analytics middleware class
 class MainHandler(Analytics):
     def __init__(self, app, res):
-        super().__init__(app, res, <api_key>)  # Pass api key
+        api_key = os.environ.get("API_KEY")
+        super().__init__(app, res, api_key)
 
     def get(self):
         self.write({'message': 'Hello World!'})
+
 
 def make_app():
     return Application([
         (r"/", MainHandler),
     ])
 
-async def main():
-    app = make_app()
-    app.listen(8080)
-    await asyncio.Event().wait()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    app = make_app()
+    app.listen(8000)
+    IOLoop.instance().start()
 ```
 
 ### 3. View your analytics

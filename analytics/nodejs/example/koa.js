@@ -1,5 +1,4 @@
 import Koa from "koa";
-// import { koaAnalytics } from "../analytics.js";
 import { koaAnalytics } from "node-api-analytics";
 import * as dotenv from "dotenv";
 dotenv.config();

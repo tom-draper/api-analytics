@@ -32,6 +32,7 @@ MIDDLEWARE = [
 #### FastAPI
 
 ```py
+import uvicorn
 from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
 
@@ -41,6 +42,9 @@ app.add_middleware(Analytics, <api_key>)  # Add middleware
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+if __name__ == "__main__":
+    uvicorn.run("app:app", reload=True)
 ```
 
 #### Flask
@@ -55,6 +59,9 @@ add_middleware(app, <api_key>)  # Add middleware
 @app.get("/")
 def root():
     return {"message": "Hello World"}
+
+if __name__ == "__main__":
+    app.run()
 ```
 
 #### Tornado
@@ -70,23 +77,23 @@ from api_analytics.tornado import Analytics
 # Inherit from the Analytics middleware class
 class MainHandler(Analytics):
     def __init__(self, app, res):
-        super().__init__(app, res, <api_key>)  # Pass api key
+        api_key = os.environ.get("API_KEY")
+        super().__init__(app, res, api_key)
 
     def get(self):
         self.write({'message': 'Hello World!'})
+
 
 def make_app():
     return Application([
         (r"/", MainHandler),
     ])
 
-async def main():
-    app = make_app()
-    app.listen(8080)
-    await asyncio.Event().wait()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    app = make_app()
+    app.listen(8000)
+    IOLoop.instance().start()
 ```
 
 ### 3. View your analytics

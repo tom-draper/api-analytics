@@ -24,6 +24,7 @@ class Analytics(BaseHTTPMiddleware):
         data = {
             'api_key': self.api_key,
             'hostname': request.host,
+            'ip_address': request.remote_addr,
             'path': request.path,
             'user_agent': request.headers['user-agent'],
             'method': request.method,
@@ -31,5 +32,6 @@ class Analytics(BaseHTTPMiddleware):
             'framework': 'Flask',
             'response_time': int((time() - start) * 1000),
         }
+        
         threading.Thread(target=log_request, args=(data,)).start()
         return response

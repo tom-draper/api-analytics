@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	supa "github.com/nedpals/supabase-go"
@@ -34,7 +35,7 @@ func GenAPIKeyHandler(supabase *supa.Client) gin.HandlerFunc {
 		apiKey := result[0].APIKey
 
 		// Return API key
-		c.JSON(200, apiKey)
+		c.JSON(http.StatusOK, apiKey)
 	}
 
 	return gin.HandlerFunc(genAPIKey)
@@ -44,6 +45,7 @@ type RequestData struct {
 	APIKey       string `json:"api_key"`
 	Path         string `json:"path"`
 	Hostname     string `json:"hostname"`
+	IPAddress    string `json:"ip_address"`
 	UserAgent    string `json:"user_agent"`
 	Method       string `json:"method"`
 	Status       int16  `json:"status"`
@@ -55,6 +57,7 @@ type RequestInsert struct {
 	APIKey       string `json:"api_key"`
 	Path         string `json:"path"`
 	Hostname     string `json:"hostname"`
+	IPAddress    string `json:"ip_address"`
 	UserAgent    string `json:"user_agent"`
 	Method       int16  `json:"method"`
 	Status       int16  `json:"status"`
@@ -133,6 +136,8 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 			return
 		}
 
+		fmt.Println(requestData)
+
 		if requestData.APIKey == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
 			return
@@ -151,15 +156,17 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 				APIKey:       requestData.APIKey,
 				Path:         requestData.Path,
 				Hostname:     requestData.Hostname,
+				IPAddress:    requestData.IPAddress,
 				UserAgent:    requestData.UserAgent,
 				Status:       requestData.Status,
 				ResponseTime: requestData.ResponseTime,
 				Method:       method,
 				Framework:    framework,
 			}
+			fmt.Println(request)
 			// Insert request data into database
-			var result []interface{}
-			err = supabase.DB.From("Requests").Insert(request).Execute(&result)
+			// var result []interface{}
+			// err = supabase.DB.From("Requests").Insert(request).Execute(&result)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 				return
@@ -190,7 +197,7 @@ func GetUserIDHandler(supabase *supa.Client) gin.HandlerFunc {
 		userID := result[0].UserID
 
 		// Return user ID
-		c.JSON(200, userID)
+		c.JSON(http.StatusOK, userID)
 	}
 
 	return gin.HandlerFunc(getUserID)
@@ -198,6 +205,7 @@ func GetUserIDHandler(supabase *supa.Client) gin.HandlerFunc {
 
 type RequestRow struct {
 	Hostname     string    `json:"hostname"`
+	IPAddress    string    `json:"ip_address"`
 	Path         string    `json:"path"`
 	UserAgent    string    `json:"user_agent"`
 	Method       int16     `json:"method"`
@@ -215,14 +223,14 @@ func GetUserRequestsHandler(supabase *supa.Client) gin.HandlerFunc {
 			Requests []RequestRow `json:"Requests"`
 			APIKey   string       `json:"api_key"`
 		}
-		err := supabase.DB.From("Users").Select("api_key, Requests!inner(hostname, path, user_agent, method, status, response_time, created_at)").Eq("user_id", userID).Execute(&result)
+		err := supabase.DB.From("Users").Select("api_key, Requests!inner(hostname, ip_address, path, user_agent, method, status, response_time, created_at)").Eq("user_id", userID).Execute(&result)
 		if err != nil {
-			c.JSON(400, gin.H{"message": "Invalid user ID."})
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
 
 		// Return API request data
-		c.JSON(200, result[0].Requests)
+		c.JSON(http.StatusOK, result[0].Requests)
 	}
 
 	return gin.HandlerFunc(getUserRequests)
@@ -234,14 +242,14 @@ func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
 
 		// Fetch all API request data associated with this account
 		var result []RequestRow
-		err := supabase.DB.From("Requests").Select("hostname", "path", "user_agent", "method", "created_at", "response_time", "framework", "status").Eq("api_key", apiKey).Execute(&result)
+		err := supabase.DB.From("Requests").Select("hostname", "ip_address", "path", "user_agent", "method", "created_at", "response_time", "framework", "status").Eq("api_key", apiKey).Execute(&result)
 		if err != nil {
-			c.JSON(400, gin.H{"message": "Invalid API key."})
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 			return
 		}
 
 		// Return API request data
-		c.JSON(200, result)
+		c.JSON(http.StatusOK, result)
 	}
 
 	return gin.HandlerFunc(getData)
@@ -255,7 +263,7 @@ func DeleteDataHandler(supabase *supa.Client) gin.HandlerFunc {
 		var requestResult []RequestRow
 		err := supabase.DB.From("Requests").Delete().Eq("api_key", apiKey).Execute(&requestResult)
 		if err != nil {
-			c.JSON(400, gin.H{"message": "Invalid API key."})
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 			return
 		}
 
@@ -263,12 +271,12 @@ func DeleteDataHandler(supabase *supa.Client) gin.HandlerFunc {
 		var userResult []User
 		err = supabase.DB.From("Users").Delete().Eq("api_key", apiKey).Execute(&userResult)
 		if err != nil {
-			c.JSON(400, gin.H{"message": "Invalid API key."})
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 			return
 		}
 
 		// Return API request data
-		c.JSON(200, gin.H{"status": 200})
+		c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "message": "Account data deleted successfully."})
 	}
 
 	return gin.HandlerFunc(deleteData)
@@ -293,12 +301,12 @@ func GetUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
 		err := supabase.DB.From("Users").Select("api_key, Monitor!inner(url, secure, ping, created_at)").Eq("user_id", userID).Execute(&result)
 		if err != nil {
 			fmt.Println(err)
-			c.JSON(400, gin.H{"message": "Invalid user ID."})
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
 
 		// Return API request data
-		c.JSON(200, result[0])
+		c.JSON(http.StatusOK, result[0])
 	}
 
 	return gin.HandlerFunc(getUserMonitor)
@@ -356,13 +364,12 @@ func GetUserPingsHandler(supabase *supa.Client) gin.HandlerFunc {
 		}
 		err := supabase.DB.From("Users").Select("api_key, Pings!inner(url, response_time, status, created_at)").Eq("user_id", userID).Execute(&result)
 		if err != nil {
-			fmt.Println(err)
-			c.JSON(400, gin.H{"message": "Invalid user ID."})
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
 
 		// Return API request data
-		c.JSON(200, result[0])
+		c.JSON(http.StatusOK, result[0])
 	}
 
 	return gin.HandlerFunc(getData)
@@ -386,6 +393,14 @@ func getDBLogin() (string, string) {
 	return supabaseURL, supabaseKey
 }
 
+func keyFunc(c *gin.Context) string {
+	return c.ClientIP()
+}
+
+func errorHandler(c *gin.Context, info ratelimit.Info) {
+	c.String(http.StatusTooManyRequests, "Too many requests. Try again in "+time.Until(info.ResetTime).String())
+}
+
 func init() {
 	supabaseURL, supabaseKey := getDBLogin()
 	supabase := supa.CreateClient(supabaseURL, supabaseKey)
@@ -393,10 +408,20 @@ func init() {
 	gin.SetMode(gin.ReleaseMode)
 	app = gin.New()
 
-	r := app.Group("/api") // Vercel - must be /api/xxx
+	// Add rate limiter
+	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
+		Rate:  time.Second,
+		Limit: 10000,
+	})
+	mw := ratelimit.RateLimiter(store, &ratelimit.Options{
+		ErrorHandler: errorHandler,
+		KeyFunc:      keyFunc,
+	})
+
+	r := app.Group("/api", mw) // Vercel - must be /api/xxx
 
 	r.Use(cors.Default())
-	RegisterRouter(r, supabase) // Register route
+	RegisterRouter(r, supabase)
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {

@@ -16,6 +16,7 @@ func Analytics(apiKey string) func(c *fiber.Ctx) error {
 			APIKey:       apiKey,
 			Hostname:     c.Hostname(),
 			Path:         c.Path(),
+			IPAddress:    c.IP(),
 			UserAgent:    string(c.Request().Header.UserAgent()),
 			Method:       c.Method(),
 			Status:       c.Response().StatusCode(),

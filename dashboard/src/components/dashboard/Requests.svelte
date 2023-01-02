@@ -10,23 +10,24 @@
     }
   }
 
-  function togglePeriod() {
-    perHour = !perHour;
-  }
-
-  function build() {
-    let totalRequests = 0;
-    for (let i = 0; i < data.length; i++) {
-      totalRequests++;
-    }
-    if (totalRequests > 0) {
+  function setRequestsPerHour() {
+    if (data.length > 0) {
       let days = periodToDays(period);
       if (days != null) {
-        requestsPerHour = (totalRequests / (24 * days)).toFixed(2);
+        requestsPerHour = (data.length / (24 * days)).toFixed(2);
       }
     } else {
       requestsPerHour = "0";
     }
+  }
+  
+  function togglePeriod() {
+    perHour = !perHour;
+  }
+  
+  function build() {
+    setPercentageChange();
+    setRequestsPerHour();
   }
   
   let requestsPerHour: string;
@@ -37,7 +38,6 @@
     mounted = true;
   });
   
-  $: data && mounted && setPercentageChange();
   $: data && mounted && build();
 
   export let data: RequestsData, prevData: RequestsData, period: string;
