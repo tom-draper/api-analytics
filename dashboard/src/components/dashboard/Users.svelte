@@ -17,7 +17,7 @@
   function getUsers(data: RequestsData): Set<string> {
     let users: Set<string> = new Set();
     for (let i = 0; i < data.length; i++) {
-      if (data[i].ip_address) {
+      if (data[i].ip_address != "" && data[i].ip_address != null) {
         users.add(data[i].ip_address)
       }
     }
