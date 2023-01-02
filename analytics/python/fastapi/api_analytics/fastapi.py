@@ -32,4 +32,3 @@ class Analytics(BaseHTTPMiddleware):
         
         threading.Thread(target=log_request, args=(data,)).start()
         return response
-

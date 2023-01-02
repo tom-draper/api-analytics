@@ -30,4 +30,3 @@ class Analytics(RequestHandler):
 
         threading.Thread(target=log_request, args=(data,)).start()
         self.start = None
-
