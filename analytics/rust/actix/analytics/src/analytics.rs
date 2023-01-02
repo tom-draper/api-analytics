@@ -8,6 +8,7 @@ use futures::future::LocalBoxFuture;
 use serde::Serialize;
 use std::future::{ready, Ready};
 use std::time::Instant;
+use reqwest::blocking::Client;
 
 
 #[derive(Debug, Serialize)]
@@ -93,7 +94,7 @@ impl HeaderValueExt for HeaderValue {
 }
 
 fn log_request(data: Data) {
-    let _ = reqwest::blocking::Client::new()
+    let _ = Client::new()
         .post("https://api-analytics-server.vercel.app/api/log-request")
         .json(&data)
         .send();
@@ -145,5 +146,3 @@ where
         })
     }
 }
-
-

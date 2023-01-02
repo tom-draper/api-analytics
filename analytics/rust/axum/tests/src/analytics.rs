@@ -1,4 +1,4 @@
-use axum::{body::Body, http::Request, response::Response};
+use axum::{body::Body, extract::ConnectInfo, http::Request, response::Response};
 use futures::future::BoxFuture;
 use http::header::{HeaderValue, HOST, USER_AGENT};
 use serde::Serialize;
@@ -6,7 +6,9 @@ use std::{
     task::{Context, Poll},
     thread::spawn,
     time::Instant,
+    net::SocketAddr
 };
+use reqwest::blocking::Client;
 use tower::{Layer, Service};
 
 #[derive(Debug, Serialize)]
@@ -87,7 +89,7 @@ impl HeaderValueExt for HeaderValue {
 
 fn log_request(data: Data) {
     println!("{:?}", data);
-    let _ = reqwest::blocking::Client::new()
+    let _ = Client::new()
         .post("https://api-analytics-server.vercel.app/api/log-request")
         .json(&data)
         .send();
@@ -107,18 +109,23 @@ where
     }
 
     fn call(&mut self, req: Request<Body>) -> Self::Future {
+        let now = Instant::now();
+
         let api_key = self.api_key.clone();
         let hostname = req.headers().get(HOST).map(|x| x.to_string()).unwrap();
-        let ip_address = String::new();
+        let mut ip_address = String::new();
+        if let Some(val) = req.extensions().get::<ConnectInfo<SocketAddr>>()
+        .map(|ConnectInfo(addr)| addr.ip() {
+            ip_address = val.to_string();
+        }
         let path = req.uri().path().to_owned();
         let method = req.method().to_string();
         let user_agent = req
-            .headers()
-            .get(USER_AGENT)
-            .map(|x| x.to_string())
-            .unwrap();
-
-        let now = Instant::now();
+        .headers()
+        .get(USER_AGENT)
+        .map(|x| x.to_string())
+        .unwrap();
+        
         let future = self.inner.call(req);
 
         Box::pin(async move {
