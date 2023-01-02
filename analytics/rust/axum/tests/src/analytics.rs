@@ -11,6 +11,7 @@ use std::{
 use reqwest::blocking::Client;
 use tower::{Layer, Service};
 
+
 #[derive(Debug, Serialize)]
 struct Data {
     api_key: String,
@@ -88,7 +89,6 @@ impl HeaderValueExt for HeaderValue {
 }
 
 fn log_request(data: Data) {
-    println!("{:?}", data);
     let _ = Client::new()
         .post("https://api-analytics-server.vercel.app/api/log-request")
         .json(&data)
@@ -114,8 +114,7 @@ where
         let api_key = self.api_key.clone();
         let hostname = req.headers().get(HOST).map(|x| x.to_string()).unwrap();
         let mut ip_address = String::new();
-        if let Some(val) = req.extensions().get::<ConnectInfo<SocketAddr>>()
-        .map(|ConnectInfo(addr)| addr.ip() {
+        if let Some(val) = req.extensions().get::<ConnectInfo<SocketAddr>>().map(|ConnectInfo(addr)| addr.ip()) {
             ip_address = val.to_string();
         }
         let path = req.uri().path().to_owned();
