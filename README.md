@@ -509,14 +509,15 @@ Opt-in active API monitoring is coming soon. Our servers will regularly ping you
 All data is stored securely in compliance with The EU General Data Protection Regulation (GDPR).
 
 For any given request to your API, data recorded is limited to:
- - API hostname
- - Path requested by user
- - User's operating system
- - User's browser
+ - Path requested by client
+ - Client IP address
+ - Client operating system
+ - Client browser
  - Request method (GET, POST, PUT, etc.)
  - Time of request
  - Status code
  - Response time
+ - API hostname
  - API framework (FastAPI, Flask, Express etc.)
 
 Data collected is only ever used to populate your analytics dashboard. Your data is anonymous, with the API key the only link between you and you API's analytics. Should you lose your API key, you will have no method to access your API analytics. Inactive API keys (> 1 year) and its associated API request data may be deleted.
