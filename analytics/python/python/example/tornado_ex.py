@@ -1,8 +1,8 @@
-import asyncio
 import os
 
 from api_analytics.tornado import Analytics
 from dotenv import load_dotenv
+from tornado.ioloop import IOLoop
 from tornado.web import Application
 
 load_dotenv()
@@ -23,10 +23,7 @@ def make_app():
     ])
 
 
-async def main():
-    app = make_app()
-    app.listen(8080)
-    await asyncio.Event().wait()
-
 if __name__ == "__main__":
-    asyncio.run(main())
+    app = make_app()
+    app.listen(8000)
+    IOLoop.instance().start()

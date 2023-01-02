@@ -1,11 +1,11 @@
 import os
 import sys
-# Import ../api_analytics rather than api_analyics pip package
+# # Import ../api_analytics rather than api_analyics pip package
 sys.path.insert(0, os.path.abspath('../'))
 from api_analytics.tornado import Analytics
 
-import asyncio
 from tornado.web import Application
+from tornado.ioloop import IOLoop
 
 from dotenv import load_dotenv
 
@@ -27,10 +27,7 @@ def make_app():
     ])
 
 
-async def main():
-    app = make_app()
-    app.listen(8080)
-    await asyncio.Event().wait()
-
 if __name__ == "__main__":
-    asyncio.run(main())
+    app = make_app()
+    app.listen(8000)
+    IOLoop.instance().start()
