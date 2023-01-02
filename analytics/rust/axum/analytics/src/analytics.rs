@@ -1,21 +1,18 @@
-use axum::{
-    response::Response,
-    body::Body,
-    http::Request,
-};
-use http::header::{HOST, USER_AGENT, HeaderValue};
+use axum::{body::Body, http::Request, response::Response};
 use futures::future::BoxFuture;
-use tower::{Service, Layer};
+use http::header::{HeaderValue, HOST, USER_AGENT};
+use serde::Serialize;
 use std::task::{Context, Poll};
+use std::net::SocketAddr;
 use std::thread::spawn;
 use std::time::Instant;
-use serde::Serialize;
-
+use tower::{Layer, Service};
 
 #[derive(Debug, Serialize)]
 struct Data {
     api_key: String,
     hostname: String,
+    ip_address: String,
     path: String,
     user_agent: String,
     method: String,
@@ -28,6 +25,7 @@ impl Data {
     pub fn new(
         api_key: String,
         hostname: String,
+        ip_address: String,
         path: String,
         user_agent: String,
         method: String,
@@ -37,12 +35,13 @@ impl Data {
         Self {
             api_key,
             hostname,
+            ip_address,
             path,
             user_agent,
             method,
             response_time,
             status,
-            framework: "Axum".to_string(),
+            framework: String::from("Axum"),
         }
     }
 }
@@ -62,7 +61,10 @@ impl<S> Layer<S> for Analytics {
     type Service = AnalyticsMiddleware<S>;
 
     fn layer(&self, inner: S) -> Self::Service {
-        AnalyticsMiddleware { api_key: self.api_key.clone(), inner }
+        AnalyticsMiddleware {
+            api_key: self.api_key.clone(),
+            inner,
+        }
     }
 }
 
@@ -105,9 +107,24 @@ where
     fn call(&mut self, req: Request<Body>) -> Self::Future {
         let api_key = self.api_key.clone();
         let hostname = req.headers().get(HOST).map(|x| x.to_string()).unwrap();
+        let mut ip_address = String::new();
+        if let Some(val) = req
+            .extensions()
+            .get::<axum::extract::ConnectInfo<SocketAddr>>()
+            .map(|ci| ci.0) {
+                ip_address = val.to_string()
+            }
+        // if let Some(val) = req.peer_addr() {
+        //     ip_address = val.ip().to_string();
+        // };
+        print!("{}", ip_address);
         let path = req.uri().path().to_owned();
         let method = req.method().to_string();
-        let user_agent = req.headers().get(USER_AGENT).map(|x| x.to_string()).unwrap();
+        let user_agent = req
+            .headers()
+            .get(USER_AGENT)
+            .map(|x| x.to_string())
+            .unwrap();
 
         let now = Instant::now();
         let future = self.inner.call(req);
@@ -119,6 +136,7 @@ where
             let data = Data::new(
                 api_key,
                 hostname,
+                ip_address,
                 path,
                 user_agent,
                 method,

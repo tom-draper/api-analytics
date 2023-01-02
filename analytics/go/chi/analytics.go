@@ -1,6 +1,7 @@
 package analytics
 
 import (
+	"net"
 	"net/http"
 	"time"
 
@@ -43,9 +44,11 @@ func Analytics(apiKey string) func(next http.Handler) http.Handler {
 			start := time.Now()
 			next.ServeHTTP(rw, r.WithContext(ctx))
 
+			ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 			data := core.Data{
 				APIKey:       apiKey,
 				Hostname:     r.Host,
+				IPAddress:    ip,
 				Path:         r.URL.Path,
 				UserAgent:    r.UserAgent(),
 				Method:       r.Method,

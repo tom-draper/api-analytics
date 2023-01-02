@@ -15,6 +15,7 @@ func Analytics(apiKey string) gin.HandlerFunc {
 		data := core.Data{
 			APIKey:       apiKey,
 			Hostname:     c.Request.Host,
+			IPAddress:    c.Request.ClientIP(),
 			Path:         c.Request.URL.Path,
 			UserAgent:    c.Request.UserAgent(),
 			Method:       c.Request.Method,

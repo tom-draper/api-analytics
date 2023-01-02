@@ -8,6 +8,7 @@ use tokio;
 use dotenv::dotenv;
 use axum_analytics::Analytics;
 
+
 #[derive(Serialize)]
 struct JsonData {
     message: String,

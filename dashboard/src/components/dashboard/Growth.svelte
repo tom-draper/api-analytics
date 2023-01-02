@@ -55,9 +55,8 @@
       <div class="tile">
         <div class="tile-value">
           <span
-            style="color: {change.requests > 0
-              ? 'var(--highlight)'
-              : 'var(--red)'}"
+            class:tile-bad={change.requests > 0}
+            class:tile-good={change.requests < 0}
             >{change.requests > 0 ? "+" : ""}{change.requests.toFixed(1)}%</span
           >
         </div>
@@ -66,9 +65,8 @@
       <div class="tile">
         <div class="tile-value">
           <span
-            style="color: {change.success > 0
-              ? 'var(--highlight)'
-              : 'var(--red)'}"
+            class:tile-bad={change.success > 0}
+            class:tile-good={change.success < 0}
             >{change.success > 0 ? "+" : ""}{change.success.toFixed(1)}%</span
           >
         </div>
@@ -77,9 +75,8 @@
       <div class="tile">
         <div class="tile-value">
           <span
-            style="color: {change.responseTime < 0
-              ? 'var(--highlight)'
-              : 'var(--red)'}"
+            class:tile-bad={change.responseTime < 0}
+            class:tile-good={change.responseTime > 0}
             >{change.responseTime > 0 ? "+" : ""}{change.responseTime.toFixed(
               1
             )}%</span
@@ -93,7 +90,6 @@
 
 <style scoped>
   .card {
-    /* width: 100%; */
     flex: 1.2;
     margin: 2em 1em 2em 0;
   }
@@ -110,11 +106,16 @@
   }
   .tile {
     background: #282828;
-    /* border: 1px solid var(--highlight); */
     flex: 1;
     padding: 30px 10px;
     border-radius: 6px;
     margin: 10px;
+  }
+  .tile-bad {
+    color: var(--red);
+  }
+  .tile-good {
+    color: var(--highlight);
   }
   @media screen and (max-width: 1580px) {
     .card {

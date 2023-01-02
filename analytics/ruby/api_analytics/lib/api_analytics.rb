@@ -18,6 +18,7 @@ module Analytics
       data = {
         api_key: @api_key,
         hostname: env['HTTP_HOST'],
+        ip_address: env['REMOTE_ADDR'],
         path: env['REQUEST_PATH'],
         user_agent: env['HTTP_USER_AGENT'],
         method: env['REQUEST_METHOD'],

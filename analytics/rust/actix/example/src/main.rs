@@ -11,7 +11,7 @@ struct JsonData {
 #[get("/")]
 async fn index() -> Result<impl Responder> {
     let json_data = JsonData {
-        message: "Hello World!".to_string(),
+        message: String::from("Hello World!"),
     };
     Ok(web::Json(json_data))
 }

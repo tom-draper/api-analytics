@@ -1,14 +1,12 @@
 import os
-# import sys
-# sys.path.insert(0, os.path.abspath('../'))
 
+from api_analytics.flask import add_middleware
 from dotenv import load_dotenv
 from flask import Flask
 
-from api_analytics.flask import add_middleware
-
-
 load_dotenv()
+
+
 api_key = os.environ.get("API_KEY")
 
 app = Flask(__name__)

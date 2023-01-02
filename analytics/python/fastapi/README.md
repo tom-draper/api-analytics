@@ -17,8 +17,9 @@ pip install fastapi-analytics
 ```
 
 ```py
+import uvicorn
 from fastapi import FastAPI
-from fastapi_analytics.fastapi import Analytics
+from api_analytics.fastapi import Analytics
 
 app = FastAPI()
 app.add_middleware(Analytics, <api_key>)  # Add middleware
@@ -26,6 +27,9 @@ app.add_middleware(Analytics, <api_key>)  # Add middleware
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+if __name__ == "__main__":
+    uvicorn.run("app:app", reload=True)
 ```
 
 ### 3. View your analytics
