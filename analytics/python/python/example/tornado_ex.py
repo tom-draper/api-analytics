@@ -1,13 +1,9 @@
-import os
-# import sys
-# sys.path.insert(0, os.path.abspath('../'))
-
 import asyncio
-from tornado.web import Application
+import os
 
 from api_analytics.tornado import Analytics
-
 from dotenv import load_dotenv
+from tornado.web import Application
 
 load_dotenv()
 

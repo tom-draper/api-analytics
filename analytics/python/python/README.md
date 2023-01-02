@@ -32,6 +32,7 @@ MIDDLEWARE = [
 #### FastAPI
 
 ```py
+import uvicorn
 from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
 
@@ -41,6 +42,9 @@ app.add_middleware(Analytics, <api_key>)  # Add middleware
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+if __name__ == "__main__":
+    uvicorn.run("app:app", reload=True)
 ```
 
 #### Flask
@@ -55,6 +59,9 @@ add_middleware(app, <api_key>)  # Add middleware
 @app.get("/")
 def root():
     return {"message": "Hello World"}
+
+if __name__ == "__main__":
+    app.run()
 ```
 
 #### Tornado
