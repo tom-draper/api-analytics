@@ -79,12 +79,12 @@
       <div class="tile">
         <div class="tile-value">
           <span
-            class:tile-bad={change.success > 0}
-            class:tile-good={change.success < 0}
-            >{change.success > 0 ? "+" : ""}{change.success.toFixed(1)}%</span
+            class:tile-bad={change.users > 0}
+            class:tile-good={change.users < 0}
+            >{change.users > 0 ? "+" : ""}{change.users.toFixed(1)}%</span
           >
         </div>
-        <div class="tile-label">Success rate</div>
+        <div class="tile-label">Users</div>
       </div>
       <div class="tile">
         <div class="tile-value">
