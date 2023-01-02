@@ -53,6 +53,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "axum-analytics"
+version = "1.0.4"
+dependencies = [
+ "axum",
+ "futures",
+ "http",
+ "reqwest",
+ "serde",
+ "tower",
+]
+
+[[package]]
 name = "axum-core"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -878,6 +890,7 @@ name = "test"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "axum-analytics",
  "dotenv",
  "futures",
  "http",

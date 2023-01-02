@@ -11,3 +11,4 @@ dotenv = "0.15.0"
 futures = "0.3"
 serde = { version = "1.0", features = ["derive"] }
 reqwest = { version = "0.11", features = ["json", "blocking"] }
+actix-analytics = { path = "../analytics" }
