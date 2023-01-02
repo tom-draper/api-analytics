@@ -1,16 +1,27 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  function periodData(data: RequestsData): any {
-    let period = { requests: 0, success: 0, responseTime: 0 };
+  type Period = {
+    requests: number,
+    users: number,
+    success: number,
+    responseTime: number
+  }
+
+  function periodData(data: RequestsData): Period {
+    let period = { requests: data.length, users: 0, success: 0, responseTime: 0 };
+    let users: Set<string> = new Set();
     for (let i = 0; i < data.length; i++) {
       // @ts-ignore
-      period.requests++;
       if (data[i].status >= 200 && data[i].status <= 299) {
         period.success++;
       }
       period.responseTime += data[i].response_time;
+      if (data[i].ip_address != "" && data[i].ip_address != null) {
+        users.add(data[i].ip_address);
+      }
     }
+    period.users = users.size;
     return period;
   }
 
@@ -20,6 +31,8 @@
 
     let requestsChange =
       ((thisPeriod.requests + 1) / (lastPeriod.requests + 1)) * 100 - 100;
+    let usersChange = 
+      ((thisPeriod.users + 1) / (lastPeriod.users + 1)) * 100 - 100;
     let successChange =
       (((thisPeriod.success + 1) / (thisPeriod.requests + 1) + 1) /
         ((lastPeriod.success + 1) / (lastPeriod.requests + 1) + 1)) *
@@ -32,6 +45,7 @@
       100;
     change = {
       requests: requestsChange,
+      users: usersChange,
       success: successChange,
       responseTime: responseTimeChange,
     };
@@ -61,6 +75,16 @@
           >
         </div>
         <div class="tile-label">Requests</div>
+      </div>
+      <div class="tile">
+        <div class="tile-value">
+          <span
+            class:tile-bad={change.success > 0}
+            class:tile-good={change.success < 0}
+            >{change.success > 0 ? "+" : ""}{change.success.toFixed(1)}%</span
+          >
+        </div>
+        <div class="tile-label">Success rate</div>
       </div>
       <div class="tile">
         <div class="tile-value">
