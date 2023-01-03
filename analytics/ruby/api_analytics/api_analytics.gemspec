@@ -7,7 +7,6 @@ Gem::Specification.new do |spec|
   spec.version       = Analytics::VERSION
   spec.authors       = ["Tom Draper"]
   spec.email         = ["tomjdraper1@gmail.com"]
-
   spec.summary       = "Monitoring and analytics for API applications."
   spec.description   = "Monitoring and analytics for API applications."
   spec.homepage      = "https://github.com/tom-draper/api-analytics"
