@@ -40,30 +40,34 @@
   function bars() {
     let responseTimes = {};
     let days = periodToDays(period);
-    if (days <= 7) {
-      for (let i = 0; i < 60*24*days; i++) {
-        let date = new Date();
-        date.setSeconds(0, 0);
-        date.setMinutes(date.getMinutes() - i);
-        // @ts-ignore
-        responseTimes[date] = { total: 0, count: 0 };
-      }
-    } else if (days) {
-      for (let i = 0; i < days; i++) {
-        let date = new Date();
-        date.setHours(0, 0, 0, 0);
-        date.setDate(date.getDate() - i);
-        // @ts-ignore
-        responseTimes[date] = { total: 0, count: 0 };
+    if (days) {
+      if (days <= 7) {
+        for (let i = 0; i < 60*24*days; i++) {
+          let date = new Date();
+          date.setSeconds(0, 0);
+          date.setMinutes(date.getMinutes() - i);
+          // @ts-ignore
+          responseTimes[date] = { total: 0, count: 0 };
+        }
+      } else {
+        for (let i = 0; i < days; i++) {
+          let date = new Date();
+          date.setHours(0, 0, 0, 0);
+          date.setDate(date.getDate() - i);
+          // @ts-ignore
+          responseTimes[date] = { total: 0, count: 0 };
+        }
       }
     }
 
     for (let i = 0; i < data.length; i++) {
       let date = new Date(data[i].created_at);
-      if (days <= 7) {
-        date.setSeconds(0, 0);
-      } else {
-        date.setHours(0, 0, 0, 0);
+      if (days) {
+        if (days <= 7) {
+          date.setSeconds(0, 0);
+        } else {
+          date.setHours(0, 0, 0, 0);
+        }
       }
       // @ts-ignore
       if (!(date in responseTimes)) {
