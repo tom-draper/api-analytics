@@ -83,12 +83,10 @@ class MainHandler(Analytics):
     def get(self):
         self.write({'message': 'Hello World!'})
 
-
 def make_app():
     return Application([
         (r"/", MainHandler),
     ])
-
 
 if __name__ == "__main__":
     app = make_app()
