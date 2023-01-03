@@ -1,12 +1,16 @@
-use axum::{body::Body, http::Request, response::Response};
+use axum::{body::Body, extract::ConnectInfo, http::Request, response::Response};
 use futures::future::BoxFuture;
 use http::header::{HeaderValue, HOST, USER_AGENT};
 use serde::Serialize;
-use std::task::{Context, Poll};
-use std::net::SocketAddr;
-use std::thread::spawn;
-use std::time::Instant;
+use std::{
+    task::{Context, Poll},
+    thread::spawn,
+    time::Instant,
+    net::SocketAddr
+};
+use reqwest::blocking::Client;
 use tower::{Layer, Service};
+
 
 #[derive(Debug, Serialize)]
 struct Data {
@@ -85,7 +89,7 @@ impl HeaderValueExt for HeaderValue {
 }
 
 fn log_request(data: Data) {
-    let _ = reqwest::blocking::Client::new()
+    let _ = Client::new()
         .post("https://api-analytics-server.vercel.app/api/log-request")
         .json(&data)
         .send();
@@ -105,28 +109,22 @@ where
     }
 
     fn call(&mut self, req: Request<Body>) -> Self::Future {
+        let now = Instant::now();
+
         let api_key = self.api_key.clone();
         let hostname = req.headers().get(HOST).map(|x| x.to_string()).unwrap();
         let mut ip_address = String::new();
-        if let Some(val) = req
-            .extensions()
-            .get::<axum::extract::ConnectInfo<SocketAddr>>()
-            .map(|ci| ci.0) {
-                ip_address = val.to_string()
-            }
-        // if let Some(val) = req.peer_addr() {
-        //     ip_address = val.ip().to_string();
-        // };
-        print!("{}", ip_address);
+        if let Some(val) = req.extensions().get::<ConnectInfo<SocketAddr>>().map(|ConnectInfo(addr)| addr.ip()) {
+            ip_address = val.to_string();
+        }
         let path = req.uri().path().to_owned();
         let method = req.method().to_string();
         let user_agent = req
-            .headers()
-            .get(USER_AGENT)
-            .map(|x| x.to_string())
-            .unwrap();
-
-        let now = Instant::now();
+        .headers()
+        .get(USER_AGENT)
+        .map(|x| x.to_string())
+        .unwrap();
+        
         let future = self.inner.call(req);
 
         Box::pin(async move {
@@ -149,3 +147,4 @@ where
         })
     }
 }
+

@@ -38,7 +38,16 @@
   function bars() {
     let requestFreq = {};
     let days = periodToDays(period);
-    if (days) {
+    if (days == 1) {
+      for (let i = 0; i < 60*24; i++) {
+        let date = new Date();
+        date.setSeconds(0, 0);
+        date.setMinutes(date.getMinutes() - i);
+        // @ts-ignore
+        requestFreq[date] = 0;
+      }
+    }
+    else if (days) {
       for (let i = 0; i < days; i++) {
         let date = new Date();
         date.setHours(0, 0, 0, 0);
@@ -50,7 +59,11 @@
 
     for (let i = 0; i < data.length; i++) {
       let date = new Date(data[i].created_at);
-      date.setHours(0, 0, 0, 0);
+      if (days == 1) {
+        date.setSeconds(0, 0);
+      } else {
+        date.setHours(0, 0, 0, 0);
+      }
       // @ts-ignore
       if (!(date in requestFreq)) {
         // @ts-ignore

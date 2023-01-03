@@ -14,3 +14,4 @@ futures = "0.3"
 reqwest = { version = "0.11", features = ["json", "blocking"] }
 http = "0.2.8"
 tower = "0.4.13"
+axum-analytics = { path = "../analytics" }
