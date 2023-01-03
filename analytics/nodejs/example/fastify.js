@@ -16,7 +16,7 @@ fastify.get("/", function (request, reply) {
 });
 
 fastify.listen({ port: 8080 }, function (err, address) {
-  console.log('Server listening at http://localhost:8080')
+  console.log('Server listening at localhost:8080')
   if (err) {
     fastify.log.error(err);
     process.exit(1);

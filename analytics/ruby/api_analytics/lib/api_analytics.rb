@@ -58,6 +58,3 @@ module Analytics
     end
   end
 end
-
-
-

@@ -69,8 +69,8 @@
       <div class="tile">
         <div class="tile-value">
           <span
-            class:tile-bad={change.requests > 0}
-            class:tile-good={change.requests < 0}
+            class:tile-bad={change.requests < 0}
+            class:tile-good={change.requests > 0}
             >{change.requests > 0 ? "+" : ""}{change.requests.toFixed(1)}%</span
           >
         </div>
@@ -79,8 +79,8 @@
       <div class="tile">
         <div class="tile-value">
           <span
-            class:tile-bad={change.users > 0}
-            class:tile-good={change.users < 0}
+            class:tile-bad={change.users < 0}
+            class:tile-good={change.users > 0}
             >{change.users > 0 ? "+" : ""}{change.users.toFixed(1)}%</span
           >
         </div>
@@ -89,8 +89,8 @@
       <div class="tile">
         <div class="tile-value">
           <span
-            class:tile-bad={change.success > 0}
-            class:tile-good={change.success < 0}
+            class:tile-bad={change.success < 0}
+            class:tile-good={change.success > 0}
             >{change.success > 0 ? "+" : ""}{change.success.toFixed(1)}%</span
           >
         </div>
@@ -99,8 +99,8 @@
       <div class="tile">
         <div class="tile-value">
           <span
-            class:tile-bad={change.responseTime < 0}
-            class:tile-good={change.responseTime > 0}
+            class:tile-bad={change.responseTime > 0}
+            class:tile-good={change.responseTime < 0}
             >{change.responseTime > 0 ? "+" : ""}{change.responseTime.toFixed(
               1
             )}%</span

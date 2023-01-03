@@ -2,8 +2,6 @@ require 'sinatra'
 require 'api_analytics'
 require 'dotenv'
 
-require './api_analytics.rb'
-
 Dotenv.load()
 
 use Analytics::Sinatra, ENV['API_KEY']
