@@ -136,8 +136,6 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 			return
 		}
 
-		fmt.Println(requestData)
-
 		if requestData.APIKey == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
 			return
@@ -163,10 +161,9 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 				Method:       method,
 				Framework:    framework,
 			}
-			fmt.Println(request)
 			// Insert request data into database
-			// var result []interface{}
-			// err = supabase.DB.From("Requests").Insert(request).Execute(&result)
+			var result []interface{}
+			err = supabase.DB.From("Requests").Insert(request).Execute(&result)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 				return
