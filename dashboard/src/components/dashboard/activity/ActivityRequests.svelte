@@ -12,6 +12,7 @@
     }
     let tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate());
+
     return {
       title: false,
       autosize: true,
@@ -35,29 +36,38 @@
     };
   }
 
-  function bars() {
+  function initRequestFreq(): {[date: string]: number} {
+    // Populate requestFreq with zeros across date period
     let requestFreq = {};
     let days = periodToDays(period);
     if (days) {
       if (days == 1) {
+        // Freq count for every minute
         for (let i = 0; i < 60*24; i++) {
           let date = new Date();
           date.setSeconds(0, 0);
           date.setMinutes(date.getMinutes() - i);
-          // @ts-ignore
-          requestFreq[date] = 0;
+          let dateStr = date.toDateString();
+          requestFreq[dateStr] = 0;
         }
       } else {
+        // Freq count for every day
         for (let i = 0; i < days; i++) {
           let date = new Date();
           date.setHours(0, 0, 0, 0);
           date.setDate(date.getDate() - i);
-          // @ts-ignore
-          requestFreq[date] = 0;
+          let dateStr = date.toDateString();
+          requestFreq[dateStr] = 0;
         }
       }
     }
+    return requestFreq;
+  }
 
+  function bars() {
+    let requestFreq = initRequestFreq();
+
+    let days = periodToDays(period);
     for (let i = 0; i < data.length; i++) {
       let date = new Date(data[i].created_at);
       if (days == 1) {
@@ -65,23 +75,23 @@
       } else {
         date.setHours(0, 0, 0, 0);
       }
-      // @ts-ignore
-      if (!(date in requestFreq)) {
-        // @ts-ignore
-        requestFreq[date] = 0;
+      let dateStr = date.toDateString();
+      if (!(dateStr in requestFreq)) {
+        requestFreq[dateStr] = 0;
       }
-      // @ts-ignore
-      requestFreq[date]++;
+      requestFreq[dateStr]++;
     }
 
+    // Combine date and frequency count into (x, y) tuples for sorting
     let requestFreqArr = [];
     for (let date in requestFreq) {
       requestFreqArr.push([new Date(date), requestFreq[date]]);
     }
+    // Sort by date
     requestFreqArr.sort((a, b) => {
       return a[0] - b[0];
     });
-
+    // Split into two lists
     let dates = [];
     let requests = [];
     for (let i = 0; i < requestFreqArr.length; i++) {
@@ -113,7 +123,7 @@
     };
   }
 
-  let plotDiv;
+  let plotDiv: HTMLDivElement;
   function genPlot() {
     let plotData = buildPlotData();
     //@ts-ignore

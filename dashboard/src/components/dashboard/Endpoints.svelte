@@ -1,11 +1,13 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  let methodMap = ["GET", "POST"];
+  // Integer to method string mapping used by server
+  let methodMap = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "CONNECT", "HEAD", "TRACE"];
 
-  function endpointFreq(): any {
+  function endpointFreq(): {[endpointID: string]: {path: string, status: number, count: number}} {
     let freq = {};
     for (let i = 0; i < data.length; i++) {
+      // Create groups of endpoints by path + status
       let endpointID = data[i].path + data[i].status;
       if (!(endpointID in freq)) {
         freq[endpointID] = {
@@ -22,6 +24,7 @@
   function build() {
     let freq = endpointFreq();
 
+    // Convert object to list
     let freqArr = [];
     maxCount = 0;
     for (let endpointID in freq) {
@@ -31,11 +34,13 @@
       }
     }
 
+    // Sort by count
     freqArr.sort((a, b) => {
       return b.count - a.count;
     });
     endpoints = freqArr;
 
+    // Hide endpoint labels that don't fit inside bar once rendered
     setTimeout(setEndpointLabels, 50);
   }
 
