@@ -267,7 +267,7 @@ func DeleteDataHandler(supabase *supa.Client) gin.HandlerFunc {
 			return
 		}
 
-		// // Delete user account record
+		// Delete user account record
 		var userResult []User
 		err = supabase.DB.From("Users").Delete().Eq("api_key", apiKey).Execute(&userResult)
 		if err != nil {
