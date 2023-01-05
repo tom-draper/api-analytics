@@ -1,4 +1,4 @@
-# API Analytics <img src="https://user-images.githubusercontent.com/41476809/210829129-ad6b5521-d588-4ebb-bf57-b870fec5a745.png" align="right" height="200" />
+# API Analytics <img src="https://user-images.githubusercontent.com/41476809/210829625-697bba5b-97a8-45fa-91ce-d3c33fcfd0b2.png" align="right" height="200" />
 
 
 A lightweight API analytics solution, complete with a dashboard.
