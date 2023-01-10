@@ -148,7 +148,7 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 		fmt.Println(f.Name())
 	}
 
-	db, err := geoip2.Open(filepath.Join(curDir, "GeoLite2-Country.mmdb"))
+	db, err := geoip2.Open(filepath.Join(curDir, "db", "GeoLite2-Country.mmdb"))
 	if err != nil {
 		log.Fatal(err)
 	}
