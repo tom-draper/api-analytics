@@ -1,0 +1,10 @@
+{
+  "trailingSlash": false,
+  "functions": {
+    "api/index.go": {
+      "memory": 3008,
+      "maxDuration": 30,
+      "includeFiles": "GeoLite2-Country.mmdb"
+    }
+  }
+}
