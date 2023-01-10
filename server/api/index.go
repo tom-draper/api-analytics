@@ -140,7 +140,7 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 	}
 	fmt.Println(curDir)
 
-	files, err := ioutil.ReadDir("..")
+	files, err := ioutil.ReadDir(".")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -148,7 +148,15 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 		fmt.Println(f.Name())
 	}
 
-	db, err := geoip2.Open(filepath.Join(curDir, "db", "GeoLite2-Country.mmdb"))
+	files, err = ioutil.ReadDir("..")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, f := range files {
+		fmt.Println(f.Name())
+	}
+
+	db, err := geoip2.Open(filepath.Join(curDir, "GeoLite2-Country.mmdb"))
 	if err != nil {
 		log.Fatal(err)
 	}
