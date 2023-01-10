@@ -1,9 +1,11 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
@@ -129,32 +131,6 @@ func frameworkMap(framework string) (int16, error) {
 }
 
 func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
-	// curDir, err := os.Getwd()
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// fmt.Println(curDir)
-
-	// files, err := ioutil.ReadDir(".")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// for _, f := range files {
-	// 	fmt.Println(f.Name())
-	// }
-
-	// files, err = ioutil.ReadDir("..")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// for _, f := range files {
-	// 	fmt.Println(f.Name())
-	// }
-
-	// db, err := geoip2.Open(filepath.Join(curDir, "GeoLite2-Country.mmdb"))
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
 
 	logRequest := func(c *gin.Context) {
 		// Collect API request data sent via POST request
@@ -426,7 +402,26 @@ func GetUserPingsHandler(supabase *supa.Client) gin.HandlerFunc {
 	return gin.HandlerFunc(getData)
 }
 
+func GetTest(supabase *supa.Client) gin.HandlerFunc {
+	getData := func(c *gin.Context) {
+		pwd, err := os.Getwd()
+		if err != nil {
+			fmt.Println(err)
+		}
+		if _, err := os.Stat(filepath.Join(pwd, "..", "data", "geoLite2-Country.mmdb")); err == nil {
+			fmt.Println("path exists:", pwd)
+		} else if errors.Is(err, os.ErrNotExist) {
+			fmt.Println("path does not exist:", pwd)
+		}
+
+		c.JSON(http.StatusOK, gin.H{})
+	}
+
+	return gin.HandlerFunc(getData)
+}
+
 func RegisterRouter(r *gin.RouterGroup, supabase *supa.Client) {
+	r.GET("/", GetTest(supabase))
 	r.GET("/generate-api-key", GenAPIKeyHandler(supabase))
 	r.POST("/log-request", LogRequestHandler(supabase))
 	r.GET("/user-id/:apiKey", GetUserIDHandler(supabase))
