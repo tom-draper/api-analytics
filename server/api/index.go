@@ -139,7 +139,8 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 		fmt.Println(err)
 	}
 	fmt.Println(curDir)
-	files, err := ioutil.ReadDir(curDir)
+
+	files, err := ioutil.ReadDir("..")
 	if err != nil {
 		log.Fatal(err)
 	}
