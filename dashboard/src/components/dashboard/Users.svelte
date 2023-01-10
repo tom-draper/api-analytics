@@ -74,7 +74,12 @@
         class:positive={percentageChange > 0}
         class:negative={percentageChange < 0}
       >
-        ({percentageChange > 0 ? "+" : ""}{percentageChange.toFixed(1)}%)
+        {#if percentageChange > 0}
+          <img class="arrow" src="../img/up.png" alt="" />
+        {:else if percentageChange < 0}
+          <img class="arrow" src="../img/down.png" alt="" />
+        {/if}
+        {percentageChange.toFixed(1)}%
       </div>
     {/if}
     <div class="card-title">Users</div>
@@ -115,5 +120,8 @@
   button {
     font-size: unset;
     font-family: unset;
+  }
+  .arrow {
+    height: 11px;
   }
 </style>
