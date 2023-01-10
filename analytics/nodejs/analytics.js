@@ -18,12 +18,12 @@ export function expressAnalytics(apiKey) {
     let data = {
       api_key: apiKey,
       hostname: req.headers.host,
-      ip_address: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+      ip_address: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
       user_agent: req.headers["user-agent"],
       path: req.url,
       status: res.statusCode,
       method: req.method,
-      framework: 'Express',
+      framework: "Express",
       response_time: Math.round((performance.now() - start) / 1000),
     };
 
@@ -39,12 +39,12 @@ export function fastifyAnalytics(apiKey) {
     let data = {
       api_key: apiKey,
       hostname: req.headers.host,
-      ip_address: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+      ip_address: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
       user_agent: req.headers["user-agent"],
       path: req.url,
       status: reply.statusCode,
       method: req.method,
-      framework: 'Fastify',
+      framework: "Fastify",
       response_time: Math.round((performance.now() - start) / 1000),
     };
     
@@ -60,12 +60,12 @@ export function koaAnalytics(apiKey) {
     let data = {
       api_key: apiKey,
       hostname: ctx.headers.host,
-      ip_address: ctx.headers['x-forwarded-for'] || ctx.socket.remoteAddress,
+      ip_address: ctx.headers["x-forwarded-for"] || ctx.socket.remoteAddress,
       user_agent: ctx.headers["user-agent"],
       path: ctx.url,
       status: ctx.status,
       method: ctx.method,
-      framework: 'Koa',
+      framework: "Koa",
       response_time: Math.round((performance.now() - start) / 1000),
     };
 
