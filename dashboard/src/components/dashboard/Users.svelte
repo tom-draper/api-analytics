@@ -83,7 +83,7 @@
       </div>
     {/if}
     <div class="card-title">Users</div>
-    <div class="value">{numUsers.toLocaleString()}</div>
+    <div class="value">{Math.abs(numUsers).toLocaleString()}</div>
   </button>
 {/if}
 
