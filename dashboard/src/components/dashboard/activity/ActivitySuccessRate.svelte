@@ -13,18 +13,15 @@
     for (let i = 0; i < data.length; i++) {
       let date = new Date(data[i].created_at);
       date.setHours(0, 0, 0, 0);
-      // @ts-ignore
-      if (!(date in success)) {
-        // @ts-ignore
-        success[date] = { total: 0, successful: 0 };
+      let dateStr = date.toDateString();
+      if (!(dateStr in success)) {
+        success[dateStr] = { total: 0, successful: 0 };
       }
       if (data[i].status >= 200 && data[i].status <= 299) {
-        // @ts-ignore
-        success[date].successful++;
+        success[dateStr].successful++;
       }
-      // @ts-ignore
-      success[date].total++;
-      if ((date as any) < minDate) {
+      success[dateStr].total++;
+      if (date as any < minDate) {
         minDate = date as any;
       }
     }

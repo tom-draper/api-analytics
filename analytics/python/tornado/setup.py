@@ -4,7 +4,7 @@ long_description = open("README.md").read()
 
 setup(
     name="tornado-analytics",
-    version="1.0.7",
+    version="1.0.8",
     author="Tom Draper",
     author_email="tomjdraper1@gmail.com",
     license="MIT",

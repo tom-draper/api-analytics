@@ -34,4 +34,57 @@ if __name__ == "__main__":
 
 ### 3. View your analytics
 
-Your API will log requests on all valid routes. Head over to https://my-api-analytics.vercel.app/dashboard and paste in your API key to view your dashboard.
+Your API will now log and store incoming request data on all valid routes. Your logged data can be viewed using two methods: through visualizations and stats on our dashboard, or accessed directly via our data API.
+
+You can use the same API key across multiple APIs, but all your data will appear in the same dashboard. We recommend generating a new API key for each additional API you want analytics for.
+
+#### Dashboard
+
+Head to https://my-api-analytics.vercel.app/dashboard and paste in your API key to access your dashboard.
+
+Demo: https://my-api-analytics.vercel.app/dashboard/demo
+
+![Dashboard](https://user-images.githubusercontent.com/41476809/208440202-966a6930-3d2e-40c5-afc7-2fd0107d6b4f.png)
+
+#### Data API
+
+Logged data for all requests can be accessed via our API. Simply send a GET request to `https://api-analytics-server.vercel.app/api/data` with your API key set as `API-Key` in headers.
+
+```py
+import requests
+
+headers = {
+ "API-Key": <api_key>
+}
+
+response = requests.get("https://api-analytics-server.vercel.app/api/data", headers=headers)
+print(response.json())
+```
+
+## Monitoring (coming soon)
+
+Opt-in active API monitoring is coming soon. Our servers will regularly ping your API endpoints to monitor uptime and response time. Optional email alerts to notify you when your endpoints are down can be subscribed to.
+
+![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)
+
+## Data and Security
+
+All data is stored securely in compliance with The EU General Data Protection Regulation (GDPR).
+
+For any given request to your API, data recorded is limited to:
+ - Path requested by client
+ - Client IP address
+ - Client operating system
+ - Client browser
+ - Request method (GET, POST, PUT, etc.)
+ - Time of request
+ - Status code
+ - Response time
+ - API hostname
+ - API framework (FastAPI, Flask, Express etc.)
+
+Data collected is only ever used to populate your analytics dashboard. Your data is anonymous, with the API key the only link between you and you API's analytics. Should you lose your API key, you will have no method to access your API analytics. Inactive API keys (> 1 year) and its associated API request data may be deleted.
+
+### Delete Data
+
+At any time, you can delete all stored data associated with your API key by going to https://my-api-analytics.vercel.app/delete and entering your API key.

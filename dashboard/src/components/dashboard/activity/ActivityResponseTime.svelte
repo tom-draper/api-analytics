@@ -37,29 +37,37 @@
     };
   }
 
-  function bars() {
+  function initResponseTimes(): {[date: string]: {total: number, count: number}} {
     let responseTimes = {};
     let days = periodToDays(period);
     if (days) {
       if (days <= 7) {
+        // Freq count for every minute
         for (let i = 0; i < 60*24*days; i++) {
           let date = new Date();
           date.setSeconds(0, 0);
           date.setMinutes(date.getMinutes() - i);
-          // @ts-ignore
-          responseTimes[date] = { total: 0, count: 0 };
+          let dateStr = date.toDateString();
+          responseTimes[dateStr] = { total: 0, count: 0 };
         }
       } else {
+        // Freq count for every day
         for (let i = 0; i < days; i++) {
           let date = new Date();
           date.setHours(0, 0, 0, 0);
           date.setDate(date.getDate() - i);
-          // @ts-ignore
-          responseTimes[date] = { total: 0, count: 0 };
+          let dateStr = date.toDateString();
+          responseTimes[dateStr] = { total: 0, count: 0 };
         }
       }
     }
+    return responseTimes;
+  }
 
+  function bars() {
+    let responseTimes = initResponseTimes();
+
+    let days = periodToDays(period);
     for (let i = 0; i < data.length; i++) {
       let date = new Date(data[i].created_at);
       if (days) {
@@ -69,49 +77,48 @@
           date.setHours(0, 0, 0, 0);
         }
       }
-      // @ts-ignore
-      if (!(date in responseTimes)) {
-        // @ts-ignore
-        responseTimes[date] = { total: 0, count: 0 };
+      let dateStr = date.toDateString();
+      if (!(dateStr in responseTimes)) {
+        responseTimes[dateStr] = { total: 0, count: 0 };
       }
-      // @ts-ignore
-      responseTimes[date].total += data[i].response_time;
-      // @ts-ignore
-      responseTimes[date].count++;
+      responseTimes[dateStr].total += data[i].response_time;
+      responseTimes[dateStr].count++;
     }
 
-    let requestFreqArr = [];
+    // Combine date and avg response time into (x, y) tuples for sorting
+    let responseTimeArr = [];
     for (let date in responseTimes) {
       let point = [new Date(date), 0];
       if (responseTimes[date].count > 0) {
         point[1] = responseTimes[date].total / responseTimes[date].count;
       }
-      requestFreqArr.push(point);
+      responseTimeArr.push(point);
     }
-    requestFreqArr.sort((a, b) => {
+    // Sort by date
+    responseTimeArr.sort((a, b) => {
       return a[0] - b[0];
     });
-
+    // Split into two lists
     let dates = [];
-    let requests = [];
-    for (let i = 0; i < requestFreqArr.length; i++) {
-      dates.push(requestFreqArr[i][0]);
-      requests.push(requestFreqArr[i][1]);
+    let rt = [];
+    for (let i = 0; i < responseTimeArr.length; i++) {
+      dates.push(responseTimeArr[i][0]);
+      rt.push(responseTimeArr[i][1]);
     }
 
     return [
       {
         x: dates,
-        y: requests,
+        y: rt,
         type: "lines",
         marker: { color: "#707070" },
-        // fill: "tonexty",
         hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
         showlegend: false,
       },
+      // 'Hidden' horizontal line at min y to provide fill colour up to response time line
       {
         x: dates,
-        y: Array(requests.length).fill(Math.max(Math.min(...requests) - 5, 0)),
+        y: Array(rt.length).fill(Math.max(Math.min(...rt) - 5, 0)),
         type: "lines",
         marker: { color: "transparent" },
         fill: "tonexty",

@@ -71,7 +71,13 @@
           <span
             class:tile-bad={change.requests < 0}
             class:tile-good={change.requests > 0}
-            >{change.requests > 0 ? "+" : ""}{change.requests.toFixed(1)}%</span
+            >
+            {#if change.requests > 0}
+              <img class="arrow" src="../img/up.png" alt="" />
+            {:else if change.requests < 0}
+              <img class="arrow" src="../img/down.png" alt="" />
+            {/if}
+            {Math.abs(change.requests).toFixed(1)}%</span
           >
         </div>
         <div class="tile-label">Requests</div>
@@ -81,17 +87,29 @@
           <span
             class:tile-bad={change.users < 0}
             class:tile-good={change.users > 0}
-            >{change.users > 0 ? "+" : ""}{change.users.toFixed(1)}%</span
-          >
+            >
+            {#if change.users > 0}
+              <img class="arrow" src="../img/up.png" alt="" />
+            {:else if change.users < 0}
+              <img class="arrow" src="../img/down.png" alt="" />
+            {/if}
+            {Math.abs(change.users).toFixed(1)}%</span
+            >
+          </div>
+          <div class="tile-label">Users</div>
         </div>
-        <div class="tile-label">Users</div>
-      </div>
-      <div class="tile">
-        <div class="tile-value">
-          <span
+        <div class="tile">
+          <div class="tile-value">
+            <span
             class:tile-bad={change.success < 0}
             class:tile-good={change.success > 0}
-            >{change.success > 0 ? "+" : ""}{change.success.toFixed(1)}%</span
+            >
+            {#if change.success > 0}
+              <img class="arrow" src="../img/up.png" alt="" />
+            {:else if change.success < 0}
+              <img class="arrow" src="../img/down.png" alt="" />
+            {/if}
+            {Math.abs(change.success).toFixed(1)}%</span
           >
         </div>
         <div class="tile-label">Success rate</div>
@@ -99,11 +117,16 @@
       <div class="tile">
         <div class="tile-value">
           <span
-            class:tile-bad={change.responseTime > 0}
-            class:tile-good={change.responseTime < 0}
-            >{change.responseTime > 0 ? "+" : ""}{change.responseTime.toFixed(
-              1
-            )}%</span
+          class:tile-bad={change.responseTime > 0}
+          class:tile-good={change.responseTime < 0}
+          >
+            <!-- Response time -- down is good -->
+            {#if change.responseTime < 0}
+              <img class="arrow" src="../img/good-down.png" alt="" />
+            {:else if change.responseTime > 0}
+              <img class="arrow" src="../img/bad-up.png" alt="" />
+            {/if}
+            {Math.abs(change.responseTime).toFixed(1)}%</span
           >
         </div>
         <div class="tile-label">Response time</div>
@@ -140,6 +163,9 @@
   }
   .tile-good {
     color: var(--highlight);
+  }
+  .arrow {
+    height: 15px;
   }
   @media screen and (max-width: 1580px) {
     .card {
