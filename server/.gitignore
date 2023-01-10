@@ -6,3 +6,4 @@ node_modules
 .vercel
 
 tmp
+GeoLite2
