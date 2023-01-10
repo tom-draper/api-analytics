@@ -279,7 +279,7 @@
   }
   @media screen and (max-width: 1100px) {
     .dashboard {
-      margin: 2em 0;
+      margin: 4em 0;
     }
   }
 </style>

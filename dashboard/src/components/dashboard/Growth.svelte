@@ -147,6 +147,7 @@
   .tile-value {
     font-size: 1.4em;
     margin-bottom: 5px;
+    font-weight: 600;
   }
   .tile-label {
     font-size: 0.8em;
