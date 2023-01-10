@@ -132,7 +132,7 @@ func frameworkMap(framework string) (int16, error) {
 }
 
 func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
-	db, err := geoip2.Open("../Country.mmdb")
+	db, err := geoip2.Open("Country.mmdb")
 	if err != nil {
 		log.Fatal(err)
 	}
