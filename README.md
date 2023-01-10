@@ -19,7 +19,7 @@ Head to https://my-api-analytics.vercel.app/generate to generate your unique API
 
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on your APIs performance.
 
-#### Django 
+#### Django
 
 [![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
@@ -439,7 +439,7 @@ module RailsMiddleware
     config.load_defaults 6.1
     config.api_only = true
 
-    config.middleware.use ::Analytics::Rails, <api_key> # Add middleware
+    config.middleware.use ::Analytics::Rails, <api_key>  # Add middleware
   end
 end
 ```
@@ -456,7 +456,7 @@ gem install api_analytics
 require 'sinatra'
 require 'api_analytics'
 
-use Analytics::Sinatra, <api_key>
+use Analytics::Sinatra, <api_key>  # Add middleware
 
 before do
     content_type 'application/json'
