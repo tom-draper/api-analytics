@@ -2,14 +2,19 @@ package api
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	supa "github.com/nedpals/supabase-go"
+	"github.com/oschwald/geoip2-golang"
 )
 
 var (
@@ -129,10 +134,32 @@ func frameworkMap(framework string) (int16, error) {
 }
 
 func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
-	// db, err := geoip2.Open(filepath.Join(curDir, "GeoLite2-Country.mmdb"))
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	curDir, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(curDir)
+
+	files, err := ioutil.ReadDir(".")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, f := range files {
+		fmt.Println(f.Name())
+	}
+
+	files, err = ioutil.ReadDir("..")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, f := range files {
+		fmt.Println(f.Name())
+	}
+
+	db, err := geoip2.Open(filepath.Join(curDir, "GeoLite2-Country.mmdb"))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	logRequest := func(c *gin.Context) {
 		// Collect API request data sent via POST request
@@ -158,12 +185,12 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 				return
 			}
 
-			// ip := net.ParseIP(requestData.IPAddress)
-			// record, err := db.City(ip)
+			ip := net.ParseIP(requestData.IPAddress)
+			record, err := db.City(ip)
 			var location string
-			// if err == nil {
-			// 	location = record.Country.IsoCode
-			// }
+			if err == nil {
+				location = record.Country.IsoCode
+			}
 
 			request := RequestRow{
 				APIKey:       requestData.APIKey,
