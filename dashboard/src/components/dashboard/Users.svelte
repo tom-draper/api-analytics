@@ -79,11 +79,11 @@
         {:else if percentageChange < 0}
           <img class="arrow" src="../img/down.png" alt="" />
         {/if}
-        {percentageChange.toFixed(1)}%
+        {Math.abs(percentageChange).toFixed(1)}%
       </div>
     {/if}
     <div class="card-title">Users</div>
-    <div class="value">{Math.abs(numUsers).toLocaleString()}</div>
+    <div class="value">{numUsers.toLocaleString()}</div>
   </button>
 {/if}
 

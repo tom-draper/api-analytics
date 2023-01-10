@@ -12,6 +12,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	supa "github.com/nedpals/supabase-go"
+	// "github.com/oschwald/geoip2-golang"
 )
 
 var (
@@ -131,6 +132,10 @@ func frameworkMap(framework string) (int16, error) {
 }
 
 func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
+	// db, err := geoip2.Open(filepath.Join(curDir, "GeoLite2-Country.mmdb"))
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	logRequest := func(c *gin.Context) {
 		// Collect API request data sent via POST request
