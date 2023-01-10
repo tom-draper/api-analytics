@@ -1,7 +1,16 @@
 {
-  "functions": {
-    "api/index.go": {
-      "includeFiles": "*.mmdb"
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/api",
+      "permanent": false
     }
-  }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.go"
+    }
+  ]
 }
