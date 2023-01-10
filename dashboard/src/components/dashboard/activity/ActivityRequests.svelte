@@ -16,7 +16,7 @@
     return {
       title: false,
       autosize: true,
-      margin: { r: 35, l: 70, t: 10, b: 20, pad: 0 },
+      margin: { r: 35, l: 70, t: 20, b: 20, pad: 10 },
       hovermode: "closest",
       plot_bgcolor: "transparent",
       paper_bgcolor: "transparent",
@@ -42,12 +42,13 @@
     let days = periodToDays(period);
     if (days) {
       if (days == 1) {
-        // Freq count for every minute
-        for (let i = 0; i < 60*24; i++) {
+        // Freq count for every 5 minute
+        for (let i = 0; i < 288; i++) {
           let date = new Date();
           date.setSeconds(0, 0);
-          date.setMinutes(date.getMinutes() - i);
-          let dateStr = date.toDateString();
+          // Round down to multiple of 5
+          date.setMinutes(Math.floor(date.getMinutes() / 5) * 5 - (i* 5));
+          let dateStr = date.toISOString();
           requestFreq[dateStr] = 0;
         }
       } else {
@@ -56,7 +57,7 @@
           let date = new Date();
           date.setHours(0, 0, 0, 0);
           date.setDate(date.getDate() - i);
-          let dateStr = date.toDateString();
+          let dateStr = date.toISOString();
           requestFreq[dateStr] = 0;
         }
       }
@@ -71,11 +72,12 @@
     for (let i = 0; i < data.length; i++) {
       let date = new Date(data[i].created_at);
       if (days == 1) {
-        date.setSeconds(0, 0);
+        // Round down to multiple of 5
+        date.setMinutes(Math.floor(date.getMinutes()/5) * 5, 0, 0);
       } else {
         date.setHours(0, 0, 0, 0);
       }
-      let dateStr = date.toDateString();
+      let dateStr = date.toISOString();
       if (!(dateStr in requestFreq)) {
         requestFreq[dateStr] = 0;
       }

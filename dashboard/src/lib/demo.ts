@@ -74,6 +74,7 @@ function addDemoSamples(
         date.setDate(
             date.getDate() - Math.floor(Math.random() * maxDaysAgo + minDaysAgo)
         );
+        date.setMinutes(Math.floor(Math.random() * 60))
         date.setHours(getHour());
         demoData.push({
             hostname: "demo-api.com",

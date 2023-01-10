@@ -15,7 +15,7 @@
     return {
       title: false,
       autosize: true,
-      margin: { r: 35, l: 70, t: 10, b: 20, pad: 0 },
+      margin: { r: 35, l: 70, t: 20, b: 20, pad: 10 },
       hovermode: "closest",
       plot_bgcolor: "transparent",
       paper_bgcolor: "transparent",
@@ -46,8 +46,9 @@
         for (let i = 0; i < 60*24*days; i++) {
           let date = new Date();
           date.setSeconds(0, 0);
-          date.setMinutes(date.getMinutes() - i);
-          let dateStr = date.toDateString();
+          // Round down to multiple of 5
+          date.setMinutes(Math.floor(date.getMinutes() / 5) * 5 - (i* 5));
+          let dateStr = date.toISOString();
           responseTimes[dateStr] = { total: 0, count: 0 };
         }
       } else {
@@ -56,7 +57,7 @@
           let date = new Date();
           date.setHours(0, 0, 0, 0);
           date.setDate(date.getDate() - i);
-          let dateStr = date.toDateString();
+          let dateStr = date.toISOString();
           responseTimes[dateStr] = { total: 0, count: 0 };
         }
       }
@@ -72,12 +73,13 @@
       let date = new Date(data[i].created_at);
       if (days) {
         if (days <= 7) {
-          date.setSeconds(0, 0);
+          // Round down to multiple of 5
+          date.setMinutes(Math.floor(date.getMinutes()/5) * 5, 0, 0);
         } else {
           date.setHours(0, 0, 0, 0);
         }
       }
-      let dateStr = date.toDateString();
+      let dateStr = date.toISOString();
       if (!(dateStr in responseTimes)) {
         responseTimes[dateStr] = { total: 0, count: 0 };
       }
@@ -101,9 +103,13 @@
     // Split into two lists
     let dates = [];
     let rt = [];
+    let min_rt = Number.POSITIVE_INFINITY;
     for (let i = 0; i < responseTimeArr.length; i++) {
       dates.push(responseTimeArr[i][0]);
       rt.push(responseTimeArr[i][1]);
+      if (responseTimeArr[i][1] < min_rt) {
+        min_rt = responseTimeArr[i][1];
+      }
     }
 
     return [
@@ -118,7 +124,7 @@
       // 'Hidden' horizontal line at min y to provide fill colour up to response time line
       {
         x: dates,
-        y: Array(rt.length).fill(Math.max(Math.min(...rt) - 5, 0)),
+        y: Array(rt.length).fill(Math.max(min_rt - 5, 0)),
         type: "lines",
         marker: { color: "transparent" },
         fill: "tonexty",

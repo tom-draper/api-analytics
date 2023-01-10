@@ -76,7 +76,7 @@
   .errors {
     display: flex;
     margin-top: 8px;
-    margin: 0 10px 0 40px;
+    margin: 0 10px 0 35px;
   }
   .error {
     background: var(--highlight);
