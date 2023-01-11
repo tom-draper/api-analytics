@@ -43,9 +43,7 @@
     } else if (userAgent.match(/OS\/2/)) {
       return "OS/2";
     } else if (
-      userAgent.match(
-        /(nuhk)|(Googlebot)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves\/Teoma)|(ia_archiver)/
-      )
+      userAgent.match(/(APIs-Google)|(AdsBot)|(nuhk)|(Googlebot)|(Storebot)|(Google-Site-Verification)|(Mediapartners)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves\/Teoma)|(ia_archiver)/)
     ) {
       return "Search Bot";
     } else {

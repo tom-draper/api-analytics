@@ -2,7 +2,19 @@
   import { onMount } from "svelte";
 
   function getBrowser(userAgent: string): string {
-    if (userAgent.match(/Seamonkey\//)) {
+    if (userAgent.match(/curl\//)) {
+      return "Curl";
+    } else if (userAgent.match(/PostmanRuntime\//)) {
+      return "Postman";
+    } else if (userAgent.match(/insomnia\//)) {
+      return "Insomnia";
+    } else if (userAgent.match(/python-requests\//)) {
+      return "Python requests";
+    } else if (userAgent.match(/node-fetch\//)) {
+      return "Nodejs fetch";
+    } else if (userAgent.match(/go-http-client\//)) {
+      return "Go http";
+    } else if (userAgent.match(/Seamonkey\//)) {
       return "Seamonkey";
     } else if (userAgent.match(/Firefox\//)) {
       return "Firefox";
@@ -18,12 +30,6 @@
       return "Opera";
     } else if (userAgent.match(/; MSIE /) || userAgent.match(/Trident\//)) {
       return "Internet Explorer";
-    } else if (userAgent.match(/curl\//)) {
-      return "Curl";
-    } else if (userAgent.match(/PostmanRuntime\//)) {
-      return "Postman";
-    } else if (userAgent.match(/insomnia\//)) {
-      return "Insomnia";
     } else {
       return "Other";
     }
