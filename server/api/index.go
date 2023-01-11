@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -408,12 +409,18 @@ func GetUserPingsHandler(supabase *supa.Client) gin.HandlerFunc {
 	return gin.HandlerFunc(getData)
 }
 
+func visit(path string, di fs.DirEntry, err error) error {
+	fmt.Printf("Visited: %s\n", path)
+	return nil
+}
+
 func GetTest(supabase *supa.Client) gin.HandlerFunc {
 	getTest := func(c *gin.Context) {
 		pwd, err := os.Getwd()
 		if err != nil {
 			log.Fatal(err)
 		}
+		_ = filepath.WalkDir("..", visit)
 		if _, err := os.Stat(filepath.Join(pwd, "..", "data", "geoLite2-Country.mmdb")); err == nil {
 			log.Fatal("path exists:", pwd)
 		} else if errors.Is(err, os.ErrNotExist) {
