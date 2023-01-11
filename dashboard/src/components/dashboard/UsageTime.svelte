@@ -42,6 +42,10 @@
       requests.push(requestFreqArr[i][1]);
     }
 
+    // Shift to 12 onwards to make barpolar like clock face
+    dates = dates.slice(12).concat(...dates.slice(0, 12))
+    requests = requests.slice(12).concat(...requests.slice(0, 12))
+
     return [
       {
         r: requests,

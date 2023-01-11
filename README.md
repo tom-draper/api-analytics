@@ -136,7 +136,7 @@ import { expressAnalytics } from 'node-api-analytics';
 
 const app = express();
 
-app.use(analytics(<api_key>));  // Add middleware
+app.use(expressAnalytics(<api_key>));  // Add middleware
 
 app.get('/', (req, res) => {
     res.send({ message: 'Hello World' });
@@ -480,7 +480,7 @@ Head to https://my-api-analytics.vercel.app/dashboard and paste in your API key 
 
 Demo: https://my-api-analytics.vercel.app/dashboard/demo
 
-![Dashboard](https://user-images.githubusercontent.com/41476809/208440202-966a6930-3d2e-40c5-afc7-2fd0107d6b4f.png)
+![Dashboard](https://user-images.githubusercontent.com/41476809/211800529-a84a0aa3-70c9-47d4-aa0d-7f9bbd3bc9b5.png)
 
 #### Data API
 

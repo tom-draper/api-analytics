@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -408,25 +409,25 @@ func GetUserPingsHandler(supabase *supa.Client) gin.HandlerFunc {
 }
 
 func GetTest(supabase *supa.Client) gin.HandlerFunc {
-	getData := func(c *gin.Context) {
+	getTest := func(c *gin.Context) {
 		pwd, err := os.Getwd()
 		if err != nil {
-			fmt.Println(err)
+			log.Fatal(err)
 		}
 		if _, err := os.Stat(filepath.Join(pwd, "..", "data", "geoLite2-Country.mmdb")); err == nil {
-			fmt.Println("path exists:", pwd)
+			log.Fatal("path exists:", pwd)
 		} else if errors.Is(err, os.ErrNotExist) {
-			fmt.Println("path does not exist:", pwd)
+			log.Fatal("path does not exist:", pwd)
 		}
 
 		c.JSON(http.StatusOK, gin.H{})
 	}
 
-	return gin.HandlerFunc(getData)
+	return gin.HandlerFunc(getTest)
 }
 
 func RegisterRouter(r *gin.RouterGroup, supabase *supa.Client) {
-	r.GET("/", GetTest(supabase))
+	r.GET("/test", GetTest(supabase))
 	r.GET("/generate-api-key", GenAPIKeyHandler(supabase))
 	r.POST("/log-request", LogRequestHandler(supabase))
 	r.GET("/user-id/:apiKey", GetUserIDHandler(supabase))
