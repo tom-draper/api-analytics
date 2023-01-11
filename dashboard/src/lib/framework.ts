@@ -81,7 +81,7 @@ import { expressAnalytics } from 'node-api-analytics';
 
 const app = express();
 
-app.use(analytics(<api_key>));  // Add middleware
+app.use(expressAnalytics(<api_key>));  // Add middleware
 
 app.get('/', (req, res) => {
     res.send({ message: 'Hello World' });
