@@ -137,9 +137,9 @@ app.listen(8080, () =>
         example: `package main
 
 import (
-	analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
-	"net/http"
+    "net/http"
 	"github.com/gin-gonic/gin"
+	analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
 )
 
 func root(c *gin.Context) {
@@ -189,8 +189,8 @@ func main() {
 
 import (
 	"os"
-	analytics "github.com/tom-draper/api-analytics/analytics/go/fiber"
 	"github.com/gofiber/fiber/v2"
+	analytics "github.com/tom-draper/api-analytics/analytics/go/fiber"
 )
 
 func root(c *fiber.Ctx) error {
@@ -215,8 +215,8 @@ func main() {
 import (
 	"net/http"
 	"os"
+	"github.com/go-chi/chi/v5"
 	analytics "github.com/tom-draper/api-analytics/analytics/go/chi"
-	chi "github.com/go-chi/chi/v5"
 )
 
 func root(w http.ResponseWriter, r *http.Request) {

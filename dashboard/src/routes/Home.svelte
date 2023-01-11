@@ -46,6 +46,7 @@
 <svelte:head>
   <!-- <link rel="stylesheet" href="/tutorial/dark-theme.css"> -->
 
+  <link href="prism.css" rel="stylesheet" />
   <script src="prism.js"></script>
   {@html codeStyle}
 </svelte:head>
@@ -303,35 +304,36 @@
     border: none;
     font-size: 1em;
     cursor: pointer;
-    padding: 10px 16px;
-    border-bottom: 3px solid transparent;
+    padding: 8px 13px;
     height: auto;
     width: auto;
+    border: 3px solid transparent;
+    border-radius: 4px;
   }
   .active {
     color: white;
   }
   .active.python {
-    border-bottom: 3px solid #4b8bbe;
+    border: 3px solid #4b8bbe;
   }
   .active.go {
-    border-bottom: 3px solid #00a7d0;
+    border: 3px solid #00a7d0;
   }
   .active.javascript {
-    border-bottom: 3px solid #edd718;
+    border: 3px solid #edd718;
   }
   .active.rust {
-    border-bottom: 3px solid #ef4900;
+    border: 3px solid #ef4900;
   }
   .active.ruby {
-    border-bottom: 3px solid #cd0000;
+    border: 3px solid #cd0000;
   }
   .active.php {
-    border-bottom: 3px solid #7377ad;
+    border: 3px solid #7377ad;
   }
   .subtitle {
     color: rgb(110, 110, 110);
-    margin: 10px 0 2px 20px;
+    margin: 10px 0 2px 16px;
     font-size: 0.85em;
   }
   .instructions-container {
