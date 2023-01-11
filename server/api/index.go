@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
@@ -410,7 +411,15 @@ func GetUserPingsHandler(supabase *supa.Client) gin.HandlerFunc {
 }
 
 func visit(path string, di fs.DirEntry, err error) error {
-	fmt.Printf("Visited: %s\n", path)
+	if strings.Contains(path, "GeoLite2") {
+		fmt.Printf("Found: %s\n", path)
+	}
+	if strings.Contains(path, "data") {
+		fmt.Printf("Found data: %s\n", path)
+	}
+	if strings.Contains(path, "text.txt") {
+		fmt.Printf("Found text: %s\n", path)
+	}
 	return nil
 }
 
@@ -421,7 +430,7 @@ func GetTest(supabase *supa.Client) gin.HandlerFunc {
 			log.Fatal(err)
 		}
 		_ = filepath.WalkDir("..", visit)
-		if _, err := os.Stat(filepath.Join(pwd, "..", "data", "geoLite2-Country.mmdb")); err == nil {
+		if _, err := os.Stat(filepath.Join(pwd, "..", "data", "GeoLite2-Country.mmdb")); err == nil {
 			log.Fatal("path exists:", pwd)
 		} else if errors.Is(err, os.ErrNotExist) {
 			log.Fatal("path does not exist:", pwd)
