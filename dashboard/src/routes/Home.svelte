@@ -23,11 +23,10 @@
     setTimeout(animate, 10);
   });
 
-  let currentFramework = "Django";
   let frameworks = [
-    ["python", "Django"],
     ["python", "FastAPI"],
     ["python", "Flask"],
+    ["python", "Django"],
     ["python", "Tornado"],
     ["javascript", "Express"],
     ["javascript", "Fastify"],
@@ -41,6 +40,7 @@
     ["ruby", "Rails"],
     ["ruby", "Sinatra"],
   ];
+  let currentFramework = frameworks[0][1];
 </script>
 
 <svelte:head>
