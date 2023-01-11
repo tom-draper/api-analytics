@@ -19,7 +19,7 @@
     return {
       title: false,
       autosize: true,
-      margin: { r: 35, l: 45, t: 0, b: 30, pad: 0 },
+      margin: { r: 35, l: 45, t: 0, b: 30, pad: 10 },
       hovermode: "closest",
       plot_bgcolor: "transparent",
       paper_bgcolor: "transparent",
@@ -42,14 +42,11 @@
 
   function bars() {
     let markers = periodToMarkers(period);
-
+    
     let dates = [];
-    for (let i = 0; i < markers; i++) {
-      dates.push(i);
-    }
-
     let requests = [];
     for (let i = 0; i < markers; i++) {
+      dates.push(i);
       requests.push(data[i].responseTime);
     }
 

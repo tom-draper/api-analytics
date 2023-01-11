@@ -83,10 +83,19 @@ func getMonitoredURLs(supabase *supa.Client) []MonitorRow {
 }
 
 type PingRow struct {
-	APIKey       string `json:"api_key"`
-	URL          string `json:"url"`
-	ResponseTime int    `json:"response_time"`
-	Status       int    `json:"status"`
+	APIKey       string    `json:"api_key"`
+	URL          string    `json:"url"`
+	ResponseTime int       `json:"response_time"`
+	Status       int       `json:"status"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+func deleteOldPings(supabase *supa.Client) {
+	var result interface{}
+	err := supabase.DB.From("Pings").Delete().Lt("created_at", time.Now().Add(-60*24*time.Hour).Format("2006-01-02 15:04:05")).Execute(&result)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 func uploadPings(pings []PingRow, supabase *supa.Client) {
@@ -109,10 +118,12 @@ func pingMonitored(monitored []MonitorRow, client http.Client, supabase *supa.Cl
 			URL:          m.URL,
 			ResponseTime: int(elapsed.Milliseconds()),
 			Status:       status,
+			CreatedAt:    time.Now(),
 		}
 		pings = append(pings, ping)
 	}
 	uploadPings(pings, supabase)
+	deleteOldPings(supabase)
 }
 
 func getClient() http.Client {

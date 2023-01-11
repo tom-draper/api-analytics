@@ -82,7 +82,11 @@
   }
 
   function setError() {
-    error = samples[samples.length - 1].status == "error";
+    if (samples[samples.length - 1].status == null) {
+      error = null;  // Website not live
+    } else {
+      error = samples[samples.length - 1].status == "error";
+    }
     anyError = anyError || error;
   }
 
@@ -108,10 +112,12 @@
   <div class="card-text">
     <div class="card-text-left">
       <div class="card-status">
-        {#if error}
-          <img src="/img/smallcross.png" alt="" />
+        {#if error == null}
+          <div class="indicator grey-light"></div>
+        {:else if error}
+          <div class="indicator red-light"></div>
         {:else}
-          <img src="/img/smalltick.png" alt="" />
+          <div class="indicator green-light"></div>
         {/if}
       </div>
       <div class="endpoint">{url}</div>
@@ -182,5 +188,28 @@
   }
   .uptime {
     color: #707070;
+  }
+  .indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    margin-top: 2px;
+    margin-right: 5px;
+  }
+  .card-status {
+    display: grid;
+    place-items: center;
+  }
+  .green-light {
+    background: var(--highlight);
+    box-shadow: 0 1px 1px #fff, 0 0 6px 3px var(--highlight);
+  }
+  .red-light {
+    background: var(--red);
+    box-shadow: 0 1px 1px #fff, 0 0 6px 3px var(--red);
+  }
+  .grey-light {
+    background: grey;
+    box-shadow: 0 0 1px 1px #fff;
   }
 </style>
