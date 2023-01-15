@@ -35,7 +35,7 @@ func root(c echo.Context) {
 func main() {
 	router := echo.New()
 
-	router.Use(analytics.Analytics(<api_key>)) // Add middleware
+	router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
 	router.GET("/", root)
 	router.Logger.Fatal(router.Start("localhost:8080"))
@@ -64,7 +64,7 @@ Logged data for all requests can be accessed via our API. Simply send a GET requ
 import requests
 
 headers = {
- "API-Key": <api_key>
+ "API-Key": <API-KEY>
 }
 
 response = requests.get("https://api-analytics-server.vercel.app/api/data", headers=headers)

@@ -21,7 +21,7 @@ pip install api-analytics
 Assign your API key to `ANALYTICS_API_KEY` in `settings.py` and add the Analytics middleware to the top of your middleware stack.
 
 ```py
-ANALYTICS_API_KEY = <api_key>
+ANALYTICS_API_KEY = <API-KEY>
 
 MIDDLEWARE = [
     'api_analytics.django.Analytics',
@@ -37,7 +37,7 @@ from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
 
 app = FastAPI()
-app.add_middleware(Analytics, <api_key>)  # Add middleware
+app.add_middleware(Analytics, <API-KEY>)  # Add middleware
 
 @app.get("/")
 async def root():
@@ -54,7 +54,7 @@ from flask import Flask
 from api_analytics.flask import add_middleware
 
 app = Flask(__name__)
-add_middleware(app, <api_key>)  # Add middleware
+add_middleware(app, <API-KEY>)  # Add middleware
 
 @app.get("/")
 def root():
@@ -116,7 +116,7 @@ Logged data for all requests can be accessed via our API. Simply send a GET requ
 import requests
 
 headers = {
- "API-Key": <api_key>
+ "API-Key": <API-KEY>
 }
 
 response = requests.get("https://api-analytics-server.vercel.app/api/data", headers=headers)

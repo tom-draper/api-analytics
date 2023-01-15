@@ -31,7 +31,7 @@ module RailsMiddleware
     config.load_defaults 6.1
     config.api_only = true
 
-    config.middleware.use ::Analytics::Rails, <api_key>  # Add middleware
+    config.middleware.use ::Analytics::Rails, <API-KEY>  # Add middleware
   end
 end
 ```
@@ -42,7 +42,7 @@ end
 require 'sinatra'
 require 'api_analytics'
 
-use Analytics::Sinatra, <api_key>  # Add middleware
+use Analytics::Sinatra, <API-KEY>  # Add middleware
 
 before do
     content_type 'application/json'
@@ -75,7 +75,7 @@ Logged data for all requests can be accessed via our API. Simply send a GET requ
 import requests
 
 headers = {
- "API-Key": <api_key>
+ "API-Key": <API-KEY>
 }
 
 response = requests.get("https://api-analytics-server.vercel.app/api/data", headers=headers)
