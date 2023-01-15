@@ -15,7 +15,7 @@
     margin: 1.5em 0 3em;
   }
   .github-logo {
-    height: 30px;
+    height: 28px;
     filter: invert(0.24);
     margin-bottom: 30px;
   }
