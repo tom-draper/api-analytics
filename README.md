@@ -18,7 +18,7 @@ Head to https://my-api-analytics.vercel.app/generate to generate your unique API
 
 ### 2. Add middleware to your API
 
-Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on your APIs performance.
+Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on the performance of your API.
 
 #### Django
 
