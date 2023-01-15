@@ -54,7 +54,7 @@
     for (let i = 0; i < data.length; i++) {
       let match = data[i].path.match(/[^a-z0-9](v\d)[^a-z0-9]/i);
       if (match) {
-        let version = match[0];
+        let version = match[1];
         if (!(version in versionCount)) {
           versionCount[version] = 0;
         }
