@@ -4,7 +4,7 @@
 A lightweight API analytics solution, complete with a dashboard.
 
 Currently compatible with:
- - Python: <b>Django</b>, <b>FastAPI</b>, <b>Flask</b> and <b>Tornado</b>
+ - Python: <b>FastAPI</b>, <b>Flask</b>, <b>Django</b> and <b>Tornado</b>
  - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
  - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
  - Rust: <b>Actix</b> and <b>Axum</b>
@@ -19,25 +19,6 @@ Head to https://my-api-analytics.vercel.app/generate to generate your unique API
 ### 2. Add middleware to your API
 
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on the performance of your API.
-
-#### Django
-
-[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
-
-```bash
-pip install api-analytics
-```
-
-Assign your API key to `ANALYTICS_API_KEY` in `settings.py` and add the Analytics middleware to the top of your middleware stack.
-
-```py
-ANALYTICS_API_KEY = <api_key>
-
-MIDDLEWARE = [
-    'api_analytics.django.Analytics',
-    ...
-]
-```
 
 #### FastAPI
 
@@ -84,6 +65,25 @@ def root():
 
 if __name__ == "__main__":
     app.run()
+```
+
+#### Django
+
+[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
+
+```bash
+pip install api-analytics
+```
+
+Assign your API key to `ANALYTICS_API_KEY` in `settings.py` and add the Analytics middleware to the top of your middleware stack.
+
+```py
+ANALYTICS_API_KEY = <api_key>
+
+MIDDLEWARE = [
+    'api_analytics.django.Analytics',
+    ...
+]
 ```
 
 #### Tornado
