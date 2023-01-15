@@ -22,7 +22,7 @@ from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
 
 app = FastAPI()
-app.add_middleware(Analytics, <api_key>)  # Add middleware
+app.add_middleware(Analytics, <API-KEY>)  # Add middleware
 
 @app.get("/")
 async def root():
@@ -54,7 +54,7 @@ Logged data for all requests can be accessed via our API. Simply send a GET requ
 import requests
 
 headers = {
- "API-Key": <api_key>
+ "API-Key": <API-KEY>
 }
 
 response = requests.get("https://api-analytics-server.vercel.app/api/data", headers=headers)

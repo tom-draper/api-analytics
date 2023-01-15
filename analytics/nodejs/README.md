@@ -24,7 +24,7 @@ import { expressAnalytics } from 'node-api-analytics';
 
 const app = express();
 
-app.use(expressAnalytics(<api_key>));  // Add middleware
+app.use(expressAnalytics(<API-KEY>));  // Add middleware
 
 app.get("/", (req, res) => {
     res.send({message: "Hello World"});
@@ -45,7 +45,7 @@ const fastify = Fastify({
   logger: true,
 })
 
-fastify.addHook('onRequest', fastifyAnalytics(<api_key>));  // Add middleware
+fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>));  // Add middleware
 
 fastify.get('/', function (request, reply) {
   reply.send({ message: 'Hello World!' });
@@ -68,7 +68,7 @@ import { koaAnalytics } from "node-api-analytics";
 
 const app = new Koa();
 
-app.use(koaAnalytics(<api_key>));  // Add middleware
+app.use(koaAnalytics(<API-KEY>));  // Add middleware
 
 app.use((ctx) => {
   ctx.body = { message: "Hello World!" };
@@ -101,7 +101,7 @@ Logged data for all requests can be accessed via our API. Simply send a GET requ
 import requests
 
 headers = {
- "API-Key": <api_key>
+ "API-Key": <API-KEY>
 }
 
 response = requests.get("https://api-analytics-server.vercel.app/api/data", headers=headers)

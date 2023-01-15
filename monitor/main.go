@@ -122,6 +122,7 @@ func pingMonitored(monitored []MonitorRow, client http.Client, supabase *supa.Cl
 		}
 		pings = append(pings, ping)
 	}
+
 	uploadPings(pings, supabase)
 	deleteOldPings(supabase)
 }

@@ -2,6 +2,33 @@
   import { onMount } from "svelte";
   import ResponseTime from "./ResponseTime.svelte";
 
+  async function deleteMonitor() {
+    delete data[url]
+    data = data;  // Trigger reactivity to update display
+
+    try {
+      let response = await fetch(
+        'https://api-analytics-server.vercel.app/api/monitor/delete', {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            api_key: apiKey,
+            url: url
+          })
+        }
+      );
+      if (response.status != 201) {
+        console.log("Error", response.status);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   function setUptime() {
     let success = 0;
     let total = 0;
@@ -46,21 +73,21 @@
     let sample = []
     if (period == "30d") {
       // Sample 1 in 4
-      for (let i = 0; i < data.length; i++) {
+      for (let i = 0; i < data[url].length; i++) {
         if (i % 4 == 0) {
-          sample.push(data[i])
+          sample.push(data[url][i])
         }
       }
     } else if (period == "60d") {
       // Sample 1 in 8
-      for (let i = 0; i < data.length; i++) {
+      for (let i = 0; i < data[url].length; i++) {
         if (i % 8 == 0) {
-          sample.push(data[i])
+          sample.push(data[url][i])
         }
       }
     } else {
       // No sampling - use all
-      sample = data
+      sample = data[url]
     }
     return sample
   }
@@ -105,7 +132,7 @@
 
   $: period && build();
 
-  export let url: string, data: any, period: string, anyError: boolean;
+  export let url: string, data: any, apiKey: string, period: string, anyError: boolean;
 </script>
 
 <div class="card" class:card-error={error}>
@@ -120,7 +147,8 @@
           <div class="indicator green-light"></div>
         {/if}
       </div>
-      <div class="endpoint">{url}</div>
+      <a href="http://{url}" class="endpoint"><span style="color: #707070">http://</span>{url}</a>
+      <button class="delete" on:click={deleteMonitor}><img class="bin-icon" src="../img/bin.png" alt=""></button>
     </div>
     <div class="card-text-right">
       <div class="uptime">Uptime: {uptime}%</div>
@@ -161,6 +189,7 @@
   .endpoint {
     margin-left: 10px;
     letter-spacing: 0.01em;
+    color: white;
   }
   .measurements {
     display: flex;
@@ -193,7 +222,6 @@
     width: 10px;
     height: 10px;
     border-radius: 5px;
-    margin-top: 2px;
     margin-right: 5px;
   }
   .card-status {
@@ -211,5 +239,20 @@
   .grey-light {
     background: grey;
     box-shadow: 0 0 1px 1px #fff;
+  }
+  .delete {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    margin-left: 10px;
+    padding: 2px 4px 1px;
+    border-radius: 4px;
+  }
+  .delete:hover {
+    background: var(--red);
+  }
+  .bin-icon {
+    width: 12px;
+    filter: invert(0.3);
   }
 </style>

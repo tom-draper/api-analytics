@@ -4,7 +4,7 @@
 A lightweight API analytics solution, complete with a dashboard.
 
 Currently compatible with:
- - Python: <b>Django</b>, <b>FastAPI</b>, <b>Flask</b> and <b>Tornado</b>
+ - Python: <b>FastAPI</b>, <b>Flask</b>, <b>Django</b> and <b>Tornado</b>
  - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
  - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
  - Rust: <b>Actix</b> and <b>Axum</b>
@@ -18,26 +18,7 @@ Head to https://my-api-analytics.vercel.app/generate to generate your unique API
 
 ### 2. Add middleware to your API
 
-Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on your APIs performance.
-
-#### Django
-
-[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
-
-```bash
-pip install api-analytics
-```
-
-Assign your API key to `ANALYTICS_API_KEY` in `settings.py` and add the Analytics middleware to the top of your middleware stack.
-
-```py
-ANALYTICS_API_KEY = <api_key>
-
-MIDDLEWARE = [
-    'api_analytics.django.Analytics',
-    ...
-]
-```
+Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on the performance of your API.
 
 #### FastAPI
 
@@ -53,7 +34,7 @@ from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
 
 app = FastAPI()
-app.add_middleware(Analytics, api_key=<api_key>)  # Add middleware
+app.add_middleware(Analytics, api_key=<API-KEY>)  # Add middleware
 
 @app.get('/')
 async def root():
@@ -76,7 +57,7 @@ from flask import Flask
 from api_analytics.flask import add_middleware
 
 app = Flask(__name__)
-add_middleware(app, <api_key>)  # Add middleware
+add_middleware(app, <API-KEY>)  # Add middleware
 
 @app.get('/')
 def root():
@@ -84,6 +65,25 @@ def root():
 
 if __name__ == "__main__":
     app.run()
+```
+
+#### Django
+
+[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
+
+```bash
+pip install api-analytics
+```
+
+Assign your API key to `ANALYTICS_API_KEY` in `settings.py` and add the Analytics middleware to the top of your middleware stack.
+
+```py
+ANALYTICS_API_KEY = <API-KEY>
+
+MIDDLEWARE = [
+    'api_analytics.django.Analytics',
+    ...
+]
 ```
 
 #### Tornado
@@ -106,7 +106,7 @@ from api_analytics.tornado import Analytics
 class MainHandler(Analytics):
     def __init__(self, app, res):
         api_key = os.environ.get("API_KEY")
-        super().__init__(app, res, <api_key>)  # Provide api key
+        super().__init__(app, res, <API-KEY>)  # Provide api key
     
     def get(self):
         self.write({'message': 'Hello World!'})
@@ -136,7 +136,7 @@ import { expressAnalytics } from 'node-api-analytics';
 
 const app = express();
 
-app.use(expressAnalytics(<api_key>));  // Add middleware
+app.use(expressAnalytics(<API-KEY>));  // Add middleware
 
 app.get('/', (req, res) => {
     res.send({ message: 'Hello World' });
@@ -161,7 +161,7 @@ import { fastifyAnalytics } from 'node-api-analytics;
 
 const fastify = Fastify();
 
-fastify.addHook('onRequest', fastifyAnalytics(<api_key>));  // Add middleware
+fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>));  // Add middleware
 
 fastify.get('/', function (request, reply) {
   reply.send({ message: 'Hello World!' });
@@ -190,7 +190,7 @@ import { koaAnalytics } from 'node-api-analytics';
 
 const app = new Koa();
 
-app.use(koaAnalytics(<api_key>));  // Add middleware
+app.use(koaAnalytics(<API-KEY>));  // Add middleware
 
 app.use((ctx) => {
   ctx.body = { message: 'Hello World!' };
@@ -226,7 +226,7 @@ func root(c *gin.Context) {
 func main() {
 	router := gin.Default()
 	
-	router.Use(analytics.Analytics(<api_key>)) // Add middleware
+	router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
 	router.GET("/", root)
 	router.Run("localhost:8080")
@@ -260,7 +260,7 @@ func root(c echo.Context) {
 func main() {
 	router := echo.New()
 
-	router.Use(analytics.Analytics(<api_key>)) // Add middleware
+	router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
 	router.GET("/", root)
 	router.Start("localhost:8080")
@@ -292,7 +292,7 @@ func root(c *fiber.Ctx) error {
 func main() {
 	app := fiber.New()
 
-	app.Use(analytics.Analytics(<api_key>)) // Add middleware
+	app.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
 	app.Get("/", root)
 	app.Listen(":8080")
@@ -327,7 +327,7 @@ func root(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := chi.NewRouter()
 
-	router.Use(analytics.Analytics(<api_key>)) // Add middleware
+	router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
 	router.GET("/", root)
 	router.Run("localhost:8080")
@@ -366,7 +366,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(|| {
         App::new()
-            .wrap(Analytics::new(<api_key>))  // Add middleware
+            .wrap(Analytics::new(<API-KEY>))  // Add middleware
             .service(index)
     })
     .bind(("127.0.0.1", 8080))?
@@ -408,7 +408,7 @@ async fn root() -> Json<JsonData> {
 #[tokio::main]
 async fn main() {
     let app = Router::new()
-        .layer(Analytics::new(<api_key>))  // Add middleware
+        .layer(Analytics::new(<API-KEY>))  // Add middleware
         .route("/", get(root));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
@@ -440,7 +440,7 @@ module RailsMiddleware
     config.load_defaults 6.1
     config.api_only = true
 
-    config.middleware.use ::Analytics::Rails, <api_key>  # Add middleware
+    config.middleware.use ::Analytics::Rails, <API-KEY>  # Add middleware
   end
 end
 ```
@@ -457,7 +457,7 @@ gem install api_analytics
 require 'sinatra'
 require 'api_analytics'
 
-use Analytics::Sinatra, <api_key>  # Add middleware
+use Analytics::Sinatra, <API-KEY>  # Add middleware
 
 before do
     content_type 'application/json'
@@ -470,7 +470,10 @@ end
 
 ### 3. View your analytics
 
-Your API will now log and store incoming request data on all valid routes. Your logged data can be viewed using two methods: through visualizations and stats on our dashboard, or accessed directly via our data API.
+Your API will now log and store incoming request data on all valid routes. Your logged data can be viewed using two methods:
+
+1. Through visualizations and stats on our dashboard
+2. Accessed directly via our data API
 
 You can use the same API key across multiple APIs, but all your data will appear in the same dashboard. We recommend generating a new API key for each additional API you want analytics for.
 
@@ -490,7 +493,7 @@ Logged data for all requests can be accessed via our API. Simply send a GET requ
 import requests
 
 headers = {
- "API-Key": <api_key>
+ "API-Key": <API-KEY>
 }
 
 response = requests.get("https://api-analytics-server.vercel.app/api/data", headers=headers)

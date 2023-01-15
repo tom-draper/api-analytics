@@ -41,7 +41,7 @@ async fn root() -> Json<JsonData> {
 #[tokio::main]
 async fn main() {
     let app = Router::new()
-        .layer(Analytics::new(<api_key>))  // Add middleware
+        .layer(Analytics::new(<API-KEY>))  // Add middleware
         .route("/", get(root));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
@@ -74,7 +74,7 @@ Logged data for all requests can be accessed via our API. Simply send a GET requ
 import requests
 
 headers = {
- "API-Key": <api_key>
+ "API-Key": <API-KEY>
 }
 
 response = requests.get("https://api-analytics-server.vercel.app/api/data", headers=headers)

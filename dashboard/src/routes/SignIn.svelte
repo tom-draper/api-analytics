@@ -9,15 +9,21 @@
 
     if (response.status == 200) {
       const userID = await response.json();
-      window.location.href = `/dashboard/${userID.replaceAll("-", "")}`;
+      window.location.href = `/${page}/${userID.replaceAll("-", "")}`;
     }
     loading = false;
   }
+
+  export let page: 'dashboard' | 'monitoring';
 </script>
 
 <div class="generate">
   <div class="content">
-    <h2>Dashboard</h2>
+    {#if page == 'dashboard'}
+      <h2>Dashboard</h2>
+    {:else if page == 'monitoring'}
+      <h2>Monitoring</h2>
+    {/if}
     <input type="text" bind:value={apiKey} placeholder="Enter API key"/>
     <button id="formBtn" on:click={genAPIKey}>Load</button>
     <div class="spinner">

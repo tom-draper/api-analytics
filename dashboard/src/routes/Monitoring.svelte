@@ -9,16 +9,15 @@
     userID = formatUUID(userID);
     try {
       const response = await fetch(
-        `https://api-analytics-server.vercel.app/api/pings/${userID}`
+        `https://api-analytics-server.vercel.app/api/monitor/pings/${userID}`
       );
       if (response.status == 200) {
         const json = await response.json();
         data = json.pings;
         apiKey = json.api_key;
-        console.log(data);
       }
     } catch (e) {
-      failed = true;
+      console.log(e);
     }
   }
 
@@ -58,16 +57,16 @@
   };
 
   let error = false;
-  let period = "30d";
+  let period = "7d";
   let apiKey: string;
   let data: PingsData[];
   let monitorData: { [url: string]: MonitorSample[] };
-  let failed = false;
 
   let showTrackNew = false;
   onMount(async () => {
     await fetchData();
     monitorData = groupByUrl();
+    console.log(monitorData)
   });
 
   export let userID: string;
@@ -97,14 +96,18 @@
       <div class="add-new">
         <button class="add-new-btn" on:click={toggleShowTrackNew}
           ><div class="add-new-text">
-            <span class="plus">+</span> New
+            {#if showTrackNew}
+              Close
+            {:else}
+              <span class="plus">+</span> New
+            {/if}
           </div>
         </button>
       </div>
       <div class="period-controls-container">
         <div class="period-controls">
           <button
-            class="period-btn {period == '24h' ? 'active' : ''}"
+            class="period-btn" class:active={period == '24h'}
             on:click={() => {
               setPeriod("24h");
             }}
@@ -112,7 +115,7 @@
             24h
           </button>
           <button
-            class="period-btn {period == '7d' ? 'active' : ''}"
+            class="period-btn" class:active={period == '7d'}
             on:click={() => {
               setPeriod("7d");
             }}
@@ -120,7 +123,7 @@
             7d
           </button>
           <button
-            class="period-btn {period == '30d' ? 'active' : ''}"
+            class="period-btn" class:active={period == '30d'}
             on:click={() => {
               setPeriod("30d");
             }}
@@ -128,7 +131,7 @@
             30d
           </button>
           <button
-            class="period-btn {period == '60d' ? 'active' : ''}"
+            class="period-btn" class:active={period == '60d'}
             on:click={() => {
               setPeriod("60d");
             }}
@@ -140,10 +143,10 @@
     </div>
     {#if monitorData != undefined}
       {#if showTrackNew || Object.keys(monitorData).length == 0}
-        <TrackNew {apiKey} />
+        <TrackNew {apiKey} {showTrackNew} />
       {/if}
-      {#each Object.entries(monitorData) as [url, samples]}
-        <Card {url} data={samples} {period} bind:anyError={error} />
+      {#each Object.keys(monitorData) as url}
+        <Card {url} bind:data={monitorData} {apiKey} {period} bind:anyError={error} />
       {/each}
     {:else}
       <div class="spinner">
@@ -218,6 +221,8 @@
   }
   .add-new-text {
     display: flex;
+    min-width: 45px;
+    justify-content: center;
   }
   .active {
     background: var(--highlight);
