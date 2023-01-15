@@ -380,7 +380,7 @@ func InsertUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
 func deleteMonitor(apiKey string, url string, c *gin.Context, supabase *supa.Client) error {
 	// Delete monitor from database
 	var result []interface{}
-	err := supabase.DB.From("Monitor").Delete().Eq("url", url).Execute(&result)
+	err := supabase.DB.From("Monitor").Delete().Eq("api_key", apiKey).Eq("url", url).Execute(&result)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return err
@@ -391,7 +391,7 @@ func deleteMonitor(apiKey string, url string, c *gin.Context, supabase *supa.Cli
 func deletePings(apiKey string, url string, c *gin.Context, supabase *supa.Client) error {
 	// Delete pings from database
 	var result []interface{}
-	err := supabase.DB.From("Pings").Delete().Eq("url", url).Execute(&result)
+	err := supabase.DB.From("Pings").Delete().Eq("api_key", apiKey).Eq("url", url).Execute(&result)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return err
@@ -414,7 +414,8 @@ func DeleteUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
 			return
 		} else {
-			err := deleteMonitor(body.APIKey, body.URL, c, supabase)
+			var err error
+			err = deleteMonitor(body.APIKey, body.URL, c, supabase)
 			if err != nil {
 				return
 			}
@@ -423,10 +424,8 @@ func DeleteUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
 				return
 			}
 
-			fmt.Println("here", body)
-
 			// Return success response
-			c.JSON(200, gin.H{"status": 200, "message": "Monitor deleted successfully."})
+			c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "Monitor deleted successfully."})
 		}
 	}
 

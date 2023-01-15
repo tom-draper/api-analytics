@@ -7,7 +7,7 @@
     data = data;  // Trigger reactivity to update display
 
     try {
-      const response = await fetch(
+      let response = await fetch(
         'https://api-analytics-server.vercel.app/api/monitor/delete', {
           method: "POST",
           mode: "no-cors",
@@ -21,7 +21,6 @@
           })
         }
       );
-      console.log(response)
       if (response.status != 201) {
         console.log("Error", response.status);
       }

@@ -9,7 +9,6 @@
     userID = formatUUID(userID);
     try {
       const response = await fetch(
-        // `http://localhost:8080/api/monitor/pings/${userID}`
         `https://api-analytics-server.vercel.app/api/monitor/pings/${userID}`
       );
       if (response.status == 200) {

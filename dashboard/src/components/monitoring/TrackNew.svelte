@@ -1,7 +1,7 @@
 <script lang="ts">
   async function postMonitor() {
     try {
-      const response = await fetch(
+      let response = await fetch(
         `https://api-analytics-server.vercel.app/api/monitor/add`,
         {
           method: "POST",
