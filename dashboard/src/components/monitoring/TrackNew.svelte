@@ -21,6 +21,7 @@
       if (response.status != 201) {
         console.log("Error", response.status);
       }
+      showTrackNew = false;
     } catch (e) {
       console.log(e);
     }
@@ -33,7 +34,7 @@
   let url: string;
   let pingType = "simple-ping";
 
-  export let apiKey: string;
+  export let apiKey: string, showTrackNew: boolean;
 </script>
 
 <div class="card">
