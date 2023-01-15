@@ -1,14 +1,9 @@
 package api
 
 import (
-	"errors"
 	"fmt"
-	"io/fs"
-	"log"
 	"net/http"
 	"os"
-	"path/filepath"
-	"strings"
 	"time"
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
@@ -358,7 +353,8 @@ func InsertUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
 	insertUserMonitor := func(c *gin.Context) {
 		var monitor MonitorRow
 		if err := c.BindJSON(&monitor); err != nil {
-			panic(err)
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request body."})
+			return
 		}
 
 		if monitor.APIKey == "" {
@@ -379,6 +375,62 @@ func InsertUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
 	}
 
 	return gin.HandlerFunc(insertUserMonitor)
+}
+
+func deleteMonitor(apiKey string, url string, c *gin.Context, supabase *supa.Client) error {
+	// Delete monitor from database
+	var result []interface{}
+	err := supabase.DB.From("Monitor").Delete().Eq("url", url).Execute(&result)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+		return err
+	}
+	return nil
+}
+
+func deletePings(apiKey string, url string, c *gin.Context, supabase *supa.Client) error {
+	// Delete pings from database
+	var result []interface{}
+	err := supabase.DB.From("Pings").Delete().Eq("url", url).Execute(&result)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+		return err
+	}
+	return nil
+}
+
+func DeleteUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
+	deleteUserMonitor := func(c *gin.Context) {
+		var body struct {
+			APIKey string `json:"api_key"`
+			URL    string `json:"url"`
+		}
+		if err := c.BindJSON(&body); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request body."})
+			return
+		}
+
+		if body.APIKey == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
+			return
+		} else {
+			err := deleteMonitor(body.APIKey, body.URL, c, supabase)
+			if err != nil {
+				return
+			}
+			err = deletePings(body.APIKey, body.URL, c, supabase)
+			if err != nil {
+				return
+			}
+
+			fmt.Println("here", body)
+
+			// Return success response
+			c.JSON(200, gin.H{"status": 200, "message": "Monitor deleted successfully."})
+		}
+	}
+
+	return gin.HandlerFunc(deleteUserMonitor)
 }
 
 type PublicPingsRow struct {
@@ -410,48 +462,15 @@ func GetUserPingsHandler(supabase *supa.Client) gin.HandlerFunc {
 	return gin.HandlerFunc(getData)
 }
 
-func visit(path string, di fs.DirEntry, err error) error {
-	if strings.Contains(path, "GeoLite2") {
-		fmt.Printf("Found: %s\n", path)
-	}
-	if strings.Contains(path, "data") {
-		fmt.Printf("Found data: %s\n", path)
-	}
-	if strings.Contains(path, "text.txt") {
-		fmt.Printf("Found text: %s\n", path)
-	}
-	return nil
-}
-
-func GetTest(supabase *supa.Client) gin.HandlerFunc {
-	getTest := func(c *gin.Context) {
-		pwd, err := os.Getwd()
-		if err != nil {
-			log.Fatal(err)
-		}
-		_ = filepath.WalkDir("..", visit)
-		if _, err := os.Stat(filepath.Join(pwd, "..", "data", "GeoLite2-Country.mmdb")); err == nil {
-			log.Fatal("path exists:", pwd)
-		} else if errors.Is(err, os.ErrNotExist) {
-			log.Fatal("path does not exist:", pwd)
-		}
-
-		c.JSON(http.StatusOK, gin.H{})
-	}
-
-	return gin.HandlerFunc(getTest)
-}
-
 func RegisterRouter(r *gin.RouterGroup, supabase *supa.Client) {
-	r.GET("/test", GetTest(supabase))
 	r.GET("/generate-api-key", GenAPIKeyHandler(supabase))
 	r.POST("/log-request", LogRequestHandler(supabase))
 	r.GET("/user-id/:apiKey", GetUserIDHandler(supabase))
 	r.GET("/requests/:userID", GetUserRequestsHandler(supabase))
 	r.GET("/delete/:apiKey", DeleteDataHandler(supabase))
-	r.GET("/pings/:userID", GetUserPingsHandler(supabase))
-	r.GET("/monitor/:userID", GetUserMonitorHandler(supabase))
-	r.POST("/add-monitor", InsertUserMonitorHandler(supabase))
+	r.GET("/monitor/pings/:userID", GetUserPingsHandler(supabase))
+	r.POST("/monitor/add", InsertUserMonitorHandler(supabase))
+	r.POST("/monitor/delete", DeleteUserMonitorHandler(supabase))
 	r.GET("/data", GetDataHandler(supabase))
 }
 

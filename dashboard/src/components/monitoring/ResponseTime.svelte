@@ -19,7 +19,7 @@
     return {
       title: false,
       autosize: true,
-      margin: { r: 35, l: 45, t: 0, b: 30, pad: 10 },
+      margin: { r: 35, l: 55, t: 10, b: 30, pad: 10 },
       hovermode: "closest",
       plot_bgcolor: "transparent",
       paper_bgcolor: "transparent",
@@ -43,11 +43,13 @@
   function bars() {
     let markers = periodToMarkers(period);
     
-    let dates = [];
-    let requests = [];
+    let dates = Array(markers)
+    let requests = Array(markers);
     for (let i = 0; i < markers; i++) {
-      dates.push(i);
-      requests.push(data[i].responseTime);
+      let now = new Date();
+      now.setMinutes(now.getMinutes() - i * 30);
+      dates[i] = now.toISOString();
+      requests[markers - i] = data[i].responseTime;
     }
 
     return [
@@ -57,7 +59,7 @@
         type: "lines",
         marker: { color: "#707070" },
         fill: "tonexty",
-        hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
+        hovertemplate: `<b>%{y:.0f}ms</b><br>%{x|%d %b %Y}</b><extra></extra>`,
         showlegend: false,
       },
     ];

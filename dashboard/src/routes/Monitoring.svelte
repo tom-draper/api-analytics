@@ -9,16 +9,16 @@
     userID = formatUUID(userID);
     try {
       const response = await fetch(
-        `https://api-analytics-server.vercel.app/api/pings/${userID}`
+        // `http://localhost:8080/api/monitor/pings/${userID}`
+        `https://api-analytics-server.vercel.app/api/monitor/pings/${userID}`
       );
       if (response.status == 200) {
         const json = await response.json();
         data = json.pings;
         apiKey = json.api_key;
-        console.log(data);
       }
     } catch (e) {
-      failed = true;
+      console.log(e);
     }
   }
 
@@ -62,12 +62,12 @@
   let apiKey: string;
   let data: PingsData[];
   let monitorData: { [url: string]: MonitorSample[] };
-  let failed = false;
 
   let showTrackNew = false;
   onMount(async () => {
     await fetchData();
     monitorData = groupByUrl();
+    console.log(monitorData)
   });
 
   export let userID: string;
@@ -142,8 +142,8 @@
       {#if showTrackNew || Object.keys(monitorData).length == 0}
         <TrackNew {apiKey} />
       {/if}
-      {#each Object.entries(monitorData) as [url, samples]}
-        <Card {url} data={samples} {period} bind:anyError={error} />
+      {#each Object.keys(monitorData) as url}
+        <Card {url} bind:data={monitorData} {apiKey} {period} bind:anyError={error} />
       {/each}
     {:else}
       <div class="spinner">
