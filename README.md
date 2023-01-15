@@ -18,7 +18,7 @@ Head to https://my-api-analytics.vercel.app/generate to generate your unique API
 
 ### 2. Add middleware to your API
 
-Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on your APIs performance.
+Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on the performance of your API.
 
 #### Django
 
@@ -470,7 +470,10 @@ end
 
 ### 3. View your analytics
 
-Your API will now log and store incoming request data on all valid routes. Your logged data can be viewed using two methods: through visualizations and stats on our dashboard, or accessed directly via our data API.
+Your API will now log and store incoming request data on all valid routes. Your logged data can be viewed using two methods:
+
+1. Through visualizations and stats on our dashboard
+2. Accessed directly via our data API
 
 You can use the same API key across multiple APIs, but all your data will appear in the same dashboard. We recommend generating a new API key for each additional API you want analytics for.
 
