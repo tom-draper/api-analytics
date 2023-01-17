@@ -44,8 +44,6 @@
 </script>
 
 <svelte:head>
-  <!-- <link rel="stylesheet" href="/tutorial/dark-theme.css"> -->
-
   <link href="prism.css" rel="stylesheet" />
   <script src="prism.js"></script>
   {@html codeStyle}
@@ -123,6 +121,13 @@
     </div>
     <img class="dashboard-img" src="img/monitoring.png" alt="" />
   </div>
+  <div class="test-add-middleware-content">
+    <div class="test-left-instructions-container"></div>
+    <div class="test-right-instructions-container"></div>
+    <div class="radial2"></div>
+    <div class="linear2"></div>
+    <!-- <div class="linear3"></div> -->
+  </div>
   <div class="add-middleware">
     <div class="add-middleware-title">Getting Started</div>
     <div class="frameworks">
@@ -166,6 +171,64 @@
 <Footer />
 
 <style scoped>
+  .test-add-middleware-content {
+    position: relative;
+    display: flex;
+    height: 800px;
+    z-index: -1;
+    margin-top: -15em;
+  }
+  .test-left-instructions-container {
+    background: grey;
+    width: 100%;
+    height: 100%;
+    margin-left: auto;
+    background: conic-gradient(from 270deg, var(--highlight),  #1c1c1c);
+    transform: scale(-1, 1);
+    margin-right: -1px;
+    filter: brightness(1.3);
+  }
+  .test-right-instructions-container {
+    filter: brightness(1.3);
+    background: grey;
+    width: 100%;
+    height: 100%;
+    margin-right: auto;
+    background: conic-gradient(from 270deg, var(--highlight), #1c1c1c);
+    margin-left: -1px;
+  }
+  .radial1 {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 50%;
+    background: radial-gradient(var(--highlight),  transparent, transparent);
+  }
+  .radial2 {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    /* left: calc(50% - 600px); */
+    /* top: 10%; */
+    background: radial-gradient(transparent, #1c1c1c);
+  }
+  .linear2 {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    /* left: calc(50% - 600px); */
+    background: linear-gradient(#1c1c1c, transparent, #1c1c1c);
+  }
+  .linear3 {
+    position: absolute;
+    width: 1000px;
+    height: 50%;
+    left: calc(50% - 500px);
+    bottom: 50%;
+    background: linear-gradient(90deg, #1c1c1c,  transparent, transparent, #1c1c1c);
+  }
+
   .landing-page {
     display: flex;
     place-items: center;
@@ -284,7 +347,8 @@
 
   .add-middleware-title {
     color: var(--highlight);
-    font-size: 2.1em;
+    color: black;
+    font-size: 2.5em;
     font-weight: 700;
     margin-bottom: 1.5em;
   }
@@ -292,14 +356,16 @@
     margin: auto;
     margin-bottom: 7em;
     border-radius: 6px;
+    margin-top: -480px;
   }
 
   .frameworks {
-    margin: 0 10%;
+    margin: 0 25%;
     overflow-x: auto;
   }
   .framework {
-    color: grey;
+    color: #919191;
+    /* color: black; */
     background: transparent;
     border: none;
     font-size: 1em;
@@ -332,7 +398,7 @@
     border: 3px solid #7377ad;
   }
   .subtitle {
-    color: rgb(110, 110, 110);
+    color: #919191;
     margin: 10px 0 2px 16px;
     font-size: 0.85em;
   }
@@ -380,16 +446,24 @@
     transition: all 10s ease-in-out;
   }
 
+  @media screen and (min-width: 1700px) {
+    .frameworks {
+      margin: 0 10%;
+    }
+  }
+
   @media screen and (max-width: 1500px) {
     .landing-page-container {
       margin: 0 6% 0 7%;
     }
   }
+
   @media screen and (max-width: 1300px) {
     .landing-page-container {
       margin: 0 5% 0 6%;
     }
   }
+
   @media screen and (max-width: 1200px) {
     .landing-page {
       flex-direction: column-reverse;
@@ -404,17 +478,23 @@
     .logo {
       width: 100%;
     }
+    .instructions-container {
+      width: auto;
+    }
+  }
+
+  @media screen and (max-width: 1000px) {
   }
 
   @media screen and (max-width: 900px) {
     .home {
       font-size: 0.85em;
     }
-    .instructions-container {
-      width: auto;
-    }
     .code-file {
       top: 140px;
+    }
+    .add-middleware {
+      margin-top: -465px;
     }
   }
   @media screen and (max-width: 800px) {
@@ -423,6 +503,12 @@
     }
     .right {
       margin-top: 2em;
+    }
+    .frameworks {
+      margin: 0 5%;
+    }
+    .test-add-middleware-content {
+      margin-top: -22em;
     }
   }
   @media screen and (max-width: 700px) {
@@ -439,7 +525,11 @@
       padding-bottom: 8em;
     }
     .lightning-top {
-      height: 55px;
+      height: 40px;
+      margin-top: auto;
+    }
+    .dashboard-title {
+      margin: 0.2em 0.5em auto 1em;
     }
     .dashboard-img {
       margin-bottom: -3%;
@@ -448,13 +538,36 @@
       margin: 0 2em 4em;
     }
     .add-middleware-title {
-      margin-bottom: 0.5em;
+      margin-bottom: 1em;
     }
     .instructions-container {
       padding: 0 4%;
     }
     .logo {
       margin-bottom: 0;
+    }
+    .test-add-middleware-content {
+      margin-top: -24em;
+      overflow: hidden;
+    }
+
+    .add-middleware {
+      margin-top: -455px;
+    }
+    .test-left-instructions-container {
+      width: 90%;
+      margin-left: -40%;
+    }
+    .test-right-instructions-container {
+      width: 90%;
+      margin-right: -40%;
+    }
+  }
+  
+  @media screen and (max-width: 500px) {
+    .test-add-middleware-content {
+      margin-top: -24em;
+      overflow: hidden;
     }
   }
 </style>
