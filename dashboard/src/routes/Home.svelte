@@ -179,18 +179,16 @@
     margin-top: -15em;
   }
   .test-left-instructions-container {
-    background: grey;
     width: 100%;
     height: 100%;
     margin-left: auto;
     background: conic-gradient(from 270deg, var(--highlight),  #1c1c1c);
     transform: scale(-1, 1);
     margin-right: -1px;
-    filter: brightness(1.3);
+    filter: brightness(1.2);
   }
   .test-right-instructions-container {
-    filter: brightness(1.3);
-    background: grey;
+    filter: brightness(1.2s);
     width: 100%;
     height: 100%;
     margin-right: auto;
