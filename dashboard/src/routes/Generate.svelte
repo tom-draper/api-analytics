@@ -2,20 +2,24 @@
   let state: "generate" | "loading" | "copy" | "copied" | "error" = "generate";
   let generatedKey = false;
   let apiKey = "";
-  let copyBtn: HTMLButtonElement;
   async function genAPIKey() {
     if (!generatedKey) {
       setState("loading");
-      const response = await fetch(
-        "https://api-analytics-server.vercel.app/api/generate-api-key"
-      );
-      if (response.status == 200) {
-        const data = await response.json();
-        generatedKey = true;
-        apiKey = data;
-        setState("copy");
-      } else {
-        setState("error");
+      try {
+        const response = await fetch(
+          "https://api-analytics-server.vercel.app/api/generate-api-key"
+        );
+        if (response.status == 200) {
+          const data = await response.json();
+          generatedKey = true;
+          apiKey = data;
+          setState("copy");
+        } else {
+          setState("error");
+        }
+      } catch (e) {
+        console.log(e);
+        setState("generate");
       }
     }
   }
