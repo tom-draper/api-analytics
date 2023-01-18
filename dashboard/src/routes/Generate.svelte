@@ -1,13 +1,11 @@
 <script lang="ts">
-  let loading = false;
+  let state: "generate" | "loading" | "copy" | "copied" | "error" = "generate";
   let generatedKey = false;
   let apiKey = "";
-  let generateBtn: HTMLButtonElement;
   let copyBtn: HTMLButtonElement;
-  let copiedNotification: HTMLDivElement;
   async function genAPIKey() {
     if (!generatedKey) {
-      loading = true;
+      setState("loading");
       const response = await fetch(
         "https://api-analytics-server.vercel.app/api/generate-api-key"
       );
@@ -15,17 +13,20 @@
         const data = await response.json();
         generatedKey = true;
         apiKey = data;
-        generateBtn.style.display = "none";
-        copyBtn.style.display = "grid";
+        setState("copy");
+      } else {
+        setState("error");
       }
-      loading = false;
     }
+  }
+
+  function setState(value: typeof state) {
+    state = value;
   }
 
   function copyToClipboard() {
     navigator.clipboard.writeText(apiKey);
-    copyBtn.value = "Copied";
-    copiedNotification.style.visibility = "visible";
+    setState("copied");
   }
 </script>
 
@@ -33,17 +34,30 @@
   <div class="content">
     <h2>Generate API key</h2>
     <input type="text" readonly bind:value={apiKey} />
-    <button id="formBtn" on:click={genAPIKey} bind:this={generateBtn}
-      >Generate</button
+    <button
+      id="formBtn"
+      on:click={genAPIKey}
+      class:no-display={state != "generate"}>Generate</button
     >
-    <button id="copyBtn" on:click={copyToClipboard} bind:this={copyBtn}
+    <button id="formBtn" class:no-display={state != "loading"}>
+      <div class="spinner">
+        <div class="loader" />
+      </div>
+    </button>
+    <button
+      id="formBtn"
+      on:click={copyToClipboard}
+      bind:this={copyBtn}
+      class:no-display={state != "copy"}
       ><img class="copy-icon" src="img/copy.png" alt="" /></button
     >
-    <div id="copied" bind:this={copiedNotification}>Copied!</div>
-
-    <div class="spinner">
-      <div class="loader" style="display: {loading ? 'initial' : 'none'}" />
-    </div>
+    <button
+      id="formBtn"
+      class="copied-btn"
+      on:click={copyToClipboard}
+      class:no-display={state != "copied"}>Copied</button
+    >
+    <button id="formBtn" class:no-display={state != "error"}>Error</button>
   </div>
   <div class="details">
     <div class="keep-secure">Keep your API key safe and secure.</div>
@@ -53,21 +67,19 @@
 </div>
 
 <style scoped>
-  #copyBtn {
-    background: #1c1c1c;
-    display: none;
-    background: #343434;
-    place-items: center;
-    margin: auto;
-  }
   .copy-icon {
-    filter: contrast(0.3);
-    height: 20px;
+    height: 18px;
   }
-  #copied {
-    color: var(--highlight);
-    margin: 2em auto auto;
-    visibility: hidden;
-    height: 1em;
+  .copied-btn {
+    cursor: default;
+  }
+  .spinner {
+    height: auto;
+  }
+  .loader {
+    border: 3px solid #343434;
+    border-top: 3px solid var(--highlight);
+    height: 10px;
+    width: 10px;
   }
 </style>

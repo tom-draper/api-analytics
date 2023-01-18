@@ -184,10 +184,10 @@
     background: conic-gradient(from 270deg, var(--highlight),  #1c1c1c);
     transform: scale(-1, 1);
     margin-right: -1px;
-    filter: brightness(1.2);
+    filter: brightness(1.1);
   }
   .test-right-instructions-container {
-    filter: brightness(1.2);
+    filter: brightness(1.1);
     width: 100%;
     height: 100%;
     margin-right: auto;

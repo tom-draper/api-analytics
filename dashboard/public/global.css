@@ -86,8 +86,9 @@ h2 {
   background: #1c1c1c;
   padding: 3.5em 4em 4em;
   border-radius: 9px;
-  margin: 20vh 0 2vh;
-  height: 400px;
+  margin: 20vh 0;
+  /* height: 400px; */
+  box-shadow: 0 0 180px 2px var(--highlight);
 }
 
 input {
@@ -126,6 +127,10 @@ input {
 .keep-secure {
   color: #5a5a5a;
   margin-bottom: 1em;
+}
+
+.no-display {
+  display: none;
 }
 
 /* Spinner */
