@@ -10,7 +10,6 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	supa "github.com/nedpals/supabase-go"
-	// "github.com/oschwald/geoip2-golang"
 )
 
 var (
@@ -59,7 +58,7 @@ type RequestRow struct {
 	Path         string `json:"path"`
 	Hostname     string `json:"hostname"`
 	IPAddress    string `json:"ip_address"`
-	Location     string `json:"country"`
+	Location     string `json:"location"`
 	UserAgent    string `json:"user_agent"`
 	Method       int16  `json:"method"`
 	Status       int16  `json:"status"`
@@ -130,11 +129,6 @@ func frameworkMap(framework string) (int16, error) {
 }
 
 func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
-	// db, err := geoip2.Open(filepath.Join(curDir, "GeoLite2-Country.mmdb"))
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
 	logRequest := func(c *gin.Context) {
 		// Collect API request data sent via POST request
 		var requestData RequestData
@@ -159,13 +153,6 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 				return
 			}
 
-			// ip := net.ParseIP(requestData.IPAddress)
-			// record, err := db.City(ip)
-			var location string
-			// if err == nil {
-			// 	location = record.Country.IsoCode
-			// }
-
 			request := RequestRow{
 				APIKey:       requestData.APIKey,
 				Path:         requestData.Path,
@@ -176,7 +163,7 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 				ResponseTime: requestData.ResponseTime,
 				Method:       method,
 				Framework:    framework,
-				Location:     location,
+				Location:     "", // TODO
 			}
 			// Insert request data into database
 			var result []interface{}
