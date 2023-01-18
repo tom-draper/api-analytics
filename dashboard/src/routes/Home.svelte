@@ -3,6 +3,8 @@
   import frameworkExamples from "../lib/framework";
   import codeStyle from "svelte-highlight/styles/a11y-dark";
   import Footer from "../components/Footer.svelte";
+  import Landing from "../components/home/Landing.svelte";
+  import Highlight from "../components/home/Highlight.svelte";
 
   function setFramework(value: string) {
     currentFramework = value;
@@ -50,77 +52,9 @@
 </svelte:head>
 
 <div class="home">
-  <div class="landing-page-container">
-    <div class="landing-page">
-      <div class="left">
-        <h1>API Analytics</h1>
-        <h2>Monitoring and analytics for API frameworks.</h2>
-        <div class="links">
-          <a href="/generate" class="link">
-            <div class="text">
-              Try now – it's <span class="italic">free</span>
-            </div></a
-          >
-          <a href="/dashboard/demo" class="link secondary">
-            <div class="text">Demo</div></a
-          >
-        </div>
-      </div>
-      <div style="position: relative" class="right">
-        <img class="logo" src="img/home-logo2.png" alt="" />
-        <img
-          id="hover-1"
-          style="position: absolute;"
-          class="logo animated"
-          src="img/animated5.png"
-          alt=""
-        />
-        <img
-          id="hover-2"
-          style="position: absolute;"
-          class="logo animated"
-          src="img/animated6.png"
-          alt=""
-        />
-      </div>
-    </div>
-  </div>
-
-  <div class="dashboard">
-    <div class="dashboard-title-container">
-      <img class="lightning-top" src="img/logo.png" alt="" />
-      <h1 class="dashboard-title">Dashboard</h1>
-    </div>
-    <div class="dashboard-content">
-      <div class="dashboard-content-text">
-        An all-in-one analytics dashboard. Real-time insight into your API's
-        usage.
-      </div>
-      <div class="dashboard-btn-container">
-        <a href="/dashboard" class="dashboard-btn secondary">
-          <div class="dashboard-btn-text">Open</div>
-        </a>
-      </div>
-    </div>
-    <img class="dashboard-img" src="img/dashboard.png" alt="" />
-  </div>
-  <div class="dashboard">
-    <div class="dashboard-title-container">
-      <img class="lightning-top" src="img/logo.png" alt="" />
-      <h1 class="dashboard-title">Monitoring</h1>
-    </div>
-    <div class="dashboard-content">
-      <div class="dashboard-content-text">
-        Active monitoring and error notifications. Peace of mind.
-      </div>
-      <div class="dashboard-btn-container">
-        <a href="/" class="dashboard-btn secondary">
-          <div class="dashboard-btn-text">Coming Soon</div>
-        </a>
-      </div>
-    </div>
-    <img class="dashboard-img" src="img/monitoring.png" alt="" />
-  </div>
+  <Landing />
+  <Highlight title="Dashboard" description="An all-in-one analytics dashboard. Real-time insight into your API's usage." path="/dashboard" img="dashboard.png" button="Open" />
+  <Highlight title="Monitor" description="Active monitoring and error notifications. Peace of mind." path="/" img="monitoring.png" button="Coming soon"/>
   <div class="test-add-middleware-content">
     <div class="test-left-instructions-container"></div>
     <div class="test-right-instructions-container"></div>
@@ -231,15 +165,6 @@
     margin-bottom: -50px;
   }
 
-  h1 {
-    font-size: 3.4em;
-  }
-
-  h2 {
-    color: white;
-    font-size: 1.5em;
-  }
-
   .links {
     color: #707070;
     display: flex;
@@ -273,12 +198,6 @@
     margin: 2em 4em;
   }
 
-  a {
-    background: var(--highlight);
-    color: black;
-    padding: 10px 20px;
-    border-radius: 4px;
-  }
   .italic {
     font-style: italic;
   }
@@ -413,13 +332,6 @@
     margin-bottom: -2em;
   }
 
-  #hover-1 {
-    transform: translateY(3.7%);
-  }
-  #hover-2 {
-    transform: translateY(-3.7%);
-  }
-
   .animated {
     transition: all 10s ease-in-out;
   }
@@ -490,12 +402,6 @@
     }
   }
   @media screen and (max-width: 700px) {
-    h1 {
-      font-size: 2.5em;
-    }
-    h2 {
-      font-size: 1.2em;
-    }
     .landing-page-container {
       min-height: unset;
     }
