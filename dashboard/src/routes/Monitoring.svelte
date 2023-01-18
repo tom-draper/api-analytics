@@ -234,4 +234,10 @@
   .spinner {
     margin: 3em 0 10em;
   }
+
+  @media screen and (max-width: 1000px) {
+    .cards-container {
+      width: 95%
+    }
+  } 
 </style>

@@ -211,7 +211,7 @@
     </div>
   </div>
 {:else if failed}
-  <div class="no-requests">No requests currently logged.</div>
+  <img class="no-requests" src="../img/no-requests-logged.png" alt="">
 {:else}
   <div class="placeholder" style="min-height: 85vh;">
     <div class="spinner">
@@ -236,16 +236,13 @@
   .grid-row {
     display: flex;
   }
+  .no-requests {
+    width: 350px;
+    margin: 20vh 0;
+  }
   .right {
     flex-grow: 1;
     margin-right: 2em;
-  }
-  .no-requests {
-    height: 70vh;
-    font-size: 1.5em;
-    display: grid;
-    place-items: center;
-    color: var(--highlight);
   }
   .placeholder {
     min-height: 85vh;
