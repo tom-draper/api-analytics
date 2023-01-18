@@ -59,7 +59,7 @@ type RequestRow struct {
 	Path         string `json:"path"`
 	Hostname     string `json:"hostname"`
 	IPAddress    string `json:"ip_address"`
-	Location     string `json:"country"`
+	Location     string `json:"location"`
 	UserAgent    string `json:"user_agent"`
 	Method       int16  `json:"method"`
 	Status       int16  `json:"status"`
