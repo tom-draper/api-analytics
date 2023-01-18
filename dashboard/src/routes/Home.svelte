@@ -124,9 +124,8 @@
   <div class="test-add-middleware-content">
     <div class="test-left-instructions-container"></div>
     <div class="test-right-instructions-container"></div>
-    <div class="radial2"></div>
-    <div class="linear2"></div>
-    <!-- <div class="linear3"></div> -->
+    <div class="radial-dimmer"></div>
+    <div class="linear-dimmer"></div>
   </div>
   <div class="add-middleware">
     <div class="add-middleware-title">Getting Started</div>
@@ -195,36 +194,17 @@
     background: conic-gradient(from 270deg, var(--highlight), #1c1c1c);
     margin-left: -1px;
   }
-  .radial1 {
+  .radial-dimmer {
     position: absolute;
     width: 100%;
     height: 100%;
-    left: 0;
-    top: 50%;
-    background: radial-gradient(var(--highlight),  transparent, transparent);
-  }
-  .radial2 {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    /* left: calc(50% - 600px); */
-    /* top: 10%; */
     background: radial-gradient(transparent, #1c1c1c);
   }
-  .linear2 {
+  .linear-dimmer {
     position: absolute;
     width: 100%;
     height: 100%;
-    /* left: calc(50% - 600px); */
     background: linear-gradient(#1c1c1c, transparent, #1c1c1c);
-  }
-  .linear3 {
-    position: absolute;
-    width: 1000px;
-    height: 50%;
-    left: calc(50% - 500px);
-    bottom: 50%;
-    background: linear-gradient(90deg, #1c1c1c,  transparent, transparent, #1c1c1c);
   }
 
   .landing-page {
