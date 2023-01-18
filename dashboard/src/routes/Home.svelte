@@ -325,7 +325,7 @@
 
   .add-middleware-title {
     color: var(--highlight);
-    color: black;
+    color: #1c1c1c;
     font-size: 2.5em;
     font-weight: 700;
     margin-bottom: 1.5em;
