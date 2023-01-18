@@ -461,9 +461,6 @@
     }
   }
 
-  @media screen and (max-width: 1000px) {
-  }
-
   @media screen and (max-width: 900px) {
     .home {
       font-size: 0.85em;
@@ -474,6 +471,12 @@
     .add-middleware {
       margin-top: -465px;
     }
+    .frameworks {
+      margin: 0 5%;
+    }
+    .test-add-middleware-content {
+      margin-top: -18em;
+    }
   }
   @media screen and (max-width: 800px) {
     .home {
@@ -481,9 +484,6 @@
     }
     .right {
       margin-top: 2em;
-    }
-    .frameworks {
-      margin: 0 5%;
     }
     .test-add-middleware-content {
       margin-top: -22em;
