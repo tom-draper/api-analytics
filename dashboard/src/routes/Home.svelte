@@ -187,7 +187,7 @@
     filter: brightness(1.2);
   }
   .test-right-instructions-container {
-    filter: brightness(1.2s);
+    filter: brightness(1.2);
     width: 100%;
     height: 100%;
     margin-right: auto;
