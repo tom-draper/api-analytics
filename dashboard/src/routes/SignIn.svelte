@@ -3,15 +3,21 @@
   let apiKey = "";
   async function genAPIKey() {
     setState("loading");
-    const response = await fetch(
-      `https://api-analytics-server.vercel.app/api/user-id/${apiKey}`
-    );
 
-    if (response.status == 200) {
-      const userID = await response.json();
-      window.location.href = `/${page}/${userID.replaceAll("-", "")}`;
-    } else {
-      setState("sign-in");
+    try {
+      const response = await fetch(
+        `https://api-analytics-server.vercel.app/api/user-id/${apiKey}`
+      );
+
+      if (response.status == 200) {
+        const userID = await response.json();
+        window.location.href = `/${page}/${userID.replaceAll("-", "")}`;
+      } else {
+        setState("sign-in");
+      }
+    } catch (e) {
+      console.log(e);
+      setState('sign-in')
     }
   }
 
