@@ -181,17 +181,17 @@
     width: 100%;
     height: 100%;
     margin-left: auto;
-    background: conic-gradient(from 270deg, var(--highlight),  #1c1c1c);
+    background: conic-gradient(from 270deg, var(--highlight),  #141414);
     transform: scale(-1, 1);
     margin-right: -1px;
-    filter: brightness(1.1);
+    filter: brightness(1.05);
   }
   .test-right-instructions-container {
-    filter: brightness(1.1);
+    filter: brightness(1.05);
     width: 100%;
     height: 100%;
     margin-right: auto;
-    background: conic-gradient(from 270deg, var(--highlight), #1c1c1c);
+    background: conic-gradient(from 270deg, var(--highlight), #141414);
     margin-left: -1px;
   }
   .radial-dimmer {
