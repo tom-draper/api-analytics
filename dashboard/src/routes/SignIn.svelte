@@ -3,7 +3,6 @@
   let apiKey = "";
   async function genAPIKey() {
     setState("loading");
-
     try {
       const response = await fetch(
         `https://api-analytics-server.vercel.app/api/user-id/${apiKey}`
@@ -17,7 +16,7 @@
       }
     } catch (e) {
       console.log(e);
-      setState('sign-in')
+      setState("sign-in");
     }
   }
 
