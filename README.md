@@ -522,8 +522,14 @@ For any given request to your API, data recorded is limited to:
  - API hostname
  - API framework (FastAPI, Flask, Express etc.)
 
-Data collected is only ever used to populate your analytics dashboard. Your data is anonymous, with the API key the only link between you and you API's analytics. Should you lose your API key, you will have no method to access your API analytics. Inactive API keys (> 1 year) and its associated API request data may be deleted.
+Data collected is only ever used to populate your analytics dashboard. Your data is anonymous, with the API key the only link between you and you API's analytics. Should you lose your API key, you will have no method to access your API analytics. API keys and its associated API request data will eventually be deleted after 1 year of inactivity.
 
 ### Delete Data
 
 At any time, you can delete all stored data associated with your API key by going to https://my-api-analytics.vercel.app/delete and entering your API key.
+
+## Development
+
+This project is still in the early stages of development, with some bugs that still need to be ironed out. Therefore, API Analytics is currently not recommended production servers or APIs that handle with a high-volume of traffic (>100,000 requests/hour).
+
+Any issues or pull requests are very welcome.
