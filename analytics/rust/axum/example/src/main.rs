@@ -31,6 +31,7 @@ async fn main() {
         .layer(Analytics::new(api_key));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    println!("Server listening at: http://127.0.0.1:3000");
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await

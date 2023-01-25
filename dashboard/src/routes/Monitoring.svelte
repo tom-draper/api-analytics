@@ -209,8 +209,8 @@
   }
 
   button {
-    background: #232323;
-    color: #707070;
+    background: var(--light-background);
+    color: var(--dim-text);
     border: none;
     padding: 3px 12px;
     cursor: pointer;

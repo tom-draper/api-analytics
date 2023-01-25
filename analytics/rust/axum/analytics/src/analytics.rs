@@ -1,16 +1,18 @@
 use axum::{body::Body, extract::ConnectInfo, http::Request, response::Response};
 use futures::future::BoxFuture;
-use http::header::{HeaderValue, HOST, USER_AGENT};
+use http::{
+    header::{HeaderValue, HOST, USER_AGENT},
+    Extensions, HeaderMap,
+};
+use reqwest::blocking::Client;
 use serde::Serialize;
 use std::{
+    net::{IpAddr, SocketAddr},
     task::{Context, Poll},
     thread::spawn,
     time::Instant,
-    net::SocketAddr
 };
-use reqwest::blocking::Client;
 use tower::{Layer, Service};
-
 
 #[derive(Debug, Serialize)]
 struct Data {
@@ -33,8 +35,8 @@ impl Data {
         path: String,
         user_agent: String,
         method: String,
-        response_time: u32,
         status: u16,
+        response_time: u32,
     ) -> Self {
         Self {
             api_key,
@@ -88,6 +90,44 @@ impl HeaderValueExt for HeaderValue {
     }
 }
 
+fn ip_from_x_forwarded_for(headers: &HeaderMap) -> Option<IpAddr> {
+    headers
+        .get("x-forwarded-for")
+        .and_then(|hv| hv.to_str().ok())
+        .and_then(|s| {
+            s.split(',')
+                .rev()
+                .find_map(|s| s.trim().parse::<IpAddr>().ok())
+        })
+}
+
+fn ip_from_x_real_ip(headers: &HeaderMap) -> Option<IpAddr> {
+    headers
+        .get("x-real-ip")
+        .and_then(|hv| hv.to_str().ok())
+        .and_then(|s| s.parse::<IpAddr>().ok())
+}
+
+fn ip_from_connect_info(extensions: &Extensions) -> Option<IpAddr> {
+    extensions
+        .get::<ConnectInfo<SocketAddr>>()
+        .map(|ConnectInfo(addr)| addr.ip())
+}
+
+fn extract_ip_address(req: &Request<Body>) -> String {
+    let extensions = req.extensions();
+    let headers = req.headers();
+    let mut ip_address = String::new();
+    if let Some(val) = ip_from_x_forwarded_for(headers) {
+        ip_address = val.to_string();
+    } else if let Some(val) = ip_from_x_real_ip(headers) {
+        ip_address = val.to_string();
+    } else if let Some(val) = ip_from_connect_info(extensions) {
+        ip_address = val.to_string();
+    }
+    ip_address
+}
+
 fn log_request(data: Data) {
     let _ = Client::new()
         .post("https://api-analytics-server.vercel.app/api/log-request")
@@ -113,23 +153,19 @@ where
 
         let api_key = self.api_key.clone();
         let hostname = req.headers().get(HOST).map(|x| x.to_string()).unwrap();
-        let mut ip_address = String::new();
-        if let Some(val) = req.extensions().get::<ConnectInfo<SocketAddr>>().map(|ConnectInfo(addr)| addr.ip()) {
-            ip_address = val.to_string();
-        }
+        let ip_address = extract_ip_address(&req);
         let path = req.uri().path().to_owned();
         let method = req.method().to_string();
         let user_agent = req
-        .headers()
-        .get(USER_AGENT)
-        .map(|x| x.to_string())
-        .unwrap();
-        
+            .headers()
+            .get(USER_AGENT)
+            .map(|x| x.to_string())
+            .unwrap();
+
         let future = self.inner.call(req);
 
         Box::pin(async move {
             let res: Response = future.await?;
-            let elapsed = now.elapsed().as_millis();
 
             let data = Data::new(
                 api_key,
@@ -138,8 +174,8 @@ where
                 path,
                 user_agent,
                 method,
-                elapsed.try_into().unwrap(),
                 res.status().as_u16(),
+                now.elapsed().as_millis().try_into().unwrap(),
             );
 
             spawn(|| log_request(data));
@@ -147,4 +183,3 @@ where
         })
     }
 }
-

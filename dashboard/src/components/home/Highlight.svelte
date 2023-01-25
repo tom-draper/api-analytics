@@ -1,5 +1,9 @@
 <script lang="ts">
-  export let title: string, description: string, img: string, path: string, button: string;
+  export let title: string,
+    description: string,
+    img: string,
+    path: string,
+    button: string;
 </script>
 
 <div class="dashboard">
@@ -26,12 +30,12 @@
   }
 
   .secondary {
-    background: #1c1c1c;
+    background: var(--background);
     border: 3px solid var(--highlight);
     color: var(--highlight);
   }
   .secondary:hover {
-    background: #081d13;
+    background: var(--dark-green);
   }
 
   .lightning-top {

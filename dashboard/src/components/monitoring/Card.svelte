@@ -147,7 +147,7 @@
           <div class="indicator green-light"></div>
         {/if}
       </div>
-      <a href="http://{url}" class="endpoint"><span style="color: #707070">http://</span>{url}</a>
+      <a href="http://{url}" class="endpoint"><span style="color: var(--dim-text)">http://</span>{url}</a>
       <button class="delete" on:click={deleteMonitor}><img class="bin-icon" src="../img/bin.png" alt=""></button>
     </div>
     <div class="card-text-right">
@@ -213,10 +213,10 @@
     background: rgb(228, 98, 98);
   }
   .no-request {
-    color: #707070;
+    color: var(--dim-text);
   }
   .uptime {
-    color: #707070;
+    color: var(--dim-text);
   }
   .indicator {
     width: 10px;

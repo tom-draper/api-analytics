@@ -58,7 +58,7 @@
 </script>
 
 {#if perHour}
-  <button class="card" on:click={togglePeriod}>
+  <button class="card" on:click={togglePeriod} title="Based on IP address">
     <div class="card-title">
       Users <span class="per-hour">/ hour</span>
     </div>
@@ -67,7 +67,7 @@
     {/if}
   </button>
 {:else}
-  <button class="card" on:click={togglePeriod}>
+  <button class="card" on:click={togglePeriod} title="Based on IP address">
     {#if percentageChange != null}
       <div
         class="percentage-change"

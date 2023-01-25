@@ -20,19 +20,19 @@
 
     <div class="toggle">
       <button
-        class={activeBtn == "os" ? "active" : ""}
+        class:active={activeBtn == "os"}
         on:click={() => {
           setBtn("os");
         }}>OS</button
       >
       <button
-        class={activeBtn == "browser" ? "active" : ""}
+        class:active={activeBtn == "browser"}
         on:click={() => {
           setBtn("browser");
         }}>Browser</button
       >
       <button
-        class={activeBtn == "device" ? "active" : ""}
+        class:active={activeBtn == "device"}
         on:click={() => {
           setBtn("device");
         }}>Device</button

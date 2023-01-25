@@ -8,7 +8,7 @@
     let freq = {};
     for (let i = 0; i < data.length; i++) {
       // Create groups of endpoints by path + status
-      let endpointID = data[i].path + data[i].status;
+      let endpointID = `${data[i].path}${data[i].status}`;
       if (!(endpointID in freq)) {
         freq[endpointID] = {
           path: `${methodMap[data[i].method]}  ${data[i].path}`,
@@ -21,6 +21,10 @@
     return freq;
   }
 
+  function statusMatch(status: number): boolean {
+    return (activeBtn == 'all') || (activeBtn == 'success' && status >= 200 && status <= 299) || (activeBtn == 'bad' && status >= 300 && status <= 399) || (activeBtn == 'error' && status >= 400)
+  }
+
   function build() {
     let freq = endpointFreq();
 
@@ -28,9 +32,11 @@
     let freqArr = [];
     maxCount = 0;
     for (let endpointID in freq) {
-      freqArr.push(freq[endpointID]);
-      if (freq[endpointID].count > maxCount) {
-        maxCount = freq[endpointID].count;
+      if (statusMatch(freq[endpointID].status)) {
+        freqArr.push(freq[endpointID]);
+        if (freq[endpointID].count > maxCount) {
+          maxCount = freq[endpointID].count;
+        }
       }
     }
 
@@ -60,15 +66,22 @@
       endpointCount.style.display = "none";
     }
   }
+
   function setEndpointLabels() {
     for (let i = 0; i < endpoints.length; i++) {
       setEndpointLabelVisibility(i);
     }
   }
 
+  function setBtn(value: string) {
+    activeBtn = value;
+    build();
+  }
+
   let endpoints: any[];
   let maxCount: number;
   let mounted = false;
+  let activeBtn = 'all'
   onMount(() => {
     mounted = true;
   });
@@ -79,7 +92,35 @@
 </script>
 
 <div class="card">
-  <div class="card-title">Endpoints</div>
+  <div class="card-title">Endpoints
+    <div class="toggle">
+      <button
+        class:active={activeBtn == "all"}
+        on:click={() => {
+          setBtn("all");
+        }}>All</button
+      >
+      <button
+        class:active={activeBtn == "success"}
+        on:click={() => {
+          setBtn("success");
+        }}>Success</button
+      >
+      <button
+        class:active={activeBtn == "bad"}
+        on:click={() => {
+          setBtn("bad");
+        }}>Bad</button
+      >
+      <button
+        class:active={activeBtn == "error"}
+        on:click={() => {
+          setBtn("error");
+        }}>Error</button
+      >
+    </div>
+  </div>
+
   {#if endpoints != undefined}
     <div class="endpoints">
       {#each endpoints as endpoint, i}
@@ -87,12 +128,11 @@
           <div
             class="endpoint"
             id="endpoint-{i}"
-            title={endpoint.count}
-            style="width: {(endpoint.count / maxCount) *
-              100}%; background: {endpoint.status >= 200 &&
-            endpoint.status <= 299
-              ? 'var(--highlight)'
-              : '#e46161'}"
+            title="Status: {endpoint.status}"
+            style="width: {(endpoint.count / maxCount) * 100}%"
+            class:success={endpoint.status >= 200 && endpoint.status <= 299}
+            class:bad={endpoint.status >= 300 && endpoint.status <= 399}
+            class:error={endpoint.status >= 400 && endpoint.status <= 499}
           >
             <div class="endpoint-label" id="endpoint-label-{i}">
               <div class="path" id="endpoint-path-{i}">
@@ -115,6 +155,23 @@
 <style scoped>
   .card {
     min-height: 361px;
+  }
+  .card-title {
+    display: flex;
+  }
+  .toggle {
+    margin-left: auto;
+  }
+  .active {
+    background: var(--highlight);
+  }
+  button {
+    border: none;
+    border-radius: 4px;
+    background: rgb(68, 68, 68);
+    cursor: pointer;
+    padding: 2px 6px;
+    margin-left: 5px;
   }
   .endpoints {
     margin: 0.9em 20px 0.6em;
@@ -149,8 +206,17 @@
     left: 40px;
     top: 0;
     margin: 5px 0;
-    color: #707070;
+    color: var(--dim-text);
     display: none;
     font-size: 0.85em;
+  }
+  .success {
+    background: var(--highlight);
+  }
+  .bad {
+    background: rgb(235, 235, 129);
+  }
+  .error {
+    background: var(--red);
   }
 </style>
