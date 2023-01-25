@@ -1,7 +1,7 @@
-use actix_web::{get, web, Responder, Result};
-use serde::Serialize;
-use dotenv::dotenv;
 use actix_analytics::Analytics;
+use actix_web::{get, web, Responder, Result, App, HttpServer};
+use dotenv::dotenv;
+use serde::Serialize;
 
 #[derive(Serialize)]
 struct JsonData {
@@ -20,14 +20,11 @@ async fn index() -> Result<impl Responder> {
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
 
-    use actix_web::{App, HttpServer};
-    
+    println!("Server listening at: http://127.0.0.1:8080");
     HttpServer::new(|| {
         let api_key = std::env::var("API_KEY").expect("API_KEY must be set.");
 
-        App::new()
-            .wrap(Analytics::new(api_key))
-            .service(index)
+        App::new().wrap(Analytics::new(api_key)).service(index)
     })
     .bind(("127.0.0.1", 8080))?
     .run()

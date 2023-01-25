@@ -1,15 +1,16 @@
-use actix_web::http::header::{HeaderValue, USER_AGENT, HOST};
 use actix_web::{
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
+    http::header::{HeaderValue, HOST, USER_AGENT},
     Error,
 };
-use std::thread::spawn;
 use futures::future::LocalBoxFuture;
-use serde::Serialize;
-use std::future::{ready, Ready};
-use std::time::Instant;
 use reqwest::blocking::Client;
-
+use serde::Serialize;
+use std::{
+    future::{ready, Ready},
+    thread::spawn,
+    time::Instant,
+};
 
 #[derive(Debug, Serialize)]
 struct Data {
@@ -93,6 +94,13 @@ impl HeaderValueExt for HeaderValue {
     }
 }
 
+fn extract_ip_address(req: &ServiceRequest) -> String {
+    if let Some(val) = req.peer_addr() {
+        return val.ip().to_string();
+    };
+    return String::new();
+}
+
 fn log_request(data: Data) {
     let _ = Client::new()
         .post("https://api-analytics-server.vercel.app/api/log-request")
@@ -113,17 +121,19 @@ where
     forward_ready!(service);
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
+        let now = Instant::now();
+
         let api_key = self.api_key.clone();
         let hostname = req.headers().get(HOST).map(|x| x.to_string()).unwrap();
-        let mut ip_address = String::new();
-        if let Some(val) = req.peer_addr() {
-            ip_address = val.ip().to_string();
-        };
+        let ip_address = extract_ip_address(&req);
         let path = req.path().to_string();
         let method = req.method().to_string();
-        let user_agent = req.headers().get(USER_AGENT).map(|x| x.to_string()).unwrap();
+        let user_agent = req
+            .headers()
+            .get(USER_AGENT)
+            .map(|x| x.to_string())
+            .unwrap();
 
-        let now = Instant::now();
         let future = self.service.call(req);
 
         Box::pin(async move {
