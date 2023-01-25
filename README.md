@@ -530,6 +530,6 @@ At any time, you can delete all stored data associated with your API key by goin
 
 ## Development
 
-This project is still in the early stages of development, with some bugs that still need to be ironed out. Therefore, API Analytics is currently not recommended production servers or APIs that handle with a high-volume of traffic (>100,000 requests/hour).
+This project is still in the early stages of development, with some bugs that still need to be ironed out. Therefore, API Analytics is currently not recommended for production servers or APIs that handle with a high-volume of traffic (>100,000 requests/hour).
 
 Any issues or pull requests are very welcome.
