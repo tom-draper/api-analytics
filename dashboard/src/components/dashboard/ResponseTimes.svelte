@@ -29,7 +29,9 @@
   }
 
   function markerPosition(x: number) {
-    let position = Math.log10(x) * 125 - 300;
+    // 170.125 ms -> 0
+    // 1000 ms -> 100
+    let position = Math.log10(x) * 130 - 290;
     if (position < 0) {
       return 0;
     } else if (position > 100) {
