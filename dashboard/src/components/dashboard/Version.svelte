@@ -108,7 +108,7 @@
   let plotDiv: HTMLDivElement;
   let mounted = false;
   onMount(() => {
-    mounted = true;
+    setTimeout(() => {mounted = true}, 500);
   });
 
   $: data && mounted && setVersions();
