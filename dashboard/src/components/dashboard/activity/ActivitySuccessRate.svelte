@@ -88,7 +88,7 @@
   .success-rate-container {
     text-align: left;
     font-size: 0.9em;
-    color: #707070;
+    color: var(--dim-text);
   }
   .success-rate-title {
     margin: 0 0 4px 43px;

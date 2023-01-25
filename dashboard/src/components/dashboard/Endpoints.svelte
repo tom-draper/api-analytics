@@ -88,11 +88,10 @@
             class="endpoint"
             id="endpoint-{i}"
             title={endpoint.count}
-            style="width: {(endpoint.count / maxCount) *
-              100}%; background: {endpoint.status >= 200 &&
-            endpoint.status <= 299
-              ? 'var(--highlight)'
-              : '#e46161'}"
+            style="width: {(endpoint.count / maxCount) * 100}%"
+            class:success={endpoint.status >= 200 && endpoint.status <= 299}
+            class:bad={endpoint.status >= 300 && endpoint.status <= 399}
+            class:error={endpoint.status >= 400 && endpoint.status <= 499}
           >
             <div class="endpoint-label" id="endpoint-label-{i}">
               <div class="path" id="endpoint-path-{i}">
@@ -149,8 +148,17 @@
     left: 40px;
     top: 0;
     margin: 5px 0;
-    color: #707070;
+    color: var(--dim-text);
     display: none;
     font-size: 0.85em;
+  }
+  .success {
+    background: var(--highlight);
+  }
+  .bad {
+    background: rgb(235, 235, 129);
+  }
+  .error {
+    background: var(--red);
   }
 </style>

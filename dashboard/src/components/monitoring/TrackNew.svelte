@@ -79,7 +79,7 @@
     margin: 2em 2em 1.9em;
   }
   input {
-    background: #1c1c1c;
+    background: var(--background);
     border-radius: 4px;
     border: none;
     margin: 0 10px;
@@ -94,18 +94,18 @@
   }
   .start {
     margin: auto;
-    color: #707070;
+    color: var(--dim-text);
   }
   .detail {
     margin-top: 30px;
-    color: #707070;
+    color: var(--dim-text);
     font-weight: 400;
     font-size: 0.85em;
   }
   button {
     border: none;
     border-radius: 4px;
-    background: #232323;
+    background: var(--light-background);
     cursor: pointer;
   }
   .add {
@@ -116,7 +116,7 @@
     margin-top: 20px;
   }
   .ping-type {
-    color: #707070;
+    color: var(--dim-text);
     border: 1px solid #2e2e2e;
     padding: 5px 20px;
     width: 80px;

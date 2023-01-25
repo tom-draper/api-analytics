@@ -1,5 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700&display=swap');
 
+:root {
+  --highlight: #3fcf8e;
+  --red: rgb(228, 97, 97);
+  --yellow: #ebeb81;
+  --background: #1c1c1c;
+  --light-background: #232323;
+  --faded-text: #ededed;
+  --dim-text: #707070;
+
+  --faint-text: #919191;
+  --dark-background: #141414;
+  --dark-green: #081d13;
+}
+
+
 body {
   font-family: 'Noto Sans';
   font-weight: 300;
@@ -7,7 +22,7 @@ body {
   margin: 0;
   padding: 0;
   text-align: center;
-  background-color: #1c1c1c;
+  background-color: var(--background);
 }
 
 nav {
@@ -83,7 +98,7 @@ h2 {
 .content {
   width: fit-content;
   background: #343434;
-  background: #1c1c1c;
+  background: var(--background);
   padding: 3.5em 4em 4em;
   border-radius: 9px;
   margin: 20vh 0;
@@ -92,7 +107,7 @@ h2 {
 }
 
 input {
-  background: #1c1c1c;
+  background: var(--background);
   background: #343434;
   border: none;
   padding: 0 20px;
@@ -160,11 +175,3 @@ input {
   }
 }
 
-:root {
-  --highlight: #3fcf8e;
-  --red: rgb(228, 97, 97);
-  --yellow: #ebeb81;
-  --light-background: #232323;
-  --faded-text: #ededed;
-  --dim-text: #707070;
-}

@@ -32,11 +32,11 @@
   {@html codeStyle}
 </svelte:head>
 
-<div class="test-add-middleware-content">
-  <div class="test-left-instructions-container" />
-  <div class="test-right-instructions-container" />
-  <div class="radial-dimmer" />
-  <div class="linear-dimmer" />
+<div class="gradient-container">
+  <div class="left-gradient gradient" />
+  <div class="right-gradient gradient" />
+  <div class="radial-dimmer dimmer" />
+  <div class="linear-dimmer dimmer" />
 </div>
 <div class="add-middleware">
   <div class="add-middleware-title">Getting Started</div>
@@ -79,41 +79,38 @@
 </div>
 
 <style scoped>
-  .test-add-middleware-content {
+  .gradient-container {
     position: relative;
     display: flex;
     height: 800px;
     z-index: -1;
     margin-top: -15em;
   }
-  .test-left-instructions-container {
+  .gradient {
     width: 100%;
     height: 100%;
+    background: conic-gradient(from 270deg, var(--highlight), var(--dark-background));
+    filter: brightness(1.05);
+  }
+  .left-gradient {
     margin-left: auto;
-    background: conic-gradient(from 270deg, var(--highlight), #141414);
     transform: scale(-1, 1);
     margin-right: -1px;
-    filter: brightness(1.05);
   }
-  .test-right-instructions-container {
-    filter: brightness(1.05);
-    width: 100%;
-    height: 100%;
+  .right-gradient {
     margin-right: auto;
-    background: conic-gradient(from 270deg, var(--highlight), #141414);
     margin-left: -1px;
   }
-  .radial-dimmer {
+  .dimmer {
     position: absolute;
     width: 100%;
     height: 100%;
-    background: radial-gradient(transparent, #1c1c1c);
+  }
+  .radial-dimmer {
+    background: radial-gradient(transparent, var(--background));
   }
   .linear-dimmer {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(#1c1c1c, transparent, #1c1c1c);
+    background: linear-gradient(var(--background), transparent, var(--background));
   }
 
   .landing-page {
@@ -141,7 +138,7 @@
   }
 
   .links {
-    color: #707070;
+    color: var(--dim-text);
     display: flex;
     margin-top: 30px;
     text-align: left;
@@ -156,12 +153,12 @@
   }
 
   .secondary {
-    background: #1c1c1c;
+    background: var(--background);
     border: 3px solid var(--highlight);
     color: var(--highlight);
   }
   .secondary:hover {
-    background: #081d13;
+    background: var(--dark-green);
   }
 
   .lightning-top {
@@ -219,7 +216,7 @@
 
   .add-middleware-title {
     color: var(--highlight);
-    color: #1c1c1c;
+    color: var(--background);
     font-size: 2.5em;
     font-weight: 700;
     margin-bottom: 1.5em;
@@ -236,7 +233,7 @@
     overflow-x: auto;
   }
   .framework {
-    color: #919191;
+    color: var(--faint-text);
     /* color: black; */
     background: transparent;
     border: none;
@@ -270,7 +267,7 @@
     border: 3px solid #7377ad;
   }
   .subtitle {
-    color: #919191;
+    color: var(--faint-text);
     margin: 10px 0 2px 16px;
     font-size: 0.85em;
   }
@@ -286,7 +283,7 @@
     position: relative;
   }
   code {
-    background: #151515;
+    background: var(--dark-background);
     padding: 1.4em 2em;
     border-radius: 0.5em;
     margin: 5px;
@@ -361,7 +358,7 @@
     .frameworks {
       margin: 0 5%;
     }
-    .test-add-middleware-content {
+    .gradient-container {
       margin-top: -18em;
     }
   }
@@ -372,7 +369,7 @@
     .right {
       margin-top: 2em;
     }
-    .test-add-middleware-content {
+    .gradient-container {
       margin-top: -22em;
     }
   }
@@ -405,7 +402,7 @@
     .logo {
       margin-bottom: 0;
     }
-    .test-add-middleware-content {
+    .gradient-container {
       margin-top: -24em;
       overflow: hidden;
     }
@@ -413,18 +410,18 @@
     .add-middleware {
       margin-top: -455px;
     }
-    .test-left-instructions-container {
+    .left-gradient {
       width: 90%;
       margin-left: -40%;
     }
-    .test-right-instructions-container {
+    .right-gradient {
       width: 90%;
       margin-right: -40%;
     }
   }
 
   @media screen and (max-width: 500px) {
-    .test-add-middleware-content {
+    .gradient-container {
       margin-top: -24em;
       overflow: hidden;
     }

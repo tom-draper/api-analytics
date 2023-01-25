@@ -259,10 +259,10 @@
     overflow: hidden;
   }
   .time-period-btn {
-    background: #232323;
+    background: var(--light-background);
     padding: 3px 12px;
     border: none;
-    color: #707070;
+    color: var(--dim-text);
     cursor: pointer;
   }
   .time-period-btn-active {

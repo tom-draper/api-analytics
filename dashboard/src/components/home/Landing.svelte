@@ -88,7 +88,7 @@
   }
 
   .links {
-    color: #707070;
+    color: var(--dim-text);
     display: flex;
     margin-top: 30px;
     text-align: left;
@@ -103,12 +103,12 @@
   }
 
   .secondary {
-    background: #1c1c1c;
+    background: var(--background);
     border: 3px solid var(--highlight);
     color: var(--highlight);
   }
   .secondary:hover {
-    background: #081d13;
+    background: var(--dark-green);
   }
 
   a {
