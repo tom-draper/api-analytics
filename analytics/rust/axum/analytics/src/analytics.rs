@@ -163,7 +163,7 @@ where
             .unwrap();
 
         let future = self.inner.call(req);
-        
+
         Box::pin(async move {
             let res: Response = future.await?;
 
