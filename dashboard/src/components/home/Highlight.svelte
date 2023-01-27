@@ -106,13 +106,16 @@
     h1 {
       font-size: 2.5em;
     }
+    .dashboard {
+      font-size: 0.8em;
+    }
 
     .lightning-top {
       height: 40px;
       margin-top: auto;
     }
     .dashboard-title {
-      margin: 0.2em 0.5em auto 1em;
+      margin: 0.2em 0.5em auto 0.7em;
     }
     .dashboard-img {
       margin-bottom: -3%;
