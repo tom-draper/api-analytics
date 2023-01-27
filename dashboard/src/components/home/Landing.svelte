@@ -171,6 +171,7 @@
     }
     .landing-page-container {
       min-height: unset;
+      font-size: 0.8em;
     }
     .landing-page {
       padding-bottom: 8em;

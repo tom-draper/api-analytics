@@ -403,12 +403,13 @@
       margin-bottom: 0;
     }
     .gradient-container {
-      margin-top: -24em;
+      margin-top: -18em;
       overflow: hidden;
     }
 
     .add-middleware {
-      margin-top: -455px;
+      margin-top: -460px;
+      font-size: 0.8em;
     }
     .left-gradient {
       width: 90%;
@@ -422,7 +423,7 @@
 
   @media screen and (max-width: 500px) {
     .gradient-container {
-      margin-top: -24em;
+      margin-top: -18em;
       overflow: hidden;
     }
   }
