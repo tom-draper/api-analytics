@@ -21,19 +21,6 @@ MIDDLEWARE = [
     Flask: {
         install: "pip install api-analytics",
         codeFile: '',
-        example: `from fastapi import FastAPI
-from api_analytics.fastapi import Analytics
-
-app = FastAPI()
-app.add_middleware(Analytics, api_key=<API-KEY>)  # Add middleware
-
-@app.get('/')
-async def root():
-    return {'message': 'Hello World!'}`
-    },
-    FastAPI: {
-        install: "pip install api-analytics",
-        codeFile: '',
         example: `from flask import Flask
 from api_analytics.flask import add_middleware
 
@@ -42,6 +29,19 @@ add_middleware(app, <API-KEY>)  # Add middleware
 
 @app.get('/')
 def root():
+    return {'message': 'Hello World!'}`
+    },
+    FastAPI: {
+        install: "pip install api-analytics",
+        codeFile: '',
+        example: `from fastapi import FastAPI
+from api_analytics.fastapi import Analytics
+
+app = FastAPI()
+app.add_middleware(Analytics, api_key=<API-KEY>)  # Add middleware
+
+@app.get('/')
+async def root():
     return {'message': 'Hello World!'}`
     },
     Tornado: {
