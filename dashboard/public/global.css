@@ -111,7 +111,7 @@ input {
   background: #343434;
   border: none;
   padding: 0 20px;
-  width: 310px;
+  width: 36ch;
   font-size: 1em;
   text-align: center;
   height: 40px;
@@ -119,6 +119,13 @@ input {
   margin-bottom: 2.5em;
   color: white;
   display: grid;
+}
+
+@media screen and (max-width: 1000px) {
+  .content {
+    padding: 3em 5%;
+    font-size: 0.8em;
+  }
 }
 
 #formBtn {

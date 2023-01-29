@@ -167,4 +167,11 @@
     border-radius: 2px;
     left: 0; /* Changed during runtime to reflect median */
   }
+  @media screen and (max-width: 940px) {
+    .card {
+      width: auto;
+      flex: 1;
+      margin: 0 0 2em 0;
+    }
+  }
 </style>

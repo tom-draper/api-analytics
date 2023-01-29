@@ -48,11 +48,16 @@
     width: calc(200px - 1em);
     margin: 0 0 2em 1em;
   }
-
   .value {
     margin: 20px 0;
     font-size: 1.8em;
     font-weight: 600;
     color: var(--yellow);
+  }
+  @media screen and (max-width: 940px) {
+    .card {
+      width: auto;
+      flex: 1;
+    }
   }
 </style>

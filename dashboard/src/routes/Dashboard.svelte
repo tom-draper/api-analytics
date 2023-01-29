@@ -279,4 +279,25 @@
       margin: 4em 0;
     }
   }
+  @media screen and (max-width: 940px) {
+    .dashboard {
+      flex-direction: column;
+    }
+    .right,
+    .left {
+      margin: 0 2em;
+    }
+    .time-period {
+      top: -2.4em;
+    }
+  }
+  @media screen and (max-width: 600px) {
+    .right,
+    .left {
+      margin: 0 1em;
+    }
+    .time-period {
+      right: 1em;
+    }
+  }
 </style>
