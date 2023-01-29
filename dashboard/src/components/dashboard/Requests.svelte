@@ -110,4 +110,11 @@
   .arrow {
     height: 11px;
   }
+  @media screen and (max-width: 940px) {
+    .card {
+      width: auto;
+      flex: 1;
+      margin: 0 1em 2em 0;
+    }
+  }
 </style>

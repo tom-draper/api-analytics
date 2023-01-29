@@ -179,4 +179,9 @@
       width: 100%;
     }
   }
+  @media screen and (max-width: 650px) {
+    .values {
+      flex-direction: column;
+    }
+  }
 </style>
