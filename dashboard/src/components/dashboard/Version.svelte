@@ -129,7 +129,7 @@
 
 <style scoped>
   .card {
-    margin: 2em 0 2em 2em;
+    margin: 2em 0 2em 0;
     padding-bottom: 1em;
     flex: 1;
   }

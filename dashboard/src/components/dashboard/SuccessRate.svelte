@@ -46,7 +46,7 @@
 <style scoped>
   .card {
     width: calc(200px - 1em);
-    margin: 0 0 2em 1em;
+    margin: 0 0 0 1em;
   }
   .value {
     margin: 20px 0;

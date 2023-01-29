@@ -232,6 +232,7 @@
   }
   .row {
     display: flex;
+    margin-bottom: 2em;
   }
   .grid-row {
     display: flex;
@@ -239,6 +240,9 @@
   .no-requests {
     width: 350px;
     margin: 20vh 0;
+  }
+  .left {
+    margin: 0 2em;
   }
   .right {
     flex-grow: 1;
@@ -274,7 +278,12 @@
       flex-direction: column;
     }
   }
-  @media screen and (max-width: 1100px) {
+  @media screen and (max-width: 1300px) {
+    .dashboard {
+      margin: 4em 1em;
+    }
+  }
+  @media screen and (max-width: 1000px) {
     .dashboard {
       margin: 4em 0;
     }

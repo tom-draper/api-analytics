@@ -5,7 +5,7 @@
 <style scoped>
   .card {
     width: calc(200px - 1em);
-    margin: 0 1em 2em 2em;
+    margin: 0 1em 0 0;
     background: transparent;
     display: grid;
     place-items: center;
@@ -17,7 +17,7 @@
     .card {
       width: auto;
       flex: 1;
-      margin: 0 1em 2em 0;
+      margin: 0 1em 0 0;
     }
   }
 </style>
