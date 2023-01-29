@@ -253,7 +253,7 @@
     position: absolute;
     display: flex;
     right: 2em;
-    top: -2.2em;
+    top: -2.5em;
     border: 1px solid #2e2e2e;
     border-radius: 4px;
     overflow: hidden;
@@ -286,9 +286,6 @@
     .right,
     .left {
       margin: 0 2em;
-    }
-    .time-period {
-      top: -2.4em;
     }
   }
   @media screen and (max-width: 600px) {
