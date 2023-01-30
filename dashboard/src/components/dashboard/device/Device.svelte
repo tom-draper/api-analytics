@@ -78,7 +78,7 @@
     padding: 2px 6px;
     margin-left: 5px;
   }
-  @media screen and (max-width: 1580px) {
+  @media screen and (max-width: 1600px) {
     .card {
       margin: 0 0 2em;
       width: 100%;

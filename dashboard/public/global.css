@@ -63,7 +63,7 @@ p {
 .card {
   background: var(--light-background);
   color: var(--faded-text);
-  width: 400px;
+  width: 430px;
   border-radius: 6px;
   border: 1px solid #2E2E2E;
   margin: 2rem 0;
@@ -81,6 +81,10 @@ p {
 .footer-logo {
   width: 12px;
   margin-top: 10px;
+}
+
+.js-plotly-plot .plotly .cursor-ew-resize {
+  cursor: default !important;
 }
 
 /* Form */
