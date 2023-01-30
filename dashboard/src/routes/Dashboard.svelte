@@ -232,6 +232,7 @@
   }
   .row {
     display: flex;
+    margin-bottom: 2em;
   }
   .grid-row {
     display: flex;
@@ -239,6 +240,9 @@
   .no-requests {
     width: 350px;
     margin: 20vh 0;
+  }
+  .left {
+    margin: 0 2em;
   }
   .right {
     flex-grow: 1;
@@ -253,7 +257,7 @@
     position: absolute;
     display: flex;
     right: 2em;
-    top: -2.2em;
+    top: -2.5em;
     border: 1px solid #2e2e2e;
     border-radius: 4px;
     overflow: hidden;
@@ -274,7 +278,12 @@
       flex-direction: column;
     }
   }
-  @media screen and (max-width: 1100px) {
+  @media screen and (max-width: 1300px) {
+    .dashboard {
+      margin: 4em 1em;
+    }
+  }
+  @media screen and (max-width: 1000px) {
     .dashboard {
       margin: 4em 0;
     }
@@ -286,9 +295,6 @@
     .right,
     .left {
       margin: 0 2em;
-    }
-    .time-period {
-      top: -2.4em;
     }
   }
   @media screen and (max-width: 600px) {

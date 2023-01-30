@@ -90,7 +90,7 @@
 <style scoped>
   .card {
     width: calc(200px - 1em);
-    margin: 0 2em 0 1em;
+    margin: 0 0 0 1em;
     position: relative;
     cursor: pointer;
   }
@@ -128,7 +128,7 @@
     .card {
       width: auto;
       flex: 1;
-      margin: 0 0 2em 1em;
+      margin: 0 0 0 1em;
     }
   }
 </style>
