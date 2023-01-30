@@ -17,7 +17,6 @@
 <div class="card">
   <div class="card-title">
     Device
-
     <div class="toggle">
       <button
         class:active={activeBtn == "os"}
