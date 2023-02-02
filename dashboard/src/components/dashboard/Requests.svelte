@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import periodToDays from "../../lib/period";
 
-  function successRatePlotLayout() {
+  function requestsPlotLayout() {
     return {
       title: false,
       autosize: true,
@@ -26,10 +26,17 @@
   }
 
   function lines() {
+    let n = 5;
+    let x = [...Array(n).keys()];
+    let y = Array(n).fill(0);
+    for (let i = 0; i < data.length; i++) {
+      let idx = Math.floor(i / (data.length / n));
+      y[idx] += 1;
+    }
     return [
       {
-        x: [0, 1, 2, 3, 4],
-        y: [3, 3, 1, 2, 1],
+        x: x,
+        y: y,
         type: "lines",
         marker: { color: "transparent" },
         showlegend: false,
@@ -40,10 +47,10 @@
     ];
   }
 
-  function successRatePlotData() {
+  function requestsPlotData() {
     return {
       data: lines(),
-      layout: successRatePlotLayout(),
+      layout: requestsPlotLayout(),
       config: {
         responsive: true,
         showSendToCloud: false,
@@ -53,7 +60,7 @@
   }
 
   function genPlot() {
-    let plotData = successRatePlotData();
+    let plotData = requestsPlotData();
     //@ts-ignore
     new Plotly.newPlot(
       plotDiv,

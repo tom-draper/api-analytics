@@ -25,10 +25,19 @@
   }
 
   function lines() {
+    let n = 5;
+    let x = [...Array(n).keys()];
+    let y = Array(n).fill(0);
+    for (let i = 0; i < data.length; i++) {
+      let idx = Math.floor(i / (data.length / n));
+      if (data[i].status >= 200 && data[i].status <= 299) {
+        y[idx] += 1;
+      }
+    }
     return [
       {
-        x: [0, 1, 2, 3, 4],
-        y: [1, 2, 3, 1.5, 2],
+        x: x,
+        y: y,
         type: "lines",
         marker: { color: "transparent" },
         showlegend: false,
