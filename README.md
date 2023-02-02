@@ -528,8 +528,6 @@ Data collected is only ever used to populate your analytics dashboard. Your data
 
 At any time, you can delete all stored data associated with your API key by going to https://my-api-analytics.vercel.app/delete and entering your API key.
 
-## Development
-
-This project is still in the early stages of development, with some bugs that still need to be ironed out. Therefore, API Analytics is currently not recommended for production servers or APIs that handle with a high-volume of traffic (>50,000 requests/hour).
+## Contributions
 
 Any issues or pull requests are very welcome.
