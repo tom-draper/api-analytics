@@ -4,7 +4,7 @@
 
 <style scoped>
   .card {
-    width: calc(200px - 1em);
+    width: calc(215px - 1em);
     margin: 0 1em 0 0;
     background: transparent;
     display: grid;

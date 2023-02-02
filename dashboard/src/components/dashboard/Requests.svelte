@@ -2,6 +2,74 @@
   import { onMount } from "svelte";
   import periodToDays from "../../lib/period";
 
+  function requestsPlotLayout() {
+    return {
+      title: false,
+      autosize: true,
+      margin: { r: 0, l: 0, t: 0, b: 0, pad: 0 },
+      hovermode: false,
+      plot_bgcolor: "transparent",
+      paper_bgcolor: "transparent",
+      height: 60,
+      yaxis: {
+        gridcolor: "gray",
+        showgrid: false,
+        fixedrange: true,
+        dragmode: false,
+      },
+      xaxis: {
+        visible: false,
+        dragmode: false,
+      },
+      dragmode: false,
+    };
+  }
+
+  function lines() {
+    let n = 5;
+    let x = [...Array(n).keys()];
+    let y = Array(n).fill(0);
+    for (let i = 0; i < data.length; i++) {
+      let idx = Math.floor(i / (data.length / n));
+      y[idx] += 1;
+    }
+    return [
+      {
+        x: x,
+        y: y,
+        type: "lines",
+        marker: { color: "transparent" },
+        showlegend: false,
+        line: { shape: "spline", smoothing: 1, color: "#3FCF8E30" },
+        fill: "tozeroy",
+        fillcolor: "#3fcf8e15",
+      },
+    ];
+  }
+
+  function requestsPlotData() {
+    return {
+      data: lines(),
+      layout: requestsPlotLayout(),
+      config: {
+        responsive: true,
+        showSendToCloud: false,
+        displayModeBar: false,
+      },
+    };
+  }
+
+  function genPlot() {
+    let plotData = requestsPlotData();
+    //@ts-ignore
+    new Plotly.newPlot(
+      plotDiv,
+      plotData.data,
+      plotData.layout,
+      plotData.config
+    );
+  }
+
   function setPercentageChange() {
     if (prevData.length == 0) {
       percentageChange = null;
@@ -20,16 +88,18 @@
       requestsPerHour = "0";
     }
   }
-  
+
   function togglePeriod() {
     perHour = !perHour;
   }
-  
+
   function build() {
     setPercentageChange();
     setRequestsPerHour();
+    genPlot();
   }
-  
+
+  let plotDiv: HTMLDivElement;
   let requestsPerHour: string;
   let perHour = false;
   let percentageChange: number;
@@ -37,28 +107,26 @@
   onMount(() => {
     mounted = true;
   });
-  
+
   $: data && mounted && build();
 
   export let data: RequestsData, prevData: RequestsData, period: string;
 </script>
 
-{#if perHour}
-  <button class="card" on:click={togglePeriod}>
+<button class="card" on:click={togglePeriod}>
+  {#if perHour}
     <div class="card-title">
       Requests <span class="per-hour">/ hour</span>
     </div>
     {#if requestsPerHour != undefined}
       <div class="value">{requestsPerHour}</div>
     {/if}
-  </button>
-{:else}
-  <button class="card" on:click={togglePeriod}>
+  {:else}
     {#if percentageChange != null}
       <div
-      class="percentage-change"
-      class:positive={percentageChange > 0}
-      class:negative={percentageChange < 0}
+        class="percentage-change"
+        class:positive={percentageChange > 0}
+        class:negative={percentageChange < 0}
       >
         {#if percentageChange > 0}
           <img class="arrow" src="../img/up.png" alt="" />
@@ -70,20 +138,28 @@
     {/if}
     <div class="card-title">Requests</div>
     <div class="value">{data.length.toLocaleString()}</div>
-  </button>
-{/if}
+  {/if}
+  <div id="plotly">
+    <div id="plotDiv" bind:this={plotDiv}>
+      <!-- Plotly chart will be drawn inside this DIV -->
+    </div>
+  </div>
+</button>
 
 <style scoped>
   .card {
-    width: calc(200px - 1em);
+    width: calc(215px - 1em);
     margin: 0 1em 0 0;
     position: relative;
     cursor: pointer;
+    padding: 0;
+    overflow: hidden;
   }
   .value {
-    margin: 20px 0;
+    margin: 20px auto;
+    width: fit-content;
     font-size: 1.8em;
-    font-weight: 600;
+    font-weight: 700;
   }
   .percentage-change {
     position: absolute;
@@ -109,6 +185,13 @@
   }
   .arrow {
     height: 11px;
+  }
+  #plotly {
+    position: absolute;
+    width: 110%;
+    bottom: 0;
+    overflow: hidden;
+    margin: 0 -5%;
   }
   @media screen and (max-width: 940px) {
     .card {

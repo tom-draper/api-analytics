@@ -129,7 +129,7 @@
         type: "lines",
         marker: { color: "transparent" },
         fill: "tonexty",
-        fillcolor: "#4A4A4A",
+        fillcolor: "#70707030",
         hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
         showlegend: false,
       },

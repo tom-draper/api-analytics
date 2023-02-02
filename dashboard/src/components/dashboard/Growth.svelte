@@ -168,15 +168,10 @@
   .arrow {
     height: 15px;
   }
-  @media screen and (max-width: 1580px) {
+  @media screen and (max-width: 1600px) {
     .card {
       width: 100%;
-    }
-  }
-  @media screen and (max-width: 1580px) {
-    .card {
       margin: 2em 0 2em;
-      width: 100%;
     }
   }
   @media screen and (max-width: 650px) {

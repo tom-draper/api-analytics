@@ -2,7 +2,7 @@ export default function periodToDays(period: string): number {
     if (period == "24-hours") {
         return 1;
     } else if (period == "week") {
-        return 8;
+        return 7;
     } else if (period == "month") {
         return 30;
     } else if (period == "3-months") {

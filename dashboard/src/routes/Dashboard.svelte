@@ -273,7 +273,7 @@
     background: var(--highlight);
     color: black;
   }
-  @media screen and (max-width: 1580px) {
+  @media screen and (max-width: 1600px) {
     .grid-row {
       flex-direction: column;
     }
