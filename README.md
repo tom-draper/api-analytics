@@ -530,4 +530,10 @@ At any time, you can delete all stored data associated with your API key by goin
 
 ## Contributions
 
-Any issues or pull requests are very welcome.
+Contributions, issues and feature requests are welcome.
+
+- Fork it (https://github.com/tom-draper/api-analytics)
+- Create your feature branch (`git checkout -b my-new-feature`)
+- Commit your changes (`git commit -am 'Add some feature'`)
+- Push to the branch (`git push origin my-new-feature`)
+- Create a new Pull Request
