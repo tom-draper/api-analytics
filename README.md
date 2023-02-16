@@ -124,7 +124,8 @@ if __name__ == "__main__":
 
 #### Express
 
-[![Npm package version](https://badgen.net/npm/v/node-api-analytics)](https://npmjs.com/package/node-api-analytics)
+[![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://img.shields.io/npm/v/node-api-analytics)
+
 
 ```bash
 npm install node-api-analytics
@@ -149,7 +150,7 @@ app.listen(8080, () => {
 
 #### Fastify
 
-[![Npm package version](https://badgen.net/npm/v/node-api-analytics)](https://npmjs.com/package/node-api-analytics)
+[![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://img.shields.io/npm/v/node-api-analytics)
 
 ```bash
 npm install node-api-analytics
@@ -178,7 +179,7 @@ fastify.listen({ port: 8080 }, function (err, address) {
 
 #### Koa
 
-[![Npm package version](https://badgen.net/npm/v/node-api-analytics)](https://npmjs.com/package/node-api-analytics)
+[![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://img.shields.io/npm/v/node-api-analytics)
 
 ```bash
 npm install node-api-analytics
