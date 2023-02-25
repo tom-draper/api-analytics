@@ -14,7 +14,7 @@
             api_key: apiKey,
             url: url,
             ping: pingType == "simple-ping",
-            secure: false 
+            secure: false,
           }),
         }
       );
@@ -41,7 +41,7 @@
   <div class="card-text">
     <div class="url">
       <div class="start">http://</div>
-      <input type="text" placeholder="example.com/endpoint/" bind:value="{url}" />
+      <input type="text" placeholder="example.com/endpoint/" bind:value={url} />
       <button class="add" on:click={postMonitor}>Add</button>
     </div>
     <div class="ping-types">
