@@ -1,19 +1,21 @@
 <script lang="ts">
+  let state: "delete" | "loading" | "deleted" | "error" = "delete";
   let apiKey = "";
-  let loading = false;
-  let message = "";
   async function genAPIKey() {
-    loading = true;
+    setState("loading");
     const response = await fetch(
       `https://api-analytics-server.vercel.app/api/delete/${apiKey}`
     );
 
-    if (response.status == 200) {
-      message = "Deleted successfully";
+    if (response.status === 200) {
+      setState("deleted");
     } else {
-      message = "Error: API key invalid";
+      setState("error");
     }
-    loading = false;
+  }
+
+  function setState(value: typeof state) {
+    state = value;
   }
 </script>
 
@@ -21,11 +23,22 @@
   <div class="content">
     <h2>Delete all stored data</h2>
     <input type="text" bind:value={apiKey} placeholder="Enter API key" />
-    <button id="formBtn" on:click={genAPIKey}>Delete</button>
-    <div class="notification">{message}</div>
-    <div class="spinner">
-      <div class="loader" style="display: {loading ? 'initial' : 'none'}" />
-    </div>
+    <button
+      id="formBtn"
+      on:click={genAPIKey}
+      class:no-display={state != "delete"}>Delete</button
+    >
+    <button id="formBtn" class:no-display={state != "loading"}>
+      <div class="spinner">
+        <div class="loader" />
+      </div>
+    </button>
+    <button
+      id="formBtn"
+      class="copied-btn"
+      class:no-display={state != "deleted"}>Deleted</button
+    >
+    <button id="formBtn" class:no-display={state != "error"}>Error</button>
   </div>
   <div class="details">
     <div class="keep-secure">Keep your API key safe and secure.</div>
@@ -35,9 +48,13 @@
 </div>
 
 <style scoped>
-  .notification {
-    color: #3fcf8e;
-    margin-top: 32px;
-    height: 16px;
+  .spinner {
+    height: auto;
+  }
+  .loader {
+    border: 3px solid #343434;
+    border-top: 3px solid var(--highlight);
+    height: 10px;
+    width: 10px;
   }
 </style>
