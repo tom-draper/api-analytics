@@ -124,7 +124,8 @@ if __name__ == "__main__":
 
 #### Express
 
-[![Npm package version](https://badgen.net/npm/v/node-api-analytics)](https://npmjs.com/package/node-api-analytics)
+[![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://img.shields.io/npm/v/node-api-analytics)
+
 
 ```bash
 npm install node-api-analytics
@@ -149,7 +150,7 @@ app.listen(8080, () => {
 
 #### Fastify
 
-[![Npm package version](https://badgen.net/npm/v/node-api-analytics)](https://npmjs.com/package/node-api-analytics)
+[![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://img.shields.io/npm/v/node-api-analytics)
 
 ```bash
 npm install node-api-analytics
@@ -178,7 +179,7 @@ fastify.listen({ port: 8080 }, function (err, address) {
 
 #### Koa
 
-[![Npm package version](https://badgen.net/npm/v/node-api-analytics)](https://npmjs.com/package/node-api-analytics)
+[![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://img.shields.io/npm/v/node-api-analytics)
 
 ```bash
 npm install node-api-analytics
@@ -472,7 +473,7 @@ end
 
 Your API will now log and store incoming request data on all valid routes. Your logged data can be viewed using two methods:
 
-1. Through visualizations and stats on our dashboard
+1. Through visualizations and statistics on our dashboard
 2. Accessed directly via our data API
 
 You can use the same API key across multiple APIs, but all your data will appear in the same dashboard. We recommend generating a new API key for each additional API you want analytics for.
@@ -487,7 +488,7 @@ Demo: https://my-api-analytics.vercel.app/dashboard/demo
 
 #### Data API
 
-Logged data for all requests can be accessed via our API. Simply send a GET request to `https://api-analytics-server.vercel.app/api/data` with your API key set as `API-Key` in headers.
+Logged data for all requests can be accessed via our REST API. Simply send a GET request to `https://api-analytics-server.vercel.app/api/data` with your API key set as `API-Key` in headers.
 
 ```py
 import requests
@@ -522,14 +523,18 @@ For any given request to your API, data recorded is limited to:
  - API hostname
  - API framework (FastAPI, Flask, Express etc.)
 
-Data collected is only ever used to populate your analytics dashboard. Your data is anonymous, with the API key the only link between you and you API's analytics. Should you lose your API key, you will have no method to access your API analytics. API keys and its associated API request data will eventually be deleted after 1 year of inactivity.
+Data collected is only ever used to populate your analytics dashboard. All data stored is anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics. API keys and their associated API request data will eventually be deleted after 1 year of inactivity.
 
 ### Delete Data
 
 At any time, you can delete all stored data associated with your API key by going to https://my-api-analytics.vercel.app/delete and entering your API key.
 
-## Development
+## Contributions
 
-This project is still in the early stages of development, with some bugs that still need to be ironed out. Therefore, API Analytics is currently not recommended for production servers or APIs that handle with a high-volume of traffic (>50,000 requests/hour).
+Contributions, issues and feature requests are welcome.
 
-Any issues or pull requests are very welcome.
+- Fork it (https://github.com/tom-draper/api-analytics)
+- Create your feature branch (`git checkout -b my-new-feature`)
+- Commit your changes (`git commit -am 'Add some feature'`)
+- Push to the branch (`git push origin my-new-feature`)
+- Create a new Pull Request
