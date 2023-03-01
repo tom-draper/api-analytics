@@ -239,10 +239,11 @@ func GetUserRequestsHandler(supabase *supa.Client) gin.HandlerFunc {
 
 func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
 	getData := func(c *gin.Context) {
-		apiKey := c.GetHeader("API-Key")
-		authToken := c.GetHeader("X-AUTH-TOKEN")
-		println(apiKey)
-		println(authToken)
+		apiKey := c.GetHeader("X-AUTH-TOKEN")
+		if apiKey == "" {
+			// Check old (deprecated) identifier
+			apiKey = c.GetHeader("API-Key")
+		}
 
 		// Fetch all API request data associated with this account
 		var result []PublicRequestRow
