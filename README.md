@@ -502,7 +502,7 @@ response = requests.get("https://api-analytics-server.vercel.app/api/data", head
 print(response.json())
 ```
 
-##### CURL
+##### cURL
 
 ```bash
 curl --header "X-AUTH-TOKEN: <API-KEY>" https://api-analytics-server.vercel.app/api/data
