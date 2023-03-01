@@ -501,6 +501,19 @@ headers = {
 response = requests.get("https://api-analytics-server.vercel.app/api/data", headers=headers)
 print(response.json())
 ```
+##### Node.js
+
+```js
+fetch("https://api-analytics-server.vercel.app/api/data", {
+  headers: { "X-AUTH-TOKEN": <API-KEY> },
+})
+  .then((response) => {
+    return response.json();
+  })
+  .then((data) => {
+    console.log(data);
+  });
+```
 
 ##### cURL
 
