@@ -1,7 +1,6 @@
 # API Analytics <img src="https://user-images.githubusercontent.com/41476809/210829625-697bba5b-97a8-45fa-91ce-d3c33fcfd0b2.png" align="right" height="140" />
 
-
-A lightweight API analytics solution, complete with a dashboard.
+A free lightweight API analytics solution, complete with a dashboard.
 
 Currently compatible with:
  - Python: <b>FastAPI</b>, <b>Flask</b>, <b>Django</b> and <b>Tornado</b>
@@ -14,7 +13,7 @@ Currently compatible with:
 
 ### 1. Generate an API key
 
-Head to https://my-api-analytics.vercel.app/generate to generate your unique API key with a single click. This key is used to monitor your specific API, so keep it secret! It's also required in order to view your API analytics dashboard.
+Head to https://my-api-analytics.vercel.app/generate to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It's also required in order to view your API analytics dashboard.
 
 ### 2. Add middleware to your API
 
