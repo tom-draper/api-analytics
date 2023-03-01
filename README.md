@@ -527,7 +527,9 @@ Data collected is only ever used to populate your analytics dashboard. All data 
 
 ### Delete Data
 
-At any time, you can delete all stored data associated with your API key by going to https://my-api-analytics.vercel.app/delete and entering your API key. API keys and their associated API request data will eventually be deleted after 1 year of inactivity.
+At any time, you can delete all stored data associated with your API key by going to https://my-api-analytics.vercel.app/delete and entering your API key.
+
+API keys and their associated API request data are scheduled be deleted after 1 year of inactivity.
 
 ## Contributions
 
