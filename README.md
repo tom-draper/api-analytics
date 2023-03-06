@@ -475,7 +475,7 @@ Your API will now log and store incoming request data on all valid routes. Your 
 1. Through visualizations and statistics on our dashboard
 2. Accessed directly via our data API
 
-You can use the same API key across multiple APIs, but all your data will appear in the same dashboard. We recommend generating a new API key for each additional API you want analytics for.
+You can use the same API key across multiple APIs, but all your data will appear in the same dashboard. We recommend generating a new API key for each additional API server you want analytics for.
 
 #### Dashboard
 
