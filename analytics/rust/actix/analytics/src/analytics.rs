@@ -1,14 +1,14 @@
+use actix_rt::spawn;
 use actix_web::{
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
     http::header::{HeaderValue, HOST, USER_AGENT},
     Error,
 };
 use futures::future::LocalBoxFuture;
-use reqwest::blocking::Client;
+use reqwest::Client;
 use serde::Serialize;
 use std::{
     future::{ready, Ready},
-    thread::spawn,
     time::Instant,
 };
 
@@ -101,11 +101,12 @@ fn extract_ip_address(req: &ServiceRequest) -> String {
     return String::new();
 }
 
-fn log_request(data: Data) {
+async fn log_request(data: Data) {
     let _ = Client::new()
         .post("https://api-analytics-server.vercel.app/api/log-request")
         .json(&data)
-        .send();
+        .send()
+        .await;
 }
 
 impl<S, B> Service<ServiceRequest> for AnalyticsMiddleware<S>
@@ -155,7 +156,7 @@ where
                 res.status().as_u16(),
             );
 
-            spawn(|| log_request(data));
+            spawn(async { log_request(data).await });
             Ok(res)
         })
     }
