@@ -14,6 +14,8 @@
       return "Nodejs fetch";
     } else if (userAgent.match(/go-http-client\//)) {
       return "Go http";
+    } else if (userAgent.match(/Java\//)) {
+      return "Java";
     } else if (userAgent.match(/Seamonkey\//)) {
       return "Seamonkey";
     } else if (userAgent.match(/Firefox\//)) {
