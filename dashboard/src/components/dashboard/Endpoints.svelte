@@ -2,9 +2,21 @@
   import { onMount } from "svelte";
 
   // Integer to method string mapping used by server
-  let methodMap = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "CONNECT", "HEAD", "TRACE"];
+  let methodMap = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+    "CONNECT",
+    "HEAD",
+    "TRACE",
+  ];
 
-  function endpointFreq(): {[endpointID: string]: {path: string, status: number, count: number}} {
+  function endpointFreq(): {
+    [endpointID: string]: { path: string; status: number; count: number };
+  } {
     let freq = {};
     for (let i = 0; i < data.length; i++) {
       // Create groups of endpoints by path + status
@@ -22,7 +34,12 @@
   }
 
   function statusMatch(status: number): boolean {
-    return (activeBtn == 'all') || (activeBtn == 'success' && status >= 200 && status <= 299) || (activeBtn == 'bad' && status >= 300 && status <= 399) || (activeBtn == 'error' && status >= 400)
+    return (
+      activeBtn == "all" ||
+      (activeBtn == "success" && status >= 200 && status <= 299) ||
+      (activeBtn == "bad" && status >= 300 && status <= 399) ||
+      (activeBtn == "error" && status >= 400)
+    );
   }
 
   function build() {
@@ -44,10 +61,10 @@
     freqArr.sort((a, b) => {
       return b.count - a.count;
     });
-    endpoints = freqArr;
+    endpoints = freqArr.slice(0, 50);
 
     // Hide endpoint labels that don't fit inside bar once rendered
-    setTimeout(setEndpointLabels, 50);
+    // setTimeout(setEndpointLabels, 50);
   }
 
   function setEndpointLabelVisibility(idx: number) {
@@ -81,7 +98,7 @@
   let endpoints: any[];
   let maxCount: number;
   let mounted = false;
-  let activeBtn = 'all'
+  let activeBtn = "all";
   onMount(() => {
     mounted = true;
   });
@@ -92,7 +109,8 @@
 </script>
 
 <div class="card">
-  <div class="card-title">Endpoints
+  <div class="card-title">
+    Endpoints
     <div class="toggle">
       <button
         class:active={activeBtn == "all"}
@@ -125,27 +143,33 @@
     <div class="endpoints">
       {#each endpoints as endpoint, i}
         <div class="endpoint-container">
-          <div
-            class="endpoint"
-            id="endpoint-{i}"
-            title="Status: {endpoint.status}"
-            style="width: {(endpoint.count / maxCount) * 100}%"
-            class:success={endpoint.status >= 200 && endpoint.status <= 299}
-            class:bad={endpoint.status >= 300 && endpoint.status <= 399}
-            class:error={endpoint.status >= 400 && endpoint.status <= 499}
-          >
-            <div class="endpoint-label" id="endpoint-label-{i}">
+          <div class="endpoint" id="endpoint-{i}">
+            <!-- <div class="endpoint-label" id="endpoint-label-{i}">
               <div class="path" id="endpoint-path-{i}">
                 {endpoint.path}
               </div>
-              <div class="count" id="endpoint-count-{i}">{endpoint.count.toLocaleString()}</div>
+              <div class="count" id="endpoint-count-{i}">
+                {endpoint.count.toLocaleString()}
+              </div>
+            </div> -->
+            <div class="path">
+              <b>{endpoint.count.toLocaleString()}</b>
+              {endpoint.path}
             </div>
+            <div
+              class="background"
+              title="Status: {endpoint.status}"
+              style="width: {(endpoint.count / maxCount) * 100}%"
+              class:success={endpoint.status >= 200 && endpoint.status <= 299}
+              class:bad={endpoint.status >= 300 && endpoint.status <= 399}
+              class:error={endpoint.status >= 400 && endpoint.status <= 499}
+            />
           </div>
-          <div class="external-label" id="external-label-{i}">
+          <!-- <div class="external-label" id="external-label-{i}">
             <div class="external-label-path">
               {endpoint.path}
             </div>
-          </div>
+          </div> -->
         </div>
       {/each}
     </div>
@@ -183,20 +207,24 @@
     text-align: left;
     position: relative;
     font-size: 0.85em;
+    width: 100%;
   }
   .endpoint-label {
     display: flex;
   }
-  .path,
+  /* .path,
   .count {
-    padding: 3px 15px;
-  }
+  } */
   .count {
     margin-left: auto;
   }
   .path {
+    position: relative;
     flex-grow: 1;
-    white-space: nowrap;
+    z-index: 1;
+    color: #565656;
+    padding: 3px 12px;
+    /* position: absolute; */
   }
   .endpoint-container {
     display: flex;
@@ -219,6 +247,16 @@
   .error {
     background: var(--red);
   }
+  .background {
+    border-radius: 3px;
+    color: var(--light-background);
+    text-align: left;
+    position: relative;
+    font-size: 0.85em;
+    height: 100%;
+    position: absolute;
+    top: 0;
+  }
   @media screen and (max-width: 940px) {
     .card {
       width: auto;
@@ -226,5 +264,4 @@
       margin: 0 0 2em 0;
     }
   }
-
 </style>

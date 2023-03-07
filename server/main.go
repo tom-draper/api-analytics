@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"server/api"
 
@@ -44,9 +45,9 @@ func main() {
 	app := gin.New()
 
 	r := app.Group("/api") // Vercel - must be /api/xxx
-
 	r.Use(cors.Default())
-
 	api.RegisterRouter(r, supabase) // Register route
+
+	fmt.Println("http://localhost:8080")
 	app.Run(":8080")
 }

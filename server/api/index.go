@@ -239,7 +239,11 @@ func GetUserRequestsHandler(supabase *supa.Client) gin.HandlerFunc {
 
 func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
 	getData := func(c *gin.Context) {
-		apiKey := c.GetHeader("API-Key")
+		apiKey := c.GetHeader("X-AUTH-TOKEN")
+		if apiKey == "" {
+			// Check old (deprecated) identifier
+			apiKey = c.GetHeader("API-Key")
+		}
 
 		// Fetch all API request data associated with this account
 		var result []PublicRequestRow
@@ -317,7 +321,6 @@ func GetUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
 		}
 		err := supabase.DB.From("Users").Select("api_key, Monitor!inner(url, secure, ping, created_at)").Eq("user_id", userID).Execute(&result)
 		if err != nil {
-			fmt.Println(err)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
@@ -367,7 +370,7 @@ func InsertUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
 func deleteMonitor(apiKey string, url string, c *gin.Context, supabase *supa.Client) error {
 	// Delete monitor from database
 	var result []interface{}
-	err := supabase.DB.From("Monitor").Delete().Eq("api_key", apiKey).Eq("url", url).Execute(&result)
+	err := supabase.DB.From("Monitor").Delete().Eq("url", url).Execute(&result)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return err
@@ -378,7 +381,7 @@ func deleteMonitor(apiKey string, url string, c *gin.Context, supabase *supa.Cli
 func deletePings(apiKey string, url string, c *gin.Context, supabase *supa.Client) error {
 	// Delete pings from database
 	var result []interface{}
-	err := supabase.DB.From("Pings").Delete().Eq("api_key", apiKey).Eq("url", url).Execute(&result)
+	err := supabase.DB.From("Pings").Delete().Eq("url", url).Execute(&result)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return err

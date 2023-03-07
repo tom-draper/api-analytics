@@ -81,9 +81,9 @@
     <div class="value upper-quartile">{UQ}</div>
   </div>
   <div class="labels">
-    <div class="label">25%</div>
+    <div class="label">LQ</div>
     <div class="label">Median</div>
-    <div class="label">75%</div>
+    <div class="label">UQ</div>
   </div>
   <div class="bar">
     <div class="bar-green" />

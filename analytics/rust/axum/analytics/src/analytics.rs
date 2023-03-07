@@ -152,7 +152,7 @@ where
         let now = Instant::now();
 
         let api_key = self.api_key.clone();
-        let hostname = req.headers().get(HOST).map(|x| x.to_string()).unwrap();
+        let hostname = req.headers().get(HOST).map(|x| x.to_string()).unwrap_or_default();
         let ip_address = extract_ip_address(&req);
         let path = req.uri().path().to_owned();
         let method = req.method().to_string();
@@ -160,7 +160,7 @@ where
             .headers()
             .get(USER_AGENT)
             .map(|x| x.to_string())
-            .unwrap();
+            .unwrap_or_default();
 
         let future = self.inner.call(req);
 

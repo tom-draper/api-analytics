@@ -83,13 +83,17 @@
     position: relative;
     display: flex;
     height: 800px;
-    z-index: -1;
+    z-index: 1;
     margin-top: -15em;
   }
   .gradient {
     width: 100%;
     height: 100%;
-    background: conic-gradient(from 270deg, var(--highlight), var(--dark-background));
+    background: conic-gradient(
+      from 270deg,
+      var(--highlight),
+      var(--dark-background)
+    );
     filter: brightness(1.05);
   }
   .left-gradient {
@@ -110,7 +114,11 @@
     background: radial-gradient(transparent, var(--background));
   }
   .linear-dimmer {
-    background: linear-gradient(var(--background), transparent, var(--background));
+    background: linear-gradient(
+      var(--background),
+      transparent,
+      var(--background)
+    );
   }
 
   .landing-page {

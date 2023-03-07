@@ -3,12 +3,13 @@
   import ResponseTime from "./ResponseTime.svelte";
 
   async function deleteMonitor() {
-    delete data[url]
-    data = data;  // Trigger reactivity to update display
+    delete data[url];
+    data = data; // Trigger reactivity to update display
 
     try {
       let response = await fetch(
-        'https://api-analytics-server.vercel.app/api/monitor/delete', {
+        "https://api-analytics-server.vercel.app/api/monitor/delete",
+        {
           method: "POST",
           mode: "no-cors",
           headers: {
@@ -17,8 +18,8 @@
           },
           body: JSON.stringify({
             api_key: apiKey,
-            url: url
-          })
+            url: url,
+          }),
         }
       );
       if (response.status != 201) {
@@ -33,13 +34,10 @@
     let success = 0;
     let total = 0;
     for (let i = 0; i < samples.length; i++) {
-      if (samples[i].status == 'no-request') {
+      if (samples[i].status == "no-request") {
         continue;
       }
-      if (
-        samples[i].status == "success" ||
-        samples[i].status == "delay"
-      ) {
+      if (samples[i].status == "success" || samples[i].status == "delay") {
         success++;
       }
       total++;
@@ -70,47 +68,50 @@
   function periodSample() {
     /* Sample ping recordings at regular intervals if number of bars fewer than 
     total recordings the current period length */
-    let sample = []
+    let sample = [];
     if (period == "30d") {
       // Sample 1 in 4
       for (let i = 0; i < data[url].length; i++) {
         if (i % 4 == 0) {
-          sample.push(data[url][i])
+          sample.push(data[url][i]);
         }
       }
     } else if (period == "60d") {
       // Sample 1 in 8
       for (let i = 0; i < data[url].length; i++) {
         if (i % 8 == 0) {
-          sample.push(data[url][i])
+          sample.push(data[url][i]);
         }
       }
     } else {
       // No sampling - use all
-      sample = data[url]
+      sample = data[url];
     }
-    return sample
+    return sample;
   }
 
   function setSamples() {
     let markers = periodToMarkers(period);
-    samples = Array(markers).fill({ status: 'no-request', responseTime: 0 });
+    samples = Array(markers).fill({ status: "no-request", responseTime: 0 });
     let sampledData = periodSample();
     let start = markers - sampledData.length;
 
     for (let i = 0; i < sampledData.length; i++) {
-      samples[i + start] = {status: 'no-request', responseTime: sampledData[i].responseTime};
+      samples[i + start] = {
+        status: "no-request",
+        responseTime: sampledData[i].responseTime,
+      };
       if (sampledData[i].status >= 200 && sampledData[i].status <= 299) {
-        samples[i + start].status = 'success';
+        samples[i + start].status = "success";
       } else if (sampledData[i].status != null) {
-        samples[i + start].status = 'error';
+        samples[i + start].status = "error";
       }
     }
   }
 
   function setError() {
     if (samples[samples.length - 1].status == null) {
-      error = null;  // Website not live
+      error = null; // Website not live
     } else {
       error = samples[samples.length - 1].status == "error";
     }
@@ -123,7 +124,7 @@
     setUptime();
   }
 
-  let uptime = '';
+  let uptime = "";
   let error = false;
   let samples: any[];
   onMount(() => {
@@ -132,7 +133,11 @@
 
   $: period && build();
 
-  export let url: string, data: any, apiKey: string, period: string, anyError: boolean;
+  export let url: string,
+    data: any,
+    apiKey: string,
+    period: string,
+    anyError: boolean;
 </script>
 
 <div class="card" class:card-error={error}>
@@ -140,15 +145,19 @@
     <div class="card-text-left">
       <div class="card-status">
         {#if error == null}
-          <div class="indicator grey-light"></div>
+          <div class="indicator grey-light" />
         {:else if error}
-          <div class="indicator red-light"></div>
+          <div class="indicator red-light" />
         {:else}
-          <div class="indicator green-light"></div>
+          <div class="indicator green-light" />
         {/if}
       </div>
-      <a href="http://{url}" class="endpoint"><span style="color: var(--dim-text)">http://</span>{url}</a>
-      <button class="delete" on:click={deleteMonitor}><img class="bin-icon" src="../img/bin.png" alt=""></button>
+      <a href="http://{url}" class="endpoint"
+        ><span style="color: var(--dim-text)">http://</span>{url}</a
+      >
+      <button class="delete" on:click={deleteMonitor}
+        ><img class="bin-icon" src="../img/bin.png" alt="" /></button
+      >
     </div>
     <div class="card-text-right">
       <div class="uptime">Uptime: {uptime}%</div>
