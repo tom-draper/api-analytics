@@ -108,7 +108,9 @@
   let plotDiv: HTMLDivElement;
   let mounted = false;
   onMount(() => {
-    setTimeout(() => {mounted = true}, 500);
+    setTimeout(() => {
+      mounted = true;
+    }, 500);
   });
 
   $: data && mounted && setVersions();
@@ -136,7 +138,7 @@
   #plotDiv {
     margin-right: 20px;
   }
-  @media screen and (max-width: 940px) {
+  @media screen and (max-width: 1030px) {
     .card {
       width: auto;
       flex: 1;

@@ -38,6 +38,9 @@
 
     let dataSubset = [];
     for (let i = 0; i < data.length; i++) {
+      if (disable404 && data[i].status == 404) {
+        continue;
+      }
       let date = new Date(data[i].created_at);
       if (counted(date)) {
         dataSubset.push(data[i]);
@@ -67,6 +70,9 @@
 
     let dataSubset = [];
     for (let i = 0; i < data.length; i++) {
+      if (disable404 && data[i].status == 404) {
+        continue;
+      }
       let date = new Date(data[i].created_at);
       if (inPeriod(date)) {
         dataSubset.push(data[i]);
@@ -80,6 +86,16 @@
     setPeriodData();
     setPrevPeriodData();
   }
+
+  function toggleEnable404() {
+    disable404 = !disable404;
+    // Allow button to toggle colour responsively
+    setTimeout(() => {
+      setPeriodData();
+      setPrevPeriodData();
+    }, 10);
+  }
+
   async function fetchData() {
     userID = formatUUID(userID);
     try {
@@ -102,6 +118,7 @@
   let prevPeriodData: RequestsData;
   let period = "month";
   let failed = false;
+  let disable404 = false;
   onMount(() => {
     if (demo) {
       data = genDemoData() as RequestsData;
@@ -116,102 +133,106 @@
 
 {#if periodData != undefined}
   <div class="dashboard">
-    <div class="time-period">
-      <button
-        class="time-period-btn {period == '24-hours'
-          ? 'time-period-btn-active'
-          : ''}"
-        on:click={() => {
-          setPeriod("24-hours");
-        }}
-      >
-        24 hours
-      </button>
-      <button
-        class="time-period-btn {period == 'week'
-          ? 'time-period-btn-active'
-          : ''}"
-        on:click={() => {
-          setPeriod("week");
-        }}
-      >
-        Week
-      </button>
-      <button
-        class="time-period-btn {period == 'month'
-          ? 'time-period-btn-active'
-          : ''}"
-        on:click={() => {
-          setPeriod("month");
-        }}
-      >
-        Month
-      </button>
-      <button
-        class="time-period-btn {period == '3-months'
-          ? 'time-period-btn-active'
-          : ''}"
-        on:click={() => {
-          setPeriod("3-months");
-        }}
-      >
-        3 months
-      </button>
-      <button
-        class="time-period-btn {period == '6-months'
-          ? 'time-period-btn-active'
-          : ''}"
-        on:click={() => {
-          setPeriod("6-months");
-        }}
-      >
-        6 months
-      </button>
-      <button
-        class="time-period-btn {period == 'year'
-          ? 'time-period-btn-active'
-          : ''}"
-        on:click={() => {
-          setPeriod("year");
-        }}
-      >
-        Year
-      </button>
-      <button
-        class="time-period-btn {period == 'all-time'
-          ? 'time-period-btn-active'
-          : ''}"
-        on:click={() => {
-          setPeriod("all-time");
-        }}
-      >
-        All time
-      </button>
+    <div class="button-nav">
+      <div class="nav-btn enable-404">
+        <button
+          class="enable-404-btn"
+          on:click={toggleEnable404}
+          class:time-period-btn-active={disable404}>Disable 404</button
+        >
+      </div>
+      <div class="nav-btn time-period">
+        <button
+          class="time-period-btn"
+          class:time-period-btn-active={period === "24-hours"}
+          on:click={() => {
+            setPeriod("24-hours");
+          }}
+        >
+          24 hours
+        </button>
+        <button
+          class="time-period-btn"
+          class:time-period-btn-active={period === "week"}
+          on:click={() => {
+            setPeriod("week");
+          }}
+        >
+          Week
+        </button>
+        <button
+          class="time-period-btn"
+          class:time-period-btn-active={period === "month"}
+          on:click={() => {
+            setPeriod("month");
+          }}
+        >
+          Month
+        </button>
+        <button
+          class="time-period-btn"
+          class:time-period-btn-active={period === "3-months"}
+          on:click={() => {
+            setPeriod("3-months");
+          }}
+        >
+          3 months
+        </button>
+        <button
+          class="time-period-btn"
+          class:time-period-btn-active={period === "6-months"}
+          on:click={() => {
+            setPeriod("6-months");
+          }}
+        >
+          6 months
+        </button>
+        <button
+          class="time-period-btn"
+          class:time-period-btn-active={period === "year"}
+          on:click={() => {
+            setPeriod("year");
+          }}
+        >
+          Year
+        </button>
+        <button
+          class="time-period-btn"
+          class:time-period-btn-active={period === "all-time"}
+          on:click={() => {
+            setPeriod("all-time");
+          }}
+        >
+          All time
+        </button>
+      </div>
     </div>
-    <div class="left">
-      <div class="row">
-        <Logo />
-        <SuccessRate data={periodData} />
+    <div class="dashboard-content">
+      <div class="left">
+        <div class="row">
+          <Logo />
+          <SuccessRate data={periodData} />
+        </div>
+        <div class="row">
+          <Requests data={periodData} prevData={prevPeriodData} {period} />
+          <Users data={periodData} prevData={prevPeriodData} {period} />
+        </div>
+        <ResponseTimes data={periodData} />
+        <Endpoints data={periodData} />
+        <Version data={periodData} />
       </div>
-      <div class="row">
-        <Requests data={periodData} prevData={prevPeriodData} {period} />
-        <Users data={periodData} prevData={prevPeriodData} {period} />
+      <div class="right">
+        <Activity data={periodData} {period} />
+        <div class="grid-row">
+          <Growth data={periodData} prevData={prevPeriodData} />
+          <Device data={periodData} />
+        </div>
+        <UsageTime data={periodData} />
       </div>
-      <ResponseTimes data={periodData} />
-      <Endpoints data={periodData} />
-      <Version data={periodData} />
-    </div>
-    <div class="right">
-      <Activity data={periodData} {period} />
-      <div class="grid-row">
-        <Growth data={periodData} prevData={prevPeriodData} />
-        <Device data={periodData} />
-      </div>
-      <UsageTime data={periodData} />
     </div>
   </div>
 {:else if failed}
-  <img class="no-requests" src="../img/no-requests-logged.png" alt="">
+  <img class="no-requests" src="../img/no-requests-logged.png" alt="" />
 {:else}
   <div class="placeholder" style="min-height: 85vh;">
     <div class="spinner">
@@ -226,7 +247,10 @@
     min-height: 90vh;
   }
   .dashboard {
-    margin: 5em;
+    margin: 1.4em 5em 5em;
+  }
+  .dashboard-content {
+    margin-top: 1.4em;
     display: flex;
     position: relative;
   }
@@ -253,21 +277,37 @@
     display: grid;
     place-items: center;
   }
-  .time-period {
-    position: absolute;
+  .button-nav {
+    margin: 2.5em 2em 0;
     display: flex;
-    right: 2em;
-    top: -2.5em;
+  }
+  .nav-btn {
+    margin-left: auto;
+  }
+  .enable-404 {
+    text-align: right;
+    flex-grow: 1;
+    margin-right: 1.5em;
+    width: fit-content;
+  }
+  .time-period {
+    display: flex;
     border: 1px solid #2e2e2e;
     border-radius: 4px;
     overflow: hidden;
   }
+  .enable-404-btn,
   .time-period-btn {
     background: var(--light-background);
     padding: 3px 12px;
     border: none;
     color: var(--dim-text);
     cursor: pointer;
+  }
+  .enable-404-btn {
+    border: 1px solid #2e2e2e;
+    padding: 3px 12px;
+    border-radius: 4px;
   }
   .time-period-btn-active {
     background: var(--highlight);
@@ -280,21 +320,30 @@
   }
   @media screen and (max-width: 1300px) {
     .dashboard {
-      margin: 4em 1em;
+      margin: 0;
+    }
+    .dashboard-content {
+      margin: 1.4em 1em 1em;
+    }
+    .button-nav {
+      margin: 2.5em 3em 0;
     }
   }
-  @media screen and (max-width: 1000px) {
-    .dashboard {
-      margin: 4em 0;
-    }
-  }
-  @media screen and (max-width: 940px) {
-    .dashboard {
+  @media screen and (max-width: 1030px) {
+    .dashboard-content {
       flex-direction: column;
     }
     .right,
     .left {
       margin: 0 2em;
+    }
+  }
+  @media screen and (max-width: 750px) {
+    .button-nav {
+      flex-direction: column;
+    }
+    .enable-404 {
+      margin: 0 0 1em auto;
     }
   }
   @media screen and (max-width: 600px) {
