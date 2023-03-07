@@ -62,9 +62,6 @@
       return b.count - a.count;
     });
     endpoints = freqArr.slice(0, 50);
-
-    // Hide endpoint labels that don't fit inside bar once rendered
-    // setTimeout(setEndpointLabels, 50);
   }
 
   function setEndpointLabelVisibility(idx: number) {
@@ -144,14 +141,6 @@
       {#each endpoints as endpoint, i}
         <div class="endpoint-container">
           <div class="endpoint" id="endpoint-{i}">
-            <!-- <div class="endpoint-label" id="endpoint-label-{i}">
-              <div class="path" id="endpoint-path-{i}">
-                {endpoint.path}
-              </div>
-              <div class="count" id="endpoint-count-{i}">
-                {endpoint.count.toLocaleString()}
-              </div>
-            </div> -->
             <div class="path">
               <b>{endpoint.count.toLocaleString()}</b>
               {endpoint.path}
@@ -165,11 +154,6 @@
               class:error={endpoint.status >= 400 && endpoint.status <= 499}
             />
           </div>
-          <!-- <div class="external-label" id="external-label-{i}">
-            <div class="external-label-path">
-              {endpoint.path}
-            </div>
-          </div> -->
         </div>
       {/each}
     </div>
@@ -209,34 +193,15 @@
     font-size: 0.85em;
     width: 100%;
   }
-  .endpoint-label {
-    display: flex;
-  }
-  /* .path,
-  .count {
-  } */
-  .count {
-    margin-left: auto;
-  }
   .path {
     position: relative;
     flex-grow: 1;
     z-index: 1;
-    color: #565656;
+    color: #505050;
     padding: 3px 12px;
-    /* position: absolute; */
   }
   .endpoint-container {
     display: flex;
-  }
-  .external-label {
-    padding: 3px 15px;
-    left: 40px;
-    top: 0;
-    margin: 5px 0;
-    color: var(--dim-text);
-    display: none;
-    font-size: 0.85em;
   }
   .success {
     background: var(--highlight);

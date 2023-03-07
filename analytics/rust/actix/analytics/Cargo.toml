@@ -6,12 +6,12 @@ keywords = ["api", "analytics", "actix", "dashboard", "middleware"]
 license = "MIT"
 name = "actix-analytics"
 repository = "https://github.com/tom-draper/api-analytics"
-version = "1.0.9"
+version = "1.0.10"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-crate-type = ["lib"] # The crate types to generate.  
+crate-type = ["lib"] # The crate types to generate.   
 path = "src/analytics.rs" # The source file of the target.
 
 [dependencies]
