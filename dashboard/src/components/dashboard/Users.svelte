@@ -15,11 +15,11 @@
         gridcolor: "gray",
         showgrid: false,
         fixedrange: true,
-        dragmode: false
+        dragmode: false,
       },
       xaxis: {
         visible: false,
-        dragmode: false
+        dragmode: false,
       },
       dragmode: false,
     };
@@ -31,7 +31,7 @@
     let y = Array(n).fill(0);
     for (let i = 0; i < data.length; i++) {
       let idx = Math.floor(i / (data.length / n));
-       if (data[i].ip_address != null && data[i].ip_address != "") {
+      if (data[i].ip_address != null && data[i].ip_address != "") {
         y[idx] += 1;
       }
     }
@@ -42,7 +42,7 @@
         type: "lines",
         marker: { color: "transparent" },
         showlegend: false,
-        line: {shape: 'spline', smoothing: 1, color: '#3FCF8E30'},
+        line: { shape: "spline", smoothing: 1, color: "#3FCF8E30" },
         fill: "tozeroy",
         fillcolor: "#3fcf8e15",
       },
@@ -211,7 +211,7 @@
     overflow: hidden;
     margin: 0 -5%;
   }
-  @media screen and (max-width: 940px) {
+  @media screen and (max-width: 1030px) {
     .card {
       width: auto;
       flex: 1;

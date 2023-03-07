@@ -151,7 +151,7 @@
               style="width: {(endpoint.count / maxCount) * 100}%"
               class:success={endpoint.status >= 200 && endpoint.status <= 299}
               class:bad={endpoint.status >= 300 && endpoint.status <= 399}
-              class:error={endpoint.status >= 400 && endpoint.status <= 499}
+              class:error={endpoint.status >= 400}
             />
           </div>
         </div>
@@ -222,7 +222,7 @@
     position: absolute;
     top: 0;
   }
-  @media screen and (max-width: 940px) {
+  @media screen and (max-width: 1030px) {
     .card {
       width: auto;
       flex: 1;
