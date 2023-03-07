@@ -1,24 +1,23 @@
 [package]
-name = "axum-analytics"
-version = "1.0.6"
-edition = "2021"
-description= "Monitoring and analytics for Axum web applications."
-repository = "https://github.com/tom-draper/api-analytics"
-license = "MIT"
-keywords = ["api", "analytics", "axum" , "dashboard", "middleware"]
 categories = ["web-programming", "visualization"]
+description = "Monitoring and analytics for Axum web applications."
+edition = "2021"
+keywords = ["api", "analytics", "axum", "dashboard", "middleware"]
+license = "MIT"
+name = "axum-analytics"
+repository = "https://github.com/tom-draper/api-analytics"
+version = "1.0.7"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-path = "src/analytics.rs"    # The source file of the target.
-crate-type = ["lib"]   # The crate types to generate.
-
+crate-type = ["lib"] # The crate types to generate. 
+path = "src/analytics.rs" # The source file of the target.
 
 [dependencies]
 axum = "0.6.1"
 futures = "0.3"
-serde = { version = "1.0", features = ["derive"] }
-reqwest = { version = "0.11", features = ["json", "blocking"] }
 http = "0.2.8"
+reqwest = {version = "0.11", features = ["json", "blocking"]}
+serde = {version = "1.0", features = ["derive"]}
 tower = "0.4.13"
