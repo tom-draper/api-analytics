@@ -553,7 +553,7 @@ API keys and their associated API request data are scheduled be deleted after 1 
 
 ## Development
 
-This project is still in the early stages of development and bugs are to be expected. Usage of API Analytics is currently not recommended for production or high-traffic servers.
+This project is still in the early stages of development and bugs are to be expected. Usage of API Analytics is currently not recommended for production or high-traffic servers (> 10 requests per second).
 
 ## Contributions
 
