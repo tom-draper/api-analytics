@@ -62,6 +62,7 @@
     margin-bottom: 8em;
     overflow: hidden;
     position: relative;
+    z-index: 2;
   }
   .dashboard-title {
     font-size: 2.5em;

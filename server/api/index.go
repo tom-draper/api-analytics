@@ -460,15 +460,15 @@ func errorHandler(c *gin.Context, info ratelimit.Info) {
 }
 
 func RegisterRouter(r *gin.RouterGroup, supabase *supa.Client) {
-	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
-		Rate:  time.Second,
-		Limit: 5,
-	})
-	mw := ratelimit.RateLimiter(store, &ratelimit.Options{
-		ErrorHandler: errorHandler,
-		KeyFunc:      keyFunc,
-	})
-	r.POST("/log-request", mw, LogRequestHandler(supabase))
+	// store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
+	// 	Rate:  time.Second,
+	// 	Limit: 10,
+	// })
+	// mw := ratelimit.RateLimiter(store, &ratelimit.Options{
+	// 	ErrorHandler: errorHandler,
+	// 	KeyFunc:      keyFunc,
+	// })
+	// r.POST("/log-request", mw, LogRequestHandler(supabase))
 	r.GET("/generate-api-key", GenAPIKeyHandler(supabase))
 	r.GET("/user-id/:apiKey", GetUserIDHandler(supabase))
 	r.GET("/requests/:userID", GetUserRequestsHandler(supabase))

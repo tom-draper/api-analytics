@@ -234,6 +234,8 @@
     margin-bottom: 7em;
     border-radius: 6px;
     margin-top: -480px;
+    z-index: 2;
+    position: relative;
   }
 
   .frameworks {
