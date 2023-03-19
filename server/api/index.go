@@ -451,9 +451,25 @@ func GetUserPingsHandler(supabase *supa.Client) gin.HandlerFunc {
 	return gin.HandlerFunc(getData)
 }
 
+func keyFunc(c *gin.Context) string {
+	return c.ClientIP()
+}
+
+func errorHandler(c *gin.Context, info ratelimit.Info) {
+	c.String(http.StatusTooManyRequests, "Too many requests. Try again in "+time.Until(info.ResetTime).String())
+}
+
 func RegisterRouter(r *gin.RouterGroup, supabase *supa.Client) {
+	// store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
+	// 	Rate:  time.Second,
+	// 	Limit: 10,
+	// })
+	// mw := ratelimit.RateLimiter(store, &ratelimit.Options{
+	// 	ErrorHandler: errorHandler,
+	// 	KeyFunc:      keyFunc,
+	// })
+	// r.POST("/log-request", mw, LogRequestHandler(supabase))
 	r.GET("/generate-api-key", GenAPIKeyHandler(supabase))
-	r.POST("/log-request", LogRequestHandler(supabase))
 	r.GET("/user-id/:apiKey", GetUserIDHandler(supabase))
 	r.GET("/requests/:userID", GetUserRequestsHandler(supabase))
 	r.GET("/delete/:apiKey", DeleteDataHandler(supabase))
@@ -469,14 +485,6 @@ func getDBLogin() (string, string) {
 	return supabaseURL, supabaseKey
 }
 
-func keyFunc(c *gin.Context) string {
-	return c.ClientIP()
-}
-
-func errorHandler(c *gin.Context, info ratelimit.Info) {
-	c.String(http.StatusTooManyRequests, "Too many requests. Try again in "+time.Until(info.ResetTime).String())
-}
-
 func init() {
 	supabaseURL, supabaseKey := getDBLogin()
 	supabase := supa.CreateClient(supabaseURL, supabaseKey)
@@ -484,17 +492,7 @@ func init() {
 	gin.SetMode(gin.ReleaseMode)
 	app = gin.New()
 
-	// Add rate limiter
-	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
-		Rate:  time.Second,
-		Limit: 10000,
-	})
-	mw := ratelimit.RateLimiter(store, &ratelimit.Options{
-		ErrorHandler: errorHandler,
-		KeyFunc:      keyFunc,
-	})
-
-	r := app.Group("/api", mw) // Vercel - must be /api/xxx
+	r := app.Group("/api") // Vercel - must be /api/xxx
 
 	r.Use(cors.Default())
 	RegisterRouter(r, supabase)
