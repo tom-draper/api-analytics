@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	supa "github.com/nedpals/supabase-go"
+	"github.com/oschwald/geoip2-golang"
 )
 
 var (
@@ -141,6 +143,21 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
 			return
 		} else {
+			var location string
+			if requestData.IPAddress != "" {
+				db, err := geoip2.Open("api/GeoLite2-Country.mmdb")
+				if err != nil {
+					panic(err)
+				}
+				defer db.Close()
+
+				ip := net.ParseIP(requestData.IPAddress)
+				record, err := db.Country(ip)
+				if err == nil {
+					location = record.Country.IsoCode
+				}
+			}
+
 			method, err := methodMap(requestData.Method)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid method."})
@@ -163,7 +180,7 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 				ResponseTime: requestData.ResponseTime,
 				Method:       method,
 				Framework:    framework,
-				Location:     "", // TODO
+				Location:     location,
 			}
 			// Insert request data into database
 			var result []interface{}
