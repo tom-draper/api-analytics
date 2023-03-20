@@ -48,6 +48,5 @@ func main() {
 	r.Use(cors.Default())
 	api.RegisterRouter(r, supabase) // Register route
 
-	fmt.Println("http://localhost:8080")
-	app.Run(":8080")
+	app.Run(":3000")
 }
