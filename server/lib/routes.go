@@ -1,21 +1,17 @@
-package api
+package lib
 
 import (
+	"database/sql"
 	"fmt"
 	"net"
 	"net/http"
-	"os"
 	"time"
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
-	supa "github.com/nedpals/supabase-go"
+	_ "github.com/lib/pq"
 	"github.com/oschwald/geoip2-golang"
-)
 
-var (
-	app *gin.Engine
+	"github.com/gin-gonic/gin"
 )
 
 type User struct {
@@ -24,17 +20,24 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func GenAPIKeyHandler(supabase *supa.Client) gin.HandlerFunc {
+func genAPIKeyHandler(db *sql.DB) gin.HandlerFunc {
 	genAPIKey := func(c *gin.Context) {
-		var row struct{} // Insert empty row, use default values
-		var result []User
-		err := supabase.DB.From("Users").Insert(row).Execute(&result)
+		// Fetch all API request data associated with this account
+		query := fmt.Sprintf("INSERT INTO users (api_key, user_id, created_at) VALUES (gen_random_uuid(), gen_random_uuid(), NOW())")
+		rows, err := db.Query(query)
 		if err != nil {
-			panic(err)
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
+			return
 		}
 
 		// Get API key auto generated from new row insertion
-		apiKey := result[0].APIKey
+		rows.Next()
+		var apiKey string
+		err = rows.Scan(&apiKey)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
+			return
+		}
 
 		// Return API key
 		c.JSON(http.StatusOK, apiKey)
@@ -130,7 +133,26 @@ func frameworkMap(framework string) (int16, error) {
 	}
 }
 
-func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
+func getCountryCode(IPAddress string) (string, error) {
+	var location string
+	if IPAddress != "" {
+		db, err := geoip2.Open("GeoLite2-Country.mmdb")
+		if err != nil {
+			return location, err
+		}
+		defer db.Close()
+
+		ip := net.ParseIP(IPAddress)
+		record, err := db.Country(ip)
+		if err != nil {
+			return location, err
+		}
+		location = record.Country.IsoCode
+	}
+	return location, nil
+}
+
+func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 	logRequest := func(c *gin.Context) {
 		// Collect API request data sent via POST request
 		var requestData RequestData
@@ -143,20 +165,7 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
 			return
 		} else {
-			var location string
-			if requestData.IPAddress != "" {
-				db, err := geoip2.Open("api/GeoLite2-Country.mmdb")
-				if err != nil {
-					panic(err)
-				}
-				defer db.Close()
-
-				ip := net.ParseIP(requestData.IPAddress)
-				record, err := db.Country(ip)
-				if err == nil {
-					location = record.Country.IsoCode
-				}
-			}
+			location, _ := getCountryCode(requestData.IPAddress)
 
 			method, err := methodMap(requestData.Method)
 			if err != nil {
@@ -182,9 +191,10 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 				Framework:    framework,
 				Location:     location,
 			}
+
 			// Insert request data into database
-			var result []interface{}
-			err = supabase.DB.From("Requests").Insert(request).Execute(&result)
+			query := fmt.Sprintf("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES ('%s', '%s', '%s', '%s', '%s', %d, %d, %d, %d, '%s', NOW());", request.APIKey, request.Path, request.Hostname, request.IPAddress, request.UserAgent, request.Status, request.ResponseTime, request.Method, request.Framework, request.Location)
+			_, err = db.Query(query)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 				return
@@ -198,21 +208,27 @@ func LogRequestHandler(supabase *supa.Client) gin.HandlerFunc {
 	return gin.HandlerFunc(logRequest)
 }
 
-func GetUserIDHandler(supabase *supa.Client) gin.HandlerFunc {
+func getUserIDHandler(db *sql.DB) gin.HandlerFunc {
 	// Get user ID associated with API key
 	getUserID := func(c *gin.Context) {
 		apiKey := c.Param("apiKey")
 
 		// Fetch user ID corresponding with API key
-		var result []struct {
-			UserID string `json:"user_id"`
-		}
-		err := supabase.DB.From("Users").Select("user_id").Eq("api_key", apiKey).Execute(&result)
+		query := fmt.Sprintf("SELECT user_id FROM users WHERE api_key = '%s';", apiKey)
+		rows, err := db.Query(query)
 		if err != nil {
-			panic(err)
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
+			return
 		}
 
-		userID := result[0].UserID
+		// API key is primary key so assumed only one row returned
+		rows.Next()
+		var userID string
+		err = rows.Scan(&userID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
+			return
+		}
 
 		// Return user ID
 		c.JSON(http.StatusOK, userID)
@@ -232,29 +248,36 @@ type PublicRequestRow struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
-func GetUserRequestsHandler(supabase *supa.Client) gin.HandlerFunc {
+func getUserRequestsHandler(db *sql.DB) gin.HandlerFunc {
 	getUserRequests := func(c *gin.Context) {
 		userID := c.Param("userID")
 
-		// Fetch all API request data associated with this account
-		var result []struct {
-			Requests []PublicRequestRow `json:"Requests"`
-			APIKey   string             `json:"api_key"`
-		}
-		err := supabase.DB.From("Users").Select("api_key, Requests!inner(hostname, ip_address, path, user_agent, method, status, response_time, created_at)").Eq("user_id", userID).Execute(&result)
+		// Fetch user ID corresponding with API key
+		query := fmt.Sprintf("SELECT hostname, ip_address, path, user_agent, method, response_time, status, requests.created_at FROM requests INNER JOIN users ON users.api_key = requests.api_key WHERE users.user_id = '%s';", userID)
+		rows, err := db.Query(query)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
 
+		// Read requests into list to return
+		requests := make([]PublicRequestRow, 0)
+		for rows.Next() {
+			request := new(PublicRequestRow)
+			err := rows.Scan(&request.Hostname, &request.IPAddress, &request.Path, &request.UserAgent, &request.Method, &request.CreatedAt, &request.ResponseTime, &request.Status)
+			if err == nil {
+				requests = append(requests, *request)
+			}
+		}
+
 		// Return API request data
-		c.JSON(http.StatusOK, result[0].Requests)
+		c.JSON(http.StatusOK, requests)
 	}
 
 	return gin.HandlerFunc(getUserRequests)
 }
 
-func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
+func getDataHandler(db *sql.DB) gin.HandlerFunc {
 	getData := func(c *gin.Context) {
 		apiKey := c.GetHeader("X-AUTH-TOKEN")
 		if apiKey == "" {
@@ -263,24 +286,34 @@ func GetDataHandler(supabase *supa.Client) gin.HandlerFunc {
 		}
 
 		// Fetch all API request data associated with this account
-		var result []PublicRequestRow
-		err := supabase.DB.From("Requests").Select("hostname", "ip_address", "path", "user_agent", "method", "created_at", "response_time", "framework", "status").Eq("api_key", apiKey).Execute(&result)
+		query := fmt.Sprintf("SELECT hostname, ip_address, path, user_agent, method, created_at, response_time, status FROM requests WHERE api_key = '%s';", apiKey)
+		rows, err := db.Query(query)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 			return
 		}
 
+		// Read requests into list to return
+		requests := make([]PublicRequestRow, 0)
+		for rows.Next() {
+			request := new(PublicRequestRow)
+			err := rows.Scan(&request.Hostname, &request.IPAddress, &request.Path, &request.UserAgent, &request.Method, &request.CreatedAt, &request.ResponseTime, &request.Status)
+			if err == nil {
+				requests = append(requests, *request)
+			}
+		}
+
 		// Return API request data
-		c.JSON(http.StatusOK, result)
+		c.JSON(http.StatusOK, requests)
 	}
 
 	return gin.HandlerFunc(getData)
 }
 
-func deleteRequestData(apiKey string, c *gin.Context, supabase *supa.Client) error {
-	// Delete all API request data associated with this account
-	var result []PublicRequestRow
-	err := supabase.DB.From("Requests").Delete().Eq("api_key", apiKey).Execute(&result)
+func deleteUserRequests(apiKey string, c *gin.Context, db *sql.DB) error {
+	// Delete all user's API request data
+	query := fmt.Sprintf("DELETE FROM requests WHERE api_key = '%s';", apiKey)
+	_, err := db.Query(query)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return err
@@ -288,10 +321,10 @@ func deleteRequestData(apiKey string, c *gin.Context, supabase *supa.Client) err
 	return nil
 }
 
-func deleteAccount(apiKey string, c *gin.Context, supabase *supa.Client) error {
+func deleteUserAccount(apiKey string, c *gin.Context, db *sql.DB) error {
 	// Delete user account record
-	var result []User
-	err := supabase.DB.From("Users").Delete().Eq("api_key", apiKey).Execute(&result)
+	query := fmt.Sprintf("DELETE FROM users WHERE api_key = '%s';", apiKey)
+	_, err := db.Query(query)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return err
@@ -299,16 +332,46 @@ func deleteAccount(apiKey string, c *gin.Context, supabase *supa.Client) error {
 	return nil
 }
 
-func DeleteDataHandler(supabase *supa.Client) gin.HandlerFunc {
+func deleteUserMonitors(apiKey string, c *gin.Context, db *sql.DB) error {
+	// Delete all user's monitored urls
+	query := fmt.Sprintf("DELETE FROM monitor WHERE api_key = '%s';", apiKey)
+	_, err := db.Query(query)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
+		return err
+	}
+	return nil
+}
+
+func deleteUserPings(apiKey string, c *gin.Context, db *sql.DB) error {
+	// Delete all user's recorded pings to all monitored urls
+	query := fmt.Sprintf("DELETE FROM pings WHERE api_key = '%s';", apiKey)
+	_, err := db.Query(query)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
+		return err
+	}
+	return nil
+}
+
+func deleteDataHandler(db *sql.DB) gin.HandlerFunc {
 	deleteData := func(c *gin.Context) {
 		apiKey := c.Param("apiKey")
 
 		var err error
-		err = deleteRequestData(apiKey, c, supabase)
+		err = deleteUserRequests(apiKey, c, db)
 		if err != nil {
 			return
 		}
-		err = deleteAccount(apiKey, c, supabase)
+		err = deleteUserAccount(apiKey, c, db)
+		if err != nil {
+			return
+		}
+		err = deleteUserMonitors(apiKey, c, db)
+		if err != nil {
+			return
+		}
+		err = deleteUserPings(apiKey, c, db)
 		if err != nil {
 			return
 		}
@@ -327,23 +390,30 @@ type PublicMonitorRow struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func GetUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
+func getUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
 	getUserMonitor := func(c *gin.Context) {
 		userID := c.Param("userID")
 
-		// Fetch all ping data associated with this account
-		var result []struct {
-			Monitor []PublicMonitorRow `json:"monitor"`
-			APIKey  string             `json:"api_key"`
-		}
-		err := supabase.DB.From("Users").Select("api_key, Monitor!inner(url, secure, ping, created_at)").Eq("user_id", userID).Execute(&result)
+		// Fetch user ID corresponding with API key
+		query := fmt.Sprintf("SELECT url, secure, ping, monitor.created_at FROM monitor INNER JOIN users ON users.api_key = monitor.api_key WHERE users.user_id = '%s';", userID)
+		rows, err := db.Query(query)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
 
+		// Read monitors into list to return
+		monitors := make([]PublicMonitorRow, 0)
+		for rows.Next() {
+			monitor := new(PublicMonitorRow)
+			err := rows.Scan(&monitor.URL, &monitor.Secure, &monitor.Ping, &monitor.CreatedAt)
+			if err == nil {
+				monitors = append(monitors, *monitor)
+			}
+		}
+
 		// Return API request data
-		c.JSON(http.StatusOK, result[0])
+		c.JSON(http.StatusOK, monitors)
 	}
 
 	return gin.HandlerFunc(getUserMonitor)
@@ -356,7 +426,7 @@ type MonitorRow struct {
 	Ping   bool   `json:"ping"`
 }
 
-func InsertUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
+func insertUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
 	insertUserMonitor := func(c *gin.Context) {
 		var monitor MonitorRow
 		if err := c.BindJSON(&monitor); err != nil {
@@ -368,9 +438,8 @@ func InsertUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
 			return
 		} else {
-			// Insert request data into database
-			var result []interface{}
-			err := supabase.DB.From("Monitor").Insert(monitor).Execute(&result)
+			query := fmt.Sprintf("INSERT INTO monitor (api_key, url, secure, ping, created_at) VALUES ('%s', '%s', %t, %t, NOW())", monitor.APIKey, monitor.URL, monitor.Secure, monitor.Ping)
+			_, err := db.Query(query)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 				return
@@ -384,10 +453,10 @@ func InsertUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
 	return gin.HandlerFunc(insertUserMonitor)
 }
 
-func deleteMonitor(apiKey string, url string, c *gin.Context, supabase *supa.Client) error {
-	// Delete monitor from database
-	var result []interface{}
-	err := supabase.DB.From("Monitor").Delete().Eq("url", url).Execute(&result)
+func deleteMonitor(apiKey string, url string, c *gin.Context, db *sql.DB) error {
+	// Delete user's monitor to this specific url
+	query := fmt.Sprintf("DELETE FROM monitor WHERE api_key = '%s' AND url = '%s';", apiKey, url)
+	_, err := db.Query(query)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return err
@@ -395,10 +464,10 @@ func deleteMonitor(apiKey string, url string, c *gin.Context, supabase *supa.Cli
 	return nil
 }
 
-func deletePings(apiKey string, url string, c *gin.Context, supabase *supa.Client) error {
-	// Delete pings from database
-	var result []interface{}
-	err := supabase.DB.From("Pings").Delete().Eq("url", url).Execute(&result)
+func deletePings(apiKey string, url string, c *gin.Context, db *sql.DB) error {
+	// Delete user's recorded pings to monitored url
+	query := fmt.Sprintf("DELETE FROM pings WHERE api_key = '%s' AND url = '%s';", apiKey, url)
+	_, err := db.Query(query)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return err
@@ -406,7 +475,7 @@ func deletePings(apiKey string, url string, c *gin.Context, supabase *supa.Clien
 	return nil
 }
 
-func DeleteUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
+func deleteUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
 	deleteUserMonitor := func(c *gin.Context) {
 		var body struct {
 			APIKey string `json:"api_key"`
@@ -422,12 +491,14 @@ func DeleteUserMonitorHandler(supabase *supa.Client) gin.HandlerFunc {
 			return
 		} else {
 			var err error
-			err = deleteMonitor(body.APIKey, body.URL, c, supabase)
+			err = deleteMonitor(body.APIKey, body.URL, c, db)
 			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 				return
 			}
-			err = deletePings(body.APIKey, body.URL, c, supabase)
+			err = deletePings(body.APIKey, body.URL, c, db)
 			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 				return
 			}
 
@@ -446,23 +517,30 @@ type PublicPingsRow struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
-func GetUserPingsHandler(supabase *supa.Client) gin.HandlerFunc {
+func getUserPingsHandler(db *sql.DB) gin.HandlerFunc {
 	getData := func(c *gin.Context) {
 		userID := c.Param("userID")
 
-		// Fetch all ping data associated with this account
-		var result []struct {
-			Pings  []PublicPingsRow `json:"pings"`
-			APIKey string           `json:"api_key"`
-		}
-		err := supabase.DB.From("Users").Select("api_key, Pings!inner(url, response_time, status, created_at)").Eq("user_id", userID).Execute(&result)
+		// Fetch user ID corresponding with API key
+		query := fmt.Sprintf("SELECT url, response_time, status, pings.created_at FROM pings INNER JOIN users ON users.api_key = pings.api_key WHERE users.user_id = '%s';", userID)
+		rows, err := db.Query(query)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
 
+		// Read pings into list to return
+		pings := make([]PublicPingsRow, 0)
+		for rows.Next() {
+			ping := new(PublicPingsRow)
+			err := rows.Scan(&ping.URL, &ping.ResponseTime, &ping.Status, &ping.CreatedAt)
+			if err == nil {
+				pings = append(pings, *ping)
+			}
+		}
+
 		// Return API request data
-		c.JSON(http.StatusOK, result[0])
+		c.JSON(http.StatusOK, pings)
 	}
 
 	return gin.HandlerFunc(getData)
@@ -476,7 +554,7 @@ func errorHandler(c *gin.Context, info ratelimit.Info) {
 	c.String(http.StatusTooManyRequests, "Too many requests. Try again in "+time.Until(info.ResetTime).String())
 }
 
-func RegisterRouter(r *gin.RouterGroup, supabase *supa.Client) {
+func RegisterRouter(r *gin.RouterGroup, db *sql.DB) {
 	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
 		Rate:  time.Second,
 		Limit: 10,
@@ -485,36 +563,13 @@ func RegisterRouter(r *gin.RouterGroup, supabase *supa.Client) {
 		ErrorHandler: errorHandler,
 		KeyFunc:      keyFunc,
 	})
-	r.POST("/log-request", mw, LogRequestHandler(supabase))
-	r.GET("/generate-api-key", GenAPIKeyHandler(supabase))
-	r.GET("/user-id/:apiKey", GetUserIDHandler(supabase))
-	r.GET("/requests/:userID", GetUserRequestsHandler(supabase))
-	r.GET("/delete/:apiKey", DeleteDataHandler(supabase))
-	r.GET("/monitor/pings/:userID", GetUserPingsHandler(supabase))
-	r.POST("/monitor/add", InsertUserMonitorHandler(supabase))
-	r.POST("/monitor/delete", DeleteUserMonitorHandler(supabase))
-	r.GET("/data", GetDataHandler(supabase))
-}
-
-func getDBLogin() (string, string) {
-	supabaseURL := os.Getenv("SUPABASE_URL")
-	supabaseKey := os.Getenv("SUPABASE_KEY")
-	return supabaseURL, supabaseKey
-}
-
-func init() {
-	supabaseURL, supabaseKey := getDBLogin()
-	supabase := supa.CreateClient(supabaseURL, supabaseKey)
-
-	gin.SetMode(gin.ReleaseMode)
-	app = gin.New()
-
-	r := app.Group("/api") // Vercel - must be /api/xxx
-
-	r.Use(cors.Default())
-	RegisterRouter(r, supabase)
-}
-
-func Handler(w http.ResponseWriter, r *http.Request) {
-	app.ServeHTTP(w, r)
+	r.POST("/log-request", mw, logRequestHandler(db))
+	r.GET("/generate-api-key", genAPIKeyHandler(db))
+	r.GET("/user-id/:apiKey", getUserIDHandler(db))
+	r.GET("/requests/:userID", getUserRequestsHandler(db))
+	r.GET("/delete/:apiKey", deleteDataHandler(db))
+	r.GET("/monitor/pings/:userID", getUserPingsHandler(db))
+	r.POST("/monitor/add", insertUserMonitorHandler(db))
+	r.POST("/monitor/delete", deleteUserMonitorHandler(db))
+	r.GET("/data", getDataHandler(db))
 }
