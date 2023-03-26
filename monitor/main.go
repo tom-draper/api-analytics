@@ -89,7 +89,7 @@ type MonitorRow struct {
 }
 
 func getMonitoredURLs(db *sql.DB) []MonitorRow {
-	query := fmt.Sprintf("SELECT * FROM monitors;")
+	query := fmt.Sprintf("SELECT * FROM monitor;")
 	rows, err := db.Query(query)
 	if err != nil {
 		panic(err)
