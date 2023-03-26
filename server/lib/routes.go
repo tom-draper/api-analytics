@@ -23,7 +23,7 @@ type User struct {
 func genAPIKeyHandler(db *sql.DB) gin.HandlerFunc {
 	genAPIKey := func(c *gin.Context) {
 		// Fetch all API request data associated with this account
-		query := fmt.Sprintf("INSERT INTO users (api_key, user_id, created_at) VALUES (gen_random_uuid(), gen_random_uuid(), NOW())")
+		query := fmt.Sprintf("INSERT INTO users (api_key, user_id, created_at) VALUES (gen_random_uuid(), gen_random_uuid(), NOW()) RETURNING api_key;")
 		rows, err := db.Query(query)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
@@ -245,6 +245,7 @@ type PublicRequestRow struct {
 	Method       int16     `json:"method"`
 	Status       int16     `json:"status"`
 	ResponseTime int16     `json:"response_time"`
+	Location     string    `json:"location"`
 	CreatedAt    time.Time `json:"created_at"`
 }
 
@@ -253,28 +254,35 @@ func getUserRequestsHandler(db *sql.DB) gin.HandlerFunc {
 		userID := c.Param("userID")
 
 		// Fetch user ID corresponding with API key
-		query := fmt.Sprintf("SELECT hostname, ip_address, path, user_agent, method, response_time, status, requests.created_at FROM requests INNER JOIN users ON users.api_key = requests.api_key WHERE users.user_id = '%s';", userID)
+		query := fmt.Sprintf("SELECT ip_address, path, user_agent, method, response_time, status, location, requests.created_at FROM requests INNER JOIN users ON users.api_key = requests.api_key WHERE users.user_id = '%s';", userID)
 		rows, err := db.Query(query)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
 
-		// Read requests into list to return
-		requests := make([]PublicRequestRow, 0)
-		for rows.Next() {
-			request := new(PublicRequestRow)
-			err := rows.Scan(&request.Hostname, &request.IPAddress, &request.Path, &request.UserAgent, &request.Method, &request.CreatedAt, &request.ResponseTime, &request.Status)
-			if err == nil {
-				requests = append(requests, *request)
-			}
-		}
+		// Read data into compact list of lists to return
+		cols := []interface{}{"ip_address", "path", "user_agent", "method", "response_time", "status", "location", "created_at"}
+		requests := buildRequestDataCompact(rows, cols)
 
 		// Return API request data
 		c.JSON(http.StatusOK, requests)
 	}
 
 	return gin.HandlerFunc(getUserRequests)
+}
+
+func buildRequestDataCompact(rows *sql.Rows, cols []interface{}) [][]interface{} {
+	// First value in list holds column names
+	requests := [][]interface{}{cols}
+	request := new(PublicRequestRow) // Reused to avoid repeated memory allocation
+	for rows.Next() {
+		err := rows.Scan(&request.IPAddress, &request.Path, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
+		if err == nil {
+			requests = append(requests, []interface{}{request.IPAddress, request.Path, request.UserAgent, request.Method, request.ResponseTime, request.Status, request.Location, request.CreatedAt})
+		}
+	}
+	return requests
 }
 
 func getDataHandler(db *sql.DB) gin.HandlerFunc {
@@ -286,28 +294,33 @@ func getDataHandler(db *sql.DB) gin.HandlerFunc {
 		}
 
 		// Fetch all API request data associated with this account
-		query := fmt.Sprintf("SELECT hostname, ip_address, path, user_agent, method, created_at, response_time, status FROM requests WHERE api_key = '%s';", apiKey)
+		query := fmt.Sprintf("SELECT hostname, ip_address, path, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s';", apiKey)
 		rows, err := db.Query(query)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 			return
 		}
 
-		// Read requests into list to return
-		requests := make([]PublicRequestRow, 0)
-		for rows.Next() {
-			request := new(PublicRequestRow)
-			err := rows.Scan(&request.Hostname, &request.IPAddress, &request.Path, &request.UserAgent, &request.Method, &request.CreatedAt, &request.ResponseTime, &request.Status)
-			if err == nil {
-				requests = append(requests, *request)
-			}
-		}
+		// Read data into list of objects to return
+		requests := buildRequestData(rows)
 
 		// Return API request data
 		c.JSON(http.StatusOK, requests)
 	}
 
 	return gin.HandlerFunc(getData)
+}
+
+func buildRequestData(rows *sql.Rows) []PublicRequestRow {
+	requests := make([]PublicRequestRow, 0)
+	for rows.Next() {
+		request := new(PublicRequestRow)
+		err := rows.Scan(&request.Hostname, &request.IPAddress, &request.Path, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
+		if err == nil {
+			requests = append(requests, *request)
+		}
+	}
+	return requests
 }
 
 func deleteUserRequests(apiKey string, c *gin.Context, db *sql.DB) error {

@@ -48,8 +48,8 @@
 
   function build() {
     let responseTimes: number[] = [];
-    for (let i = 0; i < data.length; i++) {
-      responseTimes.push(data[i].response_time);
+    for (let i = 1; i < data.length; i++) {
+      responseTimes.push(data[i][4]);
     }
     LQ = quantile(responseTimes, 0.25);
     median = quantile(responseTimes, 0.5);

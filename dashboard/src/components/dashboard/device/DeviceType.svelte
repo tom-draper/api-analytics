@@ -44,8 +44,8 @@
 
   function pieChart() {
     let deviceCount = {};
-    for (let i = 0; i < data.length; i++) {
-      let browser = getDevice(data[i].user_agent);
+    for (let i = 1; i < data.length; i++) {
+      let browser = getDevice(data[i][2]);
       if (!(browser in deviceCount)) {
         deviceCount[browser] = 0;
       }

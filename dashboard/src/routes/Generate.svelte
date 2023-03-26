@@ -7,9 +7,10 @@
       setState("loading");
       try {
         const response = await fetch(
-          "https://api-analytics-server.vercel.app/api/generate-api-key"
+          "http://213.168.248.206/api/generate-api-key"
+          // "https://api-analytics-server.vercel.app/api/generate-api-key"
         );
-        if (response.status == 200) {
+        if (response[5] == 200) {
           const data = await response.json();
           generatedKey = true;
           apiKey = data;

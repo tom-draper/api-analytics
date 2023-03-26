@@ -58,7 +58,7 @@ function getHour(): number {
 }
 
 function addDemoSamples(
-    demoData: DemoRequest[],
+    demoData: RequestsData,
     endpoint: string,
     status: number,
     count: number,
@@ -76,18 +76,11 @@ function addDemoSamples(
         );
         date.setMinutes(Math.floor(Math.random() * 60))
         date.setHours(getHour());
-        demoData.push({
-            hostname: "demo-api.com",
-            path: endpoint,
-            ip_address: Math.floor(Math.random() * maxUser + minUser).toString(),
-            user_agent: getDemoUserAgent(),
-            method: 0,
-            status: getDemoStatus(date, status),
-            response_time: Math.floor(
+        demoData.push(
+            [Math.floor(Math.random() * maxUser + minUser).toString(), endpoint, getDemoUserAgent(), 0, Math.floor(
                 Math.random() * maxResponseTime + minResponseTime
-            ),
-            created_at: date.toISOString(),
-        });
+            ), getDemoStatus(date, status), "GB", date.toISOString()]
+        );
     }
 }
 
@@ -102,9 +95,9 @@ type DemoRequest = {
     created_at: string
 }
 
-export default function genDemoData(): DemoRequest[] {
-    let demoData = [];
-    
+export default function genDemoData(): RequestsData {
+    let demoData: RequestsData = [];
+
     addDemoSamples(demoData, "/v1/", 200, 18000, 650, 0, 240, 55, 0, 3956);
     addDemoSamples(demoData, "/v1/", 400, 1000, 650, 0, 240, 55, 0, 2041);
     addDemoSamples(demoData, "/v1/account", 200, 8000, 650, 0, 240, 55, 0, 1854);

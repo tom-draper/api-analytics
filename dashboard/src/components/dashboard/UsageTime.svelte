@@ -19,8 +19,8 @@
   function bars() {
     let responseTimes = Array(24).fill(0);
 
-    for (let i = 0; i < data.length; i++) {
-      let date = new Date(data[i].created_at);
+    for (let i = 1; i < data.length; i++) {
+      let date = new Date(data[i][7]);
       let time = date.getHours();
       // @ts-ignore
       responseTimes[time]++;
@@ -43,8 +43,8 @@
     }
 
     // Shift to 12 onwards to make barpolar like clock face
-    dates = dates.slice(12).concat(...dates.slice(0, 12))
-    requests = requests.slice(12).concat(...requests.slice(0, 12))
+    dates = dates.slice(12).concat(...dates.slice(0, 12));
+    requests = requests.slice(12).concat(...requests.slice(0, 12));
 
     return [
       {

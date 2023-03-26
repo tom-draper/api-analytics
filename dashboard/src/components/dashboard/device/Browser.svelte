@@ -77,8 +77,8 @@
 
   function pieChart() {
     let browserCount = {};
-    for (let i = 0; i < data.length; i++) {
-      let browser = getBrowser(data[i].user_agent);
+    for (let i = 1; i < data.length; i++) {
+      let browser = getBrowser(data[i][2]);
       if (!(browser in browserCount)) {
         browserCount[browser] = 0;
       }

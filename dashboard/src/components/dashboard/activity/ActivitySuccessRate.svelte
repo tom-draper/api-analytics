@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import periodToDays from "../../../lib/period"
+  import periodToDays from "../../../lib/period";
 
   function daysAgo(date: Date): number {
     let now = new Date();
@@ -10,18 +10,18 @@
   function setSuccessRate() {
     let success = {};
     let minDate = Number.POSITIVE_INFINITY;
-    for (let i = 0; i < data.length; i++) {
-      let date = new Date(data[i].created_at);
+    for (let i = 1; i < data.length; i++) {
+      let date = new Date(data[i][7]);
       date.setHours(0, 0, 0, 0);
       let dateStr = date.toDateString();
       if (!(dateStr in success)) {
         success[dateStr] = { total: 0, successful: 0 };
       }
-      if (data[i].status >= 200 && data[i].status <= 299) {
+      if (data[i][5] >= 200 && data[i][5] <= 299) {
         success[dateStr].successful++;
       }
       success[dateStr].total++;
-      if (date as any < minDate) {
+      if ((date as any) < minDate) {
         minDate = date as any;
       }
     }
@@ -65,7 +65,9 @@
       {#each successRate as value}
         <div
           class="error level-{Math.floor(value * 10) + 1}"
-          title="Success rate: {value >= 0 ? (value * 100).toFixed(1) + "%" : "No requests"}"
+          title="Success rate: {value >= 0
+            ? (value * 100).toFixed(1) + '%'
+            : 'No requests'}"
         />
       {/each}
     </div>

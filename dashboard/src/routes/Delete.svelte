@@ -4,10 +4,11 @@
   async function genAPIKey() {
     setState("loading");
     const response = await fetch(
-      `https://api-analytics-server.vercel.app/api/delete/${apiKey}`
+      // `https://api-analytics-server.vercel.app/api/delete/${apiKey}`
+      `http://213.168.248.206/api/delete/${apiKey}`
     );
 
-    if (response.status === 200) {
+    if (response[5] === 200) {
       setState("deleted");
     } else {
       setState("error");

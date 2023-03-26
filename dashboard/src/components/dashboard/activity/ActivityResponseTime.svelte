@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import periodToDays from "../../../lib/period"
+  import periodToDays from "../../../lib/period";
 
   function defaultLayout() {
     let periodAgo = new Date();
@@ -37,17 +37,19 @@
     };
   }
 
-  function initResponseTimes(): {[date: string]: {total: number, count: number}} {
+  function initResponseTimes(): {
+    [date: string]: { total: number; count: number };
+  } {
     let responseTimes = {};
     let days = periodToDays(period);
     if (days) {
       if (days <= 7) {
         // Freq count for every minute
-        for (let i = 0; i < 60*24*days; i++) {
+        for (let i = 0; i < 60 * 24 * days; i++) {
           let date = new Date();
           date.setSeconds(0, 0);
           // Round down to multiple of 5
-          date.setMinutes(Math.floor(date.getMinutes() / 5) * 5 - (i* 5));
+          date.setMinutes(Math.floor(date.getMinutes() / 5) * 5 - i * 5);
           let dateStr = date.toISOString();
           responseTimes[dateStr] = { total: 0, count: 0 };
         }
@@ -69,12 +71,12 @@
     let responseTimes = initResponseTimes();
 
     let days = periodToDays(period);
-    for (let i = 0; i < data.length; i++) {
-      let date = new Date(data[i].created_at);
+    for (let i = 1; i < data.length; i++) {
+      let date = new Date(data[i][7]);
       if (days) {
         if (days <= 7) {
           // Round down to multiple of 5
-          date.setMinutes(Math.floor(date.getMinutes()/5) * 5, 0, 0);
+          date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
         } else {
           date.setHours(0, 0, 0, 0);
         }
@@ -83,7 +85,7 @@
       if (!(dateStr in responseTimes)) {
         responseTimes[dateStr] = { total: 0, count: 0 };
       }
-      responseTimes[dateStr].total += data[i].response_time;
+      responseTimes[dateStr].total += data[i][4];
       responseTimes[dateStr].count++;
     }
 
@@ -120,7 +122,7 @@
         marker: { color: "#707070" },
         hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
         showlegend: false,
-        line: {shape: 'spline', smoothing: 1}
+        line: { shape: "spline", smoothing: 1 },
       },
       // 'Hidden' horizontal line at min y to provide fill colour up to response time line
       {

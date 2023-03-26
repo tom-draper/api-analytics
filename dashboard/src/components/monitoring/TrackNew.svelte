@@ -18,8 +18,8 @@
           }),
         }
       );
-      if (response.status != 201) {
-        console.log("Error", response.status);
+      if (response[5] != 201) {
+        console.log("Error", response[5]);
       }
       showTrackNew = false;
     } catch (e) {

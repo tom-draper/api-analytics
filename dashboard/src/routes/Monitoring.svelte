@@ -9,12 +9,11 @@
     userID = formatUUID(userID);
     try {
       const response = await fetch(
-        `https://api-analytics-server.vercel.app/api/monitor/pings/${userID}`
+        // `https://api-analytics-server.vercel.app/api/monitor/pings/${userID}`
+        `http://213.168.248.206/api/monitor/pings/${userID}`
       );
       if (response.status == 200) {
-        const json = await response.json();
-        data = json.pings;
-        apiKey = json.api_key;
+        data = await response.json();
       }
     } catch (e) {
       console.log(e);
@@ -66,7 +65,7 @@
   onMount(async () => {
     await fetchData();
     monitorData = groupByUrl();
-    console.log(monitorData)
+    console.log(monitorData);
   });
 
   export let userID: string;
@@ -75,15 +74,15 @@
 <div class="monitoring">
   <div class="status">
     {#if monitorData != undefined && Object.keys(monitorData).length == 0}
-    <div class="status-image">
-      <img id="status-image" src="/img/logo.png" alt="" />
-      <div class="status-text">Setup required</div>
-    </div>
+      <div class="status-image">
+        <img id="status-image" src="/img/logo.png" alt="" />
+        <div class="status-text">Setup required</div>
+      </div>
     {:else if error}
-    <div class="status-image">
-      <img id="status-image" src="/img/bigcross.png" alt="" />
-      <div class="status-text">Systems down</div>
-    </div>
+      <div class="status-image">
+        <img id="status-image" src="/img/bigcross.png" alt="" />
+        <div class="status-text">Systems down</div>
+      </div>
     {:else}
       <div class="status-image">
         <img id="status-image" src="/img/bigtick.png" alt="" />
@@ -107,7 +106,8 @@
       <div class="period-controls-container">
         <div class="period-controls">
           <button
-            class="period-btn" class:active={period == '24h'}
+            class="period-btn"
+            class:active={period == "24h"}
             on:click={() => {
               setPeriod("24h");
             }}
@@ -115,7 +115,8 @@
             24h
           </button>
           <button
-            class="period-btn" class:active={period == '7d'}
+            class="period-btn"
+            class:active={period == "7d"}
             on:click={() => {
               setPeriod("7d");
             }}
@@ -123,7 +124,8 @@
             7d
           </button>
           <button
-            class="period-btn" class:active={period == '30d'}
+            class="period-btn"
+            class:active={period == "30d"}
             on:click={() => {
               setPeriod("30d");
             }}
@@ -131,7 +133,8 @@
             30d
           </button>
           <button
-            class="period-btn" class:active={period == '60d'}
+            class="period-btn"
+            class:active={period == "60d"}
             on:click={() => {
               setPeriod("60d");
             }}
@@ -146,7 +149,13 @@
         <TrackNew {apiKey} {showTrackNew} />
       {/if}
       {#each Object.keys(monitorData) as url}
-        <Card {url} bind:data={monitorData} {apiKey} {period} bind:anyError={error} />
+        <Card
+          {url}
+          bind:data={monitorData}
+          {apiKey}
+          {period}
+          bind:anyError={error}
+        />
       {/each}
     {:else}
       <div class="spinner">
@@ -237,7 +246,7 @@
 
   @media screen and (max-width: 1000px) {
     .cards-container {
-      width: 95%
+      width: 95%;
     }
-  } 
+  }
 </style>

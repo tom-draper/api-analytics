@@ -37,11 +37,11 @@
     }
 
     let dataSubset = [];
-    for (let i = 0; i < data.length; i++) {
-      if (disable404 && data[i].status == 404) {
+    for (let i = 1; i < data.length; i++) {
+      if (disable404 && data[i][5] == 404) {
         continue;
       }
-      let date = new Date(data[i].created_at);
+      let date = new Date(data[i][7]);
       if (counted(date)) {
         dataSubset.push(data[i]);
       }
@@ -69,11 +69,11 @@
     }
 
     let dataSubset = [];
-    for (let i = 0; i < data.length; i++) {
-      if (disable404 && data[i].status == 404) {
+    for (let i = 1; i < data.length; i++) {
+      if (disable404 && data[i][5] == 404) {
         continue;
       }
-      let date = new Date(data[i].created_at);
+      let date = new Date(data[i][7]);
       if (inPeriod(date)) {
         dataSubset.push(data[i]);
       }
@@ -100,7 +100,8 @@
     userID = formatUUID(userID);
     try {
       const response = await fetch(
-        `https://api-analytics-server.vercel.app/api/requests/${userID}`
+        // `https://api-analytics-server.vercel.app/api/requests/${userID}`
+        `http://213.168.248.206/api/requests/${userID}`
       );
       if (response.status == 200) {
         const json = await response.json();

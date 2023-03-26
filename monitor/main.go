@@ -1,25 +1,41 @@
 package main
 
 import (
+	"bytes"
+	"database/sql"
 	"fmt"
 	"net"
 	"net/http"
 	"os"
 	"time"
 
+	_ "github.com/lib/pq"
+
 	"github.com/joho/godotenv"
-	supa "github.com/nedpals/supabase-go"
 )
 
-func getDBLogin() (string, string) {
+func getDBLogin() (string, string, string) {
 	err := godotenv.Load(".env")
 	if err != nil {
 		panic(err)
 	}
 
-	supabaseURL := os.Getenv("SUPABASE_URL")
-	supabaseKey := os.Getenv("SUPABASE_KEY")
-	return supabaseURL, supabaseKey
+	database := os.Getenv("POSTGRES_DATABASE")
+	username := os.Getenv("POSTGRES_USERNAME")
+	password := os.Getenv("POSTGRES_PASSWORD")
+	return database, username, password
+}
+
+func OpenDBConnection() *sql.DB {
+	database, username, password := getDBLogin()
+	args := fmt.Sprintf("host=%s port=%d dbname=%s user='%s' password=%s sslmode=%s", "localhost", 5432, database, username, password, "disable")
+
+	db, err := sql.Open("postgres", args)
+	if err != nil {
+		panic(err)
+	}
+
+	return db
 }
 
 func getURL(domain string, secure bool) string {
@@ -72,14 +88,24 @@ type MonitorRow struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func getMonitoredURLs(supabase *supa.Client) []MonitorRow {
-	// Fetch all API request data associated with this account
-	var result []MonitorRow
-	err := supabase.DB.From("Monitor").Select("*").Execute(&result)
+func getMonitoredURLs(db *sql.DB) []MonitorRow {
+	query := fmt.Sprintf("SELECT * FROM monitors;")
+	rows, err := db.Query(query)
 	if err != nil {
 		panic(err)
 	}
-	return result
+
+	// Read monitors into list to return
+	monitors := make([]MonitorRow, 0)
+	for rows.Next() {
+		monitor := new(MonitorRow)
+		err := rows.Scan(&monitor.APIKey, &monitor.URL, &monitor.Ping, &monitor.Secure, &monitor.CreatedAt)
+		if err == nil {
+			monitors = append(monitors, *monitor)
+		}
+	}
+
+	return monitors
 }
 
 type PingRow struct {
@@ -90,23 +116,28 @@ type PingRow struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
-func deleteOldPings(supabase *supa.Client) {
-	var result interface{}
-	err := supabase.DB.From("Pings").Delete().Lt("created_at", time.Now().Add(-60*24*time.Hour).Format("2006-01-02 15:04:05")).Execute(&result)
+func deleteOldPings(db *sql.DB) {
+	query := fmt.Sprintf("DELETE FROM pings WHERE FROM created_at < '%s';", time.Now().Add(-60*24*time.Hour))
+	_, err := db.Query(query)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 }
 
-func uploadPings(pings []PingRow, supabase *supa.Client) {
-	var result interface{}
-	err := supabase.DB.From("Pings").Insert(pings).Execute(&result)
+func uploadPings(pings []PingRow, db *sql.DB) {
+	var query bytes.Buffer
+	query.WriteString("INSERT INTO pings (api_key, url, response_time, status, created_at) VALUES")
+	for _, ping := range pings {
+		query.WriteString(fmt.Sprintf("('%s', '%s', %d, %d, '%v')", ping.APIKey, ping.URL, ping.ResponseTime, ping.Status, ping.CreatedAt))
+	}
+
+	_, err := db.Query(query.String())
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 }
 
-func pingMonitored(monitored []MonitorRow, client http.Client, supabase *supa.Client) {
+func pingMonitored(monitored []MonitorRow, client http.Client, db *sql.DB) {
 	var pings []PingRow
 	for _, m := range monitored {
 		status, elapsed, err := ping(client, m.URL, m.Secure, m.Ping)
@@ -123,8 +154,8 @@ func pingMonitored(monitored []MonitorRow, client http.Client, supabase *supa.Cl
 		pings = append(pings, ping)
 	}
 
-	uploadPings(pings, supabase)
-	deleteOldPings(supabase)
+	uploadPings(pings, db)
+	deleteOldPings(db)
 }
 
 func getClient() http.Client {
@@ -138,11 +169,10 @@ func getClient() http.Client {
 }
 
 func main() {
-	supabaseURL, supabaseKey := getDBLogin()
-	supabase := supa.CreateClient(supabaseURL, supabaseKey)
+	db := OpenDBConnection()
 
-	monitored := getMonitoredURLs(supabase)
+	monitored := getMonitoredURLs(db)
 
 	client := getClient()
-	pingMonitored(monitored, client, supabase)
+	pingMonitored(monitored, client, db)
 }
