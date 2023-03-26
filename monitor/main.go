@@ -99,7 +99,7 @@ func getMonitoredURLs(db *sql.DB) []MonitorRow {
 	monitors := make([]MonitorRow, 0)
 	for rows.Next() {
 		monitor := new(MonitorRow)
-		err := rows.Scan(&monitor.APIKey, &monitor.URL, &monitor.Ping, &monitor.Secure, &monitor.CreatedAt)
+		err := rows.Scan(&monitor.APIKey, &monitor.URL, &monitor.Secure, &monitor.Ping, &monitor.CreatedAt)
 		if err == nil {
 			monitors = append(monitors, *monitor)
 		}
