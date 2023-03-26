@@ -117,7 +117,7 @@ type PingRow struct {
 }
 
 func deleteOldPings(db *sql.DB) {
-	query := fmt.Sprintf("DELETE FROM pings WHERE FROM created_at < '%s';", time.Now().Add(-60*24*time.Hour))
+	query := fmt.Sprintf("DELETE FROM pings WHERE created_at < '%s';", time.Now().Add(-60*24*time.Hour))
 	_, err := db.Query(query)
 	if err != nil {
 		panic(err)
@@ -128,8 +128,9 @@ func uploadPings(pings []PingRow, db *sql.DB) {
 	var query bytes.Buffer
 	query.WriteString("INSERT INTO pings (api_key, url, response_time, status, created_at) VALUES")
 	for _, ping := range pings {
-		query.WriteString(fmt.Sprintf("('%s', '%s', %d, %d, '%v')", ping.APIKey, ping.URL, ping.ResponseTime, ping.Status, ping.CreatedAt))
+		query.WriteString(fmt.Sprintf(" ('%s', '%s', %d, %d, '%v')", ping.APIKey, ping.URL, ping.ResponseTime, ping.Status, ping.CreatedAt))
 	}
+	query.WriteString(";")
 
 	_, err := db.Query(query.String())
 	if err != nil {
