@@ -158,6 +158,7 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 		var requestData RequestData
 		if err := c.BindJSON(&requestData); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
+			fmt.Println(err)
 			return
 		}
 
@@ -194,9 +195,11 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 
 			// Insert request data into database
 			query := fmt.Sprintf("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES ('%s', '%s', '%s', '%s', '%s', %d, %d, %d, %d, '%s', NOW());", request.APIKey, request.Path, request.Hostname, request.IPAddress, request.UserAgent, request.Status, request.ResponseTime, request.Method, request.Framework, request.Location)
+			fmt.Println(query)
 			_, err = db.Query(query)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+				fmt.Println(err)
 				return
 			}
 
@@ -238,15 +241,15 @@ func getUserIDHandler(db *sql.DB) gin.HandlerFunc {
 }
 
 type PublicRequestRow struct {
-	Hostname     string    `json:"hostname"`
-	IPAddress    string    `json:"ip_address"`
-	Path         string    `json:"path"`
-	UserAgent    string    `json:"user_agent"`
-	Method       int16     `json:"method"`
-	Status       int16     `json:"status"`
-	ResponseTime int16     `json:"response_time"`
-	Location     string    `json:"location"`
-	CreatedAt    time.Time `json:"created_at"`
+	Hostname     string         `json:"hostname"`
+	IPAddress    sql.NullString `json:"ip_address"`
+	Path         string         `json:"path"`
+	UserAgent    sql.NullString `json:"user_agent"`
+	Method       int16          `json:"method"`
+	Status       int16          `json:"status"`
+	ResponseTime int16          `json:"response_time"`
+	Location     string         `json:"location"`
+	CreatedAt    time.Time      `json:"created_at"`
 }
 
 func getUserRequestsHandler(db *sql.DB) gin.HandlerFunc {
@@ -255,6 +258,7 @@ func getUserRequestsHandler(db *sql.DB) gin.HandlerFunc {
 
 		// Fetch user ID corresponding with API key
 		query := fmt.Sprintf("SELECT ip_address, path, user_agent, method, response_time, status, location, requests.created_at FROM requests INNER JOIN users ON users.api_key = requests.api_key WHERE users.user_id = '%s';", userID)
+		fmt.Println(query)
 		rows, err := db.Query(query)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
@@ -278,8 +282,11 @@ func buildRequestDataCompact(rows *sql.Rows, cols []interface{}) [][]interface{}
 	request := new(PublicRequestRow) // Reused to avoid repeated memory allocation
 	for rows.Next() {
 		err := rows.Scan(&request.IPAddress, &request.Path, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
+		if request.Location == "  " {
+			request.Location = ""
+		}
 		if err == nil {
-			requests = append(requests, []interface{}{request.IPAddress, request.Path, request.UserAgent, request.Method, request.ResponseTime, request.Status, request.Location, request.CreatedAt})
+			requests = append(requests, []interface{}{request.IPAddress.String, request.Path, request.UserAgent.String, request.Method, request.ResponseTime, request.Status, request.Location, request.CreatedAt})
 		}
 	}
 	return requests

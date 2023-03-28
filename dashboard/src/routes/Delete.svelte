@@ -8,7 +8,7 @@
       `http://213.168.248.206/api/delete/${apiKey}`
     );
 
-    if (response[5] === 200) {
+    if (response.status === 200) {
       setState("deleted");
     } else {
       setState("error");

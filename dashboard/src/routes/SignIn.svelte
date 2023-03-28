@@ -9,7 +9,7 @@
         `http://213.168.248.206/api/user-id/${apiKey}`
       );
 
-      if (response[5] == 200) {
+      if (response.status === 200) {
         const userID = await response.json();
         window.location.href = `/${page}/${userID.replaceAll("-", "")}`;
       } else {

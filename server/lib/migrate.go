@@ -53,6 +53,28 @@ func readRequests() []SupabaseRequestRow {
 		method, _ := strconv.Atoi(record[1])
 		r.Method = int16(method)
 		r.CreatedAt, err = time.Parse("2006-01-02 15:04:05.000000+00", record[2])
+		if err != nil {
+			r.CreatedAt, err = time.Parse("2006-01-02 15:04:05.00000+00", record[2])
+			if err != nil {
+				r.CreatedAt, err = time.Parse("2006-01-02 15:04:05.0000+00", record[2])
+				if err != nil {
+					r.CreatedAt, err = time.Parse("2006-01-02 15:04:05.000+00", record[2])
+					if err != nil {
+						r.CreatedAt, err = time.Parse("2006-01-02 15:04:05.00+00", record[2])
+						if err != nil {
+							r.CreatedAt, err = time.Parse("2006-01-02 15:04:05.00+00", record[2])
+							if err != nil {
+								r.CreatedAt, err = time.Parse("2006-01-02 15:04:05.0+00", record[2])
+								if err != nil {
+									fmt.Println(record[2], r.CreatedAt)
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
 		r.Path = record[3]
 		r.APIKey = record[4]
 		status, _ := strconv.Atoi(record[5])
@@ -88,19 +110,19 @@ func migrateSupabaseRequests() {
 			query.WriteString(",")
 		} else {
 			query = bytes.Buffer{}
-			query.WriteString("INSERT INTO requests (request_id, api_key, method, created_at, path, status, response_time, framework, hostname, ip_address, location) VALUES")
+			query.WriteString("INSERT INTO requests (api_key, method, created_at, path, status, response_time, framework, hostname, ip_address, location) VALUES")
 		}
 		if request.IPAddress == "" || request.IPAddress == "testclient" {
-			query.WriteString(fmt.Sprintf(" (%d, '%s', %d, '%s', '%s', %d, %d, %d, '%s', NULL, '%s')", request.RequestID, request.APIKey, request.Method, request.CreatedAt.UTC().Format(time.RFC3339), request.Path, request.Status, request.ResponseTime, request.Framework, request.Hostname, request.Location))
+			query.WriteString(fmt.Sprintf(" ('%s', %d, '%s', '%s', %d, %d, %d, '%s', NULL, '%s')", request.APIKey, request.Method, request.CreatedAt.UTC().Format(time.RFC3339), request.Path, request.Status, request.ResponseTime, request.Framework, request.Hostname, request.Location))
 		} else {
-			query.WriteString(fmt.Sprintf(" (%d, '%s', %d, '%s', '%s', %d, %d, %d, '%s', '%s', '%s')", request.RequestID, request.APIKey, request.Method, request.CreatedAt.UTC().Format(time.RFC3339), request.Path, request.Status, request.ResponseTime, request.Framework, request.Hostname, request.IPAddress, request.Location))
+			query.WriteString(fmt.Sprintf(" ('%s', %d, '%s', '%s', %d, %d, %d, '%s', '%s', '%s')", request.APIKey, request.Method, request.CreatedAt.UTC().Format(time.RFC3339), request.Path, request.Status, request.ResponseTime, request.Framework, request.Hostname, request.IPAddress, request.Location))
 		}
 
 		i++
 		if i == 10000 {
 			query.WriteString(";")
 
-			fmt.Println("writing to database")
+			fmt.Println("Write to database")
 
 			db = OpenDBConnection()
 			_, err := db.Query(query.String())
@@ -116,12 +138,13 @@ func migrateSupabaseRequests() {
 	db = OpenDBConnection()
 	query.WriteString(";")
 
-	fmt.Println("final writing to database")
+	fmt.Println("Final write to database")
 
 	_, err := db.Query(query.String())
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("Complete")
 }
 
 type SupabaseUsersRow struct {

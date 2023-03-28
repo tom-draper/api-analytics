@@ -103,7 +103,7 @@
         // `https://api-analytics-server.vercel.app/api/requests/${userID}`
         `http://213.168.248.206/api/requests/${userID}`
       );
-      if (response.status == 200) {
+      if (response.status === 200) {
         const json = await response.json();
         data = json;
         console.log(data);

@@ -1,15 +1,15 @@
 <script lang="ts">
-  import Browser from "./Browser.svelte";
+  import Client from "./Client.svelte";
   import OperatingSystem from "./OperatingSystem.svelte";
   import DeviceType from "./DeviceType.svelte";
 
-  function setBtn(target: string) {
+  function setBtn(target: "client" | "os" | "device") {
     activeBtn = target;
     // Resize window to trigger new plot resize to match current card size
     window.dispatchEvent(new Event("resize"));
   }
 
-  let activeBtn = "os";
+  let activeBtn: "client" | "os" | "device" = "client";
 
   export let data: RequestsData;
 </script>
@@ -19,16 +19,16 @@
     Device
     <div class="toggle">
       <button
+        class:active={activeBtn == "client"}
+        on:click={() => {
+          setBtn("client");
+        }}>Client</button
+      >
+      <button
         class:active={activeBtn == "os"}
         on:click={() => {
           setBtn("os");
         }}>OS</button
-      >
-      <button
-        class:active={activeBtn == "browser"}
-        on:click={() => {
-          setBtn("browser");
-        }}>Browser</button
       >
       <button
         class:active={activeBtn == "device"}
@@ -38,11 +38,11 @@
       >
     </div>
   </div>
+  <div class="client" style={activeBtn == "client" ? "display: initial" : ""}>
+    <Client {data} />
+  </div>
   <div class="os" style={activeBtn == "os" ? "display: initial" : ""}>
     <OperatingSystem {data} />
-  </div>
-  <div class="browser" style={activeBtn == "browser" ? "display: initial" : ""}>
-    <Browser {data} />
   </div>
   <div class="device" style={activeBtn == "device" ? "display: initial" : ""}>
     <DeviceType {data} />
@@ -65,7 +65,7 @@
     background: var(--highlight);
   }
   .os,
-  .browser,
+  .client,
   .device {
     display: none;
   }
