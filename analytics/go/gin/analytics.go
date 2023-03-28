@@ -22,8 +22,9 @@ func Analytics(apiKey string) gin.HandlerFunc {
 			Status:       c.Writer.Status(),
 			Framework:    "Gin",
 			ResponseTime: time.Since(start).Milliseconds(),
+			CreatedAt:    time.Now(),
 		}
 
-		go core.LogRequest(data)
+		core.LogRequest(data)
 	}
 }

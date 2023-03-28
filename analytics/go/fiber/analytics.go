@@ -22,9 +22,10 @@ func Analytics(apiKey string) func(c *fiber.Ctx) error {
 			Status:       c.Response().StatusCode(),
 			Framework:    "Fiber",
 			ResponseTime: time.Since(start).Milliseconds(),
+			CreatedAt:    time.Now(),
 		}
 
-		go core.LogRequest(data)
+		core.LogRequest(data)
 
 		return err
 	}

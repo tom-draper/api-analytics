@@ -14,6 +14,8 @@ def post(data: dict):
 
 def log_request(data: dict):
     _requests.push(data)
-    if (datetime.now() - last_posted).total_seconds() > 60.0:
+    now = datetime.now()
+    if (now - last_posted).total_seconds() > 60.0:
         threading.Thread(target=post, args=(_requests,)).start()
         _requests.clear()
+        last_posted = now

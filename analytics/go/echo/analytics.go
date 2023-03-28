@@ -23,9 +23,10 @@ func Analytics(apiKey string) echo.MiddlewareFunc {
 				Status:       c.Response().Status,
 				Framework:    "Echo",
 				ResponseTime: time.Since(start).Milliseconds(),
+				CreatedAt:    time.Now(),
 			}
 
-			go core.LogRequest(data)
+			core.LogRequest(data)
 			return err
 		}
 	}

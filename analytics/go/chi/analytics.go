@@ -55,9 +55,10 @@ func Analytics(apiKey string) func(next http.Handler) http.Handler {
 				Status:       rw.status,
 				Framework:    "Chi",
 				ResponseTime: time.Since(start).Milliseconds(),
+				CreatedAt:    time.Now(),
 			}
 
-			go core.LogRequest(data)
+			core.LogRequest(data)
 		})
 	}
 }
