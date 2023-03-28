@@ -158,7 +158,6 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 		var requestData RequestData
 		if err := c.BindJSON(&requestData); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
-			fmt.Println(err)
 			return
 		}
 
@@ -195,11 +194,9 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 
 			// Insert request data into database
 			query := fmt.Sprintf("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES ('%s', '%s', '%s', '%s', '%s', %d, %d, %d, %d, '%s', NOW());", request.APIKey, request.Path, request.Hostname, request.IPAddress, request.UserAgent, request.Status, request.ResponseTime, request.Method, request.Framework, request.Location)
-			fmt.Println(query)
 			_, err = db.Query(query)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
-				fmt.Println(err)
 				return
 			}
 
