@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
 	"net"
@@ -47,28 +48,30 @@ func genAPIKeyHandler(db *sql.DB) gin.HandlerFunc {
 }
 
 type RequestData struct {
-	APIKey       string `json:"api_key"`
-	Path         string `json:"path"`
-	Hostname     string `json:"hostname"`
-	IPAddress    string `json:"ip_address"`
-	UserAgent    string `json:"user_agent"`
-	Method       string `json:"method"`
-	Status       int16  `json:"status"`
-	ResponseTime int16  `json:"response_time"`
-	Framework    string `json:"framework"`
+	APIKey       string    `json:"api_key"`
+	Path         string    `json:"path"`
+	Hostname     string    `json:"hostname"`
+	IPAddress    string    `json:"ip_address"`
+	UserAgent    string    `json:"user_agent"`
+	Method       string    `json:"method"`
+	Status       int16     `json:"status"`
+	ResponseTime int16     `json:"response_time"`
+	Framework    string    `json:"framework"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 type RequestRow struct {
-	APIKey       string `json:"api_key"`
-	Path         string `json:"path"`
-	Hostname     string `json:"hostname"`
-	IPAddress    string `json:"ip_address"`
-	Location     string `json:"location"`
-	UserAgent    string `json:"user_agent"`
-	Method       int16  `json:"method"`
-	Status       int16  `json:"status"`
-	ResponseTime int16  `json:"response_time"`
-	Framework    int16  `json:"framework"`
+	APIKey       string    `json:"api_key"`
+	Path         string    `json:"path"`
+	Hostname     string    `json:"hostname"`
+	IPAddress    string    `json:"ip_address"`
+	Location     string    `json:"location"`
+	UserAgent    string    `json:"user_agent"`
+	Method       int16     `json:"method"`
+	Status       int16     `json:"status"`
+	ResponseTime int16     `json:"response_time"`
+	Framework    int16     `json:"framework"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 func methodMap(method string) (int16, error) {
@@ -155,46 +158,56 @@ func getCountryCode(IPAddress string) (string, error) {
 func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 	logRequest := func(c *gin.Context) {
 		// Collect API request data sent via POST request
-		var requestData RequestData
+		var requestData []RequestData
 		if err := c.BindJSON(&requestData); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
 			return
 		}
 
-		if requestData.APIKey == "" {
+		if requestData[0].APIKey == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
 			return
 		} else {
-			location, _ := getCountryCode(requestData.IPAddress)
+			var query bytes.Buffer
+			query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES")
+			for i, request := range requestData {
+				location, _ := getCountryCode(request.IPAddress)
 
-			method, err := methodMap(requestData.Method)
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid method."})
-				return
+				method, err := methodMap(request.Method)
+				if err != nil {
+					c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid method."})
+					return
+				}
+
+				framework, err := frameworkMap(request.Framework)
+				if err != nil {
+					c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid framework."})
+					return
+				}
+
+				row := RequestRow{
+					APIKey:       request.APIKey,
+					Path:         request.Path,
+					Hostname:     request.Hostname,
+					IPAddress:    request.IPAddress,
+					UserAgent:    request.UserAgent,
+					Status:       request.Status,
+					ResponseTime: request.ResponseTime,
+					Method:       method,
+					Framework:    framework,
+					Location:     location,
+					CreatedAt:    request.CreatedAt,
+				}
+
+				if i > 0 {
+					query.WriteString(",")
+				}
+				query.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%s', '%s', %d, %d, %d, %d, '%s', '%s');", row.APIKey, row.Path, row.Hostname, row.IPAddress, row.UserAgent, row.Status, row.ResponseTime, row.Method, row.Framework, row.Location, row.CreatedAt.UTC().Format(time.RFC3339)))
 			}
+			query.WriteString(";")
 
-			framework, err := frameworkMap(requestData.Framework)
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid framework."})
-				return
-			}
-
-			request := RequestRow{
-				APIKey:       requestData.APIKey,
-				Path:         requestData.Path,
-				Hostname:     requestData.Hostname,
-				IPAddress:    requestData.IPAddress,
-				UserAgent:    requestData.UserAgent,
-				Status:       requestData.Status,
-				ResponseTime: requestData.ResponseTime,
-				Method:       method,
-				Framework:    framework,
-				Location:     location,
-			}
-
-			// Insert request data into database
-			query := fmt.Sprintf("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES ('%s', '%s', '%s', '%s', '%s', %d, %d, %d, %d, '%s', NOW());", request.APIKey, request.Path, request.Hostname, request.IPAddress, request.UserAgent, request.Status, request.ResponseTime, request.Method, request.Framework, request.Location)
-			_, err = db.Query(query)
+			// Insert logged requests into database
+			_, err := db.Query(query.String())
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 				return

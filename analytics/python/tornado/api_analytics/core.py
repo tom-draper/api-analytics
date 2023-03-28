@@ -1,5 +1,19 @@
 import requests
+import threading
+from datetime import datetime
+
+
+_requests = []
+last_posted = datetime.now()
+
+
+def post(data: dict):
+    requests.post('http://213.168.248.206/api/log-request',
+                  json=data, timeout=5)
 
 
 def log_request(data: dict):
-    requests.post('https://api-analytics-server.vercel.app/api/log-request', json=data, timeout=5)
+    _requests.push(data)
+    if (datetime.now() - last_posted).total_seconds() > 60.0:
+        threading.Thread(target=post, args=(_requests,)).start()
+        _requests.clear()

@@ -1,9 +1,9 @@
-import threading
+from datetime import datetime
 from time import time
 
 from api_analytics.core import log_request
-from tornado.web import Application, RequestHandler
 from tornado.httputil import HTTPServerRequest
+from tornado.web import Application, RequestHandler
 
 
 class Analytics(RequestHandler):
@@ -26,7 +26,8 @@ class Analytics(RequestHandler):
             'status': self.get_status(),
             'framework': 'Tornado',
             'response_time': int((time() - self.start) * 1000),
+            'created_at': datetime.now()
         }
 
-        threading.Thread(target=log_request, args=(data,)).start()
+        log_request(data)
         self.start = None
