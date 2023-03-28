@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "actix-analytics"
-version = "1.0.8"
+version = "1.0.10"
 dependencies = [
  "actix-rt",
  "actix-web",

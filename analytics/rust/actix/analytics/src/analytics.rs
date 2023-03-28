@@ -4,6 +4,7 @@ use actix_web::{
     http::header::{HeaderValue, HOST, USER_AGENT},
     Error,
 };
+use chrono::Utc;
 use futures::future::LocalBoxFuture;
 use reqwest::Client;
 use serde::Serialize;
@@ -23,6 +24,7 @@ struct Data {
     response_time: u32,
     status: u16,
     framework: String,
+    created_at: Utc,
 }
 impl Data {
     pub fn new(
@@ -34,6 +36,7 @@ impl Data {
         method: String,
         response_time: u32,
         status: u16,
+        created_at: Utc,
     ) -> Self {
         Self {
             api_key,
@@ -45,6 +48,7 @@ impl Data {
             response_time,
             status,
             framework: String::from("Actix"),
+            created_at,
         }
     }
 }
@@ -74,6 +78,8 @@ where
     fn new_transform(&self, service: S) -> Self::Future {
         ready(Ok(AnalyticsMiddleware {
             api_key: self.api_key.clone(),
+            requests: Vec::new(),
+            last_posted: Instant::now(),
             service,
         }))
     }
@@ -81,6 +87,8 @@ where
 
 pub struct AnalyticsMiddleware<S> {
     api_key: String,
+    requests: Vec<Data>,
+    last_posted: Instant,
     service: S,
 }
 
@@ -101,12 +109,32 @@ fn extract_ip_address(req: &ServiceRequest) -> String {
     return String::new();
 }
 
-async fn log_request(data: Data) {
+pub trait Logger {
+    fn log_request(&self, data: Data);
+}
+
+async fn post(requests: Vec<Data>) {
     let _ = Client::new()
-        .post("https://api-analytics-server.vercel.app/api/log-request")
-        .json(&data)
+        .post("http://213.168.248.206/api/log-request")
+        .json(&requests)
         .send()
         .await;
+}
+
+impl<S, B> Logger for AnalyticsMiddleware<S>
+where
+    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
+    S::Future: 'static,
+    B: 'static,
+{
+    fn log_request(&self, data: Data) {
+        self.requests.push(data);
+        if self.last_posted.elapsed().as_secs_f64() > 60.0 {
+            spawn(async { post(self.requests).await });
+            self.requests.clear();
+            self.last_posted = Instant::now();
+        }
+    }
 }
 
 impl<S, B> Service<ServiceRequest> for AnalyticsMiddleware<S>
@@ -154,9 +182,10 @@ where
                 method,
                 elapsed.try_into().unwrap(),
                 res.status().as_u16(),
+                Utc::now(),
             );
 
-            spawn(async { log_request(data).await });
+            self.log_request(data);
             Ok(res)
         })
     }
