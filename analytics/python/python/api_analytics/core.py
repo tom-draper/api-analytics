@@ -4,18 +4,19 @@ from datetime import datetime
 
 
 _requests = []
-last_posted = datetime.now()
+_last_posted = datetime.now()
 
 
-def post(data: dict):
+def post_requests(requests_data: list[dict]):
     requests.post('http://213.168.248.206/api/log-request',
-                  json=data, timeout=5)
+                  json=requests_data, timeout=5)
 
 
-def log_request(data: dict):
-    _requests.push(data)
+def log_request(request_data: dict):
+    global _requests, _last_posted
+    _requests.append(request_data)
     now = datetime.now()
-    if (now - last_posted).total_seconds() > 60.0:
-        threading.Thread(target=post, args=(_requests,)).start()
+    if (now - _last_posted).total_seconds() > 60.0:
+        threading.Thread(target=post_requests, args=(_requests,)).start()
         _requests = []
-        last_posted = now
+        _last_posted = now

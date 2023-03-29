@@ -28,16 +28,15 @@ module Analytics
         status: status,
         framework: @framework,
         response_time: (Time.now - start).to_f.round,
-        created_at: Time.now
+        created_at: Time.now.utc.iso8601
       }
 
-      
       [status, headers, response]
     end
     
     private
 
-    def post(requests)
+    def post_requests(requests)
       uri = URI('http://213.168.248.206/api/log-request')
       res = Net::HTTP.post(uri, requests.to_json)
     end
@@ -47,7 +46,7 @@ module Analytics
       @requests.push(data)
       if (now - @last_posted) > 60. {
         Thread.new {
-          post(@requests)
+          post_requests(@requests)
         }
         @requests = Array.new
         @last_posted = now

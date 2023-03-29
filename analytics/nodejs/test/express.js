@@ -1,5 +1,5 @@
 import express from "express";
-import { expressAnalytics } from "node-api-analytics";
+import { expressAnalytics } from "../analytics.js";
 import * as dotenv from "dotenv";
 dotenv.config();
 

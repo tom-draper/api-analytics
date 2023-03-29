@@ -20,9 +20,9 @@ func getAPIKey() string {
 	return apiKey
 }
 
-func root(c echo.Context) {
+func root(c echo.Context) error {
 	jsonData := []byte(`{"message": "Hello World!"}`)
-	c.Data(http.StatusOK, "application/json", jsonData)
+	return c.JSON(http.StatusOK, jsonData)
 }
 
 func main() {

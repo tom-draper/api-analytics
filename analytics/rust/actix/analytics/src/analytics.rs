@@ -24,7 +24,7 @@ struct Data {
     response_time: u32,
     status: u16,
     framework: String,
-    created_at: Utc,
+    created_at: String,
 }
 impl Data {
     pub fn new(
@@ -36,7 +36,7 @@ impl Data {
         method: String,
         response_time: u32,
         status: u16,
-        created_at: Utc,
+        created_at: String,
     ) -> Self {
         Self {
             api_key,
@@ -110,7 +110,7 @@ fn extract_ip_address(req: &ServiceRequest) -> String {
 }
 
 pub trait Logger {
-    fn log_request(&self, data: Data);
+    fn log_request(&mut self, data: Data);
 }
 
 async fn post(requests: Vec<Data>) {
@@ -127,7 +127,7 @@ where
     S::Future: 'static,
     B: 'static,
 {
-    fn log_request(&self, data: Data) {
+    fn log_request(&mut self, data: Data) {
         self.requests.push(data);
         if self.last_posted.elapsed().as_secs_f64() > 60.0 {
             spawn(async { post(self.requests).await });
@@ -182,7 +182,7 @@ where
                 method,
                 elapsed.try_into().unwrap(),
                 res.status().as_u16(),
-                Utc::now(),
+                Utc::now().to_rfc3339(),
             );
 
             self.log_request(data);

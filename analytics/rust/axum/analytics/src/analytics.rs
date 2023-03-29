@@ -1,4 +1,5 @@
 use axum::{body::Body, extract::ConnectInfo, http::Request, response::Response};
+use chrono::Utc;
 use futures::future::BoxFuture;
 use http::{
     header::{HeaderValue, HOST, USER_AGENT},
@@ -14,7 +15,7 @@ use std::{
 };
 use tower::{Layer, Service};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 struct Data {
     api_key: String,
     hostname: String,
@@ -25,6 +26,7 @@ struct Data {
     response_time: u32,
     status: u16,
     framework: String,
+    created_at: String,
 }
 
 impl Data {
@@ -37,6 +39,7 @@ impl Data {
         method: String,
         status: u16,
         response_time: u32,
+        created_at: String,
     ) -> Self {
         Self {
             api_key,
@@ -48,6 +51,7 @@ impl Data {
             response_time,
             status,
             framework: String::from("Axum"),
+            created_at,
         }
     }
 }
@@ -69,6 +73,8 @@ impl<S> Layer<S> for Analytics {
     fn layer(&self, inner: S) -> Self::Service {
         AnalyticsMiddleware {
             api_key: self.api_key.clone(),
+            requests: Vec::new(),
+            last_posted: Instant::now(),
             inner,
         }
     }
@@ -77,6 +83,8 @@ impl<S> Layer<S> for Analytics {
 #[derive(Clone)]
 pub struct AnalyticsMiddleware<S> {
     api_key: String,
+    requests: Vec<Data>,
+    last_posted: Instant,
     inner: S,
 }
 
@@ -128,11 +136,26 @@ fn extract_ip_address(req: &Request<Body>) -> String {
     ip_address
 }
 
-fn log_request(data: Data) {
+pub trait Logger {
+    fn log_request(&self, data: Data);
+}
+
+fn post_requests(requests: Vec<Data>) {
     let _ = Client::new()
-        .post("https://api-analytics-server.vercel.app/api/log-request")
-        .json(&data)
+        .post("http://213.168.248.206/api/log-request")
+        .json(&requests)
         .send();
+}
+
+impl<D: std::marker::Sync> Logger for AnalyticsMiddleware<D> {
+    fn log_request(&self, data: Data) {
+        self.requests.push(data);
+        if self.last_posted.elapsed().as_secs_f64() > 60.0 {
+            spawn(|| post_requests(self.requests));
+            self.requests.clear();
+            self.last_posted = Instant::now();
+        }
+    }
 }
 
 impl<S> Service<Request<Body>> for AnalyticsMiddleware<S>
@@ -152,7 +175,11 @@ where
         let now = Instant::now();
 
         let api_key = self.api_key.clone();
-        let hostname = req.headers().get(HOST).map(|x| x.to_string()).unwrap_or_default();
+        let hostname = req
+            .headers()
+            .get(HOST)
+            .map(|x| x.to_string())
+            .unwrap_or_default();
         let ip_address = extract_ip_address(&req);
         let path = req.uri().path().to_owned();
         let method = req.method().to_string();
@@ -176,9 +203,10 @@ where
                 method,
                 res.status().as_u16(),
                 now.elapsed().as_millis().try_into().unwrap(),
+                Utc::now().to_rfc3339(),
             );
 
-            spawn(|| log_request(data));
+            self.log_request(data);
             Ok(res)
         })
     }

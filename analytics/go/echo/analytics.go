@@ -23,7 +23,7 @@ func Analytics(apiKey string) echo.MiddlewareFunc {
 				Status:       c.Response().Status,
 				Framework:    "Echo",
 				ResponseTime: time.Since(start).Milliseconds(),
-				CreatedAt:    time.Now(),
+				CreatedAt:    start.Format(time.RFC3339),
 			}
 
 			core.LogRequest(data)

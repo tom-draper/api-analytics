@@ -31,7 +31,7 @@ class Analytics(BaseHTTPMiddleware):
             'status': response.status_code,
             'framework': 'Flask',
             'response_time': int((time() - start) * 1000),
-            'created_at': datetime.now()
+            'created_at': datetime.now().isoformat()
         }
 
         log_request(data)

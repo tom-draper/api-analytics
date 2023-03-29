@@ -26,7 +26,7 @@ class Analytics(RequestHandler):
             'status': self.get_status(),
             'framework': 'Tornado',
             'response_time': int((time() - self.start) * 1000),
-            'created_at': datetime.now()
+            'created_at': datetime.now().isoformat()
         }
 
         log_request(data)

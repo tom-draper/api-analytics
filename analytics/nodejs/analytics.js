@@ -1,12 +1,12 @@
 import fetch from "node-fetch";
 
 let requests = [];
-let last_posted = new Date();
+let lastPosted = new Date();
 
 async function logRequest(data) {
   let now = new Date();
   requests.push(data);
-  if ((now - last_posted) / 1000 > 60) {
+  if ((now - lastPosted) / 1000 > 60) {
     await fetch("http://213.168.248.206/api/log-request", {
       method: "POST",
       body: JSON.stringify(requests),
@@ -15,7 +15,7 @@ async function logRequest(data) {
       },
     });
     requests = [];
-    last_posted = now;
+    lastPosted = now;
   }
 }
 
@@ -34,7 +34,7 @@ export function expressAnalytics(apiKey) {
       method: req.method,
       framework: "Express",
       response_time: Math.round((performance.now() - start) / 1000),
-      created_at: new Date(),
+      created_at: new Date().toISOString(),
     };
 
     logRequest(data);
@@ -56,7 +56,7 @@ export function fastifyAnalytics(apiKey) {
       method: req.method,
       framework: "Fastify",
       response_time: Math.round((performance.now() - start) / 1000),
-      created_at: new Date(),
+      created_at: new Date().toISOString(),
     };
 
     logRequest(data);
@@ -78,7 +78,7 @@ export function koaAnalytics(apiKey) {
       method: ctx.method,
       framework: "Koa",
       response_time: Math.round((performance.now() - start) / 1000),
-      created_at: new Date(),
+      created_at: new Date().toISOString(),
     };
 
     logRequest(data);
