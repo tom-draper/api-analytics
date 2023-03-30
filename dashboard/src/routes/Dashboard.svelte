@@ -324,7 +324,7 @@
       margin: 0;
     }
     .dashboard-content {
-      margin: 1.4em 1em 1em;
+      margin: 1.4em 1em 3.5em;
     }
     .button-nav {
       margin: 2.5em 3em 0;

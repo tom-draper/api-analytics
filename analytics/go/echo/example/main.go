@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"os"
 
-	echo "github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4"
 	analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
 
 	"github.com/joho/godotenv"
