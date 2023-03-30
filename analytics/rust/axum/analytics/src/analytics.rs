@@ -5,8 +5,10 @@ use http::{
     header::{HeaderValue, HOST, USER_AGENT},
     Extensions, HeaderMap,
 };
+use lazy_static::lazy_static;
 use reqwest::blocking::Client;
 use serde::Serialize;
+use std::sync::Mutex;
 use std::{
     net::{IpAddr, SocketAddr},
     task::{Context, Poll},
@@ -73,8 +75,6 @@ impl<S> Layer<S> for Analytics {
     fn layer(&self, inner: S) -> Self::Service {
         AnalyticsMiddleware {
             api_key: self.api_key.clone(),
-            requests: Vec::new(),
-            last_posted: Instant::now(),
             inner,
         }
     }
@@ -83,8 +83,6 @@ impl<S> Layer<S> for Analytics {
 #[derive(Clone)]
 pub struct AnalyticsMiddleware<S> {
     api_key: String,
-    requests: Vec<Data>,
-    last_posted: Instant,
     inner: S,
 }
 
@@ -136,8 +134,9 @@ fn extract_ip_address(req: &Request<Body>) -> String {
     ip_address
 }
 
-pub trait Logger {
-    fn log_request(&self, data: Data);
+lazy_static! {
+    static ref REQUESTS: Mutex<Vec<Data>> = Mutex::new(vec![]);
+    static ref LAST_POSTED: Mutex<Instant> = Mutex::new(Instant::now());
 }
 
 fn post_requests(requests: Vec<Data>) {
@@ -147,14 +146,13 @@ fn post_requests(requests: Vec<Data>) {
         .send();
 }
 
-impl<D: std::marker::Sync> Logger for AnalyticsMiddleware<D> {
-    fn log_request(&self, data: Data) {
-        self.requests.push(data);
-        if self.last_posted.elapsed().as_secs_f64() > 60.0 {
-            spawn(|| post_requests(self.requests));
-            self.requests.clear();
-            self.last_posted = Instant::now();
-        }
+fn log_request(data: Data) {
+    REQUESTS.lock().unwrap().push(data);
+    if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > 60.0 {
+        let requests = REQUESTS.lock().unwrap().to_vec();
+        REQUESTS.lock().unwrap().clear();
+        spawn(|| post_requests(requests));
+        *LAST_POSTED.lock().unwrap() = Instant::now();
     }
 }
 
@@ -206,7 +204,8 @@ where
                 Utc::now().to_rfc3339(),
             );
 
-            self.log_request(data);
+            log_request(data);
+
             Ok(res)
         })
     }

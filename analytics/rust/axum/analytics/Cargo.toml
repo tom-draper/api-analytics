@@ -11,7 +11,7 @@ version = "1.0.7"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-crate-type = ["lib"] # The crate types to generate.  
+crate-type = ["lib"] # The crate types to generate.    
 path = "src/analytics.rs" # The source file of the target.
 
 [dependencies]
@@ -19,6 +19,7 @@ axum = "0.6.1"
 chrono = {version = "0.4", features = ["unstable-locales"]}
 futures = "0.3"
 http = "0.2.8"
+lazy_static = "1.4.0"
 reqwest = {version = "0.11", features = ["json", "blocking"]}
 serde = {version = "1.0", features = ["derive"]}
 tower = "0.4.13"

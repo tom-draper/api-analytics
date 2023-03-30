@@ -9,7 +9,6 @@ module Analytics
     def initialize(app, api_key)
       @app = app
       @api_key = api_key
-
       @requests = Array.new
       @last_posted = Time.now
     end
@@ -31,6 +30,8 @@ module Analytics
         created_at: Time.now.utc.iso8601
       }
 
+      log_request(data)
+
       [status, headers, response]
     end
     
@@ -44,13 +45,14 @@ module Analytics
     def log_request(data)
       now = Time.now
       @requests.push(data)
-      if (now - @last_posted) > 60. {
+      if (now - @last_posted) > 5
+        requests = @requests.dup
         Thread.new {
-          post_requests(@requests)
+          post_requests(requests)
         }
         @requests = Array.new
         @last_posted = now
-      }
+    end
     end
   end
 
@@ -70,3 +72,5 @@ module Analytics
     end
   end
 end
+
+

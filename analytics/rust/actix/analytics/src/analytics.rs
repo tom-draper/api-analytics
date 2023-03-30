@@ -122,7 +122,7 @@ async fn post_requests(requests: Vec<Data>) {
 
 async fn log_request(data: Data) {
     REQUESTS.lock().unwrap().push(data);
-    if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > 5.0 {
+    if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > 60.0 {
         let requests = REQUESTS.lock().unwrap().to_vec();
         REQUESTS.lock().unwrap().clear();
         post_requests(requests).await;

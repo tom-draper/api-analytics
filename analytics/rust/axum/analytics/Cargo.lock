@@ -69,6 +69,7 @@ dependencies = [
  "chrono",
  "futures",
  "http",
+ "lazy_static",
  "reqwest",
  "serde",
  "tower",
