@@ -48,30 +48,30 @@ func genAPIKeyHandler(db *sql.DB) gin.HandlerFunc {
 }
 
 type RequestData struct {
-	APIKey       string    `json:"api_key"`
-	Path         string    `json:"path"`
-	Hostname     string    `json:"hostname"`
-	IPAddress    string    `json:"ip_address"`
-	UserAgent    string    `json:"user_agent"`
-	Method       string    `json:"method"`
-	Status       int16     `json:"status"`
-	ResponseTime int16     `json:"response_time"`
-	Framework    string    `json:"framework"`
-	CreatedAt    time.Time `json:"created_at"`
+	APIKey       string `json:"api_key"`
+	Path         string `json:"path"`
+	Hostname     string `json:"hostname"`
+	IPAddress    string `json:"ip_address"`
+	UserAgent    string `json:"user_agent"`
+	Method       string `json:"method"`
+	Status       int16  `json:"status"`
+	ResponseTime int16  `json:"response_time"`
+	Framework    string `json:"framework"`
+	CreatedAt    string `json:"created_at"`
 }
 
 type RequestRow struct {
-	APIKey       string    `json:"api_key"`
-	Path         string    `json:"path"`
-	Hostname     string    `json:"hostname"`
-	IPAddress    string    `json:"ip_address"`
-	Location     string    `json:"location"`
-	UserAgent    string    `json:"user_agent"`
-	Method       int16     `json:"method"`
-	Status       int16     `json:"status"`
-	ResponseTime int16     `json:"response_time"`
-	Framework    int16     `json:"framework"`
-	CreatedAt    time.Time `json:"created_at"`
+	APIKey       string `json:"api_key"`
+	Path         string `json:"path"`
+	Hostname     string `json:"hostname"`
+	IPAddress    string `json:"ip_address"`
+	Location     string `json:"location"`
+	UserAgent    string `json:"user_agent"`
+	Method       int16  `json:"method"`
+	Status       int16  `json:"status"`
+	ResponseTime int16  `json:"response_time"`
+	Framework    int16  `json:"framework"`
+	CreatedAt    string `json:"created_at"`
 }
 
 func methodMap(method string) (int16, error) {
@@ -131,6 +131,8 @@ func frameworkMap(framework string) (int16, error) {
 		return 13, nil
 	case "Laravel":
 		return 14, nil
+	case "Sinatra":
+		return 15, nil
 	default:
 		return -1, fmt.Errorf("error: invalid framework")
 	}
@@ -164,7 +166,10 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
-		if requestData[0].APIKey == "" {
+		if len(requestData) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Payload empty."})
+			return
+		} else if requestData[0].APIKey == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
 			return
 		} else {
@@ -202,7 +207,11 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 				if i > 0 {
 					query.WriteString(",")
 				}
-				query.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%s', '%s', %d, %d, %d, %d, '%s', '%s');", row.APIKey, row.Path, row.Hostname, row.IPAddress, row.UserAgent, row.Status, row.ResponseTime, row.Method, row.Framework, row.Location, row.CreatedAt.UTC().Format(time.RFC3339)))
+				if row.IPAddress == "" {
+					query.WriteString(fmt.Sprintf("('%s', '%s', '%s', NULL, '%s', %d, %d, %d, %d, '%s', '%s')", row.APIKey, row.Path, row.Hostname, row.UserAgent, row.Status, row.ResponseTime, row.Method, row.Framework, row.Location, row.CreatedAt))
+				} else {
+					query.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%s', '%s', %d, %d, %d, %d, '%s', '%s')", row.APIKey, row.Path, row.Hostname, row.IPAddress, row.UserAgent, row.Status, row.ResponseTime, row.Method, row.Framework, row.Location, row.CreatedAt))
+				}
 			}
 			query.WriteString(";")
 
