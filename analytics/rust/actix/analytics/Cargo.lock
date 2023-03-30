@@ -10,6 +10,7 @@ dependencies = [
  "actix-web",
  "chrono",
  "futures",
+ "lazy_static",
  "reqwest",
  "serde",
 ]

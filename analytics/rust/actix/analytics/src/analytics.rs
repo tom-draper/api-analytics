@@ -6,14 +6,16 @@ use actix_web::{
 };
 use chrono::Utc;
 use futures::future::LocalBoxFuture;
+use lazy_static::lazy_static;
 use reqwest::Client;
 use serde::Serialize;
+use std::sync::Mutex;
 use std::{
     future::{ready, Ready},
     time::Instant,
 };
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 struct Data {
     api_key: String,
     hostname: String,
@@ -78,8 +80,6 @@ where
     fn new_transform(&self, service: S) -> Self::Future {
         ready(Ok(AnalyticsMiddleware {
             api_key: self.api_key.clone(),
-            requests: Vec::new(),
-            last_posted: Instant::now(),
             service,
         }))
     }
@@ -87,8 +87,6 @@ where
 
 pub struct AnalyticsMiddleware<S> {
     api_key: String,
-    requests: Vec<Data>,
-    last_posted: Instant,
     service: S,
 }
 
@@ -109,11 +107,12 @@ fn extract_ip_address(req: &ServiceRequest) -> String {
     return String::new();
 }
 
-pub trait Logger {
-    fn log_request(&mut self, data: Data);
+lazy_static! {
+    static ref REQUESTS: Mutex<Vec<Data>> = Mutex::new(vec![]);
+    static ref LAST_POSTED: Mutex<Instant> = Mutex::new(Instant::now());
 }
 
-async fn post(requests: Vec<Data>) {
+async fn post_requests(requests: Vec<Data>) {
     let _ = Client::new()
         .post("http://213.168.248.206/api/log-request")
         .json(&requests)
@@ -121,19 +120,13 @@ async fn post(requests: Vec<Data>) {
         .await;
 }
 
-impl<S, B> Logger for AnalyticsMiddleware<S>
-where
-    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
-    S::Future: 'static,
-    B: 'static,
-{
-    fn log_request(&mut self, data: Data) {
-        self.requests.push(data);
-        if self.last_posted.elapsed().as_secs_f64() > 60.0 {
-            spawn(async { post(self.requests).await });
-            self.requests.clear();
-            self.last_posted = Instant::now();
-        }
+async fn log_request(data: Data) {
+    REQUESTS.lock().unwrap().push(data);
+    if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > 5.0 {
+        let requests = REQUESTS.lock().unwrap().to_vec();
+        REQUESTS.lock().unwrap().clear();
+        post_requests(requests).await;
+        *LAST_POSTED.lock().unwrap() = Instant::now();
     }
 }
 
@@ -150,7 +143,7 @@ where
     forward_ready!(service);
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        let now = Instant::now();
+        let start = Instant::now();
 
         let api_key = self.api_key.clone();
         let hostname = req
@@ -171,7 +164,7 @@ where
 
         Box::pin(async move {
             let res = future.await?;
-            let elapsed = now.elapsed().as_millis();
+            let elapsed = start.elapsed().as_millis();
 
             let data = Data::new(
                 api_key,
@@ -185,7 +178,8 @@ where
                 Utc::now().to_rfc3339(),
             );
 
-            self.log_request(data);
+            spawn(async { log_request(data).await });
+
             Ok(res)
         })
     }
