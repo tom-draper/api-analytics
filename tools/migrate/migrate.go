@@ -1,4 +1,4 @@
-package lib
+package migrate
 
 import (
 	"bytes"
@@ -95,7 +95,7 @@ func readRequests() []SupabaseRequestRow {
 	return result
 }
 
-func migrateSupabaseRequests() {
+func MigrateSupabaseRequests() {
 	// var result []SupabaseRequestRow
 	// err := supabase.DB.From("Requests").Select("*").Execute(&result)
 	// if err != nil {
@@ -153,7 +153,7 @@ type SupabaseUsersRow struct {
 	database.UserRow
 }
 
-func migrateSupabaseUsers(db *sql.DB, supabase *supa.Client) {
+func MigrateSupabaseUsers(db *sql.DB, supabase *supa.Client) {
 	var result []SupabaseUsersRow
 	err := supabase.DB.From("Users").Select("*").Execute(&result)
 	if err != nil {
@@ -181,7 +181,7 @@ type SupabaseMonitorRow struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func migrateSupabaseMonitors(db *sql.DB, supabase *supa.Client) {
+func MigrateSupabaseMonitors(db *sql.DB, supabase *supa.Client) {
 	var result []SupabaseMonitorRow
 	err := supabase.DB.From("Monitor").Select("*").Execute(&result)
 	if err != nil {
@@ -208,7 +208,7 @@ type SupabasePingsRow struct {
 	database.PingsRow
 }
 
-func migrateSupabasePings(db *sql.DB, supabase *supa.Client) {
+func MigrateSupabasePings(db *sql.DB, supabase *supa.Client) {
 	var result []SupabasePingsRow
 	err := supabase.DB.From("Pings").Select("*").Execute(&result)
 	if err != nil {

@@ -11,6 +11,7 @@ func UserUsage() {
 		panic(err)
 	}
 
+	var monitors []database.MonitorRow
 	for rows.Next() {
 		monitor := new(database.MonitorRow)
 		err := rows.Scan(&monitor.APIKey, &monitor.URL, &monitor.Secure, &monitor.Ping, &monitor.CreatedAt)

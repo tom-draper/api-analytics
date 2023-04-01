@@ -1,5 +1,7 @@
 package main
 
-func main() {
+import "migrate/migrate"
 
+func main() {
+	migrate.MigrateSupabaseRequests()
 }
