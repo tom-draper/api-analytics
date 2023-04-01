@@ -1,4 +1,4 @@
-module server
+module github.com/tom-draper/api-analytics/server
 
 go 1.20
 
