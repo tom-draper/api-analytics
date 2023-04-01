@@ -8,4 +8,4 @@ require (
 	github.com/tom-draper/api-analytics/analytics/go/chi v0.0.0-20230322115810-d1075a6f84cc
 )
 
-require github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230322115810-d1075a6f84cc // indirect
+require github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230401104045-77df2c67a6aa // indirect
