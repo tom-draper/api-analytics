@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/gin-gonic/gin v1.9.0
 	github.com/joho/godotenv v1.5.1
-	github.com/tom-draper/api-analytics/analytics/go/gin v0.0.0-20230401105436-15d111b80d0a
+	github.com/tom-draper/api-analytics/analytics/go/gin v0.0.0-20230401110237-dd88bf6c47e0
 )
 
 require (
