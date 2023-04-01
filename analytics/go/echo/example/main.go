@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"os"
 
-	echo "github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4"
 	analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
 
 	"github.com/joho/godotenv"
@@ -20,9 +20,9 @@ func getAPIKey() string {
 	return apiKey
 }
 
-func root(c echo.Context) {
+func root(c echo.Context) error {
 	jsonData := []byte(`{"message": "Hello World!"}`)
-	c.Data(http.StatusOK, "application/json", jsonData)
+	return c.JSON(http.StatusOK, jsonData)
 }
 
 func main() {

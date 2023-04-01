@@ -43,7 +43,9 @@
     } else if (userAgent.match(/OS\/2/)) {
       return "OS/2";
     } else if (
-      userAgent.match(/(APIs-Google)|(AdsBot)|(nuhk)|(Googlebot)|(Storebot)|(Google-Site-Verification)|(Mediapartners)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves\/Teoma)|(ia_archiver)/)
+      userAgent.match(
+        /(APIs-Google)|(AdsBot)|(nuhk)|(Googlebot)|(Storebot)|(Google-Site-Verification)|(Mediapartners)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves\/Teoma)|(ia_archiver)/
+      )
     ) {
       return "Search Bot";
     } else {
@@ -91,8 +93,8 @@
 
   function pieChart() {
     let osCount = {};
-    for (let i = 0; i < data.length; i++) {
-      let os = getOS(data[i].user_agent);
+    for (let i = 1; i < data.length; i++) {
+      let os = getOS(data[i][2]);
       if (!(os in osCount)) {
         osCount[os] = 0;
       }

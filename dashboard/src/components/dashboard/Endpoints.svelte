@@ -18,13 +18,13 @@
     [endpointID: string]: { path: string; status: number; count: number };
   } {
     let freq = {};
-    for (let i = 0; i < data.length; i++) {
+    for (let i = 1; i < data.length; i++) {
       // Create groups of endpoints by path + status
-      let endpointID = `${data[i].path}${data[i].status}`;
+      let endpointID = `${data[i][1]}${data[i][5]}`;
       if (!(endpointID in freq)) {
         freq[endpointID] = {
-          path: `${methodMap[data[i].method]}  ${data[i].path}`,
-          status: data[i].status,
+          path: `${methodMap[data[i][3]]}  ${data[i][1]}`,
+          status: data[i][5],
           count: 0,
         };
       }

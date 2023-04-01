@@ -9,6 +9,8 @@ module Analytics
     def initialize(app, api_key)
       @app = app
       @api_key = api_key
+      @requests = Array.new
+      @last_posted = Time.now
     end
 
     def call(env)
@@ -25,20 +27,32 @@ module Analytics
         status: status,
         framework: @framework,
         response_time: (Time.now - start).to_f.round,
+        created_at: Time.now.utc.iso8601
       }
 
-      Thread.new {
-        log_request(data)
-      }
+      log_request(data)
 
       [status, headers, response]
     end
-
+    
     private
 
+    def post_requests(requests)
+      uri = URI('http://213.168.248.206/api/log-request')
+      res = Net::HTTP.post(uri, requests.to_json)
+    end
+    
     def log_request(data)
-      uri = URI('https://api-analytics-server.vercel.app/api/log-request')
-      res = Net::HTTP.post(uri, data.to_json)
+      now = Time.now
+      @requests.push(data)
+      if (now - @last_posted) > 5
+        requests = @requests.dup
+        Thread.new {
+          post_requests(requests)
+        }
+        @requests = Array.new
+        @last_posted = now
+    end
     end
   end
 
@@ -58,3 +72,5 @@ module Analytics
     end
   end
 end
+
+

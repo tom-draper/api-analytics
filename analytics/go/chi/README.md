@@ -41,7 +41,7 @@ func main() {
 	router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
 	router.GET("/", root)
-	router.Run("localhost:8080")
+	router.Run(":8080")
 }
 ```
 

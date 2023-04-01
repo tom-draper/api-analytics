@@ -1,11 +1,14 @@
 use axum::{body::Body, extract::ConnectInfo, http::Request, response::Response};
+use chrono::Utc;
 use futures::future::BoxFuture;
 use http::{
     header::{HeaderValue, HOST, USER_AGENT},
     Extensions, HeaderMap,
 };
+use lazy_static::lazy_static;
 use reqwest::blocking::Client;
 use serde::Serialize;
+use std::sync::Mutex;
 use std::{
     net::{IpAddr, SocketAddr},
     task::{Context, Poll},
@@ -14,7 +17,7 @@ use std::{
 };
 use tower::{Layer, Service};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 struct Data {
     api_key: String,
     hostname: String,
@@ -25,6 +28,7 @@ struct Data {
     response_time: u32,
     status: u16,
     framework: String,
+    created_at: String,
 }
 
 impl Data {
@@ -37,6 +41,7 @@ impl Data {
         method: String,
         status: u16,
         response_time: u32,
+        created_at: String,
     ) -> Self {
         Self {
             api_key,
@@ -48,6 +53,7 @@ impl Data {
             response_time,
             status,
             framework: String::from("Axum"),
+            created_at,
         }
     }
 }
@@ -128,11 +134,26 @@ fn extract_ip_address(req: &Request<Body>) -> String {
     ip_address
 }
 
-fn log_request(data: Data) {
+lazy_static! {
+    static ref REQUESTS: Mutex<Vec<Data>> = Mutex::new(vec![]);
+    static ref LAST_POSTED: Mutex<Instant> = Mutex::new(Instant::now());
+}
+
+fn post_requests(requests: Vec<Data>) {
     let _ = Client::new()
-        .post("https://api-analytics-server.vercel.app/api/log-request")
-        .json(&data)
+        .post("http://213.168.248.206/api/log-request")
+        .json(&requests)
         .send();
+}
+
+fn log_request(data: Data) {
+    REQUESTS.lock().unwrap().push(data);
+    if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > 60.0 {
+        let requests = REQUESTS.lock().unwrap().to_vec();
+        REQUESTS.lock().unwrap().clear();
+        spawn(|| post_requests(requests));
+        *LAST_POSTED.lock().unwrap() = Instant::now();
+    }
 }
 
 impl<S> Service<Request<Body>> for AnalyticsMiddleware<S>
@@ -152,7 +173,11 @@ where
         let now = Instant::now();
 
         let api_key = self.api_key.clone();
-        let hostname = req.headers().get(HOST).map(|x| x.to_string()).unwrap_or_default();
+        let hostname = req
+            .headers()
+            .get(HOST)
+            .map(|x| x.to_string())
+            .unwrap_or_default();
         let ip_address = extract_ip_address(&req);
         let path = req.uri().path().to_owned();
         let method = req.method().to_string();
@@ -176,9 +201,11 @@ where
                 method,
                 res.status().as_u16(),
                 now.elapsed().as_millis().try_into().unwrap(),
+                Utc::now().to_rfc3339(),
             );
 
-            spawn(|| log_request(data));
+            log_request(data);
+
             Ok(res)
         })
     }

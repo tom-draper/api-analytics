@@ -4,15 +4,18 @@ use actix_web::{
     http::header::{HeaderValue, HOST, USER_AGENT},
     Error,
 };
+use chrono::Utc;
 use futures::future::LocalBoxFuture;
+use lazy_static::lazy_static;
 use reqwest::Client;
 use serde::Serialize;
+use std::sync::Mutex;
 use std::{
     future::{ready, Ready},
     time::Instant,
 };
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 struct Data {
     api_key: String,
     hostname: String,
@@ -23,6 +26,7 @@ struct Data {
     response_time: u32,
     status: u16,
     framework: String,
+    created_at: String,
 }
 impl Data {
     pub fn new(
@@ -34,6 +38,7 @@ impl Data {
         method: String,
         response_time: u32,
         status: u16,
+        created_at: String,
     ) -> Self {
         Self {
             api_key,
@@ -45,6 +50,7 @@ impl Data {
             response_time,
             status,
             framework: String::from("Actix"),
+            created_at,
         }
     }
 }
@@ -101,12 +107,27 @@ fn extract_ip_address(req: &ServiceRequest) -> String {
     return String::new();
 }
 
-async fn log_request(data: Data) {
+lazy_static! {
+    static ref REQUESTS: Mutex<Vec<Data>> = Mutex::new(vec![]);
+    static ref LAST_POSTED: Mutex<Instant> = Mutex::new(Instant::now());
+}
+
+async fn post_requests(requests: Vec<Data>) {
     let _ = Client::new()
-        .post("https://api-analytics-server.vercel.app/api/log-request")
-        .json(&data)
+        .post("http://213.168.248.206/api/log-request")
+        .json(&requests)
         .send()
         .await;
+}
+
+async fn log_request(data: Data) {
+    REQUESTS.lock().unwrap().push(data);
+    if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > 60.0 {
+        let requests = REQUESTS.lock().unwrap().to_vec();
+        REQUESTS.lock().unwrap().clear();
+        post_requests(requests).await;
+        *LAST_POSTED.lock().unwrap() = Instant::now();
+    }
 }
 
 impl<S, B> Service<ServiceRequest> for AnalyticsMiddleware<S>
@@ -122,7 +143,7 @@ where
     forward_ready!(service);
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        let now = Instant::now();
+        let start = Instant::now();
 
         let api_key = self.api_key.clone();
         let hostname = req
@@ -143,7 +164,7 @@ where
 
         Box::pin(async move {
             let res = future.await?;
-            let elapsed = now.elapsed().as_millis();
+            let elapsed = start.elapsed().as_millis();
 
             let data = Data::new(
                 api_key,
@@ -154,9 +175,11 @@ where
                 method,
                 elapsed.try_into().unwrap(),
                 res.status().as_u16(),
+                Utc::now().to_rfc3339(),
             );
 
             spawn(async { log_request(data).await });
+
             Ok(res)
         })
     }

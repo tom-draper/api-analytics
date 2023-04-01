@@ -5,10 +5,11 @@
     setState("loading");
     try {
       const response = await fetch(
-        `https://api-analytics-server.vercel.app/api/user-id/${apiKey}`
+        // `https://api-analytics-server.vercel.app/api/user-id/${apiKey}`
+        `http://213.168.248.206/api/user-id/${apiKey}`
       );
 
-      if (response.status == 200) {
+      if (response.status === 200) {
         const userID = await response.json();
         window.location.href = `/${page}/${userID.replaceAll("-", "")}`;
       } else {

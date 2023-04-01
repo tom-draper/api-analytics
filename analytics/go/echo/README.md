@@ -23,22 +23,24 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v4"
 	analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
 )
 
-func root(c echo.Context) {
+func root(c echo.Context) error {
 	jsonData := []byte(`{"message": "Hello World!"}`)
-	c.Data(http.StatusOK, "application/json", jsonData)
+	return c.JSON(http.StatusOK, jsonData)
 }
 
 func main() {
+	apiKey := getAPIKey()
+
 	router := echo.New()
 
-	router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
+	router.Use(analytics.Analytics(apiKey))
 
 	router.GET("/", root)
-	router.Logger.Fatal(router.Start("localhost:8080"))
+	router.Start(":8080")
 }
 ```
 

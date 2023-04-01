@@ -3,8 +3,8 @@
 
   function setVersions() {
     let v: Set<string> = new Set();
-    for (let i = 0; i < data.length; i++) {
-      let match = data[i].path.match(/[^a-z0-9](v\d)[^a-z0-9]/i);
+    for (let i = 1; i < data.length; i++) {
+      let match = data[i][1].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
       if (match) {
         v.add(match[1]);
       }
@@ -51,8 +51,8 @@
 
   function pieChart() {
     let versionCount = {};
-    for (let i = 0; i < data.length; i++) {
-      let match = data[i].path.match(/[^a-z0-9](v\d)[^a-z0-9]/i);
+    for (let i = 1; i < data.length; i++) {
+      let match = data[i][1].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
       if (match) {
         let version = match[1];
         if (!(version in versionCount)) {

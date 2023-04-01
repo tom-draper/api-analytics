@@ -29,7 +29,7 @@
     let n = 5;
     let x = [...Array(n).keys()];
     let y = Array(n).fill(0);
-    for (let i = 0; i < data.length; i++) {
+    for (let i = 1; i < data.length; i++) {
       let idx = Math.floor(i / (data.length / n));
       y[idx] += 1;
     }

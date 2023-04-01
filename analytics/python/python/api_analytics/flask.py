@@ -1,4 +1,4 @@
-import threading
+from datetime import datetime
 from time import time
 from typing import Callable
 
@@ -31,7 +31,8 @@ class Analytics(BaseHTTPMiddleware):
             'status': response.status_code,
             'framework': 'Flask',
             'response_time': int((time() - start) * 1000),
+            'created_at': datetime.now().isoformat()
         }
-        
-        threading.Thread(target=log_request, args=(data,)).start()
+
+        log_request(data)
         return response

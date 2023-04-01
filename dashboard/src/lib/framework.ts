@@ -49,7 +49,6 @@ async def root():
         codeFile: '',
         example: `import asyncio
 from tornado.web import Application
-
 from api_analytics.tornado import Analytics
 
 # Inherit from the Analytics middleware class
@@ -153,7 +152,7 @@ func main() {
 	router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
 	router.GET("/", root)
-	router.Run("localhost:8080")
+	router.Run(":8080")
 }`
     },
     Echo: {
@@ -168,9 +167,9 @@ import (
 	analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
 )
 
-func root(c echo.Context) {
+func root(c echo.Context) error {
 	jsonData := []byte(\`{"message": "Hello World!"}\`)
-	c.Data(http.StatusOK, "application/json", jsonData)
+	return c.JSON(http.StatusOK, jsonData)
 }
 
 func main() {
@@ -179,7 +178,7 @@ func main() {
 	router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
 	router.GET("/", root)
-	router.Start("localhost:8080")
+	router.Start(":8080")
 }`
     },
     Fiber: {
@@ -232,7 +231,7 @@ func main() {
 	router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
 	router.GET("/", root)
-	router.Run("localhost:8080")
+	router.Run(":8080")
 }`
     },
     Actix: {
@@ -342,7 +341,7 @@ end`
     Laravel: {
         install: 'coming soon',
         codeFile: 'app/Http/Kernel.php',
-        example:  `protected $middleware = [
+        example: `protected $middleware = [
     \\App\\Http\\Middleware\\Analytics::class,
     ...
 ]`
