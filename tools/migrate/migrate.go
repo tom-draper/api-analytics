@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/tom-draper/api-analytics/server/lib/database"
+
 	"github.com/joho/godotenv"
 	supa "github.com/nedpals/supabase-go"
 )
@@ -26,7 +28,7 @@ func getSupabaseLogin() (string, string) {
 }
 
 type SupabaseRequestRow struct {
-	RequestRow
+	database.RequestRow
 	RequestID int       `json:"request_id"`
 	CreatedAt time.Time `json:"created_at"`
 }
@@ -148,7 +150,7 @@ func migrateSupabaseRequests() {
 }
 
 type SupabaseUsersRow struct {
-	User
+	database.UserRow
 }
 
 func migrateSupabaseUsers(db *sql.DB, supabase *supa.Client) {
@@ -175,7 +177,7 @@ func migrateSupabaseUsers(db *sql.DB, supabase *supa.Client) {
 }
 
 type SupabaseMonitorRow struct {
-	MonitorRow
+	database.MonitorRow
 	CreatedAt time.Time `json:"created_at"`
 }
 
@@ -203,8 +205,7 @@ func migrateSupabaseMonitors(db *sql.DB, supabase *supa.Client) {
 }
 
 type SupabasePingsRow struct {
-	PublicPingsRow
-	APIKey string `json:"api_key"`
+	database.PingsRow
 }
 
 func migrateSupabasePings(db *sql.DB, supabase *supa.Client) {

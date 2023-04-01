@@ -43,6 +43,20 @@ func genAPIKeyHandler(db *sql.DB) gin.HandlerFunc {
 	return gin.HandlerFunc(genAPIKey)
 }
 
+type InsertRequestRow struct {
+	APIKey       string `json:"api_key"`
+	Path         string `json:"path"`
+	Hostname     string `json:"hostname"`
+	IPAddress    string `json:"ip_address"`
+	Location     string `json:"location"`
+	UserAgent    string `json:"user_agent"`
+	Method       int16  `json:"method"`
+	Status       int16  `json:"status"`
+	ResponseTime int16  `json:"response_time"`
+	Framework    int16  `json:"framework"`
+	CreatedAt    string `json:"created_at"`
+}
+
 type RequestData struct {
 	APIKey       string `json:"api_key"`
 	Path         string `json:"path"`
@@ -172,7 +186,7 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 					return
 				}
 
-				row := RequestRow{
+				row := InsertRequestRow{
 					APIKey:       request.APIKey,
 					Path:         request.Path,
 					Hostname:     request.Hostname,

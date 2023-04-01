@@ -12,7 +12,7 @@ func UserUsage() {
 	}
 
 	for rows.Next() {
-		monitor := new(MonitorRow)
+		monitor := new(database.MonitorRow)
 		err := rows.Scan(&monitor.APIKey, &monitor.URL, &monitor.Secure, &monitor.Ping, &monitor.CreatedAt)
 		if err == nil {
 			monitors = append(monitors, *monitor)
