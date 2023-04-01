@@ -59,6 +59,8 @@ github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230401104045-77df
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230401104045-77df2c67a6aa/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=
 github.com/tom-draper/api-analytics/analytics/go/gin v0.0.0-20230322115810-d1075a6f84cc h1:sskxWhpNkGx6fnwYBAKHTyXcOa6nzycnsXVZrkuTAx0=
 github.com/tom-draper/api-analytics/analytics/go/gin v0.0.0-20230322115810-d1075a6f84cc/go.mod h1:vOV14e8Chz0kXgqBh/NGhP1o4uyqs5pBsTt+Ij/R98A=
+github.com/tom-draper/api-analytics/analytics/go/gin v0.0.0-20230401105436-15d111b80d0a h1:q2i87rd7Dsk6N+tYkLU2+siXV2FjMYJf9ONdCZzk7yE=
+github.com/tom-draper/api-analytics/analytics/go/gin v0.0.0-20230401105436-15d111b80d0a/go.mod h1:wi2qh54Q9okPcxRGr1uOF8HXrqNOymO7Vp2ogNnvVF8=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
 github.com/ugorji/go/codec v1.2.11 h1:BMaWp1Bb6fHwEtbplGBGJ498wD+LKlNSl25MjdZY4dU=
