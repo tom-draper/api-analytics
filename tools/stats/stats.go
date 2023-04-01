@@ -1,4 +1,4 @@
-package lib
+package main
 
 func UserUsage() {
 	db := OpenDBConnection()
@@ -23,13 +23,5 @@ func DeleteUserRequests() {
 }
 
 func DailyUsage() {
-
-}
-
-func BackupDatabase() {
-
-}
-
-func RestoreFromBackup() {
 
 }

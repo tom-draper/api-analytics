@@ -215,6 +215,8 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 			}
 			query.WriteString(";")
 
+			fmt.Println(query.String())
+
 			// Insert logged requests into database
 			_, err := db.Query(query.String())
 			if err != nil {
@@ -277,7 +279,6 @@ func getUserRequestsHandler(db *sql.DB) gin.HandlerFunc {
 
 		// Fetch user ID corresponding with API key
 		query := fmt.Sprintf("SELECT ip_address, path, user_agent, method, response_time, status, location, requests.created_at FROM requests INNER JOIN users ON users.api_key = requests.api_key WHERE users.user_id = '%s';", userID)
-		fmt.Println(query)
 		rows, err := db.Query(query)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
