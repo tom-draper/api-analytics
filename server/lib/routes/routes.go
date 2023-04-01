@@ -8,18 +8,14 @@ import (
 	"net/http"
 	"time"
 
+	. "server/lib/database"
+
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
 	_ "github.com/lib/pq"
 	"github.com/oschwald/geoip2-golang"
 
 	"github.com/gin-gonic/gin"
 )
-
-type User struct {
-	UserID    string    `json:"user_id"`
-	APIKey    string    `json:"api_key"`
-	CreatedAt time.Time `json:"created_at"`
-}
 
 func genAPIKeyHandler(db *sql.DB) gin.HandlerFunc {
 	genAPIKey := func(c *gin.Context) {
@@ -57,20 +53,6 @@ type RequestData struct {
 	Status       int16  `json:"status"`
 	ResponseTime int16  `json:"response_time"`
 	Framework    string `json:"framework"`
-	CreatedAt    string `json:"created_at"`
-}
-
-type RequestRow struct {
-	APIKey       string `json:"api_key"`
-	Path         string `json:"path"`
-	Hostname     string `json:"hostname"`
-	IPAddress    string `json:"ip_address"`
-	Location     string `json:"location"`
-	UserAgent    string `json:"user_agent"`
-	Method       int16  `json:"method"`
-	Status       int16  `json:"status"`
-	ResponseTime int16  `json:"response_time"`
-	Framework    int16  `json:"framework"`
 	CreatedAt    string `json:"created_at"`
 }
 
@@ -457,13 +439,6 @@ func getUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
 	}
 
 	return gin.HandlerFunc(getUserMonitor)
-}
-
-type MonitorRow struct {
-	APIKey string `json:"api_key"`
-	URL    string `json:"url"`
-	Secure bool   `json:"secure"`
-	Ping   bool   `json:"ping"`
 }
 
 func insertUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
