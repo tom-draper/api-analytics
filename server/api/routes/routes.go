@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	. "github.com/tom-draper/api-analytics/server/database"
-
 	_ "github.com/lib/pq"
 
 	"github.com/gin-gonic/gin"
