@@ -69,6 +69,10 @@ github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd h1:TRLaZ9cD/w
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
+github.com/oschwald/geoip2-golang v1.8.0 h1:KfjYB8ojCEn/QLqsDU0AzrJ3R5Qa9vFlx3z6SLNcKTs=
+github.com/oschwald/geoip2-golang v1.8.0/go.mod h1:R7bRvYjOeaoenAp9sKRS8GX5bJWcZ0laWO5+DauEktw=
+github.com/oschwald/maxminddb-golang v1.10.0 h1:Xp1u0ZhqkSuopaKmk1WwHtjF0H9Hd9181uj2MQ5Vndg=
+github.com/oschwald/maxminddb-golang v1.10.0/go.mod h1:Y2ELenReaLAZ0b400URyGwvYxHV1dLIxBuyOsyYjHK0=
 github.com/pelletier/go-toml/v2 v2.0.1/go.mod h1:r9LEWfGN8R5k0VXJ+0BkIe7MYkRdwZOjgMj2KwnJFUo=
 github.com/pelletier/go-toml/v2 v2.0.7 h1:muncTPStnKRos5dpVKULv2FVd4bMOhNePj9CjgDb8Us=
 github.com/pelletier/go-toml/v2 v2.0.7/go.mod h1:eumQOmlWiOPt5WriQQqoM5y18pDHwha2N+QD+EUNTek=
@@ -96,12 +100,16 @@ github.com/tom-draper/api-analytics v0.0.0-20230402181435-1e72c49ff90b h1:K80eMF
 github.com/tom-draper/api-analytics v0.0.0-20230402181435-1e72c49ff90b/go.mod h1:562mrEgVMWJiJNXEu819sW2upgc3rnPx3Wu5Ct+I1K4=
 github.com/tom-draper/api-analytics v0.0.0-20230402184709-bd609b8d9533 h1:HL4+Tyfay+GZE0bKL4Ewsfog47Bdd1q2kVs2dhZaS/4=
 github.com/tom-draper/api-analytics v0.0.0-20230402184709-bd609b8d9533/go.mod h1:562mrEgVMWJiJNXEu819sW2upgc3rnPx3Wu5Ct+I1K4=
+github.com/tom-draper/api-analytics v0.0.0-20230402185032-9efaa69eca3c h1:Y6tgVaGGvouVH6t6+Xx3mSuIkVglzEqTcurAmEUwhrE=
+github.com/tom-draper/api-analytics v0.0.0-20230402185032-9efaa69eca3c/go.mod h1:562mrEgVMWJiJNXEu819sW2upgc3rnPx3Wu5Ct+I1K4=
 github.com/tom-draper/api-analytics/server v0.0.0-20230402125409-a72c77fea4a0 h1:OnaH0fAigMtvN9OncOVYDtfcmXqdqU7oq+9FvBDeQ2s=
 github.com/tom-draper/api-analytics/server v0.0.0-20230402125409-a72c77fea4a0/go.mod h1:gEaIJJxtUEVjsTfAo5aZ+pV/GVoiIOeBJqHHZT4f9qw=
 github.com/tom-draper/api-analytics/server/api v0.0.0-20230402181435-1e72c49ff90b h1:yKmB4pqAN6f1Mp2gf7E86GCBPEfWa5UbJy6UC69psAA=
 github.com/tom-draper/api-analytics/server/api v0.0.0-20230402181435-1e72c49ff90b/go.mod h1:Q96MxhAzg2RHwglGEpotOqHIMY7n7ldItfd+fKWaoJ8=
 github.com/tom-draper/api-analytics/server/api v0.0.0-20230402185032-9efaa69eca3c h1:Fz1yLR/+9VdHtg695S/BC5ntReSDbBP5jB6/am2isKo=
 github.com/tom-draper/api-analytics/server/api v0.0.0-20230402185032-9efaa69eca3c/go.mod h1:WcDc5DhvscbCNlLIoMDnWeXHHZ53YuBAZF+1sf/l1Gc=
+github.com/tom-draper/api-analytics/server/api v0.0.0-20230402185550-457913d50956 h1:SkymxFErlSBCkczvyUZ18CWdZwov/Fu//NdC1XXpua4=
+github.com/tom-draper/api-analytics/server/api v0.0.0-20230402185550-457913d50956/go.mod h1:dYzKUEU5RUSl6cvoVuvBq5GO2+6Wdg/6ixqtz4pVDUY=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
 github.com/ugorji/go v1.2.7/go.mod h1:nF9osbDWLy6bDVv/Rtoh6QgnvNDpmCalQV5urGCCS6M=

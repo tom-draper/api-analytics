@@ -6,8 +6,8 @@ require (
 	github.com/JGLTechnologies/gin-rate-limit v1.5.4
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.9.0
-	github.com/tom-draper/api-analytics v0.0.0-20230402184709-bd609b8d9533
-	github.com/tom-draper/api-analytics/server/api v0.0.0-20230402185032-9efaa69eca3c
+	github.com/tom-draper/api-analytics v0.0.0-20230402185032-9efaa69eca3c
+	github.com/tom-draper/api-analytics/server/api v0.0.0-20230402185550-457913d50956
 )
 
 require (
@@ -28,6 +28,8 @@ require (
 	github.com/mattn/go-isatty v0.0.18 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/oschwald/geoip2-golang v1.8.0 // indirect
+	github.com/oschwald/maxminddb-golang v1.10.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.7 // indirect
 	github.com/redis/go-redis/v9 v9.0.3 // indirect
 	github.com/tom-draper/api-analytics/server v0.0.0-20230402125409-a72c77fea4a0 // indirect
