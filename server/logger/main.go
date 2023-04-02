@@ -25,7 +25,18 @@ func main() {
 
 	r := app.Group("/api")
 	r.Use(cors.Default())
+	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
+		Rate:  time.Second,
+		Limit: 10,
+	})
+	mw := ratelimit.RateLimiter(store, &ratelimit.Options{
+		ErrorHandler: errorHandler,
+		KeyFunc:      keyFunc,
+	})
+	r.Use(mw)
 	routes.RegisterRouter(r, db)
+
+	r.POST("/log-request", logRequestHandler(db))
 
 	app.Run(":8000")
 }
@@ -36,18 +47,6 @@ func keyFunc(c *gin.Context) string {
 
 func errorHandler(c *gin.Context, info ratelimit.Info) {
 	c.String(http.StatusTooManyRequests, "Too many requests. Try again in "+time.Until(info.ResetTime).String())
-}
-
-func RegisterRouter(r *gin.RouterGroup, db *sql.DB) {
-	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
-		Rate:  time.Second,
-		Limit: 10,
-	})
-	mw := ratelimit.RateLimiter(store, &ratelimit.Options{
-		ErrorHandler: errorHandler,
-		KeyFunc:      keyFunc,
-	})
-	r.POST("/log-request", mw, logRequestHandler(db))
 }
 
 type InsertRequestRow struct {
