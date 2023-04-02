@@ -16,18 +16,16 @@ class Analytics(RequestHandler):
         self.start = time()
 
     def on_finish(self):
-        data = {
-            'api_key': self.api_key,
+        request_data = {
             'hostname': self.request.host,
             'ip_address': self.request.remote_ip,
             'path': self.request.path,
             'user_agent': self.request.headers['user-agent'],
             'method': self.request.method,
             'status': self.get_status(),
-            'framework': 'Tornado',
             'response_time': int((time() - self.start) * 1000),
             'created_at': datetime.now().isoformat()
         }
 
-        log_request(data)
+        log_request(self.api_key, request_data, 'Tornado')
         self.start = None

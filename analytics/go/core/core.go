@@ -8,11 +8,16 @@ import (
 	"time"
 )
 
-var requests []Data
+var requests []RequestData
 var lastPosted time.Time = time.Now()
 
-type Data struct {
-	APIKey       string `json:"api_key"`
+type Payload struct {
+	apiKey    string        `json:"api_key"`
+	requests  []RequestData `json:"requests"`
+	framework string        `json:"framework"`
+}
+
+type RequestData struct {
 	Hostname     string `json:"hostname"`
 	IPAddress    string `json:"ip_address"`
 	Path         string `json:"path"`
@@ -24,7 +29,8 @@ type Data struct {
 	CreatedAt    string `json:"created_at"`
 }
 
-func postRequest(data []Data) {
+func postRequest(apiKey string, requests []RequestData, framework string) {
+	data := Payload{apiKey, requests, framework}
 	reqBody, err := json.Marshal(data)
 	if err != nil {
 		fmt.Println(err)
@@ -32,11 +38,14 @@ func postRequest(data []Data) {
 	http.Post("http://213.168.248.206/api/log-request", "application/json", bytes.NewBuffer(reqBody))
 }
 
-func LogRequest(request Data) {
+func LogRequest(apiKey string, request RequestData, framework string) {
+	if apiKey == "" {
+		return
+	}
 	now := time.Now()
 	requests = append(requests, request)
 	if time.Since(lastPosted) > time.Minute {
-		go postRequest(requests)
+		go postRequest(apiKey, requests, framework)
 		requests = nil
 		lastPosted = now
 	}

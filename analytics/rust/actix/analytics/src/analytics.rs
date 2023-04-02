@@ -16,8 +16,7 @@ use std::{
 };
 
 #[derive(Debug, Clone, Serialize)]
-struct Data {
-    api_key: String,
+struct RequestData {
     hostname: String,
     ip_address: String,
     path: String,
@@ -25,12 +24,10 @@ struct Data {
     method: String,
     response_time: u32,
     status: u16,
-    framework: String,
     created_at: String,
 }
-impl Data {
+impl RequestData {
     pub fn new(
-        api_key: String,
         hostname: String,
         ip_address: String,
         path: String,
@@ -41,7 +38,6 @@ impl Data {
         created_at: String,
     ) -> Self {
         Self {
-            api_key,
             hostname,
             ip_address,
             path,
@@ -49,7 +45,6 @@ impl Data {
             method,
             response_time,
             status,
-            framework: String::from("Actix"),
             created_at,
         }
     }
@@ -108,24 +103,40 @@ fn extract_ip_address(req: &ServiceRequest) -> String {
 }
 
 lazy_static! {
-    static ref REQUESTS: Mutex<Vec<Data>> = Mutex::new(vec![]);
+    static ref REQUESTS: Mutex<Vec<RequestData>> = Mutex::new(vec![]);
     static ref LAST_POSTED: Mutex<Instant> = Mutex::new(Instant::now());
 }
 
-async fn post_requests(requests: Vec<Data>) {
+async fn post_requests(data: Payload) {
     let _ = Client::new()
         .post("http://213.168.248.206/api/log-request")
-        .json(&requests)
+        .json(&data)
         .send()
         .await;
 }
 
-async fn log_request(data: Data) {
-    REQUESTS.lock().unwrap().push(data);
+#[derive(Debug, Clone, Serialize)]
+struct Payload {
+    api_key: String,
+    requests: Vec<RequestData>,
+    framework: String,
+}
+impl Payload {
+    pub fn new(api_key: String, requests: Vec<RequestData>) -> Self {
+        Self {
+            api_key,
+            requests,
+            framework: String::from("Actix"),
+        }
+    }
+}
+
+async fn log_request(api_key: String, request_data: RequestData) {
+    REQUESTS.lock().unwrap().push(request_data);
     if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > 60.0 {
-        let requests = REQUESTS.lock().unwrap().to_vec();
+        let payload = Payload::new(api_key, REQUESTS.lock().unwrap().to_vec());
         REQUESTS.lock().unwrap().clear();
-        post_requests(requests).await;
+        post_requests(payload).await;
         *LAST_POSTED.lock().unwrap() = Instant::now();
     }
 }
@@ -166,8 +177,7 @@ where
             let res = future.await?;
             let elapsed = start.elapsed().as_millis();
 
-            let data = Data::new(
-                api_key,
+            let request_data = RequestData::new(
                 hostname,
                 ip_address,
                 path,
@@ -178,7 +188,7 @@ where
                 Utc::now().to_rfc3339(),
             );
 
-            spawn(async { log_request(data).await });
+            spawn(async { log_request(api_key, request_data).await });
 
             Ok(res)
         })

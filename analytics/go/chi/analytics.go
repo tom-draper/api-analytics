@@ -46,7 +46,6 @@ func Analytics(apiKey string) func(next http.Handler) http.Handler {
 
 			ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 			data := core.Data{
-				APIKey:       apiKey,
 				Hostname:     r.Host,
 				IPAddress:    ip,
 				Path:         r.URL.Path,
@@ -58,7 +57,7 @@ func Analytics(apiKey string) func(next http.Handler) http.Handler {
 				CreatedAt:    start.Format(time.RFC3339),
 			}
 
-			core.LogRequest(data)
+			core.LogRequest(apiKey, data)
 		})
 	}
 }

@@ -18,8 +18,7 @@ use std::{
 use tower::{Layer, Service};
 
 #[derive(Debug, Clone, Serialize)]
-struct Data {
-    api_key: String,
+struct RequestData {
     hostname: String,
     ip_address: String,
     path: String,
@@ -27,13 +26,11 @@ struct Data {
     method: String,
     response_time: u32,
     status: u16,
-    framework: String,
     created_at: String,
 }
 
-impl Data {
+impl RequestData {
     pub fn new(
-        api_key: String,
         hostname: String,
         ip_address: String,
         path: String,
@@ -44,7 +41,6 @@ impl Data {
         created_at: String,
     ) -> Self {
         Self {
-            api_key,
             hostname,
             ip_address,
             path,
@@ -52,7 +48,6 @@ impl Data {
             method,
             response_time,
             status,
-            framework: String::from("Axum"),
             created_at,
         }
     }
@@ -135,23 +130,40 @@ fn extract_ip_address(req: &Request<Body>) -> String {
 }
 
 lazy_static! {
-    static ref REQUESTS: Mutex<Vec<Data>> = Mutex::new(vec![]);
+    static ref REQUESTS: Mutex<Vec<RequestData>> = Mutex::new(vec![]);
     static ref LAST_POSTED: Mutex<Instant> = Mutex::new(Instant::now());
 }
 
-fn post_requests(requests: Vec<Data>) {
+#[derive(Debug, Clone, Serialize)]
+struct Payload {
+    api_key: String,
+    requests: Vec<RequestData>,
+    framework: String,
+}
+
+impl Payload {
+    pub fn new(api_key: String, requests: Vec<RequestData>) -> Self {
+        Self {
+            api_key,
+            requests,
+            framework: String::from("Axum"),
+        }
+    }
+}
+
+fn post_requests(data: Payload) {
     let _ = Client::new()
         .post("http://213.168.248.206/api/log-request")
-        .json(&requests)
+        .json(&data)
         .send();
 }
 
-fn log_request(data: Data) {
-    REQUESTS.lock().unwrap().push(data);
+fn log_request(api_key: String, request_data: RequestData) {
+    REQUESTS.lock().unwrap().push(request_data);
     if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > 60.0 {
-        let requests = REQUESTS.lock().unwrap().to_vec();
+        let payload = Payload::new(api_key, REQUESTS.lock().unwrap().to_vec());
         REQUESTS.lock().unwrap().clear();
-        spawn(|| post_requests(requests));
+        spawn(|| post_requests(payload));
         *LAST_POSTED.lock().unwrap() = Instant::now();
     }
 }
@@ -192,8 +204,7 @@ where
         Box::pin(async move {
             let res: Response = future.await?;
 
-            let data = Data::new(
-                api_key,
+            let request_data = RequestData::new(
                 hostname,
                 ip_address,
                 path,
@@ -204,7 +215,7 @@ where
                 Utc::now().to_rfc3339(),
             );
 
-            log_request(data);
+            log_request(api_key, request_data);
 
             Ok(res)
         })

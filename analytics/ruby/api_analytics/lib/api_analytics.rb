@@ -17,38 +17,44 @@ module Analytics
       start = Time.now
       status, headers, response = @app.call(env)
 
-      data = {
-        api_key: @api_key,
+      request_data = {
         hostname: env['HTTP_HOST'],
         ip_address: env['REMOTE_ADDR'],
         path: env['REQUEST_PATH'],
         user_agent: env['HTTP_USER_AGENT'],
         method: env['REQUEST_METHOD'],
         status: status,
-        framework: @framework,
         response_time: (Time.now - start).to_f.round,
         created_at: Time.now.utc.iso8601
       }
 
-      log_request(data)
+      log_request(request_data)
 
       [status, headers, response]
     end
     
     private
 
-    def post_requests(requests)
+    def post_requests(api_key, requests, framework)
+      payload = {
+        api_key: api_key,
+        requests: requests,
+        framework: framework
+      }
       uri = URI('http://213.168.248.206/api/log-request')
-      res = Net::HTTP.post(uri, requests.to_json)
+      res = Net::HTTP.post(uri, payload.to_json)
     end
     
-    def log_request(data)
+    def log_request(framework)
+      if @api_key.blank?
+        return
+      end
       now = Time.now
       @requests.push(data)
       if (now - @last_posted) > 5
         requests = @requests.dup
         Thread.new {
-          post_requests(requests)
+          post_requests(@api_key, requests, @framework)
         }
         @requests = Array.new
         @last_posted = now

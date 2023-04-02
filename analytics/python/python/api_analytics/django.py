@@ -17,18 +17,16 @@ class Analytics:
         start = time()
         response = self.get_response(request)
 
-        data = {
-            'api_key': self.api_key,
+        request_data = {
             'hostname': request.get_host(),
             'ip_address': request.META.get('REMOTE_ADDR'),
             'path': request.path,
             'user_agent': request.headers['user-agent'],
             'method': request.method,
             'status': response.status_code,
-            'framework': 'Django',
             'response_time': int((time() - start) * 1000),
             'created_at': datetime.now().isoformat()
         }
 
-        log_request(data)
+        log_request(self.api_key, request_data, 'Django')
         return response

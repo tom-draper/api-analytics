@@ -13,19 +13,17 @@ func Analytics(apiKey string) func(c *fiber.Ctx) error {
 		err := c.Next()
 
 		data := core.Data{
-			APIKey:       apiKey,
 			Hostname:     c.Hostname(),
 			Path:         c.Path(),
 			IPAddress:    c.IP(),
 			UserAgent:    string(c.Request().Header.UserAgent()),
 			Method:       c.Method(),
 			Status:       c.Response().StatusCode(),
-			Framework:    "Fiber",
 			ResponseTime: time.Since(start).Milliseconds(),
 			CreatedAt:    start.Format(time.RFC3339),
 		}
 
-		core.LogRequest(data)
+		core.LogRequest(apiKey, data, "Fiber")
 
 		return err
 	}

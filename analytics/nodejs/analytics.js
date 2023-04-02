@@ -3,13 +3,20 @@ import fetch from "node-fetch";
 let requests = [];
 let lastPosted = new Date();
 
-async function logRequest(data) {
+async function logRequest(apiKey, requestData, framework) {
+  if (apiKey === "" || apiKey == null) {
+    return;
+  }
   let now = new Date();
-  requests.push(data);
+  requests.push(requestData);
   if ((now - lastPosted) / 1000 > 60) {
     await fetch("http://213.168.248.206/api/log-request", {
       method: "POST",
-      body: JSON.stringify(requests),
+      body: JSON.stringify({
+        api_key: apiKey,
+        requests: requestData,
+        framework: framework,
+      }),
       headers: {
         "Content-Type": "application/json",
       },
@@ -24,20 +31,18 @@ export function expressAnalytics(apiKey) {
     let start = performance.now();
     next();
 
-    let data = {
-      api_key: apiKey,
+    let requestData = {
       hostname: req.headers.host,
       ip_address: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
       user_agent: req.headers["user-agent"],
       path: req.url,
       status: res.statusCode,
       method: req.method,
-      framework: "Express",
       response_time: Math.round((performance.now() - start) / 1000),
       created_at: new Date().toISOString(),
     };
 
-    logRequest(data);
+    logRequest(apiKey, requestData, "Express");
   };
 }
 
@@ -47,19 +52,17 @@ export function fastifyAnalytics(apiKey) {
     done();
 
     let data = {
-      api_key: apiKey,
       hostname: req.headers.host,
       ip_address: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
       user_agent: req.headers["user-agent"],
       path: req.url,
       status: reply.statusCode,
       method: req.method,
-      framework: "Fastify",
       response_time: Math.round((performance.now() - start) / 1000),
       created_at: new Date().toISOString(),
     };
 
-    logRequest(data);
+    logRequest(apiKey, data, "Fastify");
   };
 }
 
@@ -76,11 +79,10 @@ export function koaAnalytics(apiKey) {
       path: ctx.url,
       status: ctx.status,
       method: ctx.method,
-      framework: "Koa",
       response_time: Math.round((performance.now() - start) / 1000),
       created_at: new Date().toISOString(),
     };
 
-    logRequest(data);
+    logRequest(apiKey, data, "Koa");
   };
 }
