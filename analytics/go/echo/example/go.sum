@@ -49,12 +49,16 @@ github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230401110237-dd88
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230401110237-dd88bf6c47e0/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402185858-753fb592ff92 h1:vo+V48huFQis3H3SVsvNt0q7Svryb6PIr+yV1+sVX0Q=
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402185858-753fb592ff92/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=
+github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402200101-05de4d2be675 h1:/5Y7g5D1+w8iHon8tGoXpazY6Y2cc0AlB+uRkwGX6Fc=
+github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402200101-05de4d2be675/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=
 github.com/tom-draper/api-analytics/analytics/go/echo v0.0.0-20230401105436-15d111b80d0a h1:C8aGtGxpU4dhG7cOWYP5AZMYr4jHy2Eckk44YVUwG0c=
 github.com/tom-draper/api-analytics/analytics/go/echo v0.0.0-20230401105436-15d111b80d0a/go.mod h1:HmMcjGNuGy29Cgqg4SBm1R3RmNtKJFY7HNHIoueIMD8=
 github.com/tom-draper/api-analytics/analytics/go/echo v0.0.0-20230402185858-753fb592ff92 h1:OQCkHSTmrvlhMPPy9jQlUeZFnP2B9Z2GTCZss/ZXUHE=
 github.com/tom-draper/api-analytics/analytics/go/echo v0.0.0-20230402185858-753fb592ff92/go.mod h1:vIB0EQJedkcfZkAG0cOpIs2TEiT87xTbipL/fsOvLfY=
 github.com/tom-draper/api-analytics/analytics/go/echo v0.0.0-20230402194446-3504b3b86065 h1:sP9qT1x3JJDsuo8WFRMyEeYmKU5m3LU+Iico1Ypm6+E=
 github.com/tom-draper/api-analytics/analytics/go/echo v0.0.0-20230402194446-3504b3b86065/go.mod h1:vIB0EQJedkcfZkAG0cOpIs2TEiT87xTbipL/fsOvLfY=
+github.com/tom-draper/api-analytics/analytics/go/echo v0.0.0-20230402200431-e10095c3f6ff h1:NYb0GXd67rpU3pO2uR0pSlnAusTzY5zY1BXhHTjb3hk=
+github.com/tom-draper/api-analytics/analytics/go/echo v0.0.0-20230402200431-e10095c3f6ff/go.mod h1:kAlqQilb3g1jMqLaIM/AYeEELzwzOcoxARuCNfHsi84=
 github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230401105436-15d111b80d0a h1:o5irMhQYjxdCgGKwJds5uc2LyduGhkZ9CUzNEhH98F8=
 github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230401105436-15d111b80d0a/go.mod h1:SQ0PZXdta3dxdpqpVZG4V3tNty4ZSRS3GQS2BgOocrA=
 github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230402185858-753fb592ff92 h1:PZBwJE3VrcOhsLaQRQWxAsVbQ+6ApHOHXSf5RhFPY/4=

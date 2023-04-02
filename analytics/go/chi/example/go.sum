@@ -14,6 +14,10 @@ github.com/tom-draper/api-analytics/analytics/go/chi v0.0.0-20230401105436-15d11
 github.com/tom-draper/api-analytics/analytics/go/chi v0.0.0-20230401105436-15d111b80d0a/go.mod h1:dhhQa9ubRI/71kmw4kStJRgh7kzClezddEHXU+y4Otg=
 github.com/tom-draper/api-analytics/analytics/go/chi v0.0.0-20230402194446-3504b3b86065 h1:P2mgZ/P1ziEqHkOLZ0d/lyHDz2HozERz3c3spzO66qs=
 github.com/tom-draper/api-analytics/analytics/go/chi v0.0.0-20230402194446-3504b3b86065/go.mod h1:Ukg01pE9ku0JJPXa1eDwwBipZo4pPczB+bD7pHF9Kro=
+github.com/tom-draper/api-analytics/analytics/go/chi v0.0.0-20230402194655-1bbd400182c1 h1:ElLdvgHQQ7XTeUUmqEwK5tNWBm7SgfdpdwoeBaVhH7k=
+github.com/tom-draper/api-analytics/analytics/go/chi v0.0.0-20230402194655-1bbd400182c1/go.mod h1:edvY5uXIwNYEzv1uknArt3A88up26WawW4mGW83AqGQ=
+github.com/tom-draper/api-analytics/analytics/go/chi v0.0.0-20230402200431-e10095c3f6ff h1:XNWNV8+IncLt+0ByuU34DoPpk1v2JF7FGobWkBUxcwA=
+github.com/tom-draper/api-analytics/analytics/go/chi v0.0.0-20230402200431-e10095c3f6ff/go.mod h1:wQ1mNL5cC4No2IWZyXpHPHjsUot3KJ7DA8GGb4TYJJo=
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230125170856-88b548a17808 h1:RId9+6V/lT2HJxXbHmmrN7V/pAAMUg19opXbSxHC2kE=
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230125170856-88b548a17808/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230225124224-aef7c60cb790 h1:6RGA+7z5HPdTcEhbWyLTVoAQPQlyiwZFQ+oRHgoyUhE=
@@ -24,3 +28,7 @@ github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230401104045-77df
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230401104045-77df2c67a6aa/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230401110237-dd88bf6c47e0 h1:Wp6ZRj9aikt04lkXYGRQsrtLgBsmLQ8ch8lf0DNl7/c=
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230401110237-dd88bf6c47e0/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=
+github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402194446-3504b3b86065 h1:9g0OM3KSBLNDnRIQCBAfBnEKR8BMnzlA81jD9en9omg=
+github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402194446-3504b3b86065/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=
+github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402200101-05de4d2be675 h1:/5Y7g5D1+w8iHon8tGoXpazY6Y2cc0AlB+uRkwGX6Fc=
+github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402200101-05de4d2be675/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=

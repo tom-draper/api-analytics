@@ -61,6 +61,8 @@ github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230401104045-77df
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230401104045-77df2c67a6aa/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230401110237-dd88bf6c47e0 h1:Wp6ZRj9aikt04lkXYGRQsrtLgBsmLQ8ch8lf0DNl7/c=
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230401110237-dd88bf6c47e0/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=
+github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402200101-05de4d2be675 h1:/5Y7g5D1+w8iHon8tGoXpazY6Y2cc0AlB+uRkwGX6Fc=
+github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402200101-05de4d2be675/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=
 github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20221129003252-67914cbaa199 h1:DHj236BFTO4zS+prsQMneHwfEjhfiqHJCEG0FuRh30k=
 github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20221129003252-67914cbaa199/go.mod h1:WQrjl33x89S0p3yBQVc4lJCINwt6l4gJX9XmznKzWMU=
 github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230125170856-88b548a17808 h1:1e/YrMrZGP/hQ94QXbxP7ZQ/Q221DLfXLvqRCTsIXpg=
@@ -73,6 +75,8 @@ github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230401105436-15d
 github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230401105436-15d111b80d0a/go.mod h1:SQ0PZXdta3dxdpqpVZG4V3tNty4ZSRS3GQS2BgOocrA=
 github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230402194446-3504b3b86065 h1:EWe54FNA3uF/yZo6om5to54IXZHlMTqyP4V8SKTtVGs=
 github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230402194446-3504b3b86065/go.mod h1:iE8tFS1UZIishouZcPsOPkOX+g/H09AknXoHXfF66DU=
+github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230402200431-e10095c3f6ff h1:GpkUicd2J3T+bunH9EjA6JcvVrP/5yVamwumSb+mvm0=
+github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230402200431-e10095c3f6ff/go.mod h1:OZVSkUL1GdeFPonIkx3tZsIl+YRWtp4PYfHK2zJOYnY=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasthttp v1.41.0 h1:zeR0Z1my1wDHTRiamBCXVglQdbUwgb9uWG3k1HQz6jY=

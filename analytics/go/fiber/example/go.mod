@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/gofiber/fiber/v2 v2.43.0
 	github.com/joho/godotenv v1.5.1
-	github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230402194446-3504b3b86065
+	github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230402200431-e10095c3f6ff
 )
 
 require (
@@ -20,7 +20,7 @@ require (
 	github.com/savsgio/dictpool v0.0.0-20221023140959-7bf2e61cea94 // indirect
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
 	github.com/tinylib/msgp v1.1.8 // indirect
-	github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230401110237-dd88bf6c47e0 // indirect
+	github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402200101-05de4d2be675 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.45.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
