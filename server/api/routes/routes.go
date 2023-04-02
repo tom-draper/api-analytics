@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	. "github.com/tom-draper/api-analytics/server/lib/database"
+	. "github.com/tom-draper/api-analytics/server/database"
 
 	_ "github.com/lib/pq"
 
@@ -391,14 +391,6 @@ func getUserPingsHandler(db *sql.DB) gin.HandlerFunc {
 	}
 
 	return gin.HandlerFunc(getData)
-}
-
-func keyFunc(c *gin.Context) string {
-	return c.ClientIP()
-}
-
-func errorHandler(c *gin.Context, info ratelimit.Info) {
-	c.String(http.StatusTooManyRequests, "Too many requests. Try again in "+time.Until(info.ResetTime).String())
 }
 
 func RegisterRouter(r *gin.RouterGroup, db *sql.DB) {
