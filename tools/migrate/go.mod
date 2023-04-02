@@ -11,4 +11,5 @@ require (
 require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/nedpals/postgrest-go v0.1.3 // indirect
+	github.com/tom-draper/api-analytics v0.0.0-20230402212045-ce2f2259bbc2 // indirect
 )

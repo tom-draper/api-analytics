@@ -37,7 +37,7 @@ type MonitorRow struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type PingRow struct {
+type PingsRow struct {
 	APIKey       string    `json:"api_key"`
 	URL          string    `json:"url"`
 	ResponseTime int       `json:"response_time"`

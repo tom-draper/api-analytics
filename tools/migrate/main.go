@@ -1,7 +1,7 @@
 package main
 
-import "migrate/migrate"
+import "migrate/lib"
 
 func main() {
-	migrate.MigrateSupabaseRequests()
+	lib.MigrateSupabaseRequests()
 }

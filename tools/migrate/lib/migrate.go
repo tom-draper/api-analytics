@@ -1,4 +1,4 @@
-package migrate
+package lib
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/tom-draper/api-analytics/server/lib/database"
+	"github.com/tom-draper/api-analytics/server/database"
 
 	"github.com/joho/godotenv"
 	supa "github.com/nedpals/supabase-go"
@@ -126,7 +126,7 @@ func MigrateSupabaseRequests() {
 
 			fmt.Println("Write to database")
 
-			db = OpenDBConnection()
+			db = database.OpenDBConnection()
 			_, err := db.Query(query.String())
 			if err != nil {
 				panic(err)
@@ -137,7 +137,7 @@ func MigrateSupabaseRequests() {
 		}
 	}
 
-	db = OpenDBConnection()
+	db = database.OpenDBConnection()
 	query.WriteString(";")
 
 	fmt.Println("Final write to database")
@@ -178,7 +178,6 @@ func MigrateSupabaseUsers(db *sql.DB, supabase *supa.Client) {
 
 type SupabaseMonitorRow struct {
 	database.MonitorRow
-	CreatedAt time.Time `json:"created_at"`
 }
 
 func MigrateSupabaseMonitors(db *sql.DB, supabase *supa.Client) {
@@ -237,5 +236,5 @@ func MigrateSupabaseData() {
 
 	// db := OpenDBConnection()
 
-	migrateSupabaseRequests()
+	MigrateSupabaseRequests()
 }
