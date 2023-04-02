@@ -30,10 +30,11 @@ type RequestRow struct {
 }
 
 type MonitorRow struct {
-	APIKey string `json:"api_key"`
-	URL    string `json:"url"`
-	Secure bool   `json:"secure"`
-	Ping   bool   `json:"ping"`
+	APIKey    string    `json:"api_key"`
+	URL       string    `json:"url"`
+	Secure    bool      `json:"secure"`
+	Ping      bool      `json:"ping"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type PingRow struct {

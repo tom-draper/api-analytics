@@ -25,11 +25,7 @@ func TopUsers() {
 
 }
 
-func DeleteUser() {
-
-}
-
-func DeleteUserRequests() {
+func NewUsers() {
 
 }
 

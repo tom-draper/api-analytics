@@ -1,8 +1,8 @@
 package main
 
 import (
-	"server/lib/database"
-	"server/lib/routes"
+	"github.com/tom-draper/api-analytics/server/api/routes"
+	"github.com/tom-draper/api-analytics/server/database"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
