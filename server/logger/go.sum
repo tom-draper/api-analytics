@@ -94,6 +94,8 @@ github.com/stretchr/testify v1.8.2 h1:+h33VjcLVPDHtOdpUCuF+7gSuG3yGIftsP1YvFihtJ
 github.com/stretchr/testify v1.8.2/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/tom-draper/api-analytics v0.0.0-20230402181435-1e72c49ff90b h1:K80eMFsiQ8feRSqyooXa2Tpnnb/0aG//VQQEEXSlzP8=
 github.com/tom-draper/api-analytics v0.0.0-20230402181435-1e72c49ff90b/go.mod h1:562mrEgVMWJiJNXEu819sW2upgc3rnPx3Wu5Ct+I1K4=
+github.com/tom-draper/api-analytics v0.0.0-20230402184709-bd609b8d9533 h1:HL4+Tyfay+GZE0bKL4Ewsfog47Bdd1q2kVs2dhZaS/4=
+github.com/tom-draper/api-analytics v0.0.0-20230402184709-bd609b8d9533/go.mod h1:562mrEgVMWJiJNXEu819sW2upgc3rnPx3Wu5Ct+I1K4=
 github.com/tom-draper/api-analytics/server v0.0.0-20230402125409-a72c77fea4a0 h1:OnaH0fAigMtvN9OncOVYDtfcmXqdqU7oq+9FvBDeQ2s=
 github.com/tom-draper/api-analytics/server v0.0.0-20230402125409-a72c77fea4a0/go.mod h1:gEaIJJxtUEVjsTfAo5aZ+pV/GVoiIOeBJqHHZT4f9qw=
 github.com/tom-draper/api-analytics/server/api v0.0.0-20230402181435-1e72c49ff90b h1:yKmB4pqAN6f1Mp2gf7E86GCBPEfWa5UbJy6UC69psAA=
