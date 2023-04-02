@@ -13,7 +13,7 @@ func Analytics(apiKey string) echo.MiddlewareFunc {
 			start := time.Now()
 			err := next(c)
 
-			data := core.Data{
+			data := core.RequestData{
 				Hostname:     c.Request().Host,
 				IPAddress:    c.RealIP(),
 				Path:         c.Request().URL.Path,

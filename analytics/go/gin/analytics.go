@@ -12,7 +12,7 @@ func Analytics(apiKey string) gin.HandlerFunc {
 		start := time.Now()
 		c.Next()
 
-		data := core.Data{
+		data := core.RequestData{
 			Hostname:     c.Request.Host,
 			IPAddress:    c.ClientIP(),
 			Path:         c.Request.URL.Path,

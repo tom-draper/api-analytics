@@ -3,7 +3,6 @@ package core
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -25,17 +24,15 @@ type RequestData struct {
 	Method       string `json:"method"`
 	ResponseTime int64  `json:"response_time"`
 	Status       int    `json:"status"`
-	Framework    string `json:"framework"`
 	CreatedAt    string `json:"created_at"`
 }
 
 func postRequest(apiKey string, requests []RequestData, framework string) {
 	data := Payload{apiKey, requests, framework}
 	reqBody, err := json.Marshal(data)
-	if err != nil {
-		fmt.Println(err)
+	if err == nil {
+		http.Post("http://213.168.248.206/api/log-request", "application/json", bytes.NewBuffer(reqBody))
 	}
-	http.Post("http://213.168.248.206/api/log-request", "application/json", bytes.NewBuffer(reqBody))
 }
 
 func LogRequest(apiKey string, request RequestData, framework string) {

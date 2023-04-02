@@ -22,7 +22,7 @@ func getAPIKey() string {
 
 func root(c echo.Context) error {
 	jsonData := []byte(`{"message": "Hello World!"}`)
-	return c.JSON(http.StatusOK, jsonData)
+	return c.JSONBlob(http.StatusOK, jsonData)
 }
 
 func main() {

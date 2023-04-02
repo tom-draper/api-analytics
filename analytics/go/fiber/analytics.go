@@ -12,7 +12,7 @@ func Analytics(apiKey string) func(c *fiber.Ctx) error {
 		start := time.Now()
 		err := c.Next()
 
-		data := core.Data{
+		data := core.RequestData{
 			Hostname:     c.Hostname(),
 			Path:         c.Path(),
 			IPAddress:    c.IP(),
