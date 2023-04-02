@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.10.2
-	github.com/tom-draper/api-analytics/analytics/go/echo v0.0.0-20230401105436-15d111b80d0a
+	github.com/tom-draper/api-analytics/analytics/go/echo v0.0.0-20230402194446-3504b3b86065
 )
 
 require (
@@ -22,8 +22,8 @@ require (
 	github.com/savsgio/dictpool v0.0.0-20221023140959-7bf2e61cea94 // indirect
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
 	github.com/tinylib/msgp v1.1.8 // indirect
-	github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230401110237-dd88bf6c47e0 // indirect
-	github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230401105436-15d111b80d0a // indirect
+	github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402185858-753fb592ff92 // indirect
+	github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230402185858-753fb592ff92 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.45.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect

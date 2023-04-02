@@ -11,9 +11,9 @@ var requests []RequestData
 var lastPosted time.Time = time.Now()
 
 type Payload struct {
-	apiKey    string        `json:"api_key"`
-	requests  []RequestData `json:"requests"`
-	framework string        `json:"framework"`
+	APIKey    string        `json:"api_key"`
+	Requests  []RequestData `json:"requests"`
+	Framework string        `json:"framework"`
 }
 
 type RequestData struct {
@@ -28,7 +28,11 @@ type RequestData struct {
 }
 
 func postRequest(apiKey string, requests []RequestData, framework string) {
-	data := Payload{apiKey, requests, framework}
+	data := Payload{
+		APIKey:    apiKey,
+		Requests:  requests,
+		Framework: framework,
+	}
 	reqBody, err := json.Marshal(data)
 	if err == nil {
 		http.Post("http://213.168.248.206/api/log-request", "application/json", bytes.NewBuffer(reqBody))

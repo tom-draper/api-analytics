@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/gofiber/fiber/v2 v2.43.0
 	github.com/joho/godotenv v1.5.1
-	github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230401105436-15d111b80d0a
+	github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230402194446-3504b3b86065
 )
 
 require (

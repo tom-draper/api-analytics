@@ -71,6 +71,8 @@ github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230322115810-d10
 github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230322115810-d1075a6f84cc/go.mod h1:8siqgBDyteR8x9/pnV5TSIpZM7psiLXBO21TL+n0XC8=
 github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230401105436-15d111b80d0a h1:o5irMhQYjxdCgGKwJds5uc2LyduGhkZ9CUzNEhH98F8=
 github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230401105436-15d111b80d0a/go.mod h1:SQ0PZXdta3dxdpqpVZG4V3tNty4ZSRS3GQS2BgOocrA=
+github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230402194446-3504b3b86065 h1:EWe54FNA3uF/yZo6om5to54IXZHlMTqyP4V8SKTtVGs=
+github.com/tom-draper/api-analytics/analytics/go/fiber v0.0.0-20230402194446-3504b3b86065/go.mod h1:iE8tFS1UZIishouZcPsOPkOX+g/H09AknXoHXfF66DU=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasthttp v1.41.0 h1:zeR0Z1my1wDHTRiamBCXVglQdbUwgb9uWG3k1HQz6jY=
