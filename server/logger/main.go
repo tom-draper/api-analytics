@@ -50,7 +50,7 @@ func errorHandler(c *gin.Context, info ratelimit.Info) {
 	c.String(http.StatusTooManyRequests, "Too many requests. Try again in "+time.Until(info.ResetTime).String())
 }
 
-type InsertRequestRow struct {
+type RequestRow struct {
 	APIKey       string `json:"api_key"`
 	Path         string `json:"path"`
 	Hostname     string `json:"hostname"`
@@ -197,7 +197,7 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 					return
 				}
 
-				row := InsertRequestRow{
+				row := RequestRow{
 					APIKey:       payload.APIKey,
 					Path:         request.Path,
 					Hostname:     request.Hostname,

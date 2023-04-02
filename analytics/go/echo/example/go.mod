@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.10.2
-	github.com/tom-draper/api-analytics/analytics/go/echo v0.0.0-20230402200431-e10095c3f6ff
+	github.com/tom-draper/api-analytics/analytics/go/echo v0.0.0-20230402212045-ce2f2259bbc2
 )
 
 require (
