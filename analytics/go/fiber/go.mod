@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/gofiber/fiber/v2 v2.43.0
-	github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402194446-3504b3b86065
+	github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402200101-05de4d2be675
 )
 
 require (
