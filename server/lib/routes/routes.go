@@ -58,7 +58,6 @@ type InsertRequestRow struct {
 }
 
 type RequestData struct {
-	APIKey       string `json:"api_key"`
 	Path         string `json:"path"`
 	Hostname     string `json:"hostname"`
 	IPAddress    string `json:"ip_address"`
@@ -66,8 +65,13 @@ type RequestData struct {
 	Method       string `json:"method"`
 	Status       int16  `json:"status"`
 	ResponseTime int16  `json:"response_time"`
-	Framework    string `json:"framework"`
 	CreatedAt    string `json:"created_at"`
+}
+
+type Payload struct {
+	APIKey    string        `json:"api_key"`
+	Requests  []RequestData `json:"requests"`
+	Framework string        `json:"framework"`
 }
 
 func methodMap(method string) (int16, error) {
@@ -156,22 +160,22 @@ func getCountryCode(IPAddress string) (string, error) {
 func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 	logRequest := func(c *gin.Context) {
 		// Collect API request data sent via POST request
-		var requestData []RequestData
-		if err := c.BindJSON(&requestData); err != nil {
+		var payload Payload
+		if err := c.BindJSON(&payload); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
 			return
 		}
 
-		if len(requestData) == 0 {
+		if len(payload.Requests) == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Payload empty."})
 			return
-		} else if requestData[0].APIKey == "" {
+		} else if payload.APIKey == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
 			return
 		} else {
 			var query bytes.Buffer
 			query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES")
-			for i, request := range requestData {
+			for i, request := range payload.Requests {
 				location, _ := getCountryCode(request.IPAddress)
 
 				method, err := methodMap(request.Method)
@@ -180,14 +184,14 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 					return
 				}
 
-				framework, err := frameworkMap(request.Framework)
+				framework, err := frameworkMap(payload.Framework)
 				if err != nil {
 					c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid framework."})
 					return
 				}
 
 				row := InsertRequestRow{
-					APIKey:       request.APIKey,
+					APIKey:       payload.APIKey,
 					Path:         request.Path,
 					Hostname:     request.Hostname,
 					IPAddress:    request.IPAddress,
