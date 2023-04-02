@@ -9,12 +9,12 @@ async function logRequest(apiKey, requestData, framework) {
   }
   let now = new Date();
   requests.push(requestData);
-  if ((now - lastPosted) / 1000 > 60) {
+  if (now - lastPosted > 60000) {
     await fetch("http://213.168.248.206/api/log-request", {
       method: "POST",
       body: JSON.stringify({
         api_key: apiKey,
-        requests: requestData,
+        requests: requests,
         framework: framework,
       }),
       headers: {
@@ -51,7 +51,7 @@ export function fastifyAnalytics(apiKey) {
     let start = performance.now();
     done();
 
-    let data = {
+    let requestData = {
       hostname: req.headers.host,
       ip_address: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
       user_agent: req.headers["user-agent"],
@@ -62,7 +62,7 @@ export function fastifyAnalytics(apiKey) {
       created_at: new Date().toISOString(),
     };
 
-    logRequest(apiKey, data, "Fastify");
+    logRequest(apiKey, requestData, "Fastify");
   };
 }
 
@@ -71,8 +71,7 @@ export function koaAnalytics(apiKey) {
     let start = performance.now();
     await next();
 
-    let data = {
-      api_key: apiKey,
+    let requestData = {
       hostname: ctx.headers.host,
       ip_address: ctx.headers["x-forwarded-for"] || ctx.socket.remoteAddress,
       user_agent: ctx.headers["user-agent"],
@@ -83,6 +82,6 @@ export function koaAnalytics(apiKey) {
       created_at: new Date().toISOString(),
     };
 
-    logRequest(apiKey, data, "Koa");
+    logRequest(apiKey, requestData, "Koa");
   };
 }

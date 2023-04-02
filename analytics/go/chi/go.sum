@@ -12,3 +12,5 @@ github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402194446-3504
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402194446-3504b3b86065/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402200101-05de4d2be675 h1:/5Y7g5D1+w8iHon8tGoXpazY6Y2cc0AlB+uRkwGX6Fc=
 github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402200101-05de4d2be675/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=
+github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402200711-c02777b77dbc h1:uwLACElHRUJImBEiNmYiWdPVFrcq2SQOL5WakujqJZI=
+github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230402200711-c02777b77dbc/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=

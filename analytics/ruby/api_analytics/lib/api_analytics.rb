@@ -45,12 +45,12 @@ module Analytics
       res = Net::HTTP.post(uri, payload.to_json)
     end
     
-    def log_request(framework)
-      if @api_key.blank?
+    def log_request(request_data)
+      if @api_key.empty?
         return
       end
       now = Time.now
-      @requests.push(data)
+      @requests.push(request_data)
       if (now - @last_posted) > 5
         requests = @requests.dup
         Thread.new {
@@ -78,5 +78,4 @@ module Analytics
     end
   end
 end
-
 
