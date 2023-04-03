@@ -1,6 +1,6 @@
 package main
 
-import "github.com/tom-draper/api-analytics/server/lib/database"
+import "github.com/tom-draper/api-analytics/server/database"
 
 func UserUsage() {
 	db := database.OpenDBConnection()

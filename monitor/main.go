@@ -6,37 +6,11 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"os"
 	"time"
 
 	_ "github.com/lib/pq"
-
-	"github.com/joho/godotenv"
+	"github.com/tom-draper/api-analytics/server/database"
 )
-
-func getDBLogin() (string, string, string) {
-	err := godotenv.Load(".env")
-	if err != nil {
-		panic(err)
-	}
-
-	database := os.Getenv("POSTGRES_DATABASE")
-	username := os.Getenv("POSTGRES_USERNAME")
-	password := os.Getenv("POSTGRES_PASSWORD")
-	return database, username, password
-}
-
-func OpenDBConnection() *sql.DB {
-	database, username, password := getDBLogin()
-	args := fmt.Sprintf("host=%s port=%d dbname=%s user='%s' password=%s sslmode=%s", "localhost", 5432, database, username, password, "disable")
-
-	db, err := sql.Open("postgres", args)
-	if err != nil {
-		panic(err)
-	}
-
-	return db
-}
 
 func getURL(domain string, secure bool) string {
 	var url string
@@ -80,15 +54,7 @@ func ping(client http.Client, domain string, secure bool, ping bool) (int, time.
 	return resp.StatusCode, elapsed, nil
 }
 
-type MonitorRow struct {
-	APIKey    string    `json:"api_key"`
-	URL       string    `json:"url" `
-	Ping      bool      `json:"ping"`
-	Secure    bool      `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
-func getMonitoredURLs(db *sql.DB) []MonitorRow {
+func getMonitoredURLs(db *sql.DB) []database.MonitorRow {
 	query := fmt.Sprintf("SELECT * FROM monitor;")
 	rows, err := db.Query(query)
 	if err != nil {
@@ -96,9 +62,9 @@ func getMonitoredURLs(db *sql.DB) []MonitorRow {
 	}
 
 	// Read monitors into list to return
-	monitors := make([]MonitorRow, 0)
+	monitors := make([]database.MonitorRow, 0)
 	for rows.Next() {
-		monitor := new(MonitorRow)
+		monitor := new(database.MonitorRow)
 		err := rows.Scan(&monitor.APIKey, &monitor.URL, &monitor.Secure, &monitor.Ping, &monitor.CreatedAt)
 		if err == nil {
 			monitors = append(monitors, *monitor)
@@ -106,14 +72,6 @@ func getMonitoredURLs(db *sql.DB) []MonitorRow {
 	}
 
 	return monitors
-}
-
-type PingRow struct {
-	APIKey       string    `json:"api_key"`
-	URL          string    `json:"url"`
-	ResponseTime int       `json:"response_time"`
-	Status       int       `json:"status"`
-	CreatedAt    time.Time `json:"created_at"`
 }
 
 func deleteOldPings(db *sql.DB) {
@@ -124,7 +82,7 @@ func deleteOldPings(db *sql.DB) {
 	}
 }
 
-func uploadPings(pings []PingRow, db *sql.DB) {
+func uploadPings(pings []database.PingRow, db *sql.DB) {
 	var query bytes.Buffer
 	query.WriteString("INSERT INTO pings (api_key, url, response_time, status, created_at) VALUES")
 	for i, ping := range pings {
@@ -141,14 +99,14 @@ func uploadPings(pings []PingRow, db *sql.DB) {
 	}
 }
 
-func pingMonitored(monitored []MonitorRow, client http.Client, db *sql.DB) {
-	var pings []PingRow
+func pingMonitored(monitored []database.MonitorRow, client http.Client, db *sql.DB) {
+	var pings []database.PingRow
 	for _, m := range monitored {
 		status, elapsed, err := ping(client, m.URL, m.Secure, m.Ping)
 		if err != nil {
 			fmt.Println(err)
 		}
-		ping := PingRow{
+		ping := database.PingRow{
 			APIKey:       m.APIKey,
 			URL:          m.URL,
 			ResponseTime: int(elapsed.Milliseconds()),
@@ -173,7 +131,7 @@ func getClient() http.Client {
 }
 
 func main() {
-	db := OpenDBConnection()
+	db := database.OpenDBConnection()
 
 	monitored := getMonitoredURLs(db)
 

@@ -6,7 +6,7 @@ require (
 	github.com/JGLTechnologies/gin-rate-limit v1.5.4
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.9.0
-	github.com/tom-draper/api-analytics v0.0.0-20230402215835-963f4f861d17
+	github.com/tom-draper/api-analytics v0.0.0-20230403183006-0fdf277fd397
 	github.com/tom-draper/api-analytics/server/api v0.0.0-20230402185550-457913d50956
 )
 

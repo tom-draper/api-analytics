@@ -88,6 +88,8 @@ github.com/tom-draper/api-analytics v0.0.0-20230402184709-bd609b8d9533 h1:HL4+Ty
 github.com/tom-draper/api-analytics v0.0.0-20230402184709-bd609b8d9533/go.mod h1:562mrEgVMWJiJNXEu819sW2upgc3rnPx3Wu5Ct+I1K4=
 github.com/tom-draper/api-analytics v0.0.0-20230402185032-9efaa69eca3c h1:Y6tgVaGGvouVH6t6+Xx3mSuIkVglzEqTcurAmEUwhrE=
 github.com/tom-draper/api-analytics v0.0.0-20230402185032-9efaa69eca3c/go.mod h1:562mrEgVMWJiJNXEu819sW2upgc3rnPx3Wu5Ct+I1K4=
+github.com/tom-draper/api-analytics v0.0.0-20230403183006-0fdf277fd397 h1:hJkXrtF7Y9MFwKuy4ZSDF71raeVCygHkxiTIc+a0cSE=
+github.com/tom-draper/api-analytics v0.0.0-20230403183006-0fdf277fd397/go.mod h1:562mrEgVMWJiJNXEu819sW2upgc3rnPx3Wu5Ct+I1K4=
 github.com/tom-draper/api-analytics/server v0.0.0-20230402125409-a72c77fea4a0 h1:OnaH0fAigMtvN9OncOVYDtfcmXqdqU7oq+9FvBDeQ2s=
 github.com/tom-draper/api-analytics/server v0.0.0-20230402125409-a72c77fea4a0/go.mod h1:gEaIJJxtUEVjsTfAo5aZ+pV/GVoiIOeBJqHHZT4f9qw=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=

@@ -10,6 +10,7 @@ require (
 
 require (
 	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/lib/pq v1.10.7 // indirect
 	github.com/nedpals/postgrest-go v0.1.3 // indirect
-	github.com/tom-draper/api-analytics v0.0.0-20230402215427-2b6e90ed655d // indirect
+	github.com/tom-draper/api-analytics v0.0.0-20230403183006-0fdf277fd397 // indirect
 )
