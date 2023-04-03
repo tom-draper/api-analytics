@@ -117,7 +117,7 @@ def make_app():
 
 if __name__ == "__main__":
     app = make_app()
-    app.listen(8000)
+    app.listen(8080)
     IOLoop.instance().start()
 ```
 
@@ -556,7 +556,7 @@ API keys and their associated API request data are scheduled be deleted after 1 
 
 ## Development
 
-This project is still in the early stages of development and bugs are to be expected. Usage of API Analytics is currently not recommended for production or high-traffic servers (> 10 requests per second).
+This project is still in the early stages of development and bugs are to be expected.
 
 ## Contributions
 

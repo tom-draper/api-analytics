@@ -52,7 +52,6 @@ async fn main() {
 }
 ```
 
-
 ### 3. View your analytics
 
 Your API will now log and store incoming request data on all valid routes. Your logged data can be viewed using two methods:
@@ -60,7 +59,7 @@ Your API will now log and store incoming request data on all valid routes. Your 
 1. Through visualizations and statistics on our dashboard
 2. Accessed directly via our data API
 
-You can use the same API key across multiple APIs, but all your data will appear in the same dashboard. We recommend generating a new API key for each additional API you want analytics for.
+You can use the same API key across multiple APIs, but all your data will appear in the same dashboard. We recommend generating a new API key for each additional API server you want analytics for.
 
 #### Dashboard
 
@@ -135,6 +134,10 @@ Data collected is only ever used to populate your analytics dashboard. All data 
 At any time, you can delete all stored data associated with your API key by going to https://my-api-analytics.vercel.app/delete and entering your API key.
 
 API keys and their associated API request data are scheduled be deleted after 1 year of inactivity.
+
+## Development
+
+This project is still in the early stages of development and bugs are to be expected.
 
 ## Contributions
 
