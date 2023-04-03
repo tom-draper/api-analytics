@@ -45,19 +45,18 @@ func Analytics(apiKey string) func(next http.Handler) http.Handler {
 			next.ServeHTTP(rw, r.WithContext(ctx))
 
 			ip, _, _ := net.SplitHostPort(r.RemoteAddr)
-			data := core.Data{
-				APIKey:       apiKey,
+			data := core.RequestData{
 				Hostname:     r.Host,
 				IPAddress:    ip,
 				Path:         r.URL.Path,
 				UserAgent:    r.UserAgent(),
 				Method:       r.Method,
 				Status:       rw.status,
-				Framework:    "Chi",
 				ResponseTime: time.Since(start).Milliseconds(),
+				CreatedAt:    start.Format(time.RFC3339),
 			}
 
-			go core.LogRequest(data)
+			core.LogRequest(apiKey, data, "Chi")
 		})
 	}
 }

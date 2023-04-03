@@ -1,5 +1,5 @@
 require 'sinatra'
-require 'api_analytics'
+require './api_analytics'
 require 'dotenv'
 
 Dotenv.load()

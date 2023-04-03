@@ -1,13 +1,29 @@
 import fetch from "node-fetch";
 
-async function logRequest(data) {
-  fetch("https://api-analytics-server.vercel.app/api/log-request", {
-    method: "POST",
-    body: JSON.stringify(data),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+let requests = [];
+let lastPosted = new Date();
+
+async function logRequest(apiKey, requestData, framework) {
+  if (apiKey === "" || apiKey == null) {
+    return;
+  }
+  let now = new Date();
+  requests.push(requestData);
+  if (now - lastPosted > 60000) {
+    await fetch("http://213.168.248.206/api/log-request", {
+      method: "POST",
+      body: JSON.stringify({
+        api_key: apiKey,
+        requests: requests,
+        framework: framework,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    requests = [];
+    lastPosted = now;
+  }
 }
 
 export function expressAnalytics(apiKey) {
@@ -15,19 +31,18 @@ export function expressAnalytics(apiKey) {
     let start = performance.now();
     next();
 
-    let data = {
-      api_key: apiKey,
+    let requestData = {
       hostname: req.headers.host,
       ip_address: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
       user_agent: req.headers["user-agent"],
       path: req.url,
       status: res.statusCode,
       method: req.method,
-      framework: "Express",
       response_time: Math.round((performance.now() - start) / 1000),
+      created_at: new Date().toISOString(),
     };
 
-    logRequest(data);
+    logRequest(apiKey, requestData, "Express");
   };
 }
 
@@ -35,20 +50,19 @@ export function fastifyAnalytics(apiKey) {
   return (req, reply, done) => {
     let start = performance.now();
     done();
-    
-    let data = {
-      api_key: apiKey,
+
+    let requestData = {
       hostname: req.headers.host,
       ip_address: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
       user_agent: req.headers["user-agent"],
       path: req.url,
       status: reply.statusCode,
       method: req.method,
-      framework: "Fastify",
       response_time: Math.round((performance.now() - start) / 1000),
+      created_at: new Date().toISOString(),
     };
-    
-    logRequest(data);
+
+    logRequest(apiKey, requestData, "Fastify");
   };
 }
 
@@ -56,19 +70,18 @@ export function koaAnalytics(apiKey) {
   return async (ctx, next) => {
     let start = performance.now();
     await next();
-    
-    let data = {
-      api_key: apiKey,
+
+    let requestData = {
       hostname: ctx.headers.host,
       ip_address: ctx.headers["x-forwarded-for"] || ctx.socket.remoteAddress,
       user_agent: ctx.headers["user-agent"],
       path: ctx.url,
       status: ctx.status,
       method: ctx.method,
-      framework: "Koa",
       response_time: Math.round((performance.now() - start) / 1000),
+      created_at: new Date().toISOString(),
     };
 
-    logRequest(data);
+    logRequest(apiKey, requestData, "Koa");
   };
 }

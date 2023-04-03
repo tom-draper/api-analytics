@@ -1,4 +1,4 @@
-# API Analytics <img src="https://user-images.githubusercontent.com/41476809/210829625-697bba5b-97a8-45fa-91ce-d3c33fcfd0b2.png" align="right" height="140" />
+# API Analytics (Undergoing Maintenance) <img src="https://user-images.githubusercontent.com/41476809/210829625-697bba5b-97a8-45fa-91ce-d3c33fcfd0b2.png" align="right" height="140" />
 
 A free lightweight API analytics solution, complete with a dashboard.
 
@@ -229,7 +229,7 @@ func main() {
 	router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
 	router.GET("/", root)
-	router.Run("localhost:8080")
+	router.Run(":8080")
 }
 ```
 
@@ -248,22 +248,25 @@ package main
 import (
 	"net/http"
 	"os"
-	"github.com/labstack/echo/v4"
+
+	echo "github.com/labstack/echo/v4"
 	analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
 )
 
-func root(c echo.Context) {
+func root(c echo.Context) error {
 	jsonData := []byte(`{"message": "Hello World!"}`)
-	c.Data(http.StatusOK, "application/json", jsonData)
+	return c.JSON(http.StatusOK, jsonData)
 }
 
 func main() {
+	apiKey := getAPIKey()
+
 	router := echo.New()
 
-	router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
+	router.Use(analytics.Analytics(apiKey))
 
 	router.GET("/", root)
-	router.Start("localhost:8080")
+	router.Start(":8080")
 }
 ```
 
@@ -330,7 +333,7 @@ func main() {
 	router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
 	router.GET("/", root)
-	router.Run("localhost:8080")
+	router.Run(":8080")
 }
 ```
 

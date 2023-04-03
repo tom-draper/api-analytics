@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import periodToDays from "../../../lib/period"
+  import periodToDays from "../../../lib/period";
 
   function defaultLayout() {
     let periodAgo = new Date();
@@ -36,7 +36,7 @@
     };
   }
 
-  function initRequestFreq(): {[date: string]: number} {
+  function initRequestFreq(): { [date: string]: number } {
     // Populate requestFreq with zeros across date period
     let requestFreq = {};
     let days = periodToDays(period);
@@ -47,7 +47,7 @@
           let date = new Date();
           date.setSeconds(0, 0);
           // Round down to multiple of 5
-          date.setMinutes(Math.floor(date.getMinutes() / 5) * 5 - (i* 5));
+          date.setMinutes(Math.floor(date.getMinutes() / 5) * 5 - i * 5);
           let dateStr = date.toISOString();
           requestFreq[dateStr] = 0;
         }
@@ -69,11 +69,11 @@
     let requestFreq = initRequestFreq();
 
     let days = periodToDays(period);
-    for (let i = 0; i < data.length; i++) {
-      let date = new Date(data[i].created_at);
+    for (let i = 1; i < data.length; i++) {
+      let date = new Date(data[i][7]);
       if (days == 1) {
         // Round down to multiple of 5
-        date.setMinutes(Math.floor(date.getMinutes()/5) * 5, 0, 0);
+        date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
       } else {
         date.setHours(0, 0, 0, 0);
       }

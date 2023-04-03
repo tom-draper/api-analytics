@@ -1,4 +1,4 @@
-import threading
+from datetime import datetime
 from time import time
 from typing import Callable
 
@@ -16,18 +16,17 @@ class Analytics:
     def __call__(self, request: WSGIRequest) -> HttpResponse:
         start = time()
         response = self.get_response(request)
-        
-        data = {
-            'api_key': self.api_key,
+
+        request_data = {
             'hostname': request.get_host(),
             'ip_address': request.META.get('REMOTE_ADDR'),
             'path': request.path,
             'user_agent': request.headers['user-agent'],
             'method': request.method,
             'status': response.status_code,
-            'framework': 'Django',
             'response_time': int((time() - start) * 1000),
+            'created_at': datetime.now().isoformat()
         }
 
-        threading.Thread(target=log_request, args=(data,)).start()
+        log_request(self.api_key, request_data, 'Django')
         return response

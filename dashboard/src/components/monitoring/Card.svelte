@@ -22,8 +22,8 @@
           }),
         }
       );
-      if (response.status != 201) {
-        console.log("Error", response.status);
+      if (response[5] != 201) {
+        console.log("Error", response[5]);
       }
     } catch (e) {
       console.log(e);
@@ -34,10 +34,10 @@
     let success = 0;
     let total = 0;
     for (let i = 0; i < samples.length; i++) {
-      if (samples[i].status == "no-request") {
+      if (samples[i][5] == "no-request") {
         continue;
       }
-      if (samples[i].status == "success" || samples[i].status == "delay") {
+      if (samples[i][5] == "success" || samples[i][5] == "delay") {
         success++;
       }
       total++;
@@ -101,19 +101,19 @@
         status: "no-request",
         responseTime: sampledData[i].responseTime,
       };
-      if (sampledData[i].status >= 200 && sampledData[i].status <= 299) {
-        samples[i + start].status = "success";
-      } else if (sampledData[i].status != null) {
-        samples[i + start].status = "error";
+      if (sampledData[i][5] >= 200 && sampledData[i][5] <= 299) {
+        samples[i + start][5] = "success";
+      } else if (sampledData[i][5] != null) {
+        samples[i + start][5] = "error";
       }
     }
   }
 
   function setError() {
-    if (samples[samples.length - 1].status == null) {
+    if (samples[samples.length - 1][5] == null) {
       error = null; // Website not live
     } else {
-      error = samples[samples.length - 1].status == "error";
+      error = samples[samples.length - 1][5] == "error";
     }
     anyError = anyError || error;
   }
@@ -166,7 +166,7 @@
   {#if samples != undefined}
     <div class="measurements">
       {#each samples as sample}
-        <div class="measurement {sample.status}" />
+        <div class="measurement {sample[5]}" />
       {/each}
     </div>
     <div class="response-time">

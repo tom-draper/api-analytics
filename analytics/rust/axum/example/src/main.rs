@@ -30,8 +30,8 @@ async fn main() {
         .route("/", get(root))
         .layer(Analytics::new(api_key));
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    println!("Server listening at: http://127.0.0.1:3000");
+    let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
+    println!("Server listening at: http://127.0.0.1:8080");
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await

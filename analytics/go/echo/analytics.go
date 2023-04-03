@@ -13,19 +13,18 @@ func Analytics(apiKey string) echo.MiddlewareFunc {
 			start := time.Now()
 			err := next(c)
 
-			data := core.Data{
-				APIKey:       apiKey,
+			data := core.RequestData{
 				Hostname:     c.Request().Host,
 				IPAddress:    c.RealIP(),
 				Path:         c.Request().URL.Path,
 				UserAgent:    c.Request().UserAgent(),
 				Method:       c.Request().Method,
 				Status:       c.Response().Status,
-				Framework:    "Echo",
 				ResponseTime: time.Since(start).Milliseconds(),
+				CreatedAt:    start.Format(time.RFC3339),
 			}
 
-			go core.LogRequest(data)
+			core.LogRequest(apiKey, data, "Echo")
 			return err
 		}
 	}

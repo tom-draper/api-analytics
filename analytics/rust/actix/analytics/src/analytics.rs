@@ -4,17 +4,19 @@ use actix_web::{
     http::header::{HeaderValue, HOST, USER_AGENT},
     Error,
 };
+use chrono::Utc;
 use futures::future::LocalBoxFuture;
+use lazy_static::lazy_static;
 use reqwest::Client;
 use serde::Serialize;
+use std::sync::Mutex;
 use std::{
     future::{ready, Ready},
     time::Instant,
 };
 
-#[derive(Debug, Serialize)]
-struct Data {
-    api_key: String,
+#[derive(Debug, Clone, Serialize)]
+struct RequestData {
     hostname: String,
     ip_address: String,
     path: String,
@@ -22,11 +24,10 @@ struct Data {
     method: String,
     response_time: u32,
     status: u16,
-    framework: String,
+    created_at: String,
 }
-impl Data {
+impl RequestData {
     pub fn new(
-        api_key: String,
         hostname: String,
         ip_address: String,
         path: String,
@@ -34,9 +35,9 @@ impl Data {
         method: String,
         response_time: u32,
         status: u16,
+        created_at: String,
     ) -> Self {
         Self {
-            api_key,
             hostname,
             ip_address,
             path,
@@ -44,7 +45,7 @@ impl Data {
             method,
             response_time,
             status,
-            framework: String::from("Actix"),
+            created_at,
         }
     }
 }
@@ -101,12 +102,43 @@ fn extract_ip_address(req: &ServiceRequest) -> String {
     return String::new();
 }
 
-async fn log_request(data: Data) {
+lazy_static! {
+    static ref REQUESTS: Mutex<Vec<RequestData>> = Mutex::new(vec![]);
+    static ref LAST_POSTED: Mutex<Instant> = Mutex::new(Instant::now());
+}
+
+async fn post_requests(data: Payload) {
     let _ = Client::new()
-        .post("https://api-analytics-server.vercel.app/api/log-request")
+        .post("http://213.168.248.206/api/log-request")
         .json(&data)
         .send()
         .await;
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct Payload {
+    api_key: String,
+    requests: Vec<RequestData>,
+    framework: String,
+}
+impl Payload {
+    pub fn new(api_key: String, requests: Vec<RequestData>) -> Self {
+        Self {
+            api_key,
+            requests,
+            framework: String::from("Actix"),
+        }
+    }
+}
+
+async fn log_request(api_key: String, request_data: RequestData) {
+    REQUESTS.lock().unwrap().push(request_data);
+    if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > 60.0 {
+        let payload = Payload::new(api_key, REQUESTS.lock().unwrap().to_vec());
+        REQUESTS.lock().unwrap().clear();
+        post_requests(payload).await;
+        *LAST_POSTED.lock().unwrap() = Instant::now();
+    }
 }
 
 impl<S, B> Service<ServiceRequest> for AnalyticsMiddleware<S>
@@ -122,7 +154,7 @@ where
     forward_ready!(service);
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        let now = Instant::now();
+        let start = Instant::now();
 
         let api_key = self.api_key.clone();
         let hostname = req
@@ -143,10 +175,9 @@ where
 
         Box::pin(async move {
             let res = future.await?;
-            let elapsed = now.elapsed().as_millis();
+            let elapsed = start.elapsed().as_millis();
 
-            let data = Data::new(
-                api_key,
+            let request_data = RequestData::new(
                 hostname,
                 ip_address,
                 path,
@@ -154,9 +185,11 @@ where
                 method,
                 elapsed.try_into().unwrap(),
                 res.status().as_u16(),
+                Utc::now().to_rfc3339(),
             );
 
-            spawn(async { log_request(data).await });
+            spawn(async { log_request(api_key, request_data).await });
+
             Ok(res)
         })
     }

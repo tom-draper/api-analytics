@@ -2,23 +2,28 @@
   import { onMount } from "svelte";
 
   type Period = {
-    requests: number,
-    users: number,
-    success: number,
-    responseTime: number
-  }
+    requests: number;
+    users: number;
+    success: number;
+    responseTime: number;
+  };
 
   function periodData(data: RequestsData): Period {
-    let period = { requests: data.length, users: 0, success: 0, responseTime: 0 };
+    let period = {
+      requests: data.length,
+      users: 0,
+      success: 0,
+      responseTime: 0,
+    };
     let users: Set<string> = new Set();
-    for (let i = 0; i < data.length; i++) {
+    for (let i = 1; i < data.length; i++) {
       // @ts-ignore
-      if (data[i].status >= 200 && data[i].status <= 299) {
+      if (data[i][5] >= 200 && data[i][5] <= 299) {
         period.success++;
       }
-      period.responseTime += data[i].response_time;
-      if (data[i].ip_address != "" && data[i].ip_address != null) {
-        users.add(data[i].ip_address);
+      period.responseTime += data[i][4];
+      if (data[i][0] != "" && data[i][0] != null) {
+        users.add(data[i][0]);
       }
     }
     period.users = users.size;
@@ -31,7 +36,7 @@
 
     let requestsChange =
       ((thisPeriod.requests + 1) / (lastPeriod.requests + 1)) * 100 - 100;
-    let usersChange = 
+    let usersChange =
       ((thisPeriod.users + 1) / (lastPeriod.users + 1)) * 100 - 100;
     let successChange =
       (((thisPeriod.success + 1) / (thisPeriod.requests + 1) + 1) /
@@ -71,7 +76,7 @@
           <span
             class:tile-bad={change.requests < 0}
             class:tile-good={change.requests > 0}
-            >
+          >
             {#if change.requests > 0}
               <img class="arrow" src="../img/up.png" alt="" />
             {:else if change.requests < 0}
@@ -87,23 +92,23 @@
           <span
             class:tile-bad={change.users < 0}
             class:tile-good={change.users > 0}
-            >
+          >
             {#if change.users > 0}
               <img class="arrow" src="../img/up.png" alt="" />
             {:else if change.users < 0}
               <img class="arrow" src="../img/down.png" alt="" />
             {/if}
             {Math.abs(change.users).toFixed(1)}%</span
-            >
-          </div>
-          <div class="tile-label">Users</div>
+          >
         </div>
-        <div class="tile">
-          <div class="tile-value">
-            <span
+        <div class="tile-label">Users</div>
+      </div>
+      <div class="tile">
+        <div class="tile-value">
+          <span
             class:tile-bad={change.success < 0}
             class:tile-good={change.success > 0}
-            >
+          >
             {#if change.success > 0}
               <img class="arrow" src="../img/up.png" alt="" />
             {:else if change.success < 0}
@@ -117,8 +122,8 @@
       <div class="tile">
         <div class="tile-value">
           <span
-          class:tile-bad={change.responseTime > 0}
-          class:tile-good={change.responseTime < 0}
+            class:tile-bad={change.responseTime > 0}
+            class:tile-good={change.responseTime < 0}
           >
             <!-- Response time -- down is good -->
             {#if change.responseTime < 0}

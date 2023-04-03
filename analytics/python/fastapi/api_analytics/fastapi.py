@@ -1,4 +1,4 @@
-import threading
+from datetime import datetime
 from time import time
 
 from api_analytics.core import log_request
@@ -17,18 +17,17 @@ class Analytics(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         start = time()
         response = await call_next(request)
-                
-        data = {
-            'api_key': self.api_key,
+
+        request_data = {
             'hostname': request.url.hostname,
             'ip_address': request.client.host,
             'path': request.url.path,
             'user_agent': request.headers['user-agent'],
             'method': request.method,
             'status': response.status_code,
-            'framework': 'FastAPI',
             'response_time': int((time() - start) * 1000),
+            'created_at': datetime.now().isoformat(),
         }
-        
-        threading.Thread(target=log_request, args=(data,)).start()
+
+        log_request(self.api_key, request_data, 'FastAPI')
         return response

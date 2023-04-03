@@ -29,9 +29,9 @@
     let n = 5;
     let x = [...Array(n).keys()];
     let y = Array(n).fill(0);
-    for (let i = 0; i < data.length; i++) {
+    for (let i = 1; i < data.length; i++) {
       let idx = Math.floor(i / (data.length / n));
-      if (data[i].ip_address != null && data[i].ip_address != "") {
+      if (data[i][0] != null && data[i][0] != "") {
         y[idx] += 1;
       }
     }
@@ -86,9 +86,9 @@
 
   function getUsers(data: RequestsData): Set<string> {
     let users: Set<string> = new Set();
-    for (let i = 0; i < data.length; i++) {
-      if (data[i].ip_address != "" && data[i].ip_address != null) {
-        users.add(data[i].ip_address);
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] != "" && data[i][0] != null) {
+        users.add(data[i][0]);
       }
     }
     return users;
