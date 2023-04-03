@@ -6,7 +6,6 @@ requires = [
 ]
 
 [project]
-name = "api-analytics"
 authors = [{name = "Tom Draper", email = "tomjdraper1@gmail.com"}]
 classifiers = [
   "License :: OSI Approved :: MIT License",
@@ -17,9 +16,10 @@ dependencies = ["Django", "fastapi", "Flask", "tornado", "requests"]
 description = "Monitoring and analytics for Python API frameworks."
 keywords = ["analytics", "api", "dashboard", "django", "fastapi", "flask", "tornado", "middleware"]
 license = {file = "LICENSE"}
+name = "api-analytics"
 readme = "README.md"
 requires-python = ">=3.7"
-version = "1.0.19"
+version = "1.1.0"
 
 [project.optional-dependencies]
 build = ["build", "twine"]
