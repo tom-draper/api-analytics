@@ -10,7 +10,7 @@ async function logRequest(apiKey, requestData, framework) {
   let now = new Date();
   requests.push(requestData);
   if (now - lastPosted > 60000) {
-    await fetch("http://213.168.248.206/api/log-request", {
+    await fetch("https://213.168.248.206/api/log-request", {
       method: "POST",
       body: JSON.stringify({
         api_key: apiKey,
