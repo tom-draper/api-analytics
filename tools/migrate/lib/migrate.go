@@ -6,6 +6,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"strconv"
 	"time"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/joho/godotenv"
 	supa "github.com/nedpals/supabase-go"
+	"github.com/oschwald/geoip2-golang"
 )
 
 func getSupabaseLogin() (string, string) {
@@ -33,14 +35,34 @@ type SupabaseRequestRow struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+func getCountryCode(db *geoip2.Reader, IPAddress string) (string, error) {
+	var location string
+	if IPAddress != "" {
+		ip := net.ParseIP(IPAddress)
+		record, err := db.Country(ip)
+		if err != nil {
+			return location, err
+		}
+		location = record.Country.IsoCode
+	}
+	return location, nil
+}
+
 func readRequests() []SupabaseRequestRow {
-	f, err := os.Open("supabase_tyirpladmhanzkwhmspj_New Query (1).csv")
+	f, err := os.Open("supabase_tyirpladmhanzkwhmspj_New Query.csv")
 	if err != nil {
 		log.Fatal("Unable to read input file ", err)
 	}
 	defer f.Close()
 
+	db, err := geoip2.Open("GeoLite2-Country.mmdb")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
 	csvReader := csv.NewReader(f)
+	csvReader.Comma = '~'
 	csvReader.LazyQuotes = true
 	records, err := csvReader.ReadAll()
 	if err != nil {
@@ -88,7 +110,8 @@ func readRequests() []SupabaseRequestRow {
 		r.Framework = int16(framework)
 		r.Hostname = record[9]
 		r.IPAddress = record[10]
-		r.Location = record[11]
+		loc, _ := getCountryCode(db, record[10])
+		r.Location = loc
 		result = append(result, *r)
 	}
 
