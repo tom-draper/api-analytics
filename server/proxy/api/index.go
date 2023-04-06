@@ -51,7 +51,7 @@ func init() {
 }
 
 func getDataHandler() []byte {
-	resp, err := http.Get("http://213.168.248.206/api/data")
+	resp, err := http.Get("https://213.168.248.206/api/data")
 	if err != nil {
 		return []byte{}
 	}
