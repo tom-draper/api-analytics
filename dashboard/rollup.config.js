@@ -1,11 +1,11 @@
 import svelte from "rollup-plugin-svelte";
 import commonjs from "@rollup/plugin-commonjs";
-import typescript from "@rollup/plugin-typescript"
+import typescript from "@rollup/plugin-typescript";
 import resolve from "@rollup/plugin-node-resolve";
 import livereload from "rollup-plugin-livereload";
 import { terser } from "rollup-plugin-terser";
 import sveltePreprocess from "svelte-preprocess";
-import json from '@rollup/plugin-json';
+import json from "@rollup/plugin-json";
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -21,7 +21,7 @@ export default [
     },
     plugins: [
       svelte({
-        preprocess: sveltePreprocess({sourceMap: !production}),
+        preprocess: sveltePreprocess({ sourceMap: !production }),
         dev: !production,
         hydratable: true,
         css: (css) => {
@@ -33,7 +33,7 @@ export default [
       commonjs(),
       typescript({
         sourceMap: !production,
-        inlineSources: !production
+        inlineSources: !production,
       }),
       // App.js will be built after bundle.js, so we only need to watch that.
       // By setting a small delay the Node server has a chance to restart before reloading.
@@ -42,9 +42,8 @@ export default [
           watch: "public/App.js",
           delay: 200,
         }),
-        production && terser(),
+      production && terser(),
     ],
-
   },
   // Server bundle
   {
@@ -58,7 +57,7 @@ export default [
     },
     plugins: [
       svelte({
-        preprocess: sveltePreprocess({sourceMap: !production}),
+        preprocess: sveltePreprocess({ sourceMap: !production }),
         generate: "ssr",
       }),
       json(),
