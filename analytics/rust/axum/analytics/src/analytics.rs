@@ -153,7 +153,7 @@ impl Payload {
 
 fn post_requests(data: Payload) {
     let _ = Client::new()
-        .post("https://apianalytics-server.com/api/log-request")
+        .post("https://www.apianalytics-server.com/api/log-request")
         .json(&data)
         .send();
 }

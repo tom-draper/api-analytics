@@ -10,7 +10,7 @@
     try {
       const response = await fetch(
         // `https://api-analytics-server.vercel.app/api/monitor/pings/${userID}`
-        `https://apianalytics-server.com/api/monitor/pings/${userID}`
+        `https://www.apianalytics-server.com/api/monitor/pings/${userID}`
       );
       if (response.status === 200) {
         data = await response.json();

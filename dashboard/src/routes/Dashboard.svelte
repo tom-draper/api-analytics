@@ -100,7 +100,7 @@
     userID = formatUUID(userID);
     try {
       const response = await fetch(
-        `https://apianalytics-server.com/api/requests/${userID}`
+        `https://www.apianalytics-server.com/api/requests/${userID}`
       );
       if (response.status === 200) {
         const json = await response.json();

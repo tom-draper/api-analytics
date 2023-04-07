@@ -147,7 +147,7 @@ func buildRequestData(rows *sql.Rows) []PublicRequestRow {
 	requests := make([]PublicRequestRow, 0)
 	for rows.Next() {
 		request := new(PublicRequestRow)
-		err := rows.Scan(&request.Hostname, &request.IPAddress, &request.Path, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
+		err := rows.Scan(&request.Hostname, &request.IPAddress.String, &request.Path, &request.UserAgent.String, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
 		if err == nil {
 			requests = append(requests, *request)
 		}

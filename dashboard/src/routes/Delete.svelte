@@ -5,7 +5,7 @@
     setState("loading");
     const response = await fetch(
       // `https://api-analytics-server.vercel.app/api/delete/${apiKey}`
-      `https://apianalytics-server.com/api/delete/${apiKey}`
+      `https://www.apianalytics-server.com/api/delete/${apiKey}`
     );
 
     if (response.status === 200) {
