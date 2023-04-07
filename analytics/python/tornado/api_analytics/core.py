@@ -8,7 +8,7 @@ _last_posted = datetime.now()
 
 
 def _post_requests(api_key: str, requests_data: list[dict], framework: str):
-    requests.post('https://213.168.248.206/api/log-request',
+    requests.post('https://apianalytics-server.com/api/log-request',
                   json={
                       'api_key': api_key,
                       'requests': requests_data,

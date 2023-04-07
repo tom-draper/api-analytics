@@ -35,7 +35,7 @@ func postRequest(apiKey string, requests []RequestData, framework string) {
 	}
 	reqBody, err := json.Marshal(data)
 	if err == nil {
-		http.Post("https://213.168.248.206/api/log-request", "application/json", bytes.NewBuffer(reqBody))
+		http.Post("https://apianalytics-server.com/api/log-request", "application/json", bytes.NewBuffer(reqBody))
 	}
 }
 

@@ -6,7 +6,7 @@
     try {
       const response = await fetch(
         // `https://api-analytics-server.vercel.app/api/user-id/${apiKey}`
-        `https://213.168.248.206/api/user-id/${apiKey}`
+        `https://apianalytics-server.com/api/user-id/${apiKey}`
       );
 
       if (response.status === 200) {
