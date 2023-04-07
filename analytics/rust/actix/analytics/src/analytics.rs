@@ -109,7 +109,7 @@ lazy_static! {
 
 async fn post_requests(data: Payload) {
     let _ = Client::new()
-        .post("https://213.168.248.206/api/log-request")
+        .post("https://apianalytics-server.com/api/log-request")
         .json(&data)
         .send()
         .await;
