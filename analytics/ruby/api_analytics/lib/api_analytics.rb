@@ -41,7 +41,7 @@ module Analytics
         requests: requests,
         framework: framework
       }
-      uri = URI('https://apianalytics-server.com/api/log-request')
+      uri = URI('https://www.apianalytics-server.com/api/log-request')
       res = Net::HTTP.post(uri, payload.to_json)
     end
     

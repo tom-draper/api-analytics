@@ -4,13 +4,13 @@ A lightweight API analytics solution, complete with a dashboard.
 
 ## Getting Started
 
-### 1. Generate a new API key
+### 1. Generate an API key
 
-Head to https://my-api-analytics.vercel.app/generate to generate your unique API key with a single click. This key is used to monitor your specific API, so keep it secret! It's also required in order to view your APIs analytics dashboard.
+Head to https://apianalytics.dev/generate to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It's also required in order to view your API analytics dashboard.
 
 ### 2. Add middleware to your API
 
-Add our lightweight middleware to your API. Almost all processing is handled by our servers so there should be virtually no impact on your APIs performance.
+Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on the performance of your API.
 
 ```bash
 pip install fastapi-analytics
@@ -43,15 +43,15 @@ You can use the same API key across multiple APIs, but all your data will appear
 
 #### Dashboard
 
-Head to https://my-api-analytics.vercel.app/dashboard and paste in your API key to access your dashboard.
+Head to https://apianalytics.dev/dashboard and paste in your API key to access your dashboard.
 
-Demo: https://my-api-analytics.vercel.app/dashboard/demo
+Demo: https://apianalytics.dev/dashboard/demo
 
 ![Dashboard](https://user-images.githubusercontent.com/41476809/211800529-a84a0aa3-70c9-47d4-aa0d-7f9bbd3bc9b5.png)
 
 #### Data API
 
-Logged data for all requests can be accessed via our REST API. Simply send a GET request to `https://api-analytics-server.vercel.app/api/data` with your API key set as `X-AUTH-TOKEN` in headers.
+Logged data for all requests can be accessed via our REST API. Simply send a GET request to `https://apianalytics-server.com/api/data` with your API key set as `X-AUTH-TOKEN` in headers.
 
 ##### Python
 
@@ -62,13 +62,14 @@ headers = {
  "X-AUTH-TOKEN": <API-KEY>
 }
 
-response = requests.get("https://api-analytics-server.vercel.app/api/data", headers=headers)
+response = requests.get("https://apianalytics-server.com/api/data", headers=headers)
 print(response.json())
 ```
+
 ##### Node.js
 
 ```js
-fetch("https://api-analytics-server.vercel.app/api/data", {
+fetch("https://apianalytics-server.com/api/data", {
   headers: { "X-AUTH-TOKEN": <API-KEY> },
 })
   .then((response) => {
@@ -82,7 +83,7 @@ fetch("https://api-analytics-server.vercel.app/api/data", {
 ##### cURL
 
 ```bash
-curl --header "X-AUTH-TOKEN: <API-KEY>" https://api-analytics-server.vercel.app/api/data
+curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 ```
 
 ## Monitoring (coming soon)
@@ -111,7 +112,7 @@ Data collected is only ever used to populate your analytics dashboard. All data 
 
 ### Delete Data
 
-At any time, you can delete all stored data associated with your API key by going to https://my-api-analytics.vercel.app/delete and entering your API key.
+At any time, you can delete all stored data associated with your API key by going to https://apianalytics.dev/delete and entering your API key.
 
 API keys and their associated API request data are scheduled be deleted after 1 year of inactivity.
 

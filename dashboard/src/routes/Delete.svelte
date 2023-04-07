@@ -4,8 +4,7 @@
   async function genAPIKey() {
     setState("loading");
     const response = await fetch(
-      // `https://api-analytics-server.vercel.app/api/delete/${apiKey}`
-      `https://apianalytics-server.com/api/delete/${apiKey}`
+      `https://www.apianalytics-server.com/api/delete/${apiKey}`
     );
 
     if (response.status === 200) {
@@ -22,7 +21,7 @@
 
 <div class="generate">
   <div class="content">
-    <h2>Delete all stored data</h2>
+    <h2>Delete account</h2>
     <input type="text" bind:value={apiKey} placeholder="Enter API key" />
     <button
       id="formBtn"

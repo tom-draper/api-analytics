@@ -29,12 +29,16 @@ add_middleware(app, <API-KEY>)  # Add middleware
 
 @app.get('/')
 def root():
-    return {'message': 'Hello World!'}`
+    return {'message': 'Hello World!'}
+
+if __name__ == "__main__":
+    app.run()`
     },
     FastAPI: {
-        install: "pip install api-analytics",
+        install: "pip install fastapi-analytics",
         codeFile: '',
-        example: `from fastapi import FastAPI
+        example: `import uvicorn
+from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
 
 app = FastAPI()
@@ -42,20 +46,25 @@ app.add_middleware(Analytics, api_key=<API-KEY>)  # Add middleware
 
 @app.get('/')
 async def root():
-    return {'message': 'Hello World!'}`
+    return {'message': 'Hello World!'}
+
+if __name__ == "__main__":
+    uvicorn.run("app:app", reload=True)`
     },
     Tornado: {
         install: "pip install api-analytics",
         codeFile: '',
         example: `import asyncio
 from tornado.web import Application
+
 from api_analytics.tornado import Analytics
 
 # Inherit from the Analytics middleware class
 class MainHandler(Analytics):
     def __init__(self, app, res):
-        super().__init__(app, res, <API-KEY>)  # Pass api key
-
+        api_key = os.environ.get("API_KEY")
+        super().__init__(app, res, <API-KEY>)  # Provide api key
+    
     def get(self):
         self.write({'message': 'Hello World!'})
 
@@ -64,13 +73,10 @@ def make_app():
         (r"/", MainHandler),
     ])
 
-async def main():
+if __name__ == "__main__":
     app = make_app()
     app.listen(8080)
-    await asyncio.Event().wait()
-
-if __name__ == "__main__":
-    asyncio.run(main())`
+    IOLoop.instance().start()`
     },
     Express: {
         install: 'npm install node-api-analytics',
@@ -80,7 +86,7 @@ import { expressAnalytics } from 'node-api-analytics';
 
 const app = express();
 
-app.use(expressAnalytics(<API-KEY>));  // Add middleware
+app.use(expressAnalytics(<API-KEY >));  // Add middleware
 
 app.get('/', (req, res) => {
     res.send({ message: 'Hello World' });
@@ -98,18 +104,18 @@ import { fastifyAnalytics } from 'node-api-analytics;
 
 const fastify = Fastify();
 
-fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>));  // Add middleware
+fastify.addHook('onRequest', fastifyAnalytics(<API-KEY >));  // Add middleware
 
 fastify.get('/', function (request, reply) {
-  reply.send({ message: 'Hello World!' });
+    reply.send({ message: 'Hello World!' });
 })
 
 fastify.listen({ port: 8080 }, function (err, address) {
-  console.log('Server listening at http://localhost:8080');
-  if (err) {
-    fastify.log.error(err);
-    process.exit(1);
-  }
+    console.log('Server listening at http://localhost:8080');
+    if (err) {
+        fastify.log.error(err);
+        process.exit(1);
+    }
 })`
     },
     Koa: {
@@ -120,29 +126,29 @@ import { koaAnalytics } from 'node-api-analytics';
 
 const app = new Koa();
 
-app.use(koaAnalytics(<API-KEY>));  // Add middleware
+app.use(koaAnalytics(<API-KEY >));  // Add middleware
 
 app.use((ctx) => {
-  ctx.body = { message: 'Hello World!' };
+    ctx.body = { message: 'Hello World!' };
 });
 
 app.listen(8080, () =>
-  console.log('Server listening at https://localhost:8080')
-);`
+    console.log('Server listening at https://localhost:8080')
+); `
     },
     Gin: {
         install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/gin',
         codeFile: '',
         example: `package main
 
-import (
+import(
     "net/http"
 	"github.com/gin-gonic/gin"
 	analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
 )
 
-func root(c *gin.Context) {
-	jsonData := []byte(\`{"message": "Hello World!"}\`)
+func root(c * gin.Context) {
+    jsonData:= []byte(\`{"message": "Hello World!"}\`)
 	c.Data(http.StatusOK, "application/json", jsonData)
 }
 
@@ -161,24 +167,27 @@ func main() {
         example: `package main
 
 import (
-	"net/http"
-	"os"
-	"github.com/labstack/echo/v4"
-	analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
+    "net/http"
+    "os"
+
+    echo "github.com/labstack/echo/v4"
+    analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
 )
 
 func root(c echo.Context) error {
-	jsonData := []byte(\`{"message": "Hello World!"}\`)
-	return c.JSON(http.StatusOK, jsonData)
+    jsonData := []byte(\`{"message": "Hello World!"}\`)
+    return c.JSON(http.StatusOK, jsonData)
 }
 
 func main() {
-	router := echo.New()
+    apiKey := getAPIKey()
 
-	router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
+    router := echo.New()
 
-	router.GET("/", root)
-	router.Start(":8080")
+    router.Use(analytics.Analytics(apiKey))
+
+    router.GET("/", root)
+    router.Start(":8080")
 }`
     },
     Fiber: {
