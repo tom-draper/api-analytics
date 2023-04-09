@@ -58,20 +58,37 @@ func FixUserAgents() {
 	}
 
 	// "user_agent","method","created_at","path","api_key","status","response_time","request_id","framework","hostname","ip_address","location"
-	db := database.OpenDBConnection()
-	for _, record := range records {
-		var r database.RequestRow
-		r.UserAgent = record[0]
-		r.RequestID, _ = strconv.Atoi(record[7])
-		_, err := db.Query(fmt.Sprintf("UPDATE requests SET user_agent = %s where request_id = %d", r.UserAgent, r.RequestID))
-		if err != nil {
-			panic(err)
+	var query bytes.Buffer
+	query.WriteString("UPDATE requests as r SET user_agent = r2.user_agent from (values ")
+	for i, record := range records {
+		var userAgent string = record[0]
+		if len(userAgent) > 255 {
+			userAgent = userAgent[:255]
 		}
+		query.WriteString(fmt.Sprintf("(%d, '%s')", i, userAgent))
+		if i < len(records)-1 {
+			query.WriteString(",")
+		}
+	}
+
+	query.WriteString(") as r2(request_id, user_agent) where r2.request_id = r.request_id;")
+
+	// fmt.Println(query.String())
+	db := database.OpenDBConnection()
+	_, err = db.Query(query.String())
+	if err != nil {
+		panic(err)
 	}
 	db.Close()
 }
 
-func readRequests() []database.RequestRow {
+type SupabaseRequestRow struct {
+	database.RequestRow
+	RequestID int
+	CreatedAt time.Time
+}
+
+func readRequests() []SupabaseRequestRow {
 	f, err := os.Open("supabase_tyirpladmhanzkwhmspj_New Query.csv")
 	if err != nil {
 		log.Fatal("Unable to read input file ", err)
@@ -93,9 +110,9 @@ func readRequests() []database.RequestRow {
 	}
 
 	// "user_agent","method","created_at","path","api_key","status","response_time","request_id","framework","hostname","ip_address","location"
-	result := make([]database.RequestRow, 0)
+	result := make([]SupabaseRequestRow, 0)
 	for _, record := range records {
-		r := new(database.RequestRow)
+		r := new(SupabaseRequestRow)
 		r.UserAgent = record[0]
 		method, _ := strconv.Atoi(record[1])
 		r.Method = int16(method)

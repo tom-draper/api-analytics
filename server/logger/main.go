@@ -183,12 +183,17 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 					return
 				}
 
+				userAgent := request.UserAgent
+				if len(userAgent) > 255 {
+					userAgent = userAgent[:255]
+				}
+
 				row := database.RequestRow{
 					APIKey:       payload.APIKey,
 					Path:         request.Path,
 					Hostname:     request.Hostname,
 					IPAddress:    request.IPAddress,
-					UserAgent:    request.UserAgent,
+					UserAgent:    userAgent,
 					Status:       request.Status,
 					ResponseTime: request.ResponseTime,
 					Method:       method,
