@@ -24,7 +24,7 @@ Add our lightweight middleware to your API. Almost all processing is handled by 
 [![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
 ```bash
-pip install fastapi-analytics
+pip install api-analytics
 ```
 
 ```py
@@ -90,7 +90,7 @@ MIDDLEWARE = [
 [![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
 ```bash
-pip install tornado-analytics
+pip install api-analytics
 ```
 
 Modify your handler to inherit from `Analytics`. Create a `__init__()` method, passing along the application and response along with your unique API key.
