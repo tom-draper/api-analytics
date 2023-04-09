@@ -1,4 +1,4 @@
-package backup
+package main
 
 func BackupDatabase() {
 
@@ -7,4 +7,3 @@ func BackupDatabase() {
 func RestoreFromBackup() {
 
 }
-
