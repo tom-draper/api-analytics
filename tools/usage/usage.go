@@ -6,24 +6,6 @@ import (
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
-// func UserUsage() {
-// 	db := database.OpenDBConnection()
-
-// 	query := "SELECT *, COUNT(*) OVER(PARTITION BY api_key) count FROM requests;"
-// 	rows, err := db.Query(query)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	var requests []database.RequestRow
-// 	for rows.Next() {
-// 		request := new(database.RequestRow)
-// 		err := rows.Scan(&request.APIKey, &request.Path, &request.Secure, &request.Ping, &request.CreatedAt)
-// 		if err == nil {
-// 			requests = append(requests, *monitor)
-// 		}
-// 	}
-// }
 func TotalRequests() {
 	db := database.OpenDBConnection()
 
@@ -114,4 +96,3 @@ func Usage(days int) {
 
 	fmt.Println(requests)
 }
-

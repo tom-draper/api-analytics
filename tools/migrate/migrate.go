@@ -29,12 +29,6 @@ func getSupabaseLogin() (string, string) {
 	return supabaseURL, supabaseKey
 }
 
-type SupabaseRequestRow struct {
-	database.RequestRow
-	RequestID int       `json:"request_id"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
 func getCountryCode(db *geoip2.Reader, IPAddress string) (string, error) {
 	var location string
 	if IPAddress != "" {
@@ -48,7 +42,36 @@ func getCountryCode(db *geoip2.Reader, IPAddress string) (string, error) {
 	return location, nil
 }
 
-func readRequests() []SupabaseRequestRow {
+func FixUserAgents() {
+	f, err := os.Open("supabase_tyirpladmhanzkwhmspj_New Query.csv")
+	if err != nil {
+		log.Fatal("Unable to read input file ", err)
+	}
+	defer f.Close()
+
+	csvReader := csv.NewReader(f)
+	csvReader.Comma = '~'
+	csvReader.LazyQuotes = true
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		log.Fatal("Unable to parse file as CSV for ", err)
+	}
+
+	// "user_agent","method","created_at","path","api_key","status","response_time","request_id","framework","hostname","ip_address","location"
+	db := database.OpenDBConnection()
+	for _, record := range records {
+		var r database.RequestRow
+		r.UserAgent = record[0]
+		r.RequestID, _ = strconv.Atoi(record[7])
+		_, err := db.Query(fmt.Sprintf("UPDATE requests SET user_agent = %s where request_id = %d", r.UserAgent, r.RequestID))
+		if err != nil {
+			panic(err)
+		}
+	}
+	db.Close()
+}
+
+func readRequests() []database.RequestRow {
 	f, err := os.Open("supabase_tyirpladmhanzkwhmspj_New Query.csv")
 	if err != nil {
 		log.Fatal("Unable to read input file ", err)
@@ -70,35 +93,18 @@ func readRequests() []SupabaseRequestRow {
 	}
 
 	// "user_agent","method","created_at","path","api_key","status","response_time","request_id","framework","hostname","ip_address","location"
-	result := make([]SupabaseRequestRow, 0)
+	result := make([]database.RequestRow, 0)
 	for _, record := range records {
-		r := new(SupabaseRequestRow)
-		r.APIKey = record[0]
+		r := new(database.RequestRow)
+		r.UserAgent = record[0]
 		method, _ := strconv.Atoi(record[1])
 		r.Method = int16(method)
-		r.CreatedAt, err = time.Parse("2006-01-02 15:04:05.000000+00", record[2])
-		if err != nil {
-			r.CreatedAt, err = time.Parse("2006-01-02 15:04:05.00000+00", record[2])
-			if err != nil {
-				r.CreatedAt, err = time.Parse("2006-01-02 15:04:05.0000+00", record[2])
-				if err != nil {
-					r.CreatedAt, err = time.Parse("2006-01-02 15:04:05.000+00", record[2])
-					if err != nil {
-						r.CreatedAt, err = time.Parse("2006-01-02 15:04:05.00+00", record[2])
-						if err != nil {
-							r.CreatedAt, err = time.Parse("2006-01-02 15:04:05.00+00", record[2])
-							if err != nil {
-								r.CreatedAt, err = time.Parse("2006-01-02 15:04:05.0+00", record[2])
-								if err != nil {
-									fmt.Println(record[2], r.CreatedAt)
-								}
-							}
-						}
-					}
-				}
+		for _, format := range []string{"2006-01-02 15:04:05.000000+00", "2006-01-02 15:04:05.00000+00", "2006-01-02 15:04:05.0000+00", "2006-01-02 15:04:05.000+00", "2006-01-02 15:04:05.00+00", "2006-01-02 15:04:05.0+00"} {
+			r.CreatedAt, err = time.Parse(format, record[2])
+			if err == nil {
+				break
 			}
 		}
-
 		r.Path = record[3]
 		r.APIKey = record[4]
 		status, _ := strconv.Atoi(record[5])
@@ -172,12 +178,8 @@ func MigrateSupabaseRequests() {
 	fmt.Println("Complete")
 }
 
-type SupabaseUsersRow struct {
-	database.UserRow
-}
-
 func MigrateSupabaseUsers(db *sql.DB, supabase *supa.Client) {
-	var result []SupabaseUsersRow
+	var result []database.UserRow
 	err := supabase.DB.From("Users").Select("*").Execute(&result)
 	if err != nil {
 		panic(err)
@@ -199,12 +201,8 @@ func MigrateSupabaseUsers(db *sql.DB, supabase *supa.Client) {
 	}
 }
 
-type SupabaseMonitorRow struct {
-	database.MonitorRow
-}
-
 func MigrateSupabaseMonitors(db *sql.DB, supabase *supa.Client) {
-	var result []SupabaseMonitorRow
+	var result []database.MonitorRow
 	err := supabase.DB.From("Monitor").Select("*").Execute(&result)
 	if err != nil {
 		panic(err)
@@ -226,12 +224,8 @@ func MigrateSupabaseMonitors(db *sql.DB, supabase *supa.Client) {
 	}
 }
 
-type SupabasePingsRow struct {
-	database.PingsRow
-}
-
 func MigrateSupabasePings(db *sql.DB, supabase *supa.Client) {
-	var result []SupabasePingsRow
+	var result []database.PingsRow
 	err := supabase.DB.From("Pings").Select("*").Execute(&result)
 	if err != nil {
 		panic(err)
