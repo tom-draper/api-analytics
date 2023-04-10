@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"time"
 
 	"github.com/tom-draper/api-analytics/server/database"
 )
@@ -20,6 +22,21 @@ type MonitorRow struct {
 
 type PingsRow struct {
 	database.PingsRow
+}
+
+func makeBackupDirectory() string {
+	dirname := fmt.Sprintf("backup-%s", time.Now().Format("2006-01-02 15:04:05"))
+	if err := os.Mkdir(dirname, os.ModeDir); err != nil {
+		panic(err)
+	}
+
+	for _, subDirname := range []string{"users", "requests", "monitors", "pings"} {
+		if err := os.Mkdir(fmt.Sprintf("%s/%s", dirname, subDirname), os.ModeDir); err != nil {
+			panic(err)
+		}
+	}
+
+	return dirname
 }
 
 func getAllUsers() []UserRow {
@@ -139,6 +156,8 @@ func GroupByUser[T Row](rows []T) map[string][]T {
 }
 
 func BackupDatabase() {
+	dirname := makeBackupDirectory()
+
 	requests := getAllRequests()
 	groupedRequests := GroupByUser(requests)
 	fmt.Println(groupedRequests)
