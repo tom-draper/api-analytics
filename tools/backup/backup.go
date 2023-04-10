@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/tom-draper/api-analytics/server/database"
@@ -28,12 +30,6 @@ func makeBackupDirectory() string {
 	dirname := fmt.Sprintf("backup-%s", time.Now().Format("2006-01-02 15:04:05"))
 	if err := os.Mkdir(dirname, os.ModeDir); err != nil {
 		panic(err)
-	}
-
-	for _, subDirname := range []string{"users", "requests", "monitors", "pings"} {
-		if err := os.Mkdir(fmt.Sprintf("%s/%s", dirname, subDirname), os.ModeDir); err != nil {
-			panic(err)
-		}
 	}
 
 	return dirname
@@ -153,6 +149,102 @@ func GroupByUser[T Row](rows []T) map[string][]T {
 		data[apiKey] = append(data[apiKey], row)
 	}
 	return data
+}
+
+func makeUsersBackup(dirname string, users map[string][]UserRow) {
+	if err := os.Mkdir(fmt.Sprintf("%s/users", dirname), os.ModeDir); err != nil {
+		panic(err)
+	}
+
+	for apiKey, rows := range users {
+		file, err := os.Create(fmt.Sprintf("%s/users/%s.csv", dirname, apiKey))
+		defer file.Close()
+		if err != nil {
+			panic(err)
+		}
+
+		w := csv.NewWriter(file)
+		defer w.Flush()
+
+		data := [][]string{{"user_id", "api_key", "created_at"}}
+		for _, row := range rows {
+			row := []string{row.UserID, row.APIKey, row.CreatedAt.Format(time.RFC3339)}
+			data = append(data, row)
+		}
+		w.WriteAll(data)
+	}
+}
+
+func makeRequestsBackup(dirname string, requests map[string][]RequestRow) {
+	if err := os.Mkdir(fmt.Sprintf("%s/requests", dirname), os.ModeDir); err != nil {
+		panic(err)
+	}
+
+	for apiKey, rows := range requests {
+		file, err := os.Create(fmt.Sprintf("%s/requests/%s.csv", dirname, apiKey))
+		defer file.Close()
+		if err != nil {
+			panic(err)
+		}
+
+		w := csv.NewWriter(file)
+		defer w.Flush()
+
+		data := [][]string{{"request_id", "api_key", "path", "hostname", "ip_address", "location", "user_agent", "method", "status", "response_time", "framework", "created_at"}}
+		for _, row := range rows {
+			row := []string{strconv.Itoa(row.RequestID), row.APIKey, row.Path, row.Hostname, row.IPAddress, row.Location, row.UserAgent, strconv.FormatInt(int64(row.Method), 10), strconv.FormatInt(int64(row.Status), 10), strconv.FormatInt(int64(row.ResponseTime), 10), strconv.FormatInt(int64(row.Framework), 10), row.CreatedAt.Format(time.RFC3339)}
+			data = append(data, row)
+		}
+		w.WriteAll(data)
+	}
+}
+
+func makeMonitorsBackup(dirname string, monitors map[string][]MonitorRow) {
+	if err := os.Mkdir(fmt.Sprintf("%s/monitors", dirname), os.ModeDir); err != nil {
+		panic(err)
+	}
+
+	for apiKey, rows := range monitors {
+		file, err := os.Create(fmt.Sprintf("%s/monitors/%s.csv", dirname, apiKey))
+		defer file.Close()
+		if err != nil {
+			panic(err)
+		}
+
+		w := csv.NewWriter(file)
+		defer w.Flush()
+
+		data := [][]string{{"api_key", "url", "secure", "ping", "created_at"}}
+		for _, row := range rows {
+			row := []string{row.APIKey, row.URL, strconv.FormatBool(row.Secure), strconv.FormatBool(row.Ping), row.CreatedAt.Format(time.RFC3339)}
+			data = append(data, row)
+		}
+		w.WriteAll(data)
+	}
+}
+
+func makePingsBackup(dirname string, pings map[string][]PingsRow) {
+	if err := os.Mkdir(fmt.Sprintf("%s/pings", dirname), os.ModeDir); err != nil {
+		panic(err)
+	}
+
+	for apiKey, rows := range pings {
+		file, err := os.Create(fmt.Sprintf("%s/pings/%s.csv", dirname, apiKey))
+		defer file.Close()
+		if err != nil {
+			panic(err)
+		}
+
+		w := csv.NewWriter(file)
+		defer w.Flush()
+
+		data := [][]string{{"api_key", "url", "response_time", "status", "created_at"}}
+		for _, row := range rows {
+			row := []string{row.APIKey, row.URL, strconv.Itoa(row.ResponseTime), strconv.Itoa(row.Status), row.CreatedAt.Format(time.RFC3339)}
+			data = append(data, row)
+		}
+		w.WriteAll(data)
+	}
 }
 
 func BackupDatabase() {
