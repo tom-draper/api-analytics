@@ -207,7 +207,7 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 					query.WriteString(",")
 				}
 				query.WriteString(
-					fmt.Sprintf("('%s', '%s', %s, %s, %s, %d, %d, %d, %d, %s, '%s')",
+					fmt.Sprintf("('%s','%s',%s,%s,%s,%d,%d,%d,%d,%s,'%s')",
 						payload.APIKey,
 						request.Path,
 						fmtHostname,
