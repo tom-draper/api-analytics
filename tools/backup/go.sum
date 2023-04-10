@@ -6,3 +6,5 @@ github.com/tom-draper/api-analytics v0.0.0-20230410100219-aa476ca1d00e h1:C3z1kL
 github.com/tom-draper/api-analytics v0.0.0-20230410100219-aa476ca1d00e/go.mod h1:562mrEgVMWJiJNXEu819sW2upgc3rnPx3Wu5Ct+I1K4=
 github.com/tom-draper/api-analytics v0.0.0-20230410174157-b400609116b3 h1:wKEYd8HzsH38SZ/M3ujwSHtCkTJLPgwDBA8/BDDh5Fg=
 github.com/tom-draper/api-analytics v0.0.0-20230410174157-b400609116b3/go.mod h1:562mrEgVMWJiJNXEu819sW2upgc3rnPx3Wu5Ct+I1K4=
+github.com/tom-draper/api-analytics v0.0.0-20230410181157-3cc55d695897 h1:7tr28VVvbrCVM0Q9hZDnpGT5HQV0UbWbT4fxTGQxs2k=
+github.com/tom-draper/api-analytics v0.0.0-20230410181157-3cc55d695897/go.mod h1:562mrEgVMWJiJNXEu819sW2upgc3rnPx3Wu5Ct+I1K4=
