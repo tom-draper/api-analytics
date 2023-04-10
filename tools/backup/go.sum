@@ -1,0 +1,6 @@
+github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
+github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
+github.com/lib/pq v1.10.7 h1:p7ZhMD+KsSRozJr34udlUrhboJwWAgCg34+/ZZNvZZw=
+github.com/lib/pq v1.10.7/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
+github.com/tom-draper/api-analytics v0.0.0-20230410100219-aa476ca1d00e h1:C3z1kLlD/xM50LT18967E3sG9Gu+HkOcEGQCDuiNjFk=
+github.com/tom-draper/api-analytics v0.0.0-20230410100219-aa476ca1d00e/go.mod h1:562mrEgVMWJiJNXEu819sW2upgc3rnPx3Wu5Ct+I1K4=
