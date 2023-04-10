@@ -23,7 +23,7 @@ type RequestRow struct {
 	Path         string         `json:"path"`
 	Hostname     sql.NullString `json:"hostname"`
 	IPAddress    sql.NullString `json:"ip_address"`
-	Location     string         `json:"location"`
+	Location     sql.NullString `json:"location"`
 	UserAgent    sql.NullString `json:"user_agent"`
 	Method       int16          `json:"method"`
 	Status       int16          `json:"status"`
