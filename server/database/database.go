@@ -18,18 +18,18 @@ type UserRow struct {
 }
 
 type RequestRow struct {
-	RequestID    int       `json:"request_id"`
-	APIKey       string    `json:"api_key"`
-	Path         string    `json:"path"`
-	Hostname     string    `json:"hostname"`
-	IPAddress    string    `json:"ip_address"`
-	Location     string    `json:"location"`
-	UserAgent    string    `json:"user_agent"`
-	Method       int16     `json:"method"`
-	Status       int16     `json:"status"`
-	ResponseTime int16     `json:"response_time"`
-	Framework    int16     `json:"framework"`
-	CreatedAt    time.Time `json:"created_at"`
+	RequestID    int            `json:"request_id"`
+	APIKey       string         `json:"api_key"`
+	Path         string         `json:"path"`
+	Hostname     sql.NullString `json:"hostname"`
+	IPAddress    sql.NullString `json:"ip_address"`
+	Location     string         `json:"location"`
+	UserAgent    sql.NullString `json:"user_agent"`
+	Method       int16          `json:"method"`
+	Status       int16          `json:"status"`
+	ResponseTime int16          `json:"response_time"`
+	Framework    int16          `json:"framework"`
+	CreatedAt    time.Time      `json:"created_at"`
 }
 
 type MonitorRow struct {
