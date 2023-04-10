@@ -148,6 +148,14 @@ func getCountryCode(IPAddress string) (string, error) {
 	return location, nil
 }
 
+func fmtNullableString(value string) string {
+	if value == "" {
+		return "NULL"
+	} else {
+		return fmt.Sprintf("'%s'", value)
+	}
+}
+
 func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 	logRequest := func(c *gin.Context) {
 		// Collect API request data sent via POST request
@@ -167,6 +175,10 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 			var query bytes.Buffer
 			query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES")
 			for i, request := range payload.Requests {
+				if i > 1000 {
+					break
+				}
+
 				location, _ := getCountryCode(request.IPAddress)
 
 				method, err := methodMap(request.Method)
@@ -186,41 +198,29 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 					userAgent = userAgent[:255]
 				}
 
+				fmtHostname := fmtNullableString(request.Hostname)
+				fmtIPAddress := fmtNullableString(request.IPAddress)
+				fmtUserAgent := fmtNullableString(userAgent)
+				fmtLocation := fmtNullableString(location)
+
 				if i > 0 {
 					query.WriteString(",")
 				}
-				if request.IPAddress == "" {
-					query.WriteString(
-						fmt.Sprintf("('%s', '%s', '%s', NULL, '%s', %d, %d, %d, %d, '%s', '%s')",
-							payload.APIKey,
-							request.Path,
-							request.Hostname,
-							userAgent,
-							request.Status,
-							request.ResponseTime,
-							method,
-							framework,
-							location,
-							request.CreatedAt,
-						),
-					)
-				} else {
-					query.WriteString(
-						fmt.Sprintf("('%s', '%s', '%s', '%s', '%s', %d, %d, %d, %d, '%s', '%s')",
-							payload.APIKey,
-							request.Path,
-							request.Hostname,
-							request.IPAddress,
-							userAgent,
-							request.Status,
-							request.ResponseTime,
-							method,
-							framework,
-							location,
-							request.CreatedAt,
-						),
-					)
-				}
+				query.WriteString(
+					fmt.Sprintf("('%s', '%s', %s, %s, %s, %d, %d, %d, %d, %s, '%s')",
+						payload.APIKey,
+						request.Path,
+						fmtHostname,
+						fmtIPAddress,
+						fmtUserAgent,
+						request.Status,
+						request.ResponseTime,
+						method,
+						framework,
+						fmtLocation,
+						request.CreatedAt,
+					),
+				)
 			}
 			query.WriteString(";")
 
