@@ -1,10 +1,28 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
-func getAllUsers() []database.UserRow {
+type UserRow struct {
+	database.UserRow
+}
+
+type RequestRow struct {
+	database.RequestRow
+}
+
+type MonitorRow struct {
+	database.MonitorRow
+}
+
+type PingsRow struct {
+	database.PingsRow
+}
+
+func getAllUsers() []UserRow {
 	db := database.OpenDBConnection()
 
 	query := "SELECT * FROM users;"
@@ -13,9 +31,9 @@ func getAllUsers() []database.UserRow {
 		panic(err)
 	}
 
-	var users []database.UserRow
+	var users []UserRow
 	for rows.Next() {
-		var user database.UserRow
+		var user UserRow
 		err := rows.Scan(&user.UserID, &user.APIKey, &user.CreatedAt)
 		if err == nil {
 			users = append(users, user)
@@ -25,7 +43,7 @@ func getAllUsers() []database.UserRow {
 	return users
 }
 
-func getAllRequests() []database.RequestRow {
+func getAllRequests() []RequestRow {
 	db := database.OpenDBConnection()
 
 	query := "SELECT * FROM requests;"
@@ -34,9 +52,9 @@ func getAllRequests() []database.RequestRow {
 		panic(err)
 	}
 
-	var requests []database.RequestRow
+	var requests []RequestRow
 	for rows.Next() {
-		var request database.RequestRow
+		var request RequestRow
 		err := rows.Scan(&request.RequestID, &request.APIKey, &request.Path, &request.Hostname, &request.IPAddress, &request.Location, &request.UserAgent, &request.Method, &request.Status, &request.ResponseTime, &request.Framework, &request.CreatedAt)
 		if err == nil {
 			requests = append(requests, request)
@@ -46,7 +64,7 @@ func getAllRequests() []database.RequestRow {
 	return requests
 }
 
-func getAllMonitors() []database.MonitorRow {
+func getAllMonitors() []MonitorRow {
 	db := database.OpenDBConnection()
 
 	query := "SELECT * FROM monitor;"
@@ -55,9 +73,9 @@ func getAllMonitors() []database.MonitorRow {
 		panic(err)
 	}
 
-	var monitors []database.MonitorRow
+	var monitors []MonitorRow
 	for rows.Next() {
-		var monitor database.MonitorRow
+		var monitor MonitorRow
 		err := rows.Scan(&monitor.APIKey, &monitor.URL, &monitor.Secure, &monitor.Ping, &monitor.CreatedAt)
 		if err == nil {
 			monitors = append(monitors, monitor)
@@ -67,7 +85,7 @@ func getAllMonitors() []database.MonitorRow {
 	return monitors
 }
 
-func getAllPings() []database.PingsRow {
+func getAllPings() []PingsRow {
 	db := database.OpenDBConnection()
 
 	query := "SELECT * FROM pings;"
@@ -76,9 +94,9 @@ func getAllPings() []database.PingsRow {
 		panic(err)
 	}
 
-	var pings []database.PingsRow
+	var pings []PingsRow
 	for rows.Next() {
-		var ping database.PingsRow
+		var ping PingsRow
 		err := rows.Scan(&ping.APIKey, &ping.URL, &ping.ResponseTime, &ping.Status, &ping.CreatedAt)
 		if err == nil {
 			pings = append(pings, ping)
@@ -88,8 +106,43 @@ func getAllPings() []database.PingsRow {
 	return pings
 }
 
+type Row interface {
+	GetAPIKey() string
+}
+
+func (row UserRow) GetAPIKey() string {
+	return row.APIKey
+}
+
+func (row RequestRow) GetAPIKey() string {
+	return row.APIKey
+}
+
+func (row MonitorRow) GetAPIKey() string {
+	return row.APIKey
+}
+
+func (row PingsRow) GetAPIKey() string {
+	return row.APIKey
+}
+
+func GroupByUser[T Row](rows []T) map[string][]T {
+	data := make(map[string][]T)
+	for _, row := range rows {
+		apiKey := row.GetAPIKey()
+		if _, ok := data[apiKey]; ok {
+			data[apiKey] = make([]T, 0)
+		}
+		data[apiKey] = append(data[apiKey], row)
+	}
+	return data
+}
+
 func BackupDatabase() {
 	requests := getAllRequests()
+	groupedRequests := GroupByUser(requests)
+	fmt.Println(groupedRequests)
+
 	users := getAllUsers()
 	monitors := getAllMonitors()
 	pings := getAllPings()
