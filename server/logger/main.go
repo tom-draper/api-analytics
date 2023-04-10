@@ -188,27 +188,40 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 					userAgent = userAgent[:255]
 				}
 
-				row := database.RequestRow{
-					APIKey:       payload.APIKey,
-					Path:         request.Path,
-					Hostname:     request.Hostname,
-					IPAddress:    request.IPAddress,
-					UserAgent:    userAgent,
-					Status:       request.Status,
-					ResponseTime: request.ResponseTime,
-					Method:       method,
-					Framework:    framework,
-					Location:     location,
-					CreatedAt:    request.CreatedAt,
-				}
-
 				if i > 0 {
 					query.WriteString(",")
 				}
-				if row.IPAddress == "" {
-					query.WriteString(fmt.Sprintf("('%s', '%s', '%s', NULL, '%s', %d, %d, %d, %d, '%s', '%s')", row.APIKey, row.Path, row.Hostname, row.UserAgent, row.Status, row.ResponseTime, row.Method, row.Framework, row.Location, row.CreatedAt))
+				if request.IPAddress == "" {
+					query.WriteString(
+						fmt.Sprintf("('%s', '%s', '%s', NULL, '%s', %d, %d, %d, %d, '%s', '%s')",
+							payload.APIKey,
+							request.Path,
+							request.Hostname,
+							userAgent,
+							request.Status,
+							request.ResponseTime,
+							method,
+							framework,
+							location,
+							request.CreatedAt,
+						),
+					)
 				} else {
-					query.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%s', '%s', %d, %d, %d, %d, '%s', '%s')", row.APIKey, row.Path, row.Hostname, row.IPAddress, row.UserAgent, row.Status, row.ResponseTime, row.Method, row.Framework, row.Location, row.CreatedAt))
+					query.WriteString(
+						fmt.Sprintf("('%s', '%s', '%s', '%s', '%s', %d, %d, %d, %d, '%s', '%s')",
+							payload.APIKey,
+							request.Path,
+							request.Hostname,
+							request.IPAddress,
+							userAgent,
+							request.Status,
+							request.ResponseTime,
+							method,
+							framework,
+							location,
+							request.CreatedAt,
+						),
+					)
 				}
 			}
 			query.WriteString(";")

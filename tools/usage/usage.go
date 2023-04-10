@@ -76,6 +76,14 @@ func DailyUsage() {
 	Usage(1)
 }
 
+func WeeklyUsage() {
+	Usage(7)
+}
+
+func MonthlyUsage() {
+	Usage(30)
+}
+
 func Usage(days int) {
 	db := database.OpenDBConnection()
 

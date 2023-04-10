@@ -82,13 +82,7 @@ func FixUserAgents() {
 	db.Close()
 }
 
-type SupabaseRequestRow struct {
-	database.RequestRow
-	RequestID int
-	CreatedAt time.Time
-}
-
-func readRequests() []SupabaseRequestRow {
+func readRequests() []database.RequestRow {
 	f, err := os.Open("supabase_tyirpladmhanzkwhmspj_New Query.csv")
 	if err != nil {
 		log.Fatal("Unable to read input file ", err)
@@ -110,9 +104,9 @@ func readRequests() []SupabaseRequestRow {
 	}
 
 	// "user_agent","method","created_at","path","api_key","status","response_time","request_id","framework","hostname","ip_address","location"
-	result := make([]SupabaseRequestRow, 0)
+	result := make([]database.RequestRow, 0)
 	for _, record := range records {
-		r := new(SupabaseRequestRow)
+		r := new(database.RequestRow)
 		r.UserAgent = record[0]
 		method, _ := strconv.Atoi(record[1])
 		r.Method = int16(method)
@@ -142,12 +136,6 @@ func readRequests() []SupabaseRequestRow {
 }
 
 func MigrateSupabaseRequests() {
-	// var result []SupabaseRequestRow
-	// err := supabase.DB.From("Requests").Select("*").Execute(&result)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
 	result := readRequests()
 
 	var db *sql.DB
