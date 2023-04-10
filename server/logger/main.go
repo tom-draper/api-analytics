@@ -10,7 +10,6 @@ import (
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
 
-	"github.com/tom-draper/api-analytics/server/api/routes"
 	"github.com/tom-draper/api-analytics/server/database"
 
 	"github.com/gin-contrib/cors"
@@ -35,7 +34,6 @@ func main() {
 		KeyFunc:      keyFunc,
 	})
 	r.Use(mw)
-	routes.RegisterRouter(r, db)
 
 	r.POST("/log-request", logRequestHandler(db))
 
