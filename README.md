@@ -555,10 +555,6 @@ At any time, you can delete all stored data associated with your API key by goin
 
 API keys and their associated API request data are scheduled be deleted after 1 year of inactivity.
 
-## Development
-
-This project is still in the early stages of development and bugs are to be expected.
-
 ## Contributions
 
 Contributions, issues and feature requests are welcome.
