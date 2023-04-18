@@ -11,6 +11,7 @@
   import Version from "../components/dashboard/Version.svelte";
   import UsageTime from "../components/dashboard/UsageTime.svelte";
   import Growth from "../components/dashboard/Growth.svelte";
+  import Location from "../components/dashboard/Location.svelte";
   import Device from "../components/dashboard/device/Device.svelte";
   import periodToDays from "../lib/period";
   import genDemoData from "../lib/demo";
@@ -27,7 +28,7 @@
   }
 
   function setPeriodData() {
-    let days = periodToDays(period);
+    let days = periodToDays(currentPeriod);
 
     let counted = allTimePeriod;
     if (days != null) {
@@ -59,7 +60,7 @@
   }
 
   function setPrevPeriodData() {
-    let days = periodToDays(period);
+    let days = periodToDays(currentPeriod);
 
     let inPeriod = allTimePeriod;
     if (days != null) {
@@ -82,7 +83,7 @@
   }
 
   function setPeriod(value: string) {
-    period = value;
+    currentPeriod = value;
     setPeriodData();
     setPrevPeriodData();
   }
@@ -116,7 +117,16 @@
   let data: RequestsData;
   let periodData: RequestsData;
   let prevPeriodData: RequestsData;
-  let period = "month";
+  let timePeriods = [
+    { name: "24-hours", label: "24 hours" },
+    { name: "week", label: "Week" },
+    { name: "month", label: "Month" },
+    { name: "3-month", label: "3 months" },
+    { name: "6-month", label: "6 months" },
+    { name: "year", label: "Year" },
+    { name: "all-time", label: "All time" },
+  ];
+  let currentPeriod = timePeriods[2].name;
   let failed = false;
   let disable404 = false;
   onMount(() => {
@@ -142,69 +152,17 @@
         >
       </div>
       <div class="nav-btn time-period">
-        <button
-          class="time-period-btn"
-          class:time-period-btn-active={period === "24-hours"}
-          on:click={() => {
-            setPeriod("24-hours");
-          }}
-        >
-          24 hours
-        </button>
-        <button
-          class="time-period-btn"
-          class:time-period-btn-active={period === "week"}
-          on:click={() => {
-            setPeriod("week");
-          }}
-        >
-          Week
-        </button>
-        <button
-          class="time-period-btn"
-          class:time-period-btn-active={period === "month"}
-          on:click={() => {
-            setPeriod("month");
-          }}
-        >
-          Month
-        </button>
-        <button
-          class="time-period-btn"
-          class:time-period-btn-active={period === "3-months"}
-          on:click={() => {
-            setPeriod("3-months");
-          }}
-        >
-          3 months
-        </button>
-        <button
-          class="time-period-btn"
-          class:time-period-btn-active={period === "6-months"}
-          on:click={() => {
-            setPeriod("6-months");
-          }}
-        >
-          6 months
-        </button>
-        <button
-          class="time-period-btn"
-          class:time-period-btn-active={period === "year"}
-          on:click={() => {
-            setPeriod("year");
-          }}
-        >
-          Year
-        </button>
-        <button
-          class="time-period-btn"
-          class:time-period-btn-active={period === "all-time"}
-          on:click={() => {
-            setPeriod("all-time");
-          }}
-        >
-          All time
-        </button>
+        {#each timePeriods as period}
+          <button
+            class="time-period-btn"
+            class:time-period-btn-active={currentPeriod === period.name}
+            on:click={() => {
+              setPeriod(period.name);
+            }}
+          >
+            {period.label}
+          </button>
+        {/each}
       </div>
     </div>
     <div class="dashboard-content">
@@ -214,17 +172,26 @@
           <SuccessRate data={periodData} />
         </div>
         <div class="row">
-          <Requests data={periodData} prevData={prevPeriodData} {period} />
-          <Users data={periodData} prevData={prevPeriodData} {period} />
+          <Requests
+            data={periodData}
+            prevData={prevPeriodData}
+            period={currentPeriod}
+          />
+          <Users
+            data={periodData}
+            prevData={prevPeriodData}
+            period={currentPeriod}
+          />
         </div>
         <ResponseTimes data={periodData} />
         <Endpoints data={periodData} />
         <Version data={periodData} />
       </div>
       <div class="right">
-        <Activity data={periodData} {period} />
+        <Activity data={periodData} period={currentPeriod} />
         <div class="grid-row">
-          <Growth data={periodData} prevData={prevPeriodData} />
+          <!-- <Growth data={periodData} prevData={prevPeriodData} /> -->
+          <Location data={periodData} />
           <Device data={periodData} />
         </div>
         <UsageTime data={periodData} />
