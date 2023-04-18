@@ -94,7 +94,6 @@
 
   .bar {
     position: relative;
-    /* height: 100%; */
     flex-grow: 1;
   }
 

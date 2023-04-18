@@ -23,8 +23,7 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
 
-	r := app.Group("/api")
-	r.Use(cors.Default())
+	app.Use(cors.Default())
 	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
 		Rate:  time.Second,
 		Limit: 2,
@@ -33,9 +32,8 @@ func main() {
 		ErrorHandler: errorHandler,
 		KeyFunc:      keyFunc,
 	})
-	r.Use(mw)
 
-	r.POST("/log-request", logRequestHandler(db))
+	app.POST("/api/log-request", mw, logRequestHandler(db))
 
 	app.Run(":8000")
 }
