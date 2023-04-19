@@ -24,6 +24,7 @@ func main() {
 	app := gin.New()
 
 	app.Use(cors.Default())
+	
 	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
 		Rate:  time.Second,
 		Limit: 2,
