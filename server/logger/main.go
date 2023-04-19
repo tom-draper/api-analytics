@@ -32,8 +32,9 @@ func main() {
 		ErrorHandler: errorHandler,
 		KeyFunc:      keyFunc,
 	})
+	app.Use(mw)
 
-	app.POST("/api/log-request", mw, logRequestHandler(db))
+	app.POST("/api/log-request", logRequestHandler(db))
 
 	app.Run(":8000")
 }
