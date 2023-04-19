@@ -197,6 +197,7 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 					userAgent = userAgent[:255]
 				}
 
+				// Convert to NULL or '<value>' for SQL query
 				fmtHostname := fmtNullableString(request.Hostname)
 				fmtIPAddress := fmtNullableString(request.IPAddress)
 				fmtUserAgent := fmtNullableString(userAgent)
