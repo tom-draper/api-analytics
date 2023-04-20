@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/csv"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -204,23 +205,80 @@ func parseRows(file string, table string) ([]Row, error) {
 	return rows, nil
 }
 
+func createUserTable(dbName string) {
+	db := database.OpenDBConnection()
+	_, err := db.Exec("DROP TABLE IF EXISTS users;")
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = db.Exec("CREATE TABLE users (user_id UUID NOT NULL, api_key UUID NOT NULL, created_at timestamptz, PRIMARY KEY (api_key));")
+	if err != nil {
+		panic(err)
+	}
+}
+
+func createRequestsTable(dbName string) {
+	db := database.OpenDBConnection()
+	_, err := db.Exec("DROP TABLE IF EXISTS requests;")
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = db.Exec("CREATE TABLE requests (user_id UUID NOT NULL, api_key UUID NOT NULL, created_at timestamptz, PRIMARY KEY (api_key));")
+	if err != nil {
+		panic(err)
+	}
+}
+
+func createMonitorTable(dbName string) {
+	db := database.OpenDBConnection()
+	_, err := db.Exec("DROP TABLE IF EXISTS monitor;")
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = db.Exec("CREATE TABLE monitor (user_id UUID NOT NULL, api_key UUID NOT NULL, created_at timestamptz, PRIMARY KEY (api_key));")
+	if err != nil {
+		panic(err)
+	}
+}
+
+func createPingsTable(dbName string) {
+	db := database.OpenDBConnection()
+	_, err := db.Exec("DROP TABLE IF EXISTS pings;")
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = db.Exec("CREATE TABLE pings (user_id UUID NOT NULL, api_key UUID NOT NULL, created_at timestamptz, PRIMARY KEY (api_key));")
+	if err != nil {
+		panic(err)
+	}
+}
+
 func RestoreUser(dirname string, dbName string) {
 	rows := readTable(dirname, "users")
+	createUserTable(dbName)
 }
 
 func RestoreRequests(dirname string, dbName string) {
 	rows := readTable(dirname, "requests")
+	createRequestsTable(dbName)
 }
 
 func RestoreMonitor(dirname string, dbName string) {
 	rows := readTable(dirname, "monitor")
+	createMonitorTable(dbName)
 }
 
 func RestorePings(dirname string, dbName string) {
 	rows := readTable(dirname, "pings")
+	createPingsTable(dbName)
 }
 
 func Restore(dirname string, dbName string) {
+	// Database with dbName assumed already exists
 	unzipBackup(dirname)
 	RestoreRequests(dirname, dbName)
 	RestoreUser(dirname, dbName)
