@@ -48,20 +48,18 @@ type PingsRow struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
-func getDBLogin() (string, string, string) {
+func getDBLogin() (string, string) {
 	err := godotenv.Load(".env")
 	if err != nil {
 		panic(err)
 	}
 
-	database := os.Getenv("POSTGRES_DATABASE")
 	username := os.Getenv("POSTGRES_USERNAME")
 	password := os.Getenv("POSTGRES_PASSWORD")
-	return database, username, password
+	return username, password
 }
 
-func OpenDBConnection() *sql.DB {
-	database, username, password := getDBLogin()
+func openDBConnection(database string, username string, password string) *sql.DB {
 	args := fmt.Sprintf("host=%s port=%d dbname=%s user='%s' password=%s sslmode=%s", "localhost", 5432, database, username, password, "disable")
 
 	db, err := sql.Open("postgres", args)
@@ -70,4 +68,15 @@ func OpenDBConnection() *sql.DB {
 	}
 
 	return db
+}
+
+func OpenDBConnection() *sql.DB {
+	username, password := getDBLogin()
+	database := os.Getenv("POSTGRES_DATABASE")
+	return openDBConnection(database, username, password)
+}
+
+func OpenDBConnectionNamed(database string) *sql.DB {
+	username, password := getDBLogin()
+	return openDBConnection(database, username, password)
 }
