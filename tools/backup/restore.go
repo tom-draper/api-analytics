@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/csv"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"strconv"
