@@ -330,7 +330,3 @@ func BackupDatabase() {
 	BackupPings(dirname)
 	zipBackup(dirname)
 }
-
-func RestoreFromBackup() {
-
-}
