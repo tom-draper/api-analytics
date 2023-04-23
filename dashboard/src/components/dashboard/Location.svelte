@@ -28,8 +28,6 @@
       }
     }
 
-    console.log(locationsFreq);
-
     locations = [];
     for (let location in locationsFreq) {
       locations.push([
@@ -43,7 +41,6 @@
       return b[1] - a[1];
     });
     locations = locations.slice(0, 10);
-    console.log(locations);
   }
 
   let locations: [string, number, number][] = [];
