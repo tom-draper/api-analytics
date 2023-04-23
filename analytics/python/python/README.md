@@ -37,7 +37,7 @@ from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
 
 app = FastAPI()
-app.add_middleware(Analytics, <API-KEY>)  # Add middleware
+app.add_middleware(Analytics, api_key=<API-KEY>)  # Add middleware
 
 @app.get("/")
 async def root():
