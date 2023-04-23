@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
+	"math/rand"
 	"net"
 	"net/http"
 	"time"
@@ -99,6 +100,11 @@ func uploadPings(pings []database.PingsRow, db *sql.DB) {
 	}
 }
 
+func shuffle(monitored []database.MonitorRow) {
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(monitored), func(i, j int) { monitored[i], monitored[j] = monitored[j], monitored[i] })
+}
+
 func pingMonitored(monitored []database.MonitorRow, client http.Client, db *sql.DB) []database.PingsRow {
 	var pings []database.PingsRow
 	for _, m := range monitored {
@@ -132,6 +138,9 @@ func main() {
 	db := database.OpenDBConnection()
 
 	monitored := getMonitoredURLs(db)
+	// Shuffle URLs to ping to avoid a page looking consistently slow or fast
+	// due to cold starts or caching
+	shuffle(monitored)
 
 	client := getClient()
 	pings := pingMonitored(monitored, client, db)
