@@ -5,7 +5,6 @@
     setState("loading");
     try {
       const response = await fetch(
-        // `https://api-analytics-server.vercel.app/api/user-id/${apiKey}`
         `https://www.apianalytics-server.com/api/user-id/${apiKey}`
       );
 

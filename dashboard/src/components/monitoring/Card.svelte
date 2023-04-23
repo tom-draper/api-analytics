@@ -8,7 +8,7 @@
 
     try {
       let response = await fetch(
-        "https://api-analytics-server.vercel.app/api/monitor/delete",
+        "https://www.apianalytics-server.com/api/monitor/delete",
         {
           method: "POST",
           mode: "no-cors",
@@ -34,10 +34,10 @@
     let success = 0;
     let total = 0;
     for (let i = 0; i < samples.length; i++) {
-      if (samples[i].status === "no-request") {
+      if (samples[i].label === "no-request") {
         continue;
       }
-      if (samples[i].status === "success" || samples[i][5] == "delay") {
+      if (samples[i].label === "success" || samples[i].label === "delay") {
         success++;
       }
       total++;
@@ -52,13 +52,13 @@
   }
 
   function periodToMarkers(period: string): number {
-    if (period == "24h") {
+    if (period === "24h") {
       return 24 * 2;
-    } else if (period == "7d") {
+    } else if (period === "7d") {
       return 12 * 7;
-    } else if (period == "30d") {
+    } else if (period === "30d") {
       return 30 * 4;
-    } else if (period == "60d") {
+    } else if (period === "60d") {
       return 60 * 2;
     } else {
       return null;
@@ -92,28 +92,29 @@
 
   function setSamples() {
     let markers = periodToMarkers(period);
-    samples = Array(markers).fill({ status: "no-request", responseTime: 0 });
+    samples = Array(markers).fill({ label: "no-request", responseTime: 0 });
     let sampledData = periodSample();
     let start = markers - sampledData.length;
 
     for (let i = 0; i < sampledData.length; i++) {
       samples[i + start] = {
-        status: "no-request",
+        label: "no-request",
+        status: sampledData[i].status,
         responseTime: sampledData[i].responseTime,
       };
       if (sampledData[i].status >= 200 && sampledData[i].status <= 299) {
-        samples[i + start].status = "success";
+        samples[i + start].label = "success";
       } else if (sampledData[i].status != null) {
-        samples[i + start].status = "error";
+        samples[i + start].label = "error";
       }
     }
   }
 
   function setError() {
-    if (samples[samples.length - 1].status == null) {
+    if (samples[samples.length - 1].label == null) {
       error = null; // Website not live
     } else {
-      error = samples[samples.length - 1].status == "error";
+      error = samples[samples.length - 1].label === "error";
     }
     anyError = anyError || error;
   }
@@ -126,7 +127,7 @@
 
   let uptime = "";
   let error = false;
-  let samples: any[];
+  let samples: { label: string; status: number; responseTime: string }[];
   onMount(() => {
     build();
   });
@@ -166,7 +167,10 @@
   {#if samples != undefined}
     <div class="measurements">
       {#each samples as sample}
-        <div class="measurement {sample.status}" />
+        <div
+          class="measurement {sample.label}"
+          title="Status {sample.status}"
+        />
       {/each}
     </div>
     <div class="response-time">
