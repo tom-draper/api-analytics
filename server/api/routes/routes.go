@@ -14,7 +14,7 @@ import (
 func genAPIKeyHandler(db *sql.DB) gin.HandlerFunc {
 	genAPIKey := func(c *gin.Context) {
 		// Fetch all API request data associated with this account
-		query := fmt.Sprintf("INSERT INTO users (api_key, user_id, created_at) VALUES (gen_random_uuid(), gen_random_uuid(), NOW()) RETURNING api_key;")
+		query := "INSERT INTO users (api_key, user_id, created_at) VALUES (gen_random_uuid(), gen_random_uuid(), NOW()) RETURNING api_key;"
 		rows, err := db.Query(query)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
@@ -265,7 +265,7 @@ func getUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
 }
 
 type Monitor struct {
-	APIKey string `json:"api_key"`
+	UserID string `json:"user_id"`
 	URL    string `json:"url"`
 	Secure bool   `json:"secure"`
 	Ping   bool   `json:"ping"`
@@ -279,12 +279,28 @@ func insertUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
-		if monitor.APIKey == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
+		if monitor.UserID == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User ID required."})
 			return
 		} else {
-			query := fmt.Sprintf("INSERT INTO monitor (api_key, url, secure, ping, created_at) VALUES ('%s', '%s', %t, %t, NOW())", monitor.APIKey, monitor.URL, monitor.Secure, monitor.Ping)
-			_, err := db.Query(query)
+			// Get API key from user ID
+			query := fmt.Sprintf("SELECT api_key FROM monitor WHERE user_id = %s;", monitor.UserID)
+			rows, err := db.Query(query)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+				return
+			}
+			rows.Next()
+			var apiKey string
+			err = rows.Scan(&apiKey)
+			if err != nil || apiKey == "" {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+				return
+			}
+
+			// Insert new monitor into database
+			query = fmt.Sprintf("INSERT INTO monitor (api_key, url, secure, ping, created_at) VALUES ('%s', '%s', %t, %t, NOW())", apiKey, monitor.URL, monitor.Secure, monitor.Ping)
+			_, err = db.Query(query)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 				return
@@ -323,7 +339,7 @@ func deletePings(apiKey string, url string, c *gin.Context, db *sql.DB) error {
 func deleteUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
 	deleteUserMonitor := func(c *gin.Context) {
 		var body struct {
-			APIKey string `json:"api_key"`
+			UserID string `json:"user_id"`
 			URL    string `json:"url"`
 		}
 		if err := c.BindJSON(&body); err != nil {
@@ -331,17 +347,33 @@ func deleteUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
-		if body.APIKey == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
+		if body.UserID == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User ID required."})
 			return
 		} else {
-			var err error
-			err = deleteMonitor(body.APIKey, body.URL, c, db)
+			// Get API key from user ID
+			query := fmt.Sprintf("SELECT api_key FROM monitor WHERE user_id = %s;", body.UserID)
+			rows, err := db.Query(query)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 				return
 			}
-			err = deletePings(body.APIKey, body.URL, c, db)
+			rows.Next()
+			var apiKey string
+			err = rows.Scan(&apiKey)
+			if err != nil || apiKey == "" {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+				return
+			}
+
+			// Delete monitor from database
+			err = deleteMonitor(apiKey, body.URL, c, db)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+				return
+			}
+			// Delete recorded pings from database for this monitor
+			err = deletePings(apiKey, body.URL, c, db)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 				return
