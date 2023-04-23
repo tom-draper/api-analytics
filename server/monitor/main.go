@@ -82,7 +82,7 @@ func deleteOldPings(db *sql.DB) {
 	}
 }
 
-func uploadPings(pings []database.PingRow, db *sql.DB) {
+func uploadPings(pings []database.PingsRow, db *sql.DB) {
 	var query bytes.Buffer
 	query.WriteString("INSERT INTO pings (api_key, url, response_time, status, created_at) VALUES")
 	for i, ping := range pings {
@@ -100,13 +100,13 @@ func uploadPings(pings []database.PingRow, db *sql.DB) {
 }
 
 func pingMonitored(monitored []database.MonitorRow, client http.Client, db *sql.DB) {
-	var pings []database.PingRow
+	var pings []database.PingsRow
 	for _, m := range monitored {
 		status, elapsed, err := ping(client, m.URL, m.Secure, m.Ping)
 		if err != nil {
 			fmt.Println(err)
 		}
-		ping := database.PingRow{
+		ping := database.PingsRow{
 			APIKey:       m.APIKey,
 			URL:          m.URL,
 			ResponseTime: int(elapsed.Milliseconds()),

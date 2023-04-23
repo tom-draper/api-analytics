@@ -13,7 +13,7 @@
           body: JSON.stringify({
             api_key: apiKey,
             url: url,
-            ping: pingType == "simple-ping",
+            ping: pingType === "simple-ping",
             secure: false,
           }),
         }

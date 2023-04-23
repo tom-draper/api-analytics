@@ -10,7 +10,6 @@
   import Activity from "../components/dashboard/activity/Activity.svelte";
   import Version from "../components/dashboard/Version.svelte";
   import UsageTime from "../components/dashboard/UsageTime.svelte";
-  import Growth from "../components/dashboard/Growth.svelte";
   import Location from "../components/dashboard/Location.svelte";
   import Device from "../components/dashboard/device/Device.svelte";
   import periodToDays from "../lib/period";
