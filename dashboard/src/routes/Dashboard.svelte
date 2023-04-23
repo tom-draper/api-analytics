@@ -11,7 +11,6 @@
   import Version from "../components/dashboard/Version.svelte";
   import UsageTime from "../components/dashboard/UsageTime.svelte";
   import Growth from "../components/dashboard/Growth.svelte";
-  import Location from "../components/dashboard/Location.svelte";
   import Device from "../components/dashboard/device/Device.svelte";
   import periodToDays from "../lib/period";
   import genDemoData from "../lib/demo";
@@ -190,8 +189,8 @@
       <div class="right">
         <Activity data={periodData} period={currentPeriod} />
         <div class="grid-row">
-          <!-- <Growth data={periodData} prevData={prevPeriodData} /> -->
-          <Location data={periodData} />
+          <Growth data={periodData} prevData={prevPeriodData} />
+          <!-- <Location data={periodData} /> -->
           <Device data={periodData} />
         </div>
         <UsageTime data={periodData} />

@@ -120,13 +120,13 @@
     </div>
     {#if monitorData != undefined}
       {#if showTrackNew || Object.keys(monitorData).length == 0}
-        <TrackNew {apiKey} {showTrackNew} />
+        <TrackNew {userID} {showTrackNew} />
       {/if}
       {#each Object.keys(monitorData) as url}
         <Card
           {url}
           bind:data={monitorData}
-          {apiKey}
+          {userID}
           {period}
           bind:anyError={error}
         />

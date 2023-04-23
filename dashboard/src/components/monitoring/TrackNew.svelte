@@ -11,9 +11,9 @@
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            api_key: apiKey,
+            user_id: userID,
             url: url,
-            ping: pingType == "simple-ping",
+            ping: pingType === "simple-ping",
             secure: false,
           }),
         }
@@ -34,7 +34,7 @@
   let url: string;
   let pingType = "simple-ping";
 
-  export let apiKey: string, showTrackNew: boolean;
+  export let userID: string, showTrackNew: boolean;
 </script>
 
 <div class="card">
