@@ -11,7 +11,7 @@
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            userID: userID,
+            user_id: userID,
             url: url,
             ping: pingType === "simple-ping",
             secure: false,

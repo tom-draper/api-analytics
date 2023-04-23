@@ -284,7 +284,7 @@ func insertUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
 			return
 		} else {
 			// Get API key from user ID
-			query := fmt.Sprintf("SELECT api_key FROM monitor WHERE user_id = %s;", monitor.UserID)
+			query := fmt.Sprintf("SELECT api_key FROM users WHERE user_id = %s;", monitor.UserID)
 			rows, err := db.Query(query)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
@@ -352,7 +352,7 @@ func deleteUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
 			return
 		} else {
 			// Get API key from user ID
-			query := fmt.Sprintf("SELECT api_key FROM monitor WHERE user_id = %s;", body.UserID)
+			query := fmt.Sprintf("SELECT api_key FROM users WHERE user_id = %s;", body.UserID)
 			rows, err := db.Query(query)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
