@@ -1,13 +1,14 @@
-import requests
 import threading
 from datetime import datetime
+from typing import Dict, List
 
+import requests
 
 _requests = []
 _last_posted = datetime.now()
 
 
-def _post_requests(api_key: str, requests_data: list[dict], framework: str):
+def _post_requests(api_key: str, requests_data: List[Dict], framework: str):
     requests.post('https://www.apianalytics-server.com/api/log-request',
                   json={
                       'api_key': api_key,
@@ -16,7 +17,7 @@ def _post_requests(api_key: str, requests_data: list[dict], framework: str):
                   }, timeout=5)
 
 
-def log_request(api_key: str, request_data: dict, framework: str):
+def log_request(api_key: str, request_data: Dict, framework: str):
     if api_key == "" or api_key is None:
         return
     global _requests, _last_posted

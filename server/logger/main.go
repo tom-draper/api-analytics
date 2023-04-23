@@ -10,7 +10,6 @@ import (
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
 
-	"github.com/tom-draper/api-analytics/server/api/routes"
 	"github.com/tom-draper/api-analytics/server/database"
 
 	"github.com/gin-contrib/cors"
@@ -24,8 +23,8 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
 
-	r := app.Group("/api")
-	r.Use(cors.Default())
+	app.Use(cors.Default())
+	
 	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
 		Rate:  time.Second,
 		Limit: 2,
@@ -34,10 +33,9 @@ func main() {
 		ErrorHandler: errorHandler,
 		KeyFunc:      keyFunc,
 	})
-	r.Use(mw)
-	routes.RegisterRouter(r, db)
+	app.Use(mw)
 
-	r.POST("/log-request", logRequestHandler(db))
+	app.POST("/api/log-request", logRequestHandler(db))
 
 	app.Run(":8000")
 }
@@ -150,6 +148,14 @@ func getCountryCode(IPAddress string) (string, error) {
 	return location, nil
 }
 
+func fmtNullableString(value string) string {
+	if value == "" {
+		return "NULL"
+	} else {
+		return fmt.Sprintf("'%s'", value)
+	}
+}
+
 func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 	logRequest := func(c *gin.Context) {
 		// Collect API request data sent via POST request
@@ -169,6 +175,10 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 			var query bytes.Buffer
 			query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES")
 			for i, request := range payload.Requests {
+				if i > 1000 {
+					break
+				}
+
 				location, _ := getCountryCode(request.IPAddress)
 
 				method, err := methodMap(request.Method)
@@ -183,28 +193,35 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 					return
 				}
 
-				row := database.RequestRow{
-					APIKey:       payload.APIKey,
-					Path:         request.Path,
-					Hostname:     request.Hostname,
-					IPAddress:    request.IPAddress,
-					UserAgent:    request.UserAgent,
-					Status:       request.Status,
-					ResponseTime: request.ResponseTime,
-					Method:       method,
-					Framework:    framework,
-					Location:     location,
-					CreatedAt:    request.CreatedAt,
+				userAgent := request.UserAgent
+				if len(userAgent) > 255 {
+					userAgent = userAgent[:255]
 				}
+
+				// Convert to NULL or '<value>' for SQL query
+				fmtHostname := fmtNullableString(request.Hostname)
+				fmtIPAddress := fmtNullableString(request.IPAddress)
+				fmtUserAgent := fmtNullableString(userAgent)
+				fmtLocation := fmtNullableString(location)
 
 				if i > 0 {
 					query.WriteString(",")
 				}
-				if row.IPAddress == "" {
-					query.WriteString(fmt.Sprintf("('%s', '%s', '%s', NULL, '%s', %d, %d, %d, %d, '%s', '%s')", row.APIKey, row.Path, row.Hostname, row.UserAgent, row.Status, row.ResponseTime, row.Method, row.Framework, row.Location, row.CreatedAt))
-				} else {
-					query.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%s', '%s', %d, %d, %d, %d, '%s', '%s')", row.APIKey, row.Path, row.Hostname, row.IPAddress, row.UserAgent, row.Status, row.ResponseTime, row.Method, row.Framework, row.Location, row.CreatedAt))
-				}
+				query.WriteString(
+					fmt.Sprintf("('%s','%s',%s,%s,%s,%d,%d,%d,%d,%s,'%s')",
+						payload.APIKey,
+						request.Path,
+						fmtHostname,
+						fmtIPAddress,
+						fmtUserAgent,
+						request.Status,
+						request.ResponseTime,
+						method,
+						framework,
+						fmtLocation,
+						request.CreatedAt,
+					),
+				)
 			}
 			query.WriteString(";")
 

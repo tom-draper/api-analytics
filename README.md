@@ -1,4 +1,4 @@
-# API Analytics (Undergoing Maintenance) <img src="https://user-images.githubusercontent.com/41476809/210829625-697bba5b-97a8-45fa-91ce-d3c33fcfd0b2.png" align="right" height="140" />
+# API Analytics <img src="https://user-images.githubusercontent.com/41476809/210829625-697bba5b-97a8-45fa-91ce-d3c33fcfd0b2.png" align="right" height="140" />
 
 A free lightweight API analytics solution, complete with a dashboard.
 
@@ -13,7 +13,7 @@ Currently compatible with:
 
 ### 1. Generate an API key
 
-Head to https://apianalytics.dev/generate to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It's also required in order to view your API analytics dashboard.
+Head to https://apianalytics.dev/generate to generate your unique API key with a single click. This key is used to monitor your API server and should be stored privately. It's also required in order to view your API analytics dashboard and data.
 
 ### 2. Add middleware to your API
 
@@ -24,7 +24,7 @@ Add our lightweight middleware to your API. Almost all processing is handled by 
 [![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
 ```bash
-pip install fastapi-analytics
+pip install api-analytics
 ```
 
 ```py
@@ -90,7 +90,7 @@ MIDDLEWARE = [
 [![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
 ```bash
-pip install tornado-analytics
+pip install api-analytics
 ```
 
 Modify your handler to inherit from `Analytics`. Create a `__init__()` method, passing along the application and response along with your unique API key.
@@ -554,10 +554,6 @@ Data collected is only ever used to populate your analytics dashboard. All data 
 At any time, you can delete all stored data associated with your API key by going to https://apianalytics.dev/delete and entering your API key.
 
 API keys and their associated API request data are scheduled be deleted after 1 year of inactivity.
-
-## Development
-
-This project is still in the early stages of development and bugs are to be expected.
 
 ## Contributions
 

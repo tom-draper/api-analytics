@@ -2,7 +2,7 @@
   async function postMonitor() {
     try {
       let response = await fetch(
-        `https://api-analytics-server.vercel.app/api/monitor/add`,
+        `https://www.apianalytics-server.com/api/monitor/add`,
         {
           method: "POST",
           mode: "no-cors",
@@ -18,8 +18,8 @@
           }),
         }
       );
-      if (response[5] != 201) {
-        console.log("Error", response[5]);
+      if (response.status != 201) {
+        console.log("Error", response.status);
       }
       showTrackNew = false;
     } catch (e) {

@@ -9,7 +9,6 @@
     userID = formatUUID(userID);
     try {
       const response = await fetch(
-        // `https://api-analytics-server.vercel.app/api/monitor/pings/${userID}`
         `https://www.apianalytics-server.com/api/monitor/pings/${userID}`
       );
       if (response.status === 200) {
@@ -56,7 +55,8 @@
   };
 
   let error = false;
-  let period = "7d";
+  let periods = ["24h", "7d", "30d", "60d"];
+  let period = periods[1];
   let apiKey: string;
   let data: PingsData[];
   let monitorData: { [url: string]: MonitorSample[] };
@@ -93,54 +93,28 @@
   <div class="cards-container">
     <div class="controls">
       <div class="add-new">
-        <button class="add-new-btn" on:click={toggleShowTrackNew}
+        <button
+          class="add-new-btn"
+          class:active={showTrackNew}
+          on:click={toggleShowTrackNew}
           ><div class="add-new-text">
-            {#if showTrackNew}
-              Close
-            {:else}
-              <span class="plus">+</span> New
-            {/if}
+            <span class="plus">+</span>
           </div>
         </button>
       </div>
       <div class="period-controls-container">
         <div class="period-controls">
-          <button
-            class="period-btn"
-            class:active={period == "24h"}
-            on:click={() => {
-              setPeriod("24h");
-            }}
-          >
-            24h
-          </button>
-          <button
-            class="period-btn"
-            class:active={period == "7d"}
-            on:click={() => {
-              setPeriod("7d");
-            }}
-          >
-            7d
-          </button>
-          <button
-            class="period-btn"
-            class:active={period == "30d"}
-            on:click={() => {
-              setPeriod("30d");
-            }}
-          >
-            30d
-          </button>
-          <button
-            class="period-btn"
-            class:active={period == "60d"}
-            on:click={() => {
-              setPeriod("60d");
-            }}
-          >
-            60d
-          </button>
+          {#each periods as p}
+            <button
+              class="period-btn"
+              class:active={period === p}
+              on:click={() => {
+                setPeriod(p);
+              }}
+            >
+              {p}
+            </button>
+          {/each}
         </div>
       </div>
     </div>
@@ -216,6 +190,9 @@
     border-radius: 4px;
     overflow: hidden;
   }
+  .period-controls-container {
+    margin-top: auto;
+  }
 
   button {
     background: var(--light-background);
@@ -227,18 +204,19 @@
   .add-new-btn {
     border: 1px solid #2e2e2e;
     border-radius: 4px;
+    padding: 0;
+    height: 35px;
+    color: var(--highlight);
+    width: 35px;
   }
   .add-new-text {
     display: flex;
-    min-width: 45px;
+    font-size: 2em;
     justify-content: center;
   }
   .active {
     background: var(--highlight);
-    color: black;
-  }
-  .plus {
-    padding-right: 0.6em;
+    color: black !important;
   }
   .spinner {
     margin: 3em 0 10em;
