@@ -17,7 +17,7 @@
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            api_key: apiKey,
+            user_id: userID,
             url: url,
           }),
         }
@@ -136,7 +136,7 @@
 
   export let url: string,
     data: any,
-    apiKey: string,
+    userID: string,
     period: string,
     anyError: boolean;
 </script>
