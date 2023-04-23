@@ -67,7 +67,7 @@ func getUserIDHandler(db *sql.DB) gin.HandlerFunc {
 }
 
 type PublicRequestRow struct {
-	Hostname     string         `json:"hostname"`
+	Hostname     sql.NullString `json:"hostname"`
 	IPAddress    sql.NullString `json:"ip_address"`
 	Path         string         `json:"path"`
 	UserAgent    sql.NullString `json:"user_agent"`
@@ -143,13 +143,36 @@ func getDataHandler(db *sql.DB) gin.HandlerFunc {
 	return gin.HandlerFunc(getData)
 }
 
-func buildRequestData(rows *sql.Rows) []PublicRequestRow {
-	requests := make([]PublicRequestRow, 0)
+type PublicRequestData struct {
+	Hostname     string    `json:"hostname"`
+	IPAddress    string    `json:"ip_address"`
+	Path         string    `json:"path"`
+	UserAgent    string    `json:"user_agent"`
+	Method       int16     `json:"method"`
+	Status       int16     `json:"status"`
+	ResponseTime int16     `json:"response_time"`
+	Location     string    `json:"location"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+func buildRequestData(rows *sql.Rows) []PublicRequestData {
+	requests := make([]PublicRequestData, 0)
 	for rows.Next() {
 		request := new(PublicRequestRow)
-		err := rows.Scan(&request.Hostname, &request.IPAddress.String, &request.Path, &request.UserAgent.String, &request.Method, &request.ResponseTime, &request.Status, &request.Location.String, &request.CreatedAt)
+		err := rows.Scan(&request.Hostname, &request.IPAddress, &request.Path, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
 		if err == nil {
-			requests = append(requests, *request)
+			r := PublicRequestData{
+				Hostname:     request.Hostname.String,
+				IPAddress:    request.IPAddress.String,
+				Path:         request.Path,
+				UserAgent:    request.UserAgent.String,
+				Method:       request.Method,
+				Status:       request.Status,
+				ResponseTime: request.ResponseTime,
+				Location:     request.Location.String,
+				CreatedAt:    request.CreatedAt,
+			}
+			requests = append(requests, r)
 		}
 	}
 	return requests
