@@ -99,7 +99,7 @@ func uploadPings(pings []database.PingsRow, db *sql.DB) {
 	}
 }
 
-func pingMonitored(monitored []database.MonitorRow, client http.Client, db *sql.DB) {
+func pingMonitored(monitored []database.MonitorRow, client http.Client, db *sql.DB) []database.PingsRow {
 	var pings []database.PingsRow
 	for _, m := range monitored {
 		status, elapsed, err := ping(client, m.URL, m.Secure, m.Ping)
@@ -115,9 +115,7 @@ func pingMonitored(monitored []database.MonitorRow, client http.Client, db *sql.
 		}
 		pings = append(pings, ping)
 	}
-
-	uploadPings(pings, db)
-	deleteOldPings(db)
+	return pings
 }
 
 func getClient() http.Client {
@@ -136,5 +134,7 @@ func main() {
 	monitored := getMonitoredURLs(db)
 
 	client := getClient()
-	pingMonitored(monitored, client, db)
+	pings := pingMonitored(monitored, client, db)
+	uploadPings(pings, db)
+	deleteOldPings(db)
 }
