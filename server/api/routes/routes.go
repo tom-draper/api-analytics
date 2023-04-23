@@ -74,7 +74,7 @@ type PublicRequestRow struct {
 	Method       int16          `json:"method"`
 	Status       int16          `json:"status"`
 	ResponseTime int16          `json:"response_time"`
-	Location     string         `json:"location"`
+	Location     sql.NullString `json:"location"`
 	CreatedAt    time.Time      `json:"created_at"`
 }
 
@@ -107,11 +107,11 @@ func buildRequestDataCompact(rows *sql.Rows, cols []interface{}) [][]interface{}
 	request := new(PublicRequestRow) // Reused to avoid repeated memory allocation
 	for rows.Next() {
 		err := rows.Scan(&request.IPAddress, &request.Path, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
-		if request.Location == "  " {
-			request.Location = ""
+		if request.Location.String == "  " {
+			request.Location.String = ""
 		}
 		if err == nil {
-			requests = append(requests, []interface{}{request.IPAddress.String, request.Path, request.UserAgent.String, request.Method, request.ResponseTime, request.Status, request.Location, request.CreatedAt})
+			requests = append(requests, []interface{}{request.IPAddress.String, request.Path, request.UserAgent.String, request.Method, request.ResponseTime, request.Status, request.Location.String, request.CreatedAt})
 		}
 	}
 	return requests
@@ -147,7 +147,7 @@ func buildRequestData(rows *sql.Rows) []PublicRequestRow {
 	requests := make([]PublicRequestRow, 0)
 	for rows.Next() {
 		request := new(PublicRequestRow)
-		err := rows.Scan(&request.Hostname, &request.IPAddress.String, &request.Path, &request.UserAgent.String, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
+		err := rows.Scan(&request.Hostname, &request.IPAddress.String, &request.Path, &request.UserAgent.String, &request.Method, &request.ResponseTime, &request.Status, &request.Location.String, &request.CreatedAt)
 		if err == nil {
 			requests = append(requests, *request)
 		}
