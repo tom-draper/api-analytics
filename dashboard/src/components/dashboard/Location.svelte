@@ -1,15 +1,15 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  function getFlagEmoji(countryCode) {
+  function getFlagEmoji(countryCode: string) {
     const codePoints = countryCode
       .toUpperCase()
       .split("")
-      .map((char) => 127397 + char.charCodeAt());
+      .map((char) => 127397 + char.charCodeAt(undefined));
     return String.fromCodePoint(...codePoints);
   }
 
-  function countryCodeToName(countryCode) {
+  function countryCodeToName(countryCode: string) {
     let regionNames = new Intl.DisplayNames(["en"], { type: "region" });
     return regionNames.of(countryCode);
   }
@@ -18,6 +18,9 @@
     let max = 0;
     let locationsFreq = {};
     for (let i = 0; i < data.length; i++) {
+      if (data[i][6] === "") {
+        continue;
+      }
       if (!(data[i][6] in locationsFreq)) {
         locationsFreq[data[i][6]] = 1;
       } else {
@@ -56,19 +59,25 @@
 
 <div class="card">
   <div class="card-title">Location</div>
-  <div class="bars">
-    {#each locations as location}
-      <div class="bar-container">
-        <div
-          class="bar"
-          title="{countryCodeToName(location[0])}: {location[1]} requests"
-        >
-          <div class="bar-inner" style="height: {location[2] * 100}%" />
+  {#if locations.length > 0}
+    <div class="bars">
+      {#each locations as location}
+        <div class="bar-container">
+          <div
+            class="bar"
+            title="{countryCodeToName(location[0])}: {location[1]} requests"
+          >
+            <div class="bar-inner" style="height: {location[2] * 100}%" />
+          </div>
+          <div class="label">{getFlagEmoji(location[0])}</div>
         </div>
-        <div class="label">{getFlagEmoji(location[0])}</div>
-      </div>
-    {/each}
-  </div>
+      {/each}
+    </div>
+  {:else}
+    <div class="no-locations">
+      <div class="no-locations-text">No Locations Found</div>
+    </div>
+  {/if}
 </div>
 
 <style scoped>
@@ -77,9 +86,9 @@
     margin: 2em 1em 2em 0;
   }
   .bars {
-    height: 180px;
+    height: 150px;
     display: flex;
-    padding: 2em 2em 1.6em 2em;
+    padding: 1.5em 2em 1em 2em;
   }
 
   .bar-container {
@@ -87,6 +96,16 @@
     margin: 0 5px;
     display: flex;
     flex-direction: column;
+  }
+
+  .no-locations {
+    height: 180px;
+    display: grid;
+    place-items: center;
+  }
+  .no-locations-text {
+    margin-bottom: 25px;
+    color: #707070;
   }
 
   .bar {
@@ -102,7 +121,7 @@
     border-radius: 3px;
   }
   .label {
-    padding-top: 10px;
+    padding-top: 8px;
   }
 
   @media screen and (max-width: 1600px) {
