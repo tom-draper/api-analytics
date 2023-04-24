@@ -204,7 +204,7 @@ func parseRows(file string, table string) ([]Row, error) {
 	return rows, nil
 }
 
-func createUserTable(dbName string) {
+func createUsersTable(dbName string) {
 	db := database.OpenDBConnection()
 	_, err := db.Exec("DROP TABLE IF EXISTS users;")
 	if err != nil {
@@ -256,9 +256,9 @@ func createPingsTable(dbName string) {
 	}
 }
 
-func RestoreUser(dirname string, dbName string) {
+func RestoreUsers(dirname string, dbName string) {
 	rows := readTable(dirname, "users")
-	createUserTable(dbName)
+	createUsersTable(dbName)
 }
 
 func RestoreRequests(dirname string, dbName string) {
@@ -280,7 +280,7 @@ func Restore(dirname string, dbName string) {
 	// Database with dbName assumed already exists
 	unzipBackup(dirname)
 	RestoreRequests(dirname, dbName)
-	RestoreUser(dirname, dbName)
+	RestoreUsers(dirname, dbName)
 	RestoreMonitor(dirname, dbName)
 	RestorePings(dirname, dbName)
 }
