@@ -179,13 +179,13 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 		}
 	}
 
-	if queries.ipAddress {
+	if queries.ipAddress != "" {
 		query.WriteString(fmr.Sprintf(" and ip_address = '%s'", queries.ipAddress))
 	}
-	if queries.location {
+	if queries.location != "" {
 		query.WriteString(fmr.Sprintf(" and location = '%s'", queries.location))
 	}
-	if queries.status {
+	if queries.status != "" {
 		query.WriteString(fmr.Sprintf(" and status = '%s'", queries.status))
 	}
 
