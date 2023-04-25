@@ -404,8 +404,8 @@ type Monitor struct {
 	Ping   bool   `json:"ping"`
 }
 
-func insertUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
-	insertUserMonitor := func(c *gin.Context) {
+func addUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
+	addUserMonitor := func(c *gin.Context) {
 		var monitor Monitor
 		if err := c.BindJSON(&monitor); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request body."})
@@ -444,7 +444,7 @@ func insertUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
 		}
 	}
 
-	return gin.HandlerFunc(insertUserMonitor)
+	return gin.HandlerFunc(addUserMonitor)
 }
 
 func deleteMonitor(apiKey string, url string, c *gin.Context, db *sql.DB) error {
@@ -562,7 +562,7 @@ func RegisterRouter(r *gin.RouterGroup, db *sql.DB) {
 	r.GET("/requests/:userID", getUserRequestsHandler(db))
 	r.GET("/delete/:apiKey", deleteDataHandler(db))
 	r.GET("/monitor/pings/:userID", getUserPingsHandler(db))
-	r.POST("/monitor/add", insertUserMonitorHandler(db))
+	r.POST("/monitor/add", addUserMonitorHandler(db))
 	r.POST("/monitor/delete", deleteUserMonitorHandler(db))
 	r.GET("/data", getDataHandler(db))
 }
