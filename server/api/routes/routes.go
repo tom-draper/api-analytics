@@ -430,6 +430,26 @@ func addUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 				return
 			}
+			
+			// Get monitor count
+			query := fmt.Sprintf("SELECT count(*) FROM monitor WHERE api_key = '%s';", apiKey)
+			rows, err := db.Query(query)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+				return
+			}
+			rows.Next()
+			var count int
+			err = rows.Scan(&count)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+				return
+			}
+			
+			if count > 3 {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Monitor limit reached."})
+				return		
+			}
 
 			// Insert new monitor into database
 			query = fmt.Sprintf("INSERT INTO monitor (api_key, url, secure, ping, created_at) VALUES ('%s', '%s', %t, %t, NOW())", apiKey, monitor.URL, monitor.Secure, monitor.Ping)
