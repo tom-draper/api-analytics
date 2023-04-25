@@ -169,24 +169,24 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 
 	// Providing a single date takes priority over range with dateFrom and dateTo
 	if queries.date != "" {
-		query.WriteString(fmr.Sprintf(" and created_at = '%s'", queries.date))
+		query.WriteString(fmt.Sprintf(" and created_at = '%s'", queries.date))
 	} else {
 		if queries.dateFrom != "" {
-			query.WriteString(fmr.Sprintf(" and created_at >= '%s'", queries.dateFrom))
+			query.WriteString(fmt.Sprintf(" and created_at >= '%s'", queries.dateFrom))
 		}
 		if queries.dateTo != "" {
-			query.WriteString(fmr.Sprintf(" and created_at <= '%s'", queries.dateTo))
+			query.WriteString(fmt.Sprintf(" and created_at <= '%s'", queries.dateTo))
 		}
 	}
 
 	if queries.ipAddress != "" {
-		query.WriteString(fmr.Sprintf(" and ip_address = '%s'", queries.ipAddress))
+		query.WriteString(fmt.Sprintf(" and ip_address = '%s'", queries.ipAddress))
 	}
 	if queries.location != "" {
-		query.WriteString(fmr.Sprintf(" and location = '%s'", queries.location))
+		query.WriteString(fmt.Sprintf(" and location = '%s'", queries.location))
 	}
 	if queries.status != "" {
-		query.WriteString(fmr.Sprintf(" and status = '%s'", queries.status))
+		query.WriteString(fmt.Sprintf(" and status = %s", queries.status))
 	}
 
 	query.WriteString(";")
