@@ -107,7 +107,7 @@
         const json = await response.json();
         data = json;
         console.log(data);
-        setPeriod("month");
+        setPeriod(currentPeriod);
       }
     } catch (e) {
       failed = true;
@@ -121,8 +121,8 @@
     { name: "24-hours", label: "24 hours" },
     { name: "week", label: "Week" },
     { name: "month", label: "Month" },
-    { name: "3-month", label: "3 months" },
-    { name: "6-month", label: "6 months" },
+    { name: "3-months", label: "3 months" },
+    { name: "6-months", label: "6 months" },
     { name: "year", label: "Year" },
     { name: "all-time", label: "All time" },
   ];
@@ -132,7 +132,7 @@
   onMount(() => {
     if (demo) {
       data = genDemoData() as RequestsData;
-      setPeriod("month");
+      setPeriod(currentPeriod);
     } else {
       fetchData();
     }
