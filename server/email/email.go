@@ -49,7 +49,7 @@ func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 	return nil, nil
 }
 
-func SendEmail(subject string, body string, dest string) {
+func SendEmail(subject string, body string, dest string) error {
 	server := "smtp-mail.outlook.com"
 	port := 587
 	address, password := getEmailLogin()
@@ -63,7 +63,5 @@ func SendEmail(subject string, body string, dest string) {
 
 	endpoint := fmt.Sprintf("%s:%d", server, port)
 	err := smtp.SendMail(endpoint, auth, from, to, msg)
-	if err != nil {
-		panic(err)
-	}
+	return err
 }
