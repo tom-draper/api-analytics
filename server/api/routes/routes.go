@@ -117,6 +117,16 @@ func buildRequestDataCompact(rows *sql.Rows, cols []interface{}) [][]interface{}
 	return requests
 }
 
+type DataFetchQueries struct {
+	compact   bool
+	date      time.DateTime
+	dateFrom  time.DateTime
+	dateTo    time.DateTime
+	ipAddress string
+	location  string
+	status int
+}
+
 func getDataHandler(db *sql.DB) gin.HandlerFunc {
 	getData := func(c *gin.Context) {
 		apiKey := c.GetHeader("X-AUTH-TOKEN")
@@ -125,22 +135,122 @@ func getDataHandler(db *sql.DB) gin.HandlerFunc {
 			apiKey = c.GetHeader("API-Key")
 		}
 
-		// Fetch all API request data associated with this account
-		query := fmt.Sprintf("SELECT hostname, ip_address, path, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s';", apiKey)
-		rows, err := db.Query(query)
-		if err != nil {
+		// Get any queries from url
+		queries := getQueriesFromRequest()
+
+		if apiKey != "" {
+			// Fetch all API request data associated with this account
+			query := buildDataFetchQuery(apiKey, queries)
+			rows, err := db.Query(query)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
+				return
+			}
+
+			// Read data into list of objects to return
+			if queries.compact {
+				requests := buildRequestDataCompact(rows)
+				c.JSON(http.StatusOk, requests)
+			} else {
+				requests := buildRequestData(rows)
+				c.JSON(http.StatusOK, requests)
+			}
+		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
-			return
 		}
-
-		// Read data into list of objects to return
-		requests := buildRequestData(rows)
-
-		// Return API request data
-		c.JSON(http.StatusOK, requests)
 	}
 
 	return gin.HandlerFunc(getData)
+}
+
+func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
+	var query bytes.Buffer
+	query.WriteString(fmt.Sprintf("SELECT hostname, ip_address, path, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s'", apiKey))
+
+	// Providing a single date takes priority over range with dateFrom and dateTo
+	if queries.date != "" {
+		query.WriteString(fmt.Sprintf(" and created_at = '%s'", queries.date))
+	} else {
+		if queries.dateFrom != "" {
+			query.WriteString(fmt.Sprintf(" and created_at >= '%s'", queries.dateFrom))
+		}
+		if queries.dateTo != "" {
+			query.WriteString(fmt.Sprintf(" and created_at <= '%s'", queries.dateTo))
+		}
+	}
+
+	if queries.ipAddress != "" {
+		query.WriteString(fmt.Sprintf(" and ip_address = '%s'", queries.ipAddress))
+	}
+	if queries.location != "" {
+		query.WriteString(fmt.Sprintf(" and location = '%s'", queries.location))
+	}
+	if queries.status != "" {
+		query.WriteString(fmt.Sprintf(" and status = %s", queries.status))
+	}
+
+	query.WriteString(";")
+	return query.String()
+}
+
+func getQueriesFromRequest(c *gin.Context) {
+	compactQuery := c.Query("compact")
+	dateQuery := c.Query("date")
+	dateFromQuery := c.Query("dateFrom")
+	dateToQuery := c.Query("dateTo")
+	ipAddressQuery := c.Query("ip")
+	locationQuery := c.Query("location")
+	statusQuery := c.Query("status")
+
+	date := parseQueryDate(dateQuery)
+	dateFrom := parseQueryDate(dateFromQuery)
+	dateTo := parseQueryDate(dateToQuery)
+	status, err := strconv.Atoi(statusQuery)
+	if err != nil {
+		status = 0
+	}
+
+	queries := DataFetchQueries{
+		compactQuery == "true",
+		date,
+		dateFrom,
+		dateTo,
+		ipAddressQuery,
+		locationQuery,
+		status,
+	}
+}
+
+func parseQueryDate(date string) string {
+	if date == "" {
+		return date
+	}
+
+	// Try parse date
+	d, err := time.Parse("2006-01-02", date)
+	if err == nil {
+		return d
+	}
+	return ""
+}
+
+func parseQueryDateTime(date string) string {
+	if date == "" {
+		return date
+	}
+
+	// Try parse date time
+	d, err := time.Parse("2006-01-02 15:04:05", date)
+	if err == nil {
+		return d
+	}
+
+	// Try parse date
+	d, err := time.Parse("2006-01-02", date)
+	if err == nil {
+		return d
+	}
+	return ""
 }
 
 type PublicRequestData struct {
@@ -294,8 +404,8 @@ type Monitor struct {
 	Ping   bool   `json:"ping"`
 }
 
-func insertUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
-	insertUserMonitor := func(c *gin.Context) {
+func addUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
+	addUserMonitor := func(c *gin.Context) {
 		var monitor Monitor
 		if err := c.BindJSON(&monitor); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request body."})
@@ -320,6 +430,26 @@ func insertUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 				return
 			}
+			
+			// Get monitor count
+			query := fmt.Sprintf("SELECT count(*) FROM monitor WHERE api_key = '%s';", apiKey)
+			rows, err := db.Query(query)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+				return
+			}
+			rows.Next()
+			var count int
+			err = rows.Scan(&count)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+				return
+			}
+			
+			if count > 3 {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Monitor limit reached."})
+				return		
+			}
 
 			// Insert new monitor into database
 			query = fmt.Sprintf("INSERT INTO monitor (api_key, url, secure, ping, created_at) VALUES ('%s', '%s', %t, %t, NOW())", apiKey, monitor.URL, monitor.Secure, monitor.Ping)
@@ -334,7 +464,7 @@ func insertUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
 		}
 	}
 
-	return gin.HandlerFunc(insertUserMonitor)
+	return gin.HandlerFunc(addUserMonitor)
 }
 
 func deleteMonitor(apiKey string, url string, c *gin.Context, db *sql.DB) error {
@@ -452,7 +582,7 @@ func RegisterRouter(r *gin.RouterGroup, db *sql.DB) {
 	r.GET("/requests/:userID", getUserRequestsHandler(db))
 	r.GET("/delete/:apiKey", deleteDataHandler(db))
 	r.GET("/monitor/pings/:userID", getUserPingsHandler(db))
-	r.POST("/monitor/add", insertUserMonitorHandler(db))
+	r.POST("/monitor/add", addUserMonitorHandler(db))
 	r.POST("/monitor/delete", deleteUserMonitorHandler(db))
 	r.GET("/data", getDataHandler(db))
 }
