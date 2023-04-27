@@ -1,5 +1,6 @@
 
 function getDemoStatus(date: Date, status: number): number {
+    // Add down period
     let start = new Date();
     start.setDate(start.getDate() - 100);
     let end = new Date();
@@ -9,6 +10,20 @@ function getDemoStatus(date: Date, status: number): number {
         return 400;
     } else {
         return status;
+    }
+}
+
+function getDemoResponseTime(date: Date, responseTime: number): number {
+    // Add down period
+    let start = new Date();
+    start.setDate(start.getDate() - 100);
+    let end = new Date();
+    end.setDate(end.getDate() - 96);
+
+    if (date > start && date < end) {
+        return Math.floor(Math.random() * 400 + 200)
+    } else {
+        return responseTime
     }
 }
 
@@ -26,14 +41,16 @@ function getDemoUserAgent(): string {
         return "PostmanRuntime/7.26.5";
     } else if (p < 0.4) {
         return "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36 OPR/38.0.2220.41";
-    } else if (p < 0.4) {
+    } else if (p < 0.42) {
         return "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0";
+    } else if (p < 0.58) {
+        return "python-requests/2.26.0";
     } else {
         return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36";
     }
 }
 
-function randomChoice(p: number[]): number {
+function randomChoice(p: any[]): number {
     let rnd = p.reduce((a, b) => a + b) * Math.random();
     return p.findIndex((a) => (rnd -= a) < 0);
 }
@@ -57,85 +74,103 @@ function getHour(): number {
     return randomChoices(p, 1)[0];
 }
 
+function getLocation(): string {
+    return ["GB", "US", "MX", "CA", "FR", "AU", "ID", "IE", "DE", "PL"][randomChoice([0.56, 1, 0.18, 0.2, 0.4, 0.3, 0.1, 0.05, 0.2, 0.06])] as string
+}
+
 function addDemoSamples(
     demoData: RequestsData,
     endpoint: string,
     status: number,
     count: number,
-    maxDaysAgo: number,
-    minDaysAgo: number,
-    maxResponseTime: number,
-    minResponseTime: number,
-    minUser: number,
-    maxUser: number,
+    daysAgo: [number, number],
+    responseTime: [number, number],
+    user: [number, number],
 ) {
     for (let i = 0; i < count; i++) {
         let date = new Date();
         date.setDate(
-            date.getDate() - Math.floor(Math.random() * maxDaysAgo + minDaysAgo)
+            date.getDate() - Math.floor(Math.random() * daysAgo[1] + daysAgo[0])
         );
-        date.setMinutes(Math.floor(Math.random() * 60))
-        date.setHours(getHour());
-        demoData.push(
-            [Math.floor(Math.random() * maxUser + minUser).toString(), endpoint, getDemoUserAgent(), 0, Math.floor(
-                Math.random() * maxResponseTime + minResponseTime
-            ), getDemoStatus(date, status), "GB", date.toISOString()]
-        );
+        date.setHours(getHour(), Math.floor(Math.random() * 60));
+        demoData.push([
+            Math.floor(Math.random() * user[1] + user[0]).toString(),
+            endpoint,
+            getDemoUserAgent(),
+            0,
+            getDemoResponseTime(date, Math.floor(Math.random() * responseTime[1] + responseTime[0])),
+            getDemoStatus(date, status),
+            getLocation(),
+            date.toISOString()
+        ]);
     }
-}
-
-type DemoRequest = {
-    hostname: string,
-    path: string,
-    ip_address: string,
-    user_agent: string,
-    method: number,
-    status: number,
-    response_time: number,
-    created_at: string
 }
 
 export default function genDemoData(): RequestsData {
     let demoData: RequestsData = [];
 
-    addDemoSamples(demoData, "/v1/", 200, 18000, 650, 0, 240, 55, 0, 3956);
-    addDemoSamples(demoData, "/v1/", 400, 1000, 650, 0, 240, 55, 0, 2041);
-    addDemoSamples(demoData, "/v1/account", 200, 8000, 650, 0, 240, 55, 0, 1854);
-    addDemoSamples(demoData, "/v1/account", 400, 1200, 650, 0, 240, 55, 0, 1654);
-    addDemoSamples(demoData, "/v1/help", 200, 700, 650, 0, 240, 55, 0, 1654);
-    addDemoSamples(demoData, "/v1/help", 400, 70, 650, 0, 240, 55, 0, 1654);
-    addDemoSamples(demoData, "/v2/", 200, 35000, 650, 0, 240, 55, 0, 1654);
-    addDemoSamples(demoData, "/v2/", 400, 200, 650, 0, 240, 55, 0, 1654);
-    addDemoSamples(demoData, "/v2/account", 200, 14000, 650, 0, 240, 55, 0, 1654);
-    addDemoSamples(demoData, "/v2/account", 400, 3000, 650, 0, 240, 55, 0, 1654);
-    addDemoSamples(demoData, "/v2/account/update", 200, 6000, 650, 0, 240, 55, 0, 1654);
-    addDemoSamples(demoData, "/v2/account/update", 400, 400, 650, 0, 240, 55, 0, 1654);
-    addDemoSamples(demoData, "/v2/help", 200, 6000, 650, 0, 240, 55, 0, 1654);
-    addDemoSamples(demoData, "/v2/help", 400, 400, 650, 0, 240, 55, 0, 1654);
+    addDemoSamples(demoData, "/v1/", 200, 18000, [0, 650], [55, 240], [0, 3956]);
+    addDemoSamples(demoData, "/v1/", 400, 1000, [0, 650], [55, 240], [0, 2041]);
+    addDemoSamples(demoData, "/v1/account", 200, 8000, [0, 650], [55, 240], [0, 1854]);
+    addDemoSamples(demoData, "/v1/account", 400, 1200, [0, 650], [55, 240], [0, 1654]);
+    addDemoSamples(demoData, "/v1/help", 200, 700, [0, 650], [55, 240], [0, 1654]);
+    addDemoSamples(demoData, "/v1/help", 400, 70, [0, 650], [55, 240], [0, 1654]);
+    addDemoSamples(demoData, "/v2/", 200, 35000, [0, 650], [55, 240], [0, 1654]);
+    addDemoSamples(demoData, "/v2/", 400, 200, [0, 650], [55, 240], [0, 1654]);
+    addDemoSamples(demoData, "/v2/account", 200, 14000, [0, 650], [55, 240], [0, 1654]);
+    addDemoSamples(demoData, "/v2/account", 400, 3000, [0, 650], [55, 240], [0, 1654]);
+    addDemoSamples(demoData, "/v2/account/update", 200, 6000, [0, 650], [55, 240], [0, 1654]);
+    addDemoSamples(demoData, "/v2/account/update", 400, 400, [0, 650], [55, 240], [0, 1654]);
+    addDemoSamples(demoData, "/v2/help", 200, 6000, [0, 650], [55, 240], [0, 1654]);
+    addDemoSamples(demoData, "/v2/help", 400, 400, [0, 650], [55, 240], [0, 1654]);
 
-    addDemoSamples(demoData, "/v2/account", 200, 16000, 450, 0, 100, 30, 0, 1654);
-    addDemoSamples(demoData, "/v2/account", 400, 2000, 450, 0, 100, 30, 0, 1654);
+    addDemoSamples(demoData, "/v2/account", 200, 16000, [0, 450], [30, 100], [0, 1654]);
+    addDemoSamples(demoData, "/v2/account", 400, 2000, [0, 450], [300, 1000], [0, 1654]);
 
-    addDemoSamples(demoData, "/v2/help", 200, 8000, 300, 0, 100, 30, 0, 1654);
-    addDemoSamples(demoData, "/v2/help", 400, 800, 300, 0, 100, 30, 0, 1654);
+    addDemoSamples(demoData, "/v2/help", 200, 8000, [0, 300], [30, 100], [0, 1654]);
+    addDemoSamples(demoData, "/v2/help", 400, 800, [0, 300], [30, 100], [0, 1654]);
 
-    addDemoSamples(demoData, "/v2/", 200, 4000, 200, 0, 100, 30, 0, 1654);
-    addDemoSamples(demoData, "/v2/", 400, 800, 200, 0, 100, 30, 0, 1654);
+    addDemoSamples(demoData, "/v2/", 200, 4000, [0, 200], [30, 100], [0, 1654]);
+    addDemoSamples(demoData, "/v2/", 400, 800, [0, 200], [30, 100], [0, 1654]);
 
-    addDemoSamples(demoData, "/v2/", 200, 3000, 100, 0, 100, 30, 0, 1654);
-    addDemoSamples(demoData, "/v2/", 400, 500, 100, 0, 100, 30, 0, 1654);
+    addDemoSamples(demoData, "/v2/", 200, 3000, [0, 100], [30, 100], [0, 1654]);
+    addDemoSamples(demoData, "/v2/", 400, 500, [0, 100], [30, 100], [0, 1654]);
 
-    addDemoSamples(demoData, "/v2/", 200, 1000, 60, 0, 100, 30, 0, 1654);
-    addDemoSamples(demoData, "/v2/", 400, 50, 60, 0, 100, 30, 0, 1654);
+    addDemoSamples(demoData, "/v2/", 200, 1000, [0, 60], [30, 100], [0, 1654]);
+    addDemoSamples(demoData, "/v2/", 400, 50, [0, 60], [30, 100], [0, 1654]);
 
-    addDemoSamples(demoData, "/v2/", 200, 500, 40, 0, 100, 30, 0, 1654);
-    addDemoSamples(demoData, "/v2/", 400, 25, 40, 0, 100, 30, 0, 1654);
+    addDemoSamples(demoData, "/v2/", 200, 500, [0, 40], [30, 100], [0, 1654]);
+    addDemoSamples(demoData, "/v2/", 400, 25, [0, 40], [30, 100], [0, 1654]);
 
-    addDemoSamples(demoData, "/v2/", 200, 250, 10, 0, 100, 30, 0, 1654);
-    addDemoSamples(demoData, "/v2/", 400, 20, 10, 0, 100, 30, 0, 1654);
+    addDemoSamples(demoData, "/v2/", 200, 250, [0, 10], [30, 100], [0, 1654]);
+    addDemoSamples(demoData, "/v2/", 400, 20, [0, 10], [30, 100], [0, 1654]);
 
-    addDemoSamples(demoData, "/v2/", 200, 125, 5, 0, 100, 30, 0, 1654);
-    addDemoSamples(demoData, "/v2/", 400, 10, 5, 0, 100, 30, 0, 1654);
+    addDemoSamples(demoData, "/v2/", 200, 125, [0, 5], [30, 100], [0, 1654]);
+    addDemoSamples(demoData, "/v2/", 400, 10, [0, 5], [30, 100], [0, 1654]);
 
+
+    addDemoSamples(demoData, "/v2/", 200, 7000, [0, 70], [100, 200], [0, 2054]);
+    addDemoSamples(demoData, "/v2/help", 400, 800, [0, 70], [100, 400], [0, 2054]);
+
+    addDemoSamples(demoData, "/v2/account", 200, 1000, [0, 24], [100, 200], [0, 2054]);
+    addDemoSamples(demoData, "/v1/", 400, 80, [0, 24], [100, 400], [0, 2054]);
+
+    addDemoSamples(demoData, "/v2/account", 200, 300, [122, 14], [100, 300], [0, 1654]);
+    addDemoSamples(demoData, "/v2/account", 400, 800, [122, 14], [100, 300], [0, 1654]);
+
+    addDemoSamples(demoData, "/v2/account", 200, 300, [130, 8], [100, 300], [0, 1654]);
+    addDemoSamples(demoData, "/v2/account", 400, 800, [130, 8], [100, 300], [0, 1654]);
+
+    addDemoSamples(demoData, "/v2/account", 200, 200, [135, 5], [100, 300], [0, 1654]);
+    addDemoSamples(demoData, "/v2/account", 400, 700, [135, 5], [100, 300], [0, 1654]);
+
+    addDemoSamples(demoData, "/v2/account", 200, 200, [138, 2], [100, 300], [0, 1654]);
+    addDemoSamples(demoData, "/v2/account", 400, 700, [138, 2], [100, 300], [0, 1654]);
+
+    addDemoSamples(demoData, "/v2/account", 200, 150, [139, 1], [200, 1000], [0, 1654]);
+    addDemoSamples(demoData, "/v2/account", 400, 150, [139, 1], [200, 1000], [0, 1654]);
+
+    addDemoSamples(demoData, "/v2/account", 200, 8000, [0, 140], [200, 300], [0, 1654]);
+    addDemoSamples(demoData, "/v2/account", 400, 800, [0, 140], [200, 300], [0, 1654]);
     return demoData
 }
