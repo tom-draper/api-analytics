@@ -6,6 +6,9 @@ import (
 )
 
 func main() {
-	monitors, err := usage.DailyMonitors()
-	fmt.Println(monitors)
+	size, err := usage.DatabaseSize()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(size)
 }

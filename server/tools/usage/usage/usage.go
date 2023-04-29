@@ -132,7 +132,7 @@ func MonthlyMonitors() ([]UserCount, error) {
 func Monitors(days int) ([]UserCount, error) {
 	db := database.OpenDBConnection()
 
-	query := fmt.Sprintf("SELECT api_key, COUNT(*) AS count FROM monitors where created_at >= NOW() - interval '%d day' GROUP BY api_key ORDER BY count DESC;", days)
+	query := fmt.Sprintf("SELECT api_key, COUNT(*) AS count FROM monitor where created_at >= NOW() - interval '%d day' GROUP BY api_key ORDER BY count DESC;", days)
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -150,16 +150,16 @@ func Monitors(days int) ([]UserCount, error) {
 	return monitors, nil
 }
 
-func DatabaseSize() (int, error) {
+func DatabaseSize() (string, error) {
 	db := database.OpenDBConnection()
 
-	query := fmt.Sprintf("SELECT pg_size_pretty(pg_total_relation_size('requests'));")
+	query := "SELECT pg_size_pretty(pg_total_relation_size('requests'));"
 	rows, err := db.Query(query)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 
-	var size int
+	var size string
 	rows.Next()
 	err = rows.Scan(&size)
 	return size, err

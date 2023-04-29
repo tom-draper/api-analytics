@@ -5,14 +5,21 @@ import (
 )
 
 func TestUsage(t *testing.T) {
-	requests, err := Usage()
+	requests, err := WeeklyUsage()
 	if err != nil {
 		t.Error(err)
 	}
 }
 
 func TestUsers(t *testing.T) {
-	users, err := Users()
+	users, err := WeeklyUsers()
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestMonitors(t *testing.T) {
+	monitors, err := WeeklyMonitors()
 	if err != nil {
 		t.Error(err)
 	}
@@ -27,6 +34,13 @@ func TestTopUsers(t *testing.T) {
 
 func TestTotalRequests(t *testing.T) {
 	requests, err := TotalRequests()
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestDatabaseSize(t *testing.T) {
+	size, err := DatabaseSize()
 	if err != nil {
 		t.Error(err)
 	}
