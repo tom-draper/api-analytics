@@ -1,4 +1,4 @@
-package values
+package usage
 
 import (
 	"testing"

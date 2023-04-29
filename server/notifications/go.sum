@@ -10,3 +10,5 @@ github.com/tom-draper/api-analytics/server/email v0.0.0-20230429160428-7d0902745
 github.com/tom-draper/api-analytics/server/email v0.0.0-20230429160428-7d0902745ca6/go.mod h1:OVOiclokr+iG+hkzATj1uEwuvvK0DggdVz5sYMYix2U=
 github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230429160428-7d0902745ca6 h1:vtTpIJdlmAxxeIjaEWnU1/CR8QjZIRM0Kt7zGCnYTTM=
 github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230429160428-7d0902745ca6/go.mod h1:TdpNH0FHzbX/aaCA9T0EXQ4+lp6MugGwXeA449wE2Ro=
+github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230429161730-0959e286fc9b h1:ZilgL56s+028CB/fUeMl4X2D7EUFcgavNSvNUU32vgw=
+github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230429161730-0959e286fc9b/go.mod h1:TdpNH0FHzbX/aaCA9T0EXQ4+lp6MugGwXeA449wE2Ro=
