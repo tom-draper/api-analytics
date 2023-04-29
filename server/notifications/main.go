@@ -5,7 +5,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/tom-draper/api-analytics/server/database"
 	"github.com/tom-draper/api-analytics/server/email"
-	"github.com/tom-draper/api-analytics/server/tools/usage"
+	"github.com/tom-draper/api-analytics/server/tools/usage/usage"
 	"os"
 )
 

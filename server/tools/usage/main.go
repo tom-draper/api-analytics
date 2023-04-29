@@ -6,6 +6,6 @@ import (
 )
 
 func main() {
-	monitors := usage.Monitors()
+	monitors, err := usage.DailyMonitors()
 	fmt.Println(monitors)
 }
