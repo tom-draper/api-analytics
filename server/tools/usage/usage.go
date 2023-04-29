@@ -149,3 +149,18 @@ func Monitors(days int) ([]UserCount, error) {
 
 	return monitors, nil
 }
+
+func DatabaseSize() (int, error) {
+	db := database.OpenDBConnection()
+
+	query := fmt.Sprintf("SELECT pg_size_pretty(pg_total_relation_size('requests'));")
+	rows, err := db.Query(query)
+	if err != nil {
+		return 0, err
+	}
+
+	var size int
+	rows.Next()
+	err = rows.Scan(&size)
+	return size, err
+}
