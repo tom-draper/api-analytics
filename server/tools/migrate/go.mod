@@ -1,4 +1,4 @@
-module migrate
+module github.com/tom-draper/api-analytics/server/tools/migrate
 
 go 1.20
 

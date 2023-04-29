@@ -6,23 +6,23 @@ import (
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
-func TotalRequests() {
+func TotalRequests() (int, error) {
 	db := database.OpenDBConnection()
 
 	query := "SELECT COUNT(*) AS count FROM requests;"
 	rows, err := db.Query(query)
 	if err != nil {
-		panic(err)
+		return 0, err
 	}
 
 	var count int
 	rows.Next()
 	err = rows.Scan(&count)
 	if err != nil {
-		panic(err)
+		return 0, err
 	}
 
-	fmt.Println(count)
+	return count, nil
 }
 
 type UserRequestCount struct {
@@ -30,13 +30,13 @@ type UserRequestCount struct {
 	Count  string
 }
 
-func TopUsers() {
+func TopUsers() ([]UserRequestCount, error) {
 	db := database.OpenDBConnection()
 
 	query := "SELECT api_key, COUNT(*) AS count FROM requests GROUP BY api_key ORDER BY count DESC;"
 	rows, err := db.Query(query)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	var requests []UserRequestCount
@@ -48,16 +48,28 @@ func TopUsers() {
 		}
 	}
 
-	fmt.Println(requests)
+	return requests, nil
 }
 
-func NewUsers() {
+func DailyUsers() ([]database.UserRow, error) {
+	return Users(1)
+}
+
+func WeeklyUsers() ([]database.UserRow, error) {
+	return Users(7)
+}
+
+func MonthlyUsers() ([]database.UserRow, error) {
+	return Users(30)
+}
+
+func Users(days int) ([]database.UserRow, error) {
 	db := database.OpenDBConnection()
 
-	query := "SELECT * FROM users WHERE created_at >= NOW() - interval '7 days';"
+	query := fmt.Sprintf("SELECT * FROM users WHERE created_at >= NOW() - interval '%d day';")
 	rows, err := db.Query(query)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	var users []database.UserRow
@@ -69,28 +81,28 @@ func NewUsers() {
 		}
 	}
 
-	fmt.Println(users)
+	return users, nil
 }
 
-func DailyUsage() {
-	Usage(1)
+func DailyUsage() ([]UserRequestCount, error) {
+	return Usage(1)
 }
 
-func WeeklyUsage() {
-	Usage(7)
+func WeeklyUsage() ([]UserRequestCount, error) {
+	return Usage(7)
 }
 
-func MonthlyUsage() {
-	Usage(30)
+func MonthlyUsage() ([]UserRequestCount, error) {
+	return Usage(30)
 }
 
-func Usage(days int) {
+func Usage(days int) ([]UserRequestCount, error) {
 	db := database.OpenDBConnection()
 
 	query := fmt.Sprintf("SELECT api_key, COUNT(*) AS count FROM requests where created_at >= NOW() - interval '%d day' GROUP BY api_key ORDER BY count DESC;", days)
 	rows, err := db.Query(query)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	var requests []UserRequestCount
@@ -102,5 +114,5 @@ func Usage(days int) {
 		}
 	}
 
-	fmt.Println(requests)
+	return requests, nil
 }

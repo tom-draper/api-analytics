@@ -1,54 +1,53 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
-type UserAgentCount struct {
-	UserAgent string
-	Count     string
+type StringCount struct {
+	Value string
+	Count string
 }
 
-func UserAgents() {
+func UserAgents() ([]StringCount, error) {
 	db := database.OpenDBConnection()
 
 	query := "SELECT user_agent, COUNT(*) AS count FROM requests GROUP BY user_agent ORDER BY count DESC;"
 	rows, err := db.Query(query)
 	if err != nil {
+		return nil, err
 		panic(err)
 	}
 
-	var userAgents []UserAgentCount
+	var userAgents []StringCount
 	for rows.Next() {
-		var userAgent UserAgentCount
-		err := rows.Scan(&userAgent.UserAgent, &userAgent.Count)
+		var userAgent StringCount
+		err := rows.Scan(&userAgent.Value, &userAgent.Count)
 		if err == nil {
 			userAgents = append(userAgents, userAgent)
 		}
 	}
 
-	fmt.Println(userAgents)
+	return userAgents, nil
 }
 
-func IPAddresses() {
+func IPAddresses() ([]StringCount, error) {
 	db := database.OpenDBConnection()
 
 	query := "SELECT ip_address, COUNT(*) AS count FROM requests GROUP BY ip_address ORDER BY count DESC;"
 	rows, err := db.Query(query)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	var userAgents []UserAgentCount
+	var ipAddresses []StringCount
 	for rows.Next() {
-		var userAgent UserAgentCount
-		err := rows.Scan(&userAgent.UserAgent, &userAgent.Count)
+		var ipAddress StringCount
+		err := rows.Scan(&ipAddress.Value, &ipAddress.Count)
 		if err == nil {
-			userAgents = append(userAgents, userAgent)
+			ipAddresses = append(ipAddresses, ipAddress)
 		}
 	}
 
-	fmt.Println(userAgents)
+	return ipAddresses, nil
 }
