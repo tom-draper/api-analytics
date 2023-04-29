@@ -17,3 +17,17 @@ func TestIPAddresses(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestLocations(t *testing.T) {
+	locations, err := Locations()
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestAvgResponseTime(t *testing.T) {
+	avg, err := AvgResponseTime()
+	if err != nil {
+		t.Error(err)
+	}
+}

@@ -24,6 +24,7 @@ func TestTopUsers(t *testing.T) {
 		t.Error(err)
 	}
 }
+
 func TestTotalRequests(t *testing.T) {
 	requests, err := TotalRequests()
 	if err != nil {

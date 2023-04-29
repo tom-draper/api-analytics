@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
@@ -9,45 +10,54 @@ type StringCount struct {
 	Count string
 }
 
-func UserAgents() ([]StringCount, error) {
+func columnStringValuesCount(column string) ([]StringCount, error) {
 	db := database.OpenDBConnection()
 
-	query := "SELECT user_agent, COUNT(*) AS count FROM requests GROUP BY user_agent ORDER BY count DESC;"
+	query := fmt.Sprintf("SELECT %s, COUNT(*) AS count FROM requests GROUP BY user_agent ORDER BY count DESC;", column)
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
-		panic(err)
 	}
 
-	var userAgents []StringCount
+	var count []StringCount
 	for rows.Next() {
 		var userAgent StringCount
 		err := rows.Scan(&userAgent.Value, &userAgent.Count)
 		if err == nil {
-			userAgents = append(userAgents, userAgent)
+			count = append(count, userAgent)
 		}
 	}
 
-	return userAgents, nil
+	return count, nil
+}
+
+func UserAgents() ([]StringCount, error) {
+	return columnStringValuesCount("user_agent")
 }
 
 func IPAddresses() ([]StringCount, error) {
+	return columnStringValuesCount("ip_address")
+}
+
+func Locations() ([]StringCount, error) {
+	return columnStringValuesCount("location")
+}
+
+func AvgResponseTime() (float64, error) {
 	db := database.OpenDBConnection()
 
-	query := "SELECT ip_address, COUNT(*) AS count FROM requests GROUP BY ip_address ORDER BY count DESC;"
+	query := "SELECT AVG(response_time) FROM requests;"
 	rows, err := db.Query(query)
 	if err != nil {
-		return nil, err
+		return 0.0, err
 	}
 
-	var ipAddresses []StringCount
-	for rows.Next() {
-		var ipAddress StringCount
-		err := rows.Scan(&ipAddress.Value, &ipAddress.Count)
-		if err == nil {
-			ipAddresses = append(ipAddresses, ipAddress)
-		}
+	var avg float64
+	rows.Next()
+	err = rows.Scan(&avg)
+	if err != nil {
+		return 0.0, err
 	}
 
-	return ipAddresses, nil
+	return avg, nil
 }
