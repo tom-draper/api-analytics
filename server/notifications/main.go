@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/tom-draper/api-analytics/server/database"
-	"github.com/tom-draper/api-analytics/server/emails"
+	"github.com/tom-draper/api-analytics/server/email"
 	"github.com/tom-draper/api-analytics/server/tools/usage"
 	"os"
 )
@@ -33,5 +33,6 @@ func main() {
 		panic(err)
 	}
 	body := emailBody(users, usage)
-	SendEmail("API Analytics", body, "")
+	address := getEmailAddress()
+	SendEmail("API Analytics", body, address)
 }
