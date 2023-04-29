@@ -81,12 +81,6 @@
     }
   }
 
-  function setEndpointLabels() {
-    for (let i = 0; i < endpoints.length; i++) {
-      setEndpointLabelVisibility(i);
-    }
-  }
-
   function setBtn(value: string) {
     activeBtn = value;
     build();

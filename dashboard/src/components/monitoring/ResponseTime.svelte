@@ -2,16 +2,16 @@
   import { onMount } from "svelte";
 
   function periodToMarkers(period: string): number {
-    if (period == "24h") {
-      return 24 * 2;
-    } else if (period == "7d") {
-      return 12 * 7;
-    } else if (period == "30d") {
-      return 30 * 4;
-    } else if (period == "60d") {
-      return 60 * 2;
-    } else {
-      return null;
+    switch (period) {
+      case "24h":
+        return 38;
+      case "7d":
+        return 84;
+      case "30d":
+      case "60d":
+        return 120;
+      default:
+        return null;
     }
   }
 
@@ -42,8 +42,8 @@
 
   function bars() {
     let markers = periodToMarkers(period);
-    
-    let dates = Array(markers)
+
+    let dates = Array(markers);
     let requests = Array(markers);
     for (let i = 0; i < markers; i++) {
       let now = new Date();

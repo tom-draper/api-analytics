@@ -2,7 +2,9 @@
   import { onMount } from "svelte";
 
   function getOS(userAgent: string): string {
-    if (userAgent.match(/Win16/)) {
+    if (userAgent == null) {
+      return "Unknown";
+    } else if (userAgent.match(/Win16/)) {
       return "Windows 3.11";
     } else if (userAgent.match(/(Windows 95)|(Win95)|(Windows_95)/)) {
       return "Windows 95";
