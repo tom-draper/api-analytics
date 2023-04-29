@@ -1,9 +1,11 @@
 package routes
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -119,12 +121,12 @@ func buildRequestDataCompact(rows *sql.Rows, cols []interface{}) [][]interface{}
 
 type DataFetchQueries struct {
 	compact   bool
-	date      time.DateTime
-	dateFrom  time.DateTime
-	dateTo    time.DateTime
+	date      time.Time
+	dateFrom  time.Time
+	dateTo    time.Time
 	ipAddress string
 	location  string
-	status int
+	status    int
 }
 
 func getDataHandler(db *sql.DB) gin.HandlerFunc {
@@ -136,7 +138,7 @@ func getDataHandler(db *sql.DB) gin.HandlerFunc {
 		}
 
 		// Get any queries from url
-		queries := getQueriesFromRequest()
+		queries := getQueriesFromRequest(c)
 
 		if apiKey != "" {
 			// Fetch all API request data associated with this account
@@ -149,8 +151,9 @@ func getDataHandler(db *sql.DB) gin.HandlerFunc {
 
 			// Read data into list of objects to return
 			if queries.compact {
-				requests := buildRequestDataCompact(rows)
-				c.JSON(http.StatusOk, requests)
+				cols := []interface{}{"hostname", "ip_address", "path", "user_agent", "method", "response_time", "status", "location", "created_at"}
+				requests := buildRequestDataCompact(rows, cols)
+				c.JSON(http.StatusOK, requests)
 			} else {
 				requests := buildRequestData(rows)
 				c.JSON(http.StatusOK, requests)
@@ -168,13 +171,13 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 	query.WriteString(fmt.Sprintf("SELECT hostname, ip_address, path, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s'", apiKey))
 
 	// Providing a single date takes priority over range with dateFrom and dateTo
-	if queries.date != "" {
+	if queries.date.IsZero() {
 		query.WriteString(fmt.Sprintf(" and created_at = '%s'", queries.date))
 	} else {
-		if queries.dateFrom != "" {
+		if queries.dateFrom.IsZero() {
 			query.WriteString(fmt.Sprintf(" and created_at >= '%s'", queries.dateFrom))
 		}
-		if queries.dateTo != "" {
+		if queries.dateTo.IsZero() {
 			query.WriteString(fmt.Sprintf(" and created_at <= '%s'", queries.dateTo))
 		}
 	}
@@ -185,7 +188,7 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 	if queries.location != "" {
 		query.WriteString(fmt.Sprintf(" and location = '%s'", queries.location))
 	}
-	if queries.status != "" {
+	if queries.status != 0 {
 		query.WriteString(fmt.Sprintf(" and status = %s", queries.status))
 	}
 
@@ -193,7 +196,7 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 	return query.String()
 }
 
-func getQueriesFromRequest(c *gin.Context) {
+func getQueriesFromRequest(c *gin.Context) DataFetchQueries {
 	compactQuery := c.Query("compact")
 	dateQuery := c.Query("date")
 	dateFromQuery := c.Query("dateFrom")
@@ -219,11 +222,12 @@ func getQueriesFromRequest(c *gin.Context) {
 		locationQuery,
 		status,
 	}
+	return queries
 }
 
-func parseQueryDate(date string) string {
+func parseQueryDate(date string) time.Time {
 	if date == "" {
-		return date
+		return time.Time{}
 	}
 
 	// Try parse date
@@ -231,12 +235,12 @@ func parseQueryDate(date string) string {
 	if err == nil {
 		return d
 	}
-	return ""
+	return time.Time{}
 }
 
-func parseQueryDateTime(date string) string {
+func parseQueryDateTime(date string) time.Time {
 	if date == "" {
-		return date
+		return time.Time{}
 	}
 
 	// Try parse date time
@@ -246,11 +250,11 @@ func parseQueryDateTime(date string) string {
 	}
 
 	// Try parse date
-	d, err := time.Parse("2006-01-02", date)
+	d, err = time.Parse("2006-01-02", date)
 	if err == nil {
 		return d
 	}
-	return ""
+	return time.Time{}
 }
 
 type PublicRequestData struct {
@@ -430,10 +434,10 @@ func addUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 				return
 			}
-			
+
 			// Get monitor count
-			query := fmt.Sprintf("SELECT count(*) FROM monitor WHERE api_key = '%s';", apiKey)
-			rows, err := db.Query(query)
+			query = fmt.Sprintf("SELECT count(*) FROM monitor WHERE api_key = '%s';", apiKey)
+			rows, err = db.Query(query)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 				return
@@ -445,10 +449,10 @@ func addUserMonitorHandler(db *sql.DB) gin.HandlerFunc {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 				return
 			}
-			
+
 			if count > 3 {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Monitor limit reached."})
-				return		
+				return
 			}
 
 			// Insert new monitor into database
@@ -586,3 +590,4 @@ func RegisterRouter(r *gin.RouterGroup, db *sql.DB) {
 	r.POST("/monitor/delete", deleteUserMonitorHandler(db))
 	r.GET("/data", getDataHandler(db))
 }
+
