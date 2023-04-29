@@ -19,7 +19,7 @@ func getEmailAddress() string {
 	return address
 }
 
-func emailBody(users []database.UserRow, usage []usage.UserRequestCount) string {
+func emailBody(users []database.UserRow, usage []usage.UserCount) string {
 	return fmt.Sprintf("%d new users\n%d requests", len(users), len(usage))
 }
 
@@ -34,5 +34,6 @@ func main() {
 	}
 	body := emailBody(users, usage)
 	address := getEmailAddress()
-	SendEmail("API Analytics", body, address)
+	println(address)
+	email.SendEmail("API Analytics", body, address)
 }

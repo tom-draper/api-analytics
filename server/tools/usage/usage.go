@@ -25,12 +25,12 @@ func TotalRequests() (int, error) {
 	return count, nil
 }
 
-type UserRequestCount struct {
+type UserCount struct {
 	APIKey string
 	Count  string
 }
 
-func TopUsers() ([]UserRequestCount, error) {
+func TopUsers() ([]UserCount, error) {
 	db := database.OpenDBConnection()
 
 	query := "SELECT api_key, COUNT(*) AS count FROM requests GROUP BY api_key ORDER BY count DESC;"
@@ -39,9 +39,9 @@ func TopUsers() ([]UserRequestCount, error) {
 		return nil, err
 	}
 
-	var requests []UserRequestCount
+	var requests []UserCount
 	for rows.Next() {
-		request := new(UserRequestCount)
+		request := new(UserCount)
 		err := rows.Scan(&request.APIKey, &request.Count)
 		if err == nil {
 			requests = append(requests, *request)
@@ -66,7 +66,7 @@ func MonthlyUsers() ([]database.UserRow, error) {
 func Users(days int) ([]database.UserRow, error) {
 	db := database.OpenDBConnection()
 
-	query := fmt.Sprintf("SELECT * FROM users WHERE created_at >= NOW() - interval '%d day';")
+	query := fmt.Sprintf("SELECT * FROM users WHERE created_at >= NOW() - interval '%d day';", days)
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -84,19 +84,19 @@ func Users(days int) ([]database.UserRow, error) {
 	return users, nil
 }
 
-func DailyUsage() ([]UserRequestCount, error) {
+func DailyUsage() ([]UserCount, error) {
 	return Usage(1)
 }
 
-func WeeklyUsage() ([]UserRequestCount, error) {
+func WeeklyUsage() ([]UserCount, error) {
 	return Usage(7)
 }
 
-func MonthlyUsage() ([]UserRequestCount, error) {
+func MonthlyUsage() ([]UserCount, error) {
 	return Usage(30)
 }
 
-func Usage(days int) ([]UserRequestCount, error) {
+func Usage(days int) ([]UserCount, error) {
 	db := database.OpenDBConnection()
 
 	query := fmt.Sprintf("SELECT api_key, COUNT(*) AS count FROM requests where created_at >= NOW() - interval '%d day' GROUP BY api_key ORDER BY count DESC;", days)
@@ -105,14 +105,47 @@ func Usage(days int) ([]UserRequestCount, error) {
 		return nil, err
 	}
 
-	var requests []UserRequestCount
+	var requests []UserCount
 	for rows.Next() {
-		request := new(UserRequestCount)
-		err := rows.Scan(&request.APIKey, &request.Count)
+		userRequests := new(UserCount)
+		err := rows.Scan(&userRequests.APIKey, &userRequests.Count)
 		if err == nil {
-			requests = append(requests, *request)
+			requests = append(requests, *userRequests)
 		}
 	}
 
 	return requests, nil
+}
+
+func DailyMonitors() ([]UserCount, error) {
+	return Monitors(1)
+}
+
+func WeeklyMonitors() ([]UserCount, error) {
+	return Monitors(7)
+}
+
+func MonthlyMonitors() ([]UserCount, error) {
+	return Monitors(30)
+}
+
+func Monitors(days int) ([]UserCount, error) {
+	db := database.OpenDBConnection()
+
+	query := fmt.Sprintf("SELECT api_key, COUNT(*) AS count FROM monitors where created_at >= NOW() - interval '%d day' GROUP BY api_key ORDER BY count DESC;", days)
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	var monitors []UserCount
+	for rows.Next() {
+		userMonitors := new(UserCount)
+		err := rows.Scan(&userMonitors.APIKey, &userMonitors.Count)
+		if err == nil {
+			monitors = append(monitors, *userMonitors)
+		}
+	}
+
+	return monitors, nil
 }
