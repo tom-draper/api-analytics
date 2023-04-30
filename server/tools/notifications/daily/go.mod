@@ -1,4 +1,4 @@
-module github.com/tom-draper/api-analytics/server/tools/notifications
+module github.com/tom-draper/api-analytics/server/tools/notifications/daily
 
 go 1.20
 

@@ -20,6 +20,16 @@ func getEmailLogin() (string, string) {
 	return address, password
 }
 
+func GetEmailAddress() string {
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic(err)
+	}
+
+	address := os.Getenv("EMAIL_ADDRESS")
+	return address
+}
+
 // Login solution provided by andelf
 // https://gist.github.com/andelf/5118732
 type loginAuth struct {

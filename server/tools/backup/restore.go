@@ -295,28 +295,28 @@ func RestoreUsers(dirname string, dbName string) {
 	rows := readTable(dirname, "users")
 	db := database.OpenDBConnectionNamed(dbName)
 	database.CreateUsersTable(db)
-	insertUserData(db, rows)
+	database.InsertUserData(db, rows)
 }
 
 func RestoreRequests(dirname string, dbName string) {
 	rows := readTable(dirname, "requests")
 	db := database.OpenDBConnectionNamed(dbName)
 	database.CreateRequestsTable(db)
-	insertRequestsData(db, rows)
+	database.InsertRequestsData(db, rows)
 }
 
 func RestoreMonitor(dirname string, dbName string) {
 	rows := readTable(dirname, "monitor")
 	db := database.OpenDBConnectionNamed(dbName)
 	database.CreateMonitorTable(db)
-	insertMonitorData(db, rows)
+	database.InsertMonitorData(db, rows)
 }
 
 func RestorePings(dirname string, dbName string) {
 	rows := readTable(dirname, "pings")
 	db := database.OpenDBConnectionNamed(dbName)
 	database.CreatePingsTable(db)
-	insertPingsData(db, rows)
+	database.InsertPingsData(db, rows)
 }
 
 func Restore(dirname string, dbName string) {
