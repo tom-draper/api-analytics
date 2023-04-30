@@ -6,9 +6,29 @@ import (
 )
 
 func main() {
+	connections, err := usage.DatabaseConnections()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Active database connections:", connections)
+	users, err := usage.DailyUsers()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("New users:", len(users))
+	requests, err := usage.DailyUsage()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Requests:", len(requests))
+	monitors, err := usage.DailyMonitors()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("New monitors:", len(monitors))
 	size, err := usage.DatabaseSize()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(size)
+	fmt.Println("Database size:", size)
 }

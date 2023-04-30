@@ -9,8 +9,8 @@ import (
 	"github.com/tom-draper/api-analytics/server/tools/usage/usage"
 )
 
-func emailBody(users []database.UserRow, usage []usage.UserCount) string {
-	return fmt.Sprintf("%d new users\n%d requests", len(users), len(usage))
+func emailBody(users []database.UserRow, usage []usage.UserCount, monitors []usage.UserCount, size string, connections int) string {
+	return fmt.Sprintf("%d new users\n%d requests\n%d monitors\nDatabase size: %s\nActive database connections: %d", len(users), len(usage), len(monitors), size, connections)
 }
 
 func main() {
@@ -34,7 +34,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	body := emailBody(users, usage)
+	body := emailBody(users, usage, monitors, size, connections)
 	address := email.GetEmailAddress()
 	email.SendEmail("API Analytics", body, address)
 }
