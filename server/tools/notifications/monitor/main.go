@@ -34,7 +34,7 @@ func createNewUser() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if response.StatusCode != 201 {
+	if response.StatusCode != 200 {
 		return "", errors.New(fmt.Sprintf("status code: %d", response.StatusCode))
 	}
 	body, err := ioutil.ReadAll(response.Body)
@@ -48,19 +48,24 @@ func createNewUser() (string, error) {
 
 func TestFetchData() error {
 	client := http.Client{}
+	apiKey := getAPIKey()
 	request, err := http.NewRequest("GET", url+"data", nil)
 	if err != nil {
 		return err
 	}
 	request.Header = http.Header{
 		"Content-Type": {"application/json"},
-		"X-Auth-Token": {"Bearer Token"},
+		"X-Auth-Token": {apiKey},
 	}
 
 	response, err := client.Do(request)
 	if err != nil {
 		return err
 	}
+	if response.StatusCode != 200 {
+		return errors.New(fmt.Sprintf("status code: %d", response.StatusCode))
+	}
+
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return err
@@ -80,6 +85,9 @@ func TestFetchDashboardData() error {
 	response, err := http.Get(url + "requests/" + userID)
 	if err != nil {
 		return err
+	}
+	if response.StatusCode != 200 {
+		return errors.New(fmt.Sprintf("status code: %d", response.StatusCode))
 	}
 
 	body, err := ioutil.ReadAll(response.Body)

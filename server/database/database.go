@@ -125,7 +125,7 @@ func CreatePingsTable(db *sql.DB) error {
 func DeleteUser(apiKey string) error {
 	db := OpenDBConnection()
 
-	query := fmt.Sprintf("DELETE FROM user WHERE api_key = '%s';", apiKey)
+	query := fmt.Sprintf("DELETE FROM users WHERE api_key = '%s';", apiKey)
 	_, err := db.Query(query)
 	return err
 }
