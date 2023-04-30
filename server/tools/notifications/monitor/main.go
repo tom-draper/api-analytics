@@ -33,10 +33,10 @@ func createNewUser() (string, error) {
 	response, err := http.Get(url + "generate-api-key")
 	if err != nil {
 		return "", err
-	}
-	if response.StatusCode != 200 {
+	} else if response.StatusCode != 200 {
 		return "", errors.New(fmt.Sprintf("status code: %d", response.StatusCode))
 	}
+
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return "", err
@@ -53,16 +53,15 @@ func TestFetchData() error {
 	if err != nil {
 		return err
 	}
+
 	request.Header = http.Header{
-		"Content-Type": {"application/json"},
-		"X-Auth-Token": {apiKey},
+		"X-AUTH-TOKEN": {apiKey},
 	}
 
 	response, err := client.Do(request)
 	if err != nil {
 		return err
-	}
-	if response.StatusCode != 200 {
+	} else if response.StatusCode != 200 {
 		return errors.New(fmt.Sprintf("status code: %d", response.StatusCode))
 	}
 
@@ -85,8 +84,7 @@ func TestFetchDashboardData() error {
 	response, err := http.Get(url + "requests/" + userID)
 	if err != nil {
 		return err
-	}
-	if response.StatusCode != 200 {
+	} else if response.StatusCode != 200 {
 		return errors.New(fmt.Sprintf("status code: %d", response.StatusCode))
 	}
 
@@ -142,7 +140,13 @@ func main() {
 	newUserSuccessful := TestNewUser()
 	fetchDashboardDataSuccessful := TestFetchDashboardData()
 	fetchDataSuccessful := TestFetchData()
-	address := email.GetEmailAddress()
-	body := getEmailBody(newUserSuccessful, fetchDashboardDataSuccessful, fetchDataSuccessful)
-	email.SendEmail("Error at API Analytics", body, address)
+	newUserSuccessful = errors.New("test error")
+	if newUserSuccessful != nil || fetchDashboardDataSuccessful != nil || fetchDataSuccessful != nil {
+		address := email.GetEmailAddress()
+		body := getEmailBody(newUserSuccessful, fetchDashboardDataSuccessful, fetchDataSuccessful)
+		err := email.SendEmail("Error at API Analytics", body, address)
+		if err != nil {
+			panic(err)
+		}
+	}
 }

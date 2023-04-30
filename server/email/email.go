@@ -65,13 +65,17 @@ func SendEmail(subject string, body string, dest string) error {
 	address, password := getEmailLogin()
 	from := address
 
+	fmt.Println(address, password)
+
 	auth := LoginAuth(address, password)
+	fmt.Println("logged in")
 
 	to := []string{dest}
 
 	msg := []byte(fmt.Sprintf("From: %s\nTo: %s\nSubject: %s\nOK", from, dest, subject))
 
 	endpoint := fmt.Sprintf("%s:%d", server, port)
+	fmt.Println(endpoint)
 	err := smtp.SendMail(endpoint, auth, from, to, msg)
 	return err
 }
