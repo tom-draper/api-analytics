@@ -171,13 +171,13 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 	query.WriteString(fmt.Sprintf("SELECT hostname, ip_address, path, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s'", apiKey))
 
 	// Providing a single date takes priority over range with dateFrom and dateTo
-	if queries.date.IsZero() {
+	if !queries.date.IsZero() {
 		query.WriteString(fmt.Sprintf(" and created_at = '%s'", queries.date))
 	} else {
-		if queries.dateFrom.IsZero() {
+		if !queries.dateFrom.IsZero() {
 			query.WriteString(fmt.Sprintf(" and created_at >= '%s'", queries.dateFrom))
 		}
-		if queries.dateTo.IsZero() {
+		if !queries.dateTo.IsZero() {
 			query.WriteString(fmt.Sprintf(" and created_at <= '%s'", queries.dateTo))
 		}
 	}
@@ -590,4 +590,3 @@ func RegisterRouter(r *gin.RouterGroup, db *sql.DB) {
 	r.POST("/monitor/delete", deleteUserMonitorHandler(db))
 	r.GET("/data", getDataHandler(db))
 }
-
