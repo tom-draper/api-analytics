@@ -15,7 +15,7 @@ func getEmailLogin() (string, string) {
 		panic(err)
 	}
 
-	address := os.Getenv("AUTOMATION_EMAIL_PASSWORD")
+	address := os.Getenv("AUTOMATION_EMAIL_ADDRESS")
 	password := os.Getenv("AUTOMATION_EMAIL_PASSWORD")
 	return address, password
 }
