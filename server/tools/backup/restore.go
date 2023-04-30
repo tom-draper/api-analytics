@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/zip"
+	"bytes"
 	"database/sql"
 	"encoding/csv"
 	"fmt"
@@ -282,13 +283,13 @@ func insertRequestData(db *sql.DB, rows []UserRow) {
 
 	var query bytes.Buffer
 	for i, request := range result {
-		if i % blockSize == 0 {
+		if i%blockSize == 0 {
 			query = bytes.Buffer{}
 			query.WriteString("INSERT INTO requests (api_key, method, created_at, path, status, response_time, framework, user_agent, hostname, ip_address, location) VALUES")
 		}
-		if i % blockSize > 0 {
+		if i%blockSize > 0 {
 			query.WriteString(",")
-		} 
+		}
 
 		fmtIPAddress = nullInsertString(request.IPAddress)
 		fmtHostname = nullInsertString(request.Hostname)
@@ -297,7 +298,7 @@ func insertRequestData(db *sql.DB, rows []UserRow) {
 
 		query.WriteString(fmt.Sprintf(" ('%s', %d, '%s', '%s', %d, %d, %d, %s, %s, %s)", request.APIKey, request.Method, request.CreatedAt.UTC().Format(time.RFC3339), request.Path, request.Status, request.ResponseTime, request.Framework, fmtUserAgent, fmtHostname, fmtIPAddress, fmtLocation))
 
-		if (i + 1) % blockSize == 0 || i == len(result) - 1 {
+		if (i+1)%blockSize == 0 || i == len(result)-1 {
 			query.WriteString(";")
 
 			fmt.Println("Write to database")
@@ -308,7 +309,7 @@ func insertRequestData(db *sql.DB, rows []UserRow) {
 				panic(err)
 			}
 			db.Close()
-			time.Sleep(8 * time.Second)  // Pause to avoid exceeding memory space
+			time.Sleep(8 * time.Second) // Pause to avoid exceeding memory space
 		}
 	}
 }

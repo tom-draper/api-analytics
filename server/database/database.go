@@ -80,3 +80,75 @@ func OpenDBConnectionNamed(database string) *sql.DB {
 	username, password := getDBLogin()
 	return openDBConnection(database, username, password)
 }
+
+func CreateUsersTable(db *sql.DB) error {
+	_, err := db.Exec("DROP TABLE IF EXISTS users;")
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = db.Exec("CREATE TABLE users (user_id UUID NOT NULL, api_key UUID NOT NULL, created_at TIMESTAMPTZ NOT NULL, PRIMARY KEY (api_key));")
+	return err
+}
+
+func CreateRequestsTable(db *sql.DB) error {
+	_, err := db.Exec("DROP TABLE IF EXISTS requests;")
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = db.Exec("CREATE TABLE requests (request_id INTEGER, api_key UUID NOT NULL, path VARCHAR(255) NOT NULL, hostname VARCHAR(255), ip_address CIDR, location CHAR(2), user_agent VARCHAR(255), method SMALLINT NOT NULL, status SMALLINT NOT NULL, response_time SMALLINT NOT NULL, framework SMALLINT NOT NULL, created_at TIMESTAMPTZ NOT NULL, PRIMARY KEY (api_key));")
+	return err
+}
+
+func CreateMonitorTable(db *sql.DB) error {
+	_, err := db.Exec("DROP TABLE IF EXISTS monitor;")
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = db.Exec("CREATE TABLE monitor (api_key UUID NOT NULL, url VARCHAR(255) NOT NULL, secure BOOLEAN, PING BOOLEAN, created_at TIMESTAMPTZ NOT NULL, PRIMARY KEY (api_key));")
+	return err
+}
+
+func CreatePingsTable(db *sql.DB) error {
+	_, err := db.Exec("DROP TABLE IF EXISTS pings;")
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = db.Exec("CREATE TABLE pings (api_key UUID NOT NULL, url VARCHAR(255) NOT NULL, response_time INTEGER, status SMALLINT, created_at TIMESTAMPTZ NOT NULL, PRIMARY KEY (api_key));")
+	return err
+}
+
+func DeleteUser(apiKey string) error {
+	db := OpenDBConnection()
+
+	query := fmt.Sprintf("DELETE FROM user WHERE api_key = '%s';", apiKey)
+	_, err := db.Query(query)
+	return err
+}
+
+func DeleteRequests(apiKey string) error {
+	db := OpenDBConnection()
+
+	query := fmt.Sprintf("DELETE FROM requests WHERE api_key = '%s';", apiKey)
+	_, err := db.Query(query)
+	return err
+}
+
+func DeleteMonitors(apiKey string) error {
+	db := OpenDBConnection()
+
+	query := fmt.Sprintf("DELETE FROM monitor WHERE api_key = '%s';", apiKey)
+	_, err := db.Query(query)
+	return err
+}
+
+func DeletePings(apiKey string) error {
+	db := OpenDBConnection()
+
+	query := fmt.Sprintf("DELETE FROM pings WHERE api_key = '%s';", apiKey)
+	_, err := db.Query(query)
+	return err
+}

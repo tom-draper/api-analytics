@@ -19,54 +19,22 @@ func DeleteUser(apiKey string) {
 		return
 	}
 
-	err = deleteUser(apiKey)
+	err = database.DeleteUser(apiKey)
 	if err != nil {
 		panic(err)
 	}
-	err = deleteRequests(apiKey)
+	err = database.DeleteRequests(apiKey)
 	if err != nil {
 		panic(err)
 	}
-	err = deleteMonitors(apiKey)
+	err = database.DeleteMonitors(apiKey)
 	if err != nil {
 		panic(err)
 	}
-	err = deletePings(apiKey)
+	err = database.DeletePings(apiKey)
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println("User deletion successful.")
-}
-
-func deleteUser(apiKey string) error {
-	db := database.OpenDBConnection()
-
-	query := fmt.Sprintf("DELETE FROM user WHERE api_key = '%s';", apiKey)
-	_, err := db.Query(query)
-	return err
-}
-
-func deleteRequests(apiKey string) error {
-	db := database.OpenDBConnection()
-
-	query := fmt.Sprintf("DELETE FROM requests WHERE api_key = '%s';", apiKey)
-	_, err := db.Query(query)
-	return err
-}
-
-func deleteMonitors(apiKey string) error {
-	db := database.OpenDBConnection()
-
-	query := fmt.Sprintf("DELETE FROM monitor WHERE api_key = '%s';", apiKey)
-	_, err := db.Query(query)
-	return err
-}
-
-func deletePings(apiKey string) error {
-	db := database.OpenDBConnection()
-
-	query := fmt.Sprintf("DELETE FROM pings WHERE api_key = '%s';", apiKey)
-	_, err := db.Query(query)
-	return err
 }
