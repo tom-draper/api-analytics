@@ -52,8 +52,8 @@ func unzipBackup(dirname string) {
 	}
 }
 
-func readTable(dirname string, table string) []Row {
-	rows := []Row{}
+func readTable(dirname string, table string) []RestoreRow {
+	rows := []RestoreRow{}
 	filepath.Walk(filepath.Join(dirname, table), func(path string, info os.FileInfo, err error) error {
 		if err == nil && strings.HasSuffix(info.Name(), ".csv") {
 			userRows, err := parseRows(info.Name(), table)
@@ -67,12 +67,26 @@ func readTable(dirname string, table string) []Row {
 	return rows
 }
 
+type RestoreRow interface {
+	Parse([]string) error
+}
+
+type RestoreRows interface {
+	Upload(*sql.DB) error
+}
+
+type UserRows []UserRow
+
 func (r *UserRow) Parse(row []string) error {
 	r.UserID = row[0]
 	r.APIKey = row[1]
 	createdAt, err := time.Parse(row[2], time.RFC3339)
 	r.CreatedAt = createdAt
 	return err
+}
+
+func (r UserRows) Upload(db *sql.DB) error {
+	return insertUserData(db, r)
 }
 
 func (r *RequestRow) Parse(row []string) error {
@@ -147,7 +161,7 @@ func (r *PingsRow) Parse(row []string) error {
 	return err
 }
 
-func parseRows(file string, table string) ([]Row, error) {
+func parseRows(file string, table string) ([]RestoreRow, error) {
 	f, err := os.Open(file)
 	if err != nil {
 		return nil, err
@@ -156,7 +170,7 @@ func parseRows(file string, table string) ([]Row, error) {
 
 	reader := csv.NewReader(f)
 
-	rows := []Row{}
+	rows := []RestoreRow{}
 	for {
 		row, err := reader.Read()
 		if err != nil {
@@ -166,7 +180,7 @@ func parseRows(file string, table string) ([]Row, error) {
 			return rows, err
 		}
 
-		var r Row
+		var r RestoreRow
 		switch table {
 		case "requests":
 			r = &RequestRow{}
@@ -295,7 +309,11 @@ func RestoreUsers(dirname string, dbName string) {
 	rows := readTable(dirname, "users")
 	db := database.OpenDBConnectionNamed(dbName)
 	database.CreateUsersTable(db)
-	database.InsertUserData(db, rows)
+	insertRequestsData(db, rows)
+	switch rows.(type) {
+	case UserRows:
+		rows.Upload(db)
+	}
 }
 
 func RestoreRequests(dirname string, dbName string) {
@@ -316,7 +334,10 @@ func RestorePings(dirname string, dbName string) {
 	rows := readTable(dirname, "pings")
 	db := database.OpenDBConnectionNamed(dbName)
 	database.CreatePingsTable(db)
-	database.InsertPingsData(db, rows)
+	switch rows.(type) {
+	case []PingsRow:
+		database.InsertPingsData(db, rows)
+	}
 }
 
 func Restore(dirname string, dbName string) {

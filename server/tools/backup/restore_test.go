@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"testing"
 )
 
@@ -31,7 +32,7 @@ func difference(slice1 []string, slice2 []string) []string {
 func directories() []string {
 	entries, err := os.ReadDir("./")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	var dirs []string
@@ -46,6 +47,6 @@ func TestRestore(t *testing.T) {
 	BackupDatabase()
 	dirsAfter := directories()
 	diff := difference(dirsBefore, dirsAfter)
-	backupDir = diff[0]
+	backupDir := diff[0]
 	Restore(backupDir, "test")
 }
