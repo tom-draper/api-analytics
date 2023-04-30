@@ -67,24 +67,12 @@ func readTable(dirname string, table string) []Row {
 	return rows
 }
 
-type Row interface {
-	Parse([]string) error
-}
-
-type UserRow struct {
-	database.UserRow
-}
-
 func (r *UserRow) Parse(row []string) error {
 	r.UserID = row[0]
 	r.APIKey = row[1]
 	createdAt, err := time.Parse(row[2], time.RFC3339)
 	r.CreatedAt = createdAt
 	return err
-}
-
-type RequestRow struct {
-	database.RequestRow
 }
 
 func (r *RequestRow) Parse(row []string) error {
@@ -123,10 +111,6 @@ func (r *RequestRow) Parse(row []string) error {
 	return err
 }
 
-type MonitorRow struct {
-	database.MonitorRow
-}
-
 func (r *MonitorRow) Parse(row []string) error {
 	r.APIKey = row[0]
 	r.URL = row[1]
@@ -143,10 +127,6 @@ func (r *MonitorRow) Parse(row []string) error {
 	createdAt, err := time.Parse(row[4], time.RFC3339)
 	r.CreatedAt = createdAt
 	return err
-}
-
-type PingsRow struct {
-	database.PingsRow
 }
 
 func (r *PingsRow) Parse(row []string) error {
@@ -206,62 +186,14 @@ func parseRows(file string, table string) ([]Row, error) {
 	return rows, nil
 }
 
-func createUsersTable(db *sql.DB) {
-	_, err := db.Exec("DROP TABLE IF EXISTS users;")
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = db.Exec("CREATE TABLE users (user_id UUID NOT NULL, api_key UUID NOT NULL, created_at TIMESTAMPTZ NOT NULL, PRIMARY KEY (api_key));")
-	if err != nil {
-		panic(err)
-	}
-}
-
-func createRequestsTable(db *sql.DB) {
-	_, err := db.Exec("DROP TABLE IF EXISTS requests;")
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = db.Exec("CREATE TABLE requests (request_id INTEGER, api_key UUID NOT NULL, path VARCHAR(255) NOT NULL, hostname VARCHAR(255), ip_address CIDR, location CHAR(2), user_agent VARCHAR(255), method SMALLINT NOT NULL, status SMALLINT NOT NULL, response_time SMALLINT NOT NULL, framework SMALLINT NOT NULL, created_at TIMESTAMPTZ NOT NULL, PRIMARY KEY (api_key));")
-	if err != nil {
-		panic(err)
-	}
-}
-
-func createMonitorTable(db *sql.DB) {
-	_, err := db.Exec("DROP TABLE IF EXISTS monitor;")
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = db.Exec("CREATE TABLE monitor (api_key UUID NOT NULL, url VARCHAR(255) NOT NULL, secure BOOLEAN, PING BOOLEAN, created_at TIMESTAMPTZ NOT NULL, PRIMARY KEY (api_key));")
-	if err != nil {
-		panic(err)
-	}
-}
-
-func createPingsTable(db *sql.DB) {
-	_, err := db.Exec("DROP TABLE IF EXISTS pings;")
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = db.Exec("CREATE TABLE pings (api_key UUID NOT NULL, url VARCHAR(255) NOT NULL, response_time INTEGER, status SMALLINT, created_at TIMESTAMPTZ NOT NULL, PRIMARY KEY (api_key));")
-	if err != nil {
-		panic(err)
-	}
-}
-
-func insertUserData(db *sql.DB, rows []UserRow) {
+func insertUserData(db *sql.DB, rows []UserRow) error {
 	if len(rows) == 0 {
-		return
+		return nil
 	}
 
 	var query bytes.Buffer
 	query.WriteString("INSERT INTO users (api_key, user_id, created_at) VALUES")
-	for i, user := range result {
+	for i, user := range rows {
 		if i > 0 {
 			query.WriteString(",")
 		}
@@ -269,20 +201,18 @@ func insertUserData(db *sql.DB, rows []UserRow) {
 	}
 	query.WriteString(";")
 
-	_, err = db.Query(query.String())
-	if err != nil {
-		panic(err)
-	}
+	_, err := db.Query(query.String())
+	return err
 }
 
-func insertRequestData(db *sql.DB, rows []UserRow) {
+func insertRequestsData(db *sql.DB, rows []RequestRow) error {
 	blockSize := 1000
 	if len(rows) == 0 {
-		return
+		return nil
 	}
 
 	var query bytes.Buffer
-	for i, request := range result {
+	for i, request := range rows {
 		if i%blockSize == 0 {
 			query = bytes.Buffer{}
 			query.WriteString("INSERT INTO requests (api_key, method, created_at, path, status, response_time, framework, user_agent, hostname, ip_address, location) VALUES")
@@ -291,27 +221,28 @@ func insertRequestData(db *sql.DB, rows []UserRow) {
 			query.WriteString(",")
 		}
 
-		fmtIPAddress = nullInsertString(request.IPAddress)
-		fmtHostname = nullInsertString(request.Hostname)
-		fmtLocation = nullInsertString(request.Location)
-		fmtUserAgent = nullInsertString(request.UserAgent)
+		fmtIPAddress := nullInsertString(request.IPAddress)
+		fmtHostname := nullInsertString(request.Hostname)
+		fmtLocation := nullInsertString(request.Location)
+		fmtUserAgent := nullInsertString(request.UserAgent)
 
 		query.WriteString(fmt.Sprintf(" ('%s', %d, '%s', '%s', %d, %d, %d, %s, %s, %s)", request.APIKey, request.Method, request.CreatedAt.UTC().Format(time.RFC3339), request.Path, request.Status, request.ResponseTime, request.Framework, fmtUserAgent, fmtHostname, fmtIPAddress, fmtLocation))
 
-		if (i+1)%blockSize == 0 || i == len(result)-1 {
+		if (i+1)%blockSize == 0 || i == len(rows)-1 {
 			query.WriteString(";")
 
 			fmt.Println("Write to database")
 
 			db = database.OpenDBConnection()
 			_, err := db.Query(query.String())
-			if err != nil {
-				panic(err)
-			}
 			db.Close()
+			if err != nil {
+				return err
+			}
 			time.Sleep(8 * time.Second) // Pause to avoid exceeding memory space
 		}
 	}
+	return nil
 }
 
 func nullInsertString(value sql.NullString) string {
@@ -322,14 +253,14 @@ func nullInsertString(value sql.NullString) string {
 	}
 }
 
-func insertMonitorData(db *sql.DB, rows []MonitorRow) {
+func insertMonitorData(db *sql.DB, rows []MonitorRow) error {
 	if len(rows) == 0 {
-		return
+		return nil
 	}
 
 	var query bytes.Buffer
 	query.WriteString("INSERT INTO monitor (api_key, url, secure, ping, created_at) VALUES")
-	for i, user := range result {
+	for i, monitor := range rows {
 		if i > 0 {
 			query.WriteString(",")
 		}
@@ -337,20 +268,18 @@ func insertMonitorData(db *sql.DB, rows []MonitorRow) {
 	}
 	query.WriteString(";")
 
-	_, err = db.Query(query.String())
-	if err != nil {
-		panic(err)
-	}
+	_, err := db.Query(query.String())
+	return err
 }
 
-func insertPingsData(db *sql.DB, rows []PingsRow) {
+func insertPingsData(db *sql.DB, rows []PingsRow) error {
 	if len(rows) == 0 {
-		return
+		return nil
 	}
 
 	var query bytes.Buffer
 	query.WriteString("INSERT INTO pings (api_key, url, response_time, status, created_at) VALUES")
-	for i, monitor := range result {
+	for i, monitor := range rows {
 		if i > 0 {
 			query.WriteString(",")
 		}
@@ -358,37 +287,35 @@ func insertPingsData(db *sql.DB, rows []PingsRow) {
 	}
 	query.WriteString(";")
 
-	_, err = db.Query(query.String())
-	if err != nil {
-		panic(err)
-	}
+	_, err := db.Query(query.String())
+	return err
 }
 
 func RestoreUsers(dirname string, dbName string) {
 	rows := readTable(dirname, "users")
 	db := database.OpenDBConnectionNamed(dbName)
-	createUsersTable(db)
+	database.CreateUsersTable(db)
 	insertUserData(db, rows)
 }
 
 func RestoreRequests(dirname string, dbName string) {
 	rows := readTable(dirname, "requests")
 	db := database.OpenDBConnectionNamed(dbName)
-	createRequestsTable(db)
+	database.CreateRequestsTable(db)
 	insertRequestsData(db, rows)
 }
 
 func RestoreMonitor(dirname string, dbName string) {
 	rows := readTable(dirname, "monitor")
 	db := database.OpenDBConnectionNamed(dbName)
-	createMonitorTable(db)
+	database.CreateMonitorTable(db)
 	insertMonitorData(db, rows)
 }
 
 func RestorePings(dirname string, dbName string) {
 	rows := readTable(dirname, "pings")
 	db := database.OpenDBConnectionNamed(dbName)
-	createPingsTable(db)
+	database.CreatePingsTable(db)
 	insertPingsData(db, rows)
 }
 
