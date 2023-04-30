@@ -164,3 +164,18 @@ func DatabaseSize() (string, error) {
 	err = rows.Scan(&size)
 	return size, err
 }
+
+func DatabaseConnections() (int, error) {
+	db := database.OpenDBConnection()
+
+	query := "SELECT count(*) from pg_stat_activity;"
+	rows, err := db.Query(query)
+	if err != nil {
+		return 0, err
+	}
+
+	var connections int
+	rows.Next()
+	err = rows.Scan(&connections)
+	return connections, err
+}
