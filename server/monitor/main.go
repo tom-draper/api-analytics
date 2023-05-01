@@ -37,22 +37,22 @@ func ping(client http.Client, domain string, secure bool, ping bool) (int, time.
 	url := getURL(domain, secure)
 	method := getMethod(ping)
 
-	req, err := http.NewRequest(method, url, nil)
+	request, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		return 0, time.Duration(0), err
 	}
 
 	// Make request
 	start := time.Now()
-	resp, err := client.Do(req)
+	response, err := client.Do(request)
 	if err != nil {
 		return 0, time.Duration(0), err
 	}
 	elapsed := time.Since(start)
 
-	resp.Body.Close()
+	response.Body.Close()
 
-	return resp.StatusCode, elapsed, nil
+	return response.StatusCode, elapsed, nil
 }
 
 func getMonitoredURLs(db *sql.DB) []database.MonitorRow {
