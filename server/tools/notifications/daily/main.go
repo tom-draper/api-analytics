@@ -38,3 +38,4 @@ func main() {
 	address := email.GetEmailAddress()
 	email.SendEmail("API Analytics", body, address)
 }
+
