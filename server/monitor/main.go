@@ -75,7 +75,7 @@ func getMonitoredURLs(db *sql.DB) []database.MonitorRow {
 	return monitors
 }
 
-func deleteOldPings(db *sql.DB) {
+func deleteExpiredPings(db *sql.DB) {
 	query := fmt.Sprintf("DELETE FROM pings WHERE created_at < '%s';", time.Now().Add(-60*24*time.Hour).UTC().Format("2006-01-02T15:04:05-0700"))
 	_, err := db.Query(query)
 	if err != nil {
@@ -145,5 +145,5 @@ func main() {
 	client := getClient()
 	pings := pingMonitored(monitored, client, db)
 	uploadPings(pings, db)
-	deleteOldPings(db)
+	deleteExpiredPings(db)
 }
