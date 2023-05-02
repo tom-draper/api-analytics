@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
+	"net"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -124,6 +126,7 @@ type DataFetchQueries struct {
 	date      time.Time
 	dateFrom  time.Time
 	dateTo    time.Time
+	hostname  string
 	ipAddress string
 	location  string
 	status    int
@@ -166,29 +169,59 @@ func getDataHandler(db *sql.DB) gin.HandlerFunc {
 	return gin.HandlerFunc(getData)
 }
 
+func sanitizeDate(date time.Time) bool {
+	return !date.IsZero()
+}
+
+func sanitizeHostname(value string) bool {
+	return value != "" && !strings.Contains(value, "DROP") && !strings.Contains(strings.ToLower(value), " or ") && !strings.Contains(strings.ToLower(value), " and ") && !strings.Contains(value, "--") && !strings.Contains(value, ";")
+}
+
+func sanitizeLocation(value string) bool {
+	return value != "" && !strings.Contains(value, "DROP") && !strings.Contains(strings.ToLower(value), " or ") && !strings.Contains(strings.ToLower(value), " and ") && !strings.Contains(value, "--") && !strings.Contains(value, ";") && len(value) == 2
+}
+
+func sanitizeStatus(value int) bool {
+	return value >= 100 && value <= 599
+}
+
+func sanitizeIPAddress(value string) bool {
+	if value == "" {
+		return false
+	}
+	ip := net.ParseIP(value)
+	if ip != nil {
+		return false
+	}
+	return true
+}
+
 func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 	var query bytes.Buffer
 	query.WriteString(fmt.Sprintf("SELECT hostname, ip_address, path, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s'", apiKey))
 
 	// Providing a single date takes priority over range with dateFrom and dateTo
-	if !queries.date.IsZero() {
-		query.WriteString(fmt.Sprintf(" and created_at = '%s'", queries.date))
+	if sanitizeDate(queries.date) {
+		query.WriteString(fmt.Sprintf(" and created_at >= '%s' and created_at < date '%s' + interval '1 days'", queries.date.Format("2006-01-02"), queries.date.Format("2006-01-02")))
 	} else {
-		if !queries.dateFrom.IsZero() {
-			query.WriteString(fmt.Sprintf(" and created_at >= '%s'", queries.dateFrom))
+		if sanitizeDate(queries.dateFrom) {
+			query.WriteString(fmt.Sprintf(" and created_at >= '%s'", queries.dateFrom.Format("2006-01-02")))
 		}
-		if !queries.dateTo.IsZero() {
-			query.WriteString(fmt.Sprintf(" and created_at <= '%s'", queries.dateTo))
+		if sanitizeDate(queries.dateTo) {
+			query.WriteString(fmt.Sprintf(" and created_at <= '%s'", queries.dateTo.Format("2006-01-02")))
 		}
 	}
 
-	if queries.ipAddress != "" {
+	// if sanitizeString(queries.hostname) {
+	// 	query.WriteString(fmt.Sprintf(" and hostname = '%s'", queries.hostname))
+	// }
+	if sanitizeIPAddress(queries.ipAddress) {
 		query.WriteString(fmt.Sprintf(" and ip_address = '%s'", queries.ipAddress))
 	}
-	if queries.location != "" {
+	if sanitizeLocation(queries.location) {
 		query.WriteString(fmt.Sprintf(" and location = '%s'", queries.location))
 	}
-	if queries.status != 0 {
+	if sanitizeStatus(queries.status) {
 		query.WriteString(fmt.Sprintf(" and status = %s", queries.status))
 	}
 
@@ -201,6 +234,7 @@ func getQueriesFromRequest(c *gin.Context) DataFetchQueries {
 	dateQuery := c.Query("date")
 	dateFromQuery := c.Query("dateFrom")
 	dateToQuery := c.Query("dateTo")
+	hostname := c.Query("hostname")
 	ipAddressQuery := c.Query("ip")
 	locationQuery := c.Query("location")
 	statusQuery := c.Query("status")
@@ -218,6 +252,7 @@ func getQueriesFromRequest(c *gin.Context) DataFetchQueries {
 		date,
 		dateFrom,
 		dateTo,
+		hostname,
 		ipAddressQuery,
 		locationQuery,
 		status,

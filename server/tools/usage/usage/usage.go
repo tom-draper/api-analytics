@@ -51,6 +51,42 @@ func TopUsers() ([]UserCount, error) {
 	return requests, nil
 }
 
+func DailyTotalUsers() (int, error) {
+	return TotalUsers(1)
+}
+
+func WeeklyTotalUsers() (int, error) {
+	return TotalUsers(7)
+}
+
+func MonthlyTotalUsers() (int, error) {
+	return TotalUsers(30)
+}
+
+func TotalUsers(days int) (int, error) {
+	db := database.OpenDBConnection()
+
+	query := "SELECT count(*) FROM users"
+	if days == 1 {
+		query += " WHERE created_at >= NOW() - interval '24 hours';"
+	} else {
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%d day';", days)
+	}
+	rows, err := db.Query(query)
+	if err != nil {
+		return 0, err
+	}
+
+	var users int
+	rows.Next()
+	err = rows.Scan(&users)
+	if err != nil {
+		return 0, err
+	}
+
+	return users, nil
+}
+
 func DailyUsers() ([]database.UserRow, error) {
 	return Users(1)
 }
@@ -66,7 +102,12 @@ func MonthlyUsers() ([]database.UserRow, error) {
 func Users(days int) ([]database.UserRow, error) {
 	db := database.OpenDBConnection()
 
-	query := fmt.Sprintf("SELECT * FROM users WHERE created_at >= NOW() - interval '%d day';", days)
+	query := "SELECT * FROM users"
+	if days == 1 {
+		query += " WHERE created_at >= NOW() - interval '24 hours';"
+	} else {
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%d day';", days)
+	}
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -99,7 +140,12 @@ func MonthlyUsage() ([]UserCount, error) {
 func Usage(days int) ([]UserCount, error) {
 	db := database.OpenDBConnection()
 
-	query := fmt.Sprintf("SELECT api_key, COUNT(*) AS count FROM requests where created_at >= NOW() - interval '%d day' GROUP BY api_key ORDER BY count DESC;", days)
+	query := "SELECT api_key, created_at FROM requests"
+	if days == 1 {
+		query += " WHERE created_at >= NOW() - interval '24 hours';"
+	} else {
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%d day';", days)
+	}
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -132,7 +178,12 @@ func MonthlyMonitors() ([]UserCount, error) {
 func Monitors(days int) ([]UserCount, error) {
 	db := database.OpenDBConnection()
 
-	query := fmt.Sprintf("SELECT api_key, COUNT(*) AS count FROM monitor where created_at >= NOW() - interval '%d day' GROUP BY api_key ORDER BY count DESC;", days)
+	var query string
+	if days == 1 {
+		query = "SELECT api_key, COUNT(*) AS count FROM monitor where created_at >= NOW() - interval '24 hours' GROUP BY api_key ORDER BY count DESC;"
+	} else {
+		query = fmt.Sprintf("SELECT api_key, COUNT(*) AS count FROM monitor where created_at >= NOW() - interval '%d day' GROUP BY api_key ORDER BY count DESC;", days)
+	}
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
