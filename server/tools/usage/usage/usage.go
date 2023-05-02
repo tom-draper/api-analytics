@@ -51,19 +51,19 @@ func TopUsers() ([]UserCount, error) {
 	return requests, nil
 }
 
-func DailyTotalUsers() (int, error) {
-	return TotalUsers(1)
+func DailyUsersCount() (int, error) {
+	return UsersCount(1)
 }
 
-func WeeklyTotalUsers() (int, error) {
-	return TotalUsers(7)
+func WeeklyUsersCount() (int, error) {
+	return UsersCount(7)
 }
 
-func MonthlyTotalUsers() (int, error) {
-	return TotalUsers(30)
+func MonthlyUsersCount() (int, error) {
+	return UsersCount(30)
 }
 
-func TotalUsers(days int) (int, error) {
+func UsersCount(days int) (int, error) {
 	db := database.OpenDBConnection()
 
 	query := "SELECT count(*) FROM users"
@@ -72,6 +72,25 @@ func TotalUsers(days int) (int, error) {
 	} else {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%d day';", days)
 	}
+	rows, err := db.Query(query)
+	if err != nil {
+		return 0, err
+	}
+
+	var users int
+	rows.Next()
+	err = rows.Scan(&users)
+	if err != nil {
+		return 0, err
+	}
+
+	return users, nil
+}
+
+func TotalUsers() (int, error) {
+	db := database.OpenDBConnection()
+
+	query := "SELECT count(*) FROM users;"
 	rows, err := db.Query(query)
 	if err != nil {
 		return 0, err
