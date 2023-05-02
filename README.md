@@ -80,7 +80,7 @@ Assign your API key to `ANALYTICS_API_KEY` in `settings.py` and add the Analytic
 ANALYTICS_API_KEY = <API-KEY>
 
 MIDDLEWARE = [
-    'api_analytics.django.Analytics',
+    'api_analytics.django.Analytics',  # Add middleware
     ...
 ]
 ```
