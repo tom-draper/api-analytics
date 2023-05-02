@@ -235,6 +235,25 @@ func DatabaseSize() (string, error) {
 	return size, err
 }
 
+func DatabaseColumnSize(column string) (string, error) {
+	db := database.OpenDBConnection()
+
+	query := fmt.Sprintf("SELECT pg_size_pretty(sum(pg_column_size(%s))) AS total_size, pg_size_pretty(avg(pg_column_size(%s))) AS average_size, sum(pg_column_size(%s)) * 100.0 / pg_total_relation_size('requests') AS percentage FROM requests;", column, column, column)
+	rows, err := db.Query(query)
+	if err != nil {
+		return "", err
+	}
+
+	var size struct {
+		totalSize   string
+		averageSize float64
+		percentage  float64
+	}
+	rows.Next()
+	err = rows.Scan(&size.totalSize, &size.averageSize, &size.percentage)
+	return size.totalSize, err
+}
+
 func DatabaseConnections() (int, error) {
 	db := database.OpenDBConnection()
 
