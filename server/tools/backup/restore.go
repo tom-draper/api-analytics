@@ -71,10 +71,6 @@ type RestoreRow interface {
 	Parse([]string) error
 }
 
-type RestoreRows interface {
-	Upload(*sql.DB) error
-}
-
 type UserRows []UserRow
 
 func (r *UserRow) Parse(row []string) error {
@@ -96,10 +92,10 @@ func (r *RequestRow) Parse(row []string) error {
 	}
 	r.APIKey = row[1]
 	r.Path = row[2]
-	r.Hostname = sql.NullString{row[3], row[3] != ""}
-	r.IPAddress = sql.NullString{row[4], row[4] != ""}
-	r.Location = sql.NullString{row[5], row[5] != ""}
-	r.UserAgent = sql.NullString{row[6], row[6] != ""}
+	r.Hostname = sql.NullString{String: row[3], Valid: row[3] != ""}
+	r.IPAddress = sql.NullString{String: row[4], Valid: row[4] != ""}
+	r.Location = sql.NullString{String: row[5], Valid: row[5] != ""}
+	r.UserAgent = sql.NullString{String: row[6], Valid: row[6] != ""}
 	method, err := strconv.ParseInt(row[7], 10, 16)
 	if err != nil {
 		return err
@@ -197,7 +193,6 @@ func parseRows(file string, table string) ([]RestoreRow, error) {
 		}
 		rows = append(rows, r)
 	}
-	return rows, nil
 }
 
 func insertUserData(db *sql.DB, rows []UserRow) error {
@@ -309,35 +304,56 @@ func RestoreUsers(dirname string, dbName string) {
 	rows := readTable(dirname, "users")
 	db := database.OpenDBConnectionNamed(dbName)
 	database.CreateUsersTable(db)
-	insertRequestsData(db, rows)
-	switch rows.(type) {
-	case UserRows:
-		rows.Upload(db)
+	var r []database.UserRow
+	for _, val := range rows {
+		switch v := val.(type) {
+		case *UserRow:
+			r = append(r, v.UserRow)
+		}
 	}
+	database.InsertUserData(db, r)
 }
 
 func RestoreRequests(dirname string, dbName string) {
 	rows := readTable(dirname, "requests")
 	db := database.OpenDBConnectionNamed(dbName)
 	database.CreateRequestsTable(db)
-	database.InsertRequestsData(db, rows)
+	var r []database.RequestRow
+	for _, val := range rows {
+		switch v := val.(type) {
+		case *RequestRow:
+			r = append(r, v.RequestRow)
+		}
+	}
+	database.InsertRequestsData(db, r)
 }
 
 func RestoreMonitor(dirname string, dbName string) {
 	rows := readTable(dirname, "monitor")
 	db := database.OpenDBConnectionNamed(dbName)
 	database.CreateMonitorTable(db)
-	database.InsertMonitorData(db, rows)
+	var r []database.MonitorRow
+	for _, val := range rows {
+		switch v := val.(type) {
+		case *MonitorRow:
+			r = append(r, v.MonitorRow)
+		}
+	}
+	database.InsertMonitorData(db, r)
 }
 
 func RestorePings(dirname string, dbName string) {
 	rows := readTable(dirname, "pings")
 	db := database.OpenDBConnectionNamed(dbName)
 	database.CreatePingsTable(db)
-	switch rows.(type) {
-	case []PingsRow:
-		database.InsertPingsData(db, rows)
+	var r []database.PingsRow
+	for _, val := range rows {
+		switch v := val.(type) {
+		case *PingsRow:
+			r = append(r, v.PingsRow)
+		}
 	}
+	database.InsertPingsData(db, r)
 }
 
 func Restore(dirname string, dbName string) {
