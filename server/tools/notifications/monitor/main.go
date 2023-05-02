@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"time"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -18,10 +19,23 @@ import (
 var url string = "https://apianalytics-server.com/api/"
 
 func TestNewUser() error {
-	apiKey, err := createNewUser()
+	response, err := http.Get(url + "generate-api-key")
+	if err != nil {
+		return err
+	} else if response.StatusCode != 200 {
+		return errors.New(fmt.Sprintf("status code: %d", response.StatusCode))
+	}
+
+	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return err
 	}
+	sb := string(body)
+	apiKey := sb[1 : len(sb)-1]
+	if len(apiKey) != 36 {
+		return errors.New(fmt.Sprintf("uuid value returned is invalid"))
+	}
+	
 	err = database.DeleteUser(apiKey)
 	if err != nil {
 		return err
@@ -29,26 +43,9 @@ func TestNewUser() error {
 	return nil
 }
 
-func createNewUser() (string, error) {
-	response, err := http.Get(url + "generate-api-key")
-	if err != nil {
-		return "", err
-	} else if response.StatusCode != 200 {
-		return "", errors.New(fmt.Sprintf("status code: %d", response.StatusCode))
-	}
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return "", err
-	}
-	sb := string(body)
-	apiKey := sb[1 : len(sb)-1]
-	return apiKey, nil
-}
-
 func TestFetchData() error {
 	client := http.Client{}
-	apiKey := getAPIKey()
+	apiKey := getTestAPIKey()
 	request, err := http.NewRequest("GET", url+"data", nil)
 	if err != nil {
 		return err
@@ -72,15 +69,11 @@ func TestFetchData() error {
 
 	var data interface{}
 	err = json.Unmarshal(body, &data)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func TestFetchDashboardData() error {
-	userID := getUserID()
+	userID := getTestUserID()
 	response, err := http.Get(url + "requests/" + userID)
 	if err != nil {
 		return err
@@ -95,14 +88,50 @@ func TestFetchDashboardData() error {
 
 	var data interface{}
 	err = json.Unmarshal(body, &data)
+	return err
+}
+
+func TestFetchUserID() error {
+	apiKey := getTestAPIKey()
+	response, err := http.Get(url + "user-id/" + apiKey)
 	if err != nil {
 		return err
+	} else if response.StatusCode != 200 {
+		return errors.New(fmt.Sprintf("status code: %d", response.StatusCode))
 	}
-
+	
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return "", err
+	}
+	sb := string(body)
+	userID := sb[1 : len(sb)-1]
+	if len(userID) != 36 {
+		return errors.New(fmt.Sprintf("uuid value returned is invalid"))
+	}
 	return nil
 }
 
-func getAPIKey() string {
+func TestFetchMonitorPings() error {
+	userID := getTestUserID()
+	response, err := http.Get(url + "monitor/pings/" + userID)
+	if err != nil {
+		return err
+	} else if response.StatusCode != 200 {
+		return errors.New(fmt.Sprintf("status code: %d", response.StatusCode))
+	}
+	
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+	
+	var data interface{}
+	err = json.Unmarshal(body, &data)
+	return err
+}
+
+func getTestAPIKey() string {
 	err := godotenv.Load(".env")
 	if err != nil {
 		panic(err)
@@ -112,7 +141,7 @@ func getAPIKey() string {
 	return apiKey
 }
 
-func getUserID() string {
+func getTestUserID() string {
 	err := godotenv.Load(".env")
 	if err != nil {
 		panic(err)
@@ -122,8 +151,9 @@ func getUserID() string {
 	return userID
 }
 
-func getEmailBody(newUser error, fetchDashboardData error, fetchData error) string {
+func buildEmailBody(newUser error, fetchDashboardData error, fetchData error) string {
 	var body strings.Builder
+	body.WriteString(fmt.Sprintf("Failure detected at %v\n", time.Now()))
 	if newUser != nil {
 		body.WriteString(fmt.Sprintf("Error when creating new user: %s\n", newUser.Error()))
 	}
@@ -143,8 +173,8 @@ func main() {
 	newUserSuccessful = errors.New("test error")
 	if newUserSuccessful != nil || fetchDashboardDataSuccessful != nil || fetchDataSuccessful != nil {
 		address := email.GetEmailAddress()
-		body := getEmailBody(newUserSuccessful, fetchDashboardDataSuccessful, fetchDataSuccessful)
-		err := email.SendEmail("Error at API Analytics", body, address)
+		body := buildEmailBody(newUserSuccessful, fetchDashboardDataSuccessful, fetchDataSuccessful)
+		err := email.SendEmail("Failure detected at API Analytics", body, address)
 		if err != nil {
 			panic(err)
 		}
