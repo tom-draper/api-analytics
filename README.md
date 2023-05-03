@@ -570,7 +570,7 @@ Data collected is only ever used to populate your analytics dashboard. All data 
 
 At any time, you can delete all stored data associated with your API key by going to https://apianalytics.dev/delete and entering your API key.
 
-API keys and their associated API request data are scheduled to be deleted after 1 year of inactivity.
+API keys and their associated API request data are scheduled to be deleted after 6 months of inactivity.
 
 ## Contributions
 
