@@ -1,46 +1,78 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/tom-draper/api-analytics/server/tools/usage/usage"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 func main() {
+	p := message.NewPrinter(language.English)
+
+	p.Println("---- Database --------------------")
 	connections, err := usage.DatabaseConnections()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Active database connections:", connections)
-	users, err := usage.DailyUsers()
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("New users:", len(users))
-	requests, err := usage.DailyUsage()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Requests:", len(requests))
-	monitors, err := usage.DailyMonitors()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("New monitors:", len(monitors))
-	totalUsers, err := usage.TotalUsers()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Total users:", totalUsers)
-	totalRequests, err := usage.TotalRequests()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Total requests:", totalRequests)
+	p.Println("Active database connections:", connections)
 	size, err := usage.DatabaseSize()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Database size:", size)
+	p.Println("Database size:", size)
+
+	p.Println("---- Last 24-hours ----------------")
+	dailyUsers, err := usage.DailyUsersCount()
+	if err != nil {
+		panic(err)
+	}
+	p.Println("Users:", dailyUsers)
+	dailyRequests, err := usage.DailyRequestsCount()
+	if err != nil {
+		panic(err)
+	}
+	p.Println("Requests:", dailyRequests)
+	dailyMonitors, err := usage.DailyMonitorsCount()
+	if err != nil {
+		panic(err)
+	}
+	p.Println("Monitors:", dailyMonitors)
+
+	p.Println("---- Last week --------------------")
+	weeklyUsers, err := usage.WeeklyUsersCount()
+	if err != nil {
+		panic(err)
+	}
+	p.Println("Users:", weeklyUsers)
+	weeklyRequests, err := usage.WeeklyRequestsCount()
+	if err != nil {
+		panic(err)
+	}
+	p.Println("Requests:", weeklyRequests)
+	weeklyMonitors, err := usage.WeeklyMonitorsCount()
+	if err != nil {
+		panic(err)
+	}
+	p.Println("Monitors:", weeklyMonitors)
+
+	p.Println("---- Total ------------------------")
+	totalUsers, err := usage.UsersCount(0)
+	if err != nil {
+		panic(err)
+	}
+	p.Println("Users:", totalUsers)
+	totalRequests, err := usage.RequestsCount(0)
+	if err != nil {
+		panic(err)
+	}
+	p.Println("Requests:", totalRequests)
+	totalMonitors, err := usage.MonitorsCount(0)
+	if err != nil {
+		panic(err)
+	}
+	p.Println("Monitors:", totalMonitors)
+
+	p.Println("---- Top Users --------------------")
+	topUsers, err := usage.TopUsers(10)
+	usage.DisplayUsers(topUsers)
 }
