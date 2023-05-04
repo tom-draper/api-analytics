@@ -525,6 +525,23 @@ fetch("https://apianalytics-server.com/api/data", {
 curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 ```
 
+##### Parameters
+
+Your data can be filtered by providing URL parameters in your request.
+
+- `date` - specifies a particular day (`YYYY-MM-DD`)
+- `dateFrom` - specifies the lower bound of a date range  (`YYYY-MM-DD`)
+- `dateTo` - specifies the upper bound of a date range  (`YYYY-MM-DD`)
+- `ipAddress` - an IP address string
+- `status` - an integer status code
+- `location` - a two-character location code
+
+Example:
+
+```bash
+curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?dateFrom=2022-01-01&dateTo=2022-06-01&status=200
+```
+
 ## Monitoring (coming soon)
 
 Opt-in active API monitoring is coming soon. Our servers will regularly ping your API endpoints to monitor uptime and response time. Optional email alerts to notify you when your endpoints are down can be subscribed to.
@@ -553,7 +570,7 @@ Data collected is only ever used to populate your analytics dashboard. All data 
 
 At any time, you can delete all stored data associated with your API key by going to https://apianalytics.dev/delete and entering your API key.
 
-API keys and their associated API request data are scheduled be deleted after 1 year of inactivity.
+API keys and their associated API request data are scheduled to be deleted after 6 months of inactivity.
 
 ## Contributions
 
