@@ -42,14 +42,14 @@ func UsersCount(days int) (int, error) {
 		return 0, err
 	}
 
-	var users int
+	var count int
 	rows.Next()
-	err = rows.Scan(&users)
+	err = rows.Scan(&count)
 	if err != nil {
 		return 0, err
 	}
 
-	return users, nil
+	return count, nil
 }
 
 func DailyUsers() ([]database.UserRow, error) {
@@ -121,12 +121,12 @@ func TopUsers(n int) ([]User, error) {
 		return nil, err
 	}
 
-	var requests []User
+	var users []User
 	for rows.Next() {
-		request := new(User)
-		err := rows.Scan(&request.APIKey, &request.CreatedAt, &request.TotalRequests)
+		user := new(User)
+		err := rows.Scan(&user.APIKey, &user.CreatedAt, &user.TotalRequests)
 		if err == nil {
-			requests = append(requests, *request)
+			users = append(users, *user)
 		}
 	}
 	db.Close()
@@ -137,9 +137,9 @@ func TopUsers(n int) ([]User, error) {
 		return nil, err
 	}
 	for _, userRequests := range dailyRequests {
-		for i, r := range requests {
+		for i, r := range users {
 			if userRequests.APIKey == r.APIKey {
-				requests[i].DailyRequests = userRequests.Count
+				users[i].DailyRequests = userRequests.Count
 			}
 		}
 	}
@@ -150,12 +150,69 @@ func TopUsers(n int) ([]User, error) {
 		return nil, err
 	}
 	for _, userRequests := range weeklyRequests {
-		for i, r := range requests {
+		for i, r := range users {
 			if userRequests.APIKey == r.APIKey {
-				requests[i].WeeklyRequests = userRequests.Count
+				users[i].WeeklyRequests = userRequests.Count
 			}
 		}
 	}
 
-	return requests, nil
+	return users, nil
+}
+
+type UserTime struct {
+	APIKey    string    `json:"api_key"`
+	CreatedAt time.Time `json:"created_at"`
+	Days      string    `json:"days"`
+}
+
+func DisplayUserTimes(users []UserTime) {
+	p := message.NewPrinter(language.English)
+	for _, user := range users {
+		p.Printf("%s: %s (%s)", user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
+	}
+}
+
+func UnusedUsers() ([]UserTime, error) {
+	db := database.OpenDBConnection()
+	defer db.Close()
+
+	query := "SELECT api_key, created_at, (NOW()::date - created_at) AS days FROM users u WHERE NOT EXISTS (SELECT FROM requests WHERE api_key = u.api_key) ORDER BY created_at;"
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	var users []UserTime
+	for rows.Next() {
+		user := new(UserTime)
+		err := rows.Scan(&user.APIKey, &user.CreatedAt, &user.Days)
+		if err == nil {
+			users = append(users, *user)
+		}
+	}
+
+	return users, nil
+}
+
+func SinceLastRequestUsers() ([]UserTime, error) {
+	db := database.OpenDBConnection()
+	defer db.Close()
+
+	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM (SELECT DISTINCT ON (api_key) api_key, created_at FROM requests ORDER BY api_key, created_at DESC) AS derived_table ORDER BY created_at;"
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	var users []UserTime
+	for rows.Next() {
+		user := new(UserTime)
+		err := rows.Scan(&user.APIKey, &user.CreatedAt, &user.Days)
+		if err == nil {
+			users = append(users, *user)
+		}
+	}
+
+	return users, nil
 }
