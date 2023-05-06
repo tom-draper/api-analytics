@@ -3,12 +3,12 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"time"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/tom-draper/api-analytics/server/database"
 	"github.com/tom-draper/api-analytics/server/email"
@@ -35,7 +35,7 @@ func TestNewUser() error {
 	if len(apiKey) != 36 {
 		return errors.New(fmt.Sprintf("uuid value returned is invalid"))
 	}
-	
+
 	err = database.DeleteUser(apiKey)
 	if err != nil {
 		return err
@@ -99,10 +99,10 @@ func TestFetchUserID() error {
 	} else if response.StatusCode != 200 {
 		return errors.New(fmt.Sprintf("status code: %d", response.StatusCode))
 	}
-	
+
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return "", err
+		return err
 	}
 	sb := string(body)
 	userID := sb[1 : len(sb)-1]
@@ -120,12 +120,12 @@ func TestFetchMonitorPings() error {
 	} else if response.StatusCode != 200 {
 		return errors.New(fmt.Sprintf("status code: %d", response.StatusCode))
 	}
-	
+
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return err
 	}
-	
+
 	var data interface{}
 	err = json.Unmarshal(body, &data)
 	return err

@@ -25,15 +25,16 @@ func main() {
 
 	app.Use(cors.Default())
 
+	// Limit a single IP's request logs to 5 per minute
 	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
 		Rate:  time.Minute,
 		Limit: 5,
 	})
-	mw := ratelimit.RateLimiter(store, &ratelimit.Options{
+	rateLimiter := ratelimit.RateLimiter(store, &ratelimit.Options{
 		ErrorHandler: errorHandler,
 		KeyFunc:      keyFunc,
 	})
-	app.Use(mw)
+	app.Use(rateLimiter)
 
 	app.POST("/api/log-request", logRequestHandler(db))
 
@@ -124,8 +125,10 @@ func frameworkMap(framework string) (int16, error) {
 		return 14, nil
 	case "Sinatra":
 		return 15, nil
+	case "Rocket":
+		return 16, nil
 	default:
-		return -1, fmt.Errorf("error: invalid framework")
+		return -1, fmt.Errorf("invalid framework")
 	}
 }
 
@@ -169,7 +172,7 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 		}
 
 		if len(payload.Requests) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Payload empty."})
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Payload contains no logged requests."})
 			return
 		} else if payload.APIKey == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
@@ -179,6 +182,7 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 			query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES")
 			inserted := 0
 			for _, request := range payload.Requests {
+				// Temporary 1000 request per minute limit
 				if inserted > 1000 {
 					break
 				}
@@ -238,6 +242,7 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 				inserted += 1
 			}
 
+			// If no valid logged requests received
 			if inserted == 0 {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
 				return

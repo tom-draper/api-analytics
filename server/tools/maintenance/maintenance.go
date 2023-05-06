@@ -23,18 +23,22 @@ func DeleteUser(apiKey string) {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("User from table 'users'.")
 	err = database.DeleteRequests(apiKey)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("User from table 'requests'.")
 	err = database.DeleteMonitors(apiKey)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("User from table 'monitors'.")
 	err = database.DeletePings(apiKey)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("User from table 'pings'.")
 
 	fmt.Println("User deletion successful.")
 }

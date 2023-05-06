@@ -93,3 +93,23 @@ func TestTopUsers(t *testing.T) {
 		t.Error("no users found")
 	}
 }
+
+func TestUnusedUsers(t *testing.T) {
+	users, err := UnusedUsers()
+	if err != nil {
+		t.Error(err)
+	}
+	if len(users) == 0 {
+		t.Error("no users found")
+	}
+}
+
+func TestSinceLastRequestUsers(t *testing.T) {
+	users, err := SinceLastRequestUsers()
+	if err != nil {
+		t.Error(err)
+	}
+	if len(users) == 0 {
+		t.Error("no users found")
+	}
+}
