@@ -1,10 +1,8 @@
 package routes
 
 import (
-	"bytes"
 	"database/sql"
 	"fmt"
-	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -13,6 +11,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/gin-gonic/gin"
+	"github.com/tom-draper/api-analytics/server/database"
 )
 
 func genAPIKeyHandler(db *sql.DB) gin.HandlerFunc {
@@ -169,59 +168,29 @@ func getDataHandler(db *sql.DB) gin.HandlerFunc {
 	return gin.HandlerFunc(getData)
 }
 
-func sanitizeDate(date time.Time) bool {
-	return !date.IsZero()
-}
-
-func sanitizeHostname(value string) bool {
-	return value != "" && !strings.Contains(value, "DROP") && !strings.Contains(strings.ToLower(value), " or ") && !strings.Contains(strings.ToLower(value), " and ") && !strings.Contains(value, "--") && !strings.Contains(value, ";")
-}
-
-func sanitizeLocation(value string) bool {
-	return value != "" && !strings.Contains(value, "DROP") && !strings.Contains(strings.ToLower(value), " or ") && !strings.Contains(strings.ToLower(value), " and ") && !strings.Contains(value, "--") && !strings.Contains(value, ";") && len(value) == 2
-}
-
-func sanitizeStatus(value int) bool {
-	return value >= 100 && value <= 599
-}
-
-func sanitizeIPAddress(value string) bool {
-	if value == "" {
-		return false
-	}
-	ip := net.ParseIP(value)
-	if ip != nil {
-		return false
-	}
-	return true
-}
-
 func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
-	var query bytes.Buffer
+	var query strings.Builder
 	query.WriteString(fmt.Sprintf("SELECT hostname, ip_address, path, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s'", apiKey))
 
 	// Providing a single date takes priority over range with dateFrom and dateTo
-	if sanitizeDate(queries.date) {
+	if database.SanitizeDate(queries.date) {
 		query.WriteString(fmt.Sprintf(" and created_at >= '%s' and created_at < date '%s' + interval '1 days'", queries.date.Format("2006-01-02"), queries.date.Format("2006-01-02")))
 	} else {
-		if sanitizeDate(queries.dateFrom) {
+		if database.SanitizeDate(queries.dateFrom) {
 			query.WriteString(fmt.Sprintf(" and created_at >= '%s'", queries.dateFrom.Format("2006-01-02")))
 		}
-		if sanitizeDate(queries.dateTo) {
+		if database.SanitizeDate(queries.dateTo) {
 			query.WriteString(fmt.Sprintf(" and created_at <= '%s'", queries.dateTo.Format("2006-01-02")))
 		}
 	}
 
-	// if sanitizeString(queries.hostname) {
-	// 	query.WriteString(fmt.Sprintf(" and hostname = '%s'", queries.hostname))
-	// }
-	if sanitizeIPAddress(queries.ipAddress) {
+	if database.SanitizeIPAddress(queries.ipAddress) {
 		query.WriteString(fmt.Sprintf(" and ip_address = '%s'", queries.ipAddress))
 	}
-	if sanitizeLocation(queries.location) {
+	if database.SanitizeLocation(queries.location) {
 		query.WriteString(fmt.Sprintf(" and location = '%s'", queries.location))
 	}
-	if sanitizeStatus(queries.status) {
+	if database.SanitizeStatus(queries.status) {
 		query.WriteString(fmt.Sprintf(" and status = %s", queries.status))
 	}
 

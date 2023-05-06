@@ -1,11 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"database/sql"
 	"fmt"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
@@ -24,10 +24,10 @@ func main() {
 	app := gin.New()
 
 	app.Use(cors.Default())
-	
+
 	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
-		Rate:  time.Second,
-		Limit: 2,
+		Rate:  time.Minute,
+		Limit: 5,
 	})
 	mw := ratelimit.RateLimiter(store, &ratelimit.Options{
 		ErrorHandler: errorHandler,
@@ -86,7 +86,7 @@ func methodMap(method string) (int16, error) {
 	case "TRACE":
 		return 8, nil
 	default:
-		return -1, fmt.Errorf("error: invalid method")
+		return -1, fmt.Errorf("invalid method")
 	}
 }
 
@@ -129,23 +129,26 @@ func frameworkMap(framework string) (int16, error) {
 	}
 }
 
-func getCountryCode(IPAddress string) (string, error) {
-	var location string
-	if IPAddress != "" {
-		db, err := geoip2.Open("GeoLite2-Country.mmdb")
-		if err != nil {
-			return location, err
-		}
-		defer db.Close()
-
-		ip := net.ParseIP(IPAddress)
-		record, err := db.Country(ip)
-		if err != nil {
-			return location, err
-		}
-		location = record.Country.IsoCode
+func getCountryCode(IPAddress string) string {
+	if IPAddress == "" {
+		return ""
 	}
-	return location, nil
+	db, err := geoip2.Open("GeoLite2-Country.mmdb")
+	if err != nil {
+		return ""
+	}
+	defer db.Close()
+
+	ip := net.ParseIP(IPAddress)
+	if ip == nil {
+		return ""
+	}
+	record, err := db.Country(ip)
+	if err != nil {
+		return ""
+	}
+	location := record.Country.IsoCode
+	return location
 }
 
 func fmtNullableString(value string) string {
@@ -172,30 +175,40 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
 			return
 		} else {
-			var query bytes.Buffer
+			var query strings.Builder
 			query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES")
-			for i, request := range payload.Requests {
-				if i > 1000 {
+			inserted := 0
+			for _, request := range payload.Requests {
+				if inserted > 1000 {
 					break
 				}
 
-				location, _ := getCountryCode(request.IPAddress)
+				location := getCountryCode(request.IPAddress)
 
 				method, err := methodMap(request.Method)
 				if err != nil {
-					c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid method."})
-					return
+					continue
 				}
 
 				framework, err := frameworkMap(payload.Framework)
 				if err != nil {
-					c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid framework."})
-					return
+					continue
 				}
 
 				userAgent := request.UserAgent
 				if len(userAgent) > 255 {
 					userAgent = userAgent[:255]
+				}
+				if !database.SanitizeUserAgent(userAgent) {
+					continue
+				}
+
+				if !database.SanitizeHostname(request.Hostname) {
+					continue
+				}
+
+				if !database.SanitizePath(request.Path) {
+					continue
 				}
 
 				// Convert to NULL or '<value>' for SQL query
@@ -204,7 +217,7 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 				fmtUserAgent := fmtNullableString(userAgent)
 				fmtLocation := fmtNullableString(location)
 
-				if i > 0 {
+				if inserted > 0 {
 					query.WriteString(",")
 				}
 				query.WriteString(
@@ -222,7 +235,14 @@ func logRequestHandler(db *sql.DB) gin.HandlerFunc {
 						request.CreatedAt,
 					),
 				)
+				inserted += 1
 			}
+
+			if inserted == 0 {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
+				return
+			}
+
 			query.WriteString(";")
 
 			// Insert logged requests into database

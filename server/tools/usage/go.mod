@@ -2,8 +2,6 @@ module github.com/tom-draper/api-analytics/server/tools/usage
 
 go 1.20
 
-require github.com/tom-draper/api-analytics/server v0.0.0-20230401185346-c8804b86f8f7 // indirect
-
 require (
 	github.com/tom-draper/api-analytics/server/database v0.0.0-20230503144418-bae4a7f6835f
 	golang.org/x/text v0.9.0

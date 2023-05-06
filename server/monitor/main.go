@@ -1,12 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"database/sql"
 	"fmt"
 	"math/rand"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -84,7 +84,7 @@ func deleteExpiredPings(db *sql.DB) {
 }
 
 func uploadPings(pings []database.PingsRow, db *sql.DB) {
-	var query bytes.Buffer
+	var query strings.Builder
 	query.WriteString("INSERT INTO pings (api_key, url, response_time, status, created_at) VALUES")
 	for i, ping := range pings {
 		if i > 0 {

@@ -1,10 +1,10 @@
 package database
 
 import (
-	"bytes"
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -159,7 +159,7 @@ func InsertUserData(db *sql.DB, rows []UserRow) error {
 		return nil
 	}
 
-	var query bytes.Buffer
+	var query strings.Builder
 	query.WriteString("INSERT INTO users (api_key, user_id, created_at) VALUES")
 	for i, user := range rows {
 		if i > 0 {
@@ -179,10 +179,10 @@ func InsertRequestsData(db *sql.DB, rows []RequestRow) error {
 		return nil
 	}
 
-	var query bytes.Buffer
+	var query strings.Builder
 	for i, request := range rows {
 		if i%blockSize == 0 {
-			query = bytes.Buffer{}
+			query = strings.Builder{}
 			query.WriteString("INSERT INTO requests (api_key, method, created_at, path, status, response_time, framework, user_agent, hostname, ip_address, location) VALUES")
 		}
 		if i%blockSize > 0 {
@@ -226,7 +226,7 @@ func InsertMonitorData(db *sql.DB, rows []MonitorRow) error {
 		return nil
 	}
 
-	var query bytes.Buffer
+	var query strings.Builder
 	query.WriteString("INSERT INTO monitor (api_key, url, secure, ping, created_at) VALUES")
 	for i, monitor := range rows {
 		if i > 0 {
@@ -245,7 +245,7 @@ func InsertPingsData(db *sql.DB, rows []PingsRow) error {
 		return nil
 	}
 
-	var query bytes.Buffer
+	var query strings.Builder
 	query.WriteString("INSERT INTO pings (api_key, url, response_time, status, created_at) VALUES")
 	for i, monitor := range rows {
 		if i > 0 {
