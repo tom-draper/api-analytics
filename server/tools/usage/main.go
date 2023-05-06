@@ -74,13 +74,22 @@ func main() {
 
 	p.Println("---- Top Users --------------------")
 	topUsers, err := usage.TopUsers(10)
+	if err != nil {
+		panic(err)
+	}
 	usage.DisplayUsers(topUsers)
 
 	p.Println("---- Unused Users -----------------")
 	unusedUsers, err := usage.UnusedUsers()
+	if err != nil {
+		panic(err)
+	}
 	usage.DisplayUserTimes(unusedUsers)
 
 	p.Println("---- Users Since Last Request -----")
 	sinceLastRequestUsers, err := usage.SinceLastRequestUsers()
+	if err != nil {
+		panic(err)
+	}
 	usage.DisplayUserTimes(sinceLastRequestUsers)
 }
