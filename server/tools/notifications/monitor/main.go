@@ -2,11 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -18,12 +18,18 @@ import (
 
 var url string = "https://apianalytics-server.com/api/"
 
-func TestNewUser() error {
+func ServiceDown(service string) bool {
+	cmd := exec.Command("systemctl", "check", service)
+	_, err := cmd.CombinedOutput()
+	return err != nil
+}
+
+func TryNewUser() error {
 	response, err := http.Get(url + "generate-api-key")
 	if err != nil {
 		return err
 	} else if response.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("status code: %d", response.StatusCode))
+		return fmt.Errorf("status code: %d", response.StatusCode)
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
@@ -33,7 +39,7 @@ func TestNewUser() error {
 	sb := string(body)
 	apiKey := sb[1 : len(sb)-1]
 	if len(apiKey) != 36 {
-		return errors.New(fmt.Sprintf("uuid value returned is invalid"))
+		return fmt.Errorf("uuid value returned is invalid")
 	}
 
 	err = database.DeleteUser(apiKey)
@@ -43,7 +49,7 @@ func TestNewUser() error {
 	return nil
 }
 
-func TestFetchData() error {
+func TryFetchData() error {
 	client := http.Client{}
 	apiKey := getTestAPIKey()
 	request, err := http.NewRequest("GET", url+"data", nil)
@@ -59,7 +65,7 @@ func TestFetchData() error {
 	if err != nil {
 		return err
 	} else if response.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("status code: %d", response.StatusCode))
+		return fmt.Errorf("status code: %d", response.StatusCode)
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
@@ -72,13 +78,13 @@ func TestFetchData() error {
 	return err
 }
 
-func TestFetchDashboardData() error {
+func TryFetchDashboardData() error {
 	userID := getTestUserID()
 	response, err := http.Get(url + "requests/" + userID)
 	if err != nil {
 		return err
 	} else if response.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("status code: %d", response.StatusCode))
+		return fmt.Errorf("status code: %d", response.StatusCode)
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
@@ -91,13 +97,13 @@ func TestFetchDashboardData() error {
 	return err
 }
 
-func TestFetchUserID() error {
+func TryFetchUserID() error {
 	apiKey := getTestAPIKey()
 	response, err := http.Get(url + "user-id/" + apiKey)
 	if err != nil {
 		return err
 	} else if response.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("status code: %d", response.StatusCode))
+		return fmt.Errorf("status code: %d", response.StatusCode)
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
@@ -107,18 +113,18 @@ func TestFetchUserID() error {
 	sb := string(body)
 	userID := sb[1 : len(sb)-1]
 	if len(userID) != 36 {
-		return errors.New(fmt.Sprintf("uuid value returned is invalid"))
+		return fmt.Errorf("uuid value returned is invalid")
 	}
 	return nil
 }
 
-func TestFetchMonitorPings() error {
+func TryFetchMonitorPings() error {
 	userID := getTestUserID()
 	response, err := http.Get(url + "monitor/pings/" + userID)
 	if err != nil {
 		return err
 	} else if response.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("status code: %d", response.StatusCode))
+		return fmt.Errorf("status code: %d", response.StatusCode)
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
@@ -151,29 +157,72 @@ func getTestUserID() string {
 	return userID
 }
 
-func buildEmailBody(newUser error, fetchDashboardData error, fetchData error) string {
+func buildEmailBody(serviceStatus ServiceStatus, apiTestStatus APITestStatus) string {
 	var body strings.Builder
 	body.WriteString(fmt.Sprintf("Failure detected at %v\n", time.Now()))
-	if newUser != nil {
-		body.WriteString(fmt.Sprintf("Error when creating new user: %s\n", newUser.Error()))
+
+	if !serviceStatus.api {
+		body.WriteString("Service api down\n")
 	}
-	if fetchDashboardData != nil {
-		body.WriteString(fmt.Sprintf("Error when fetching dashboard data: %s\n", fetchDashboardData.Error()))
+	if !serviceStatus.logger {
+		body.WriteString("Service logger down\n")
 	}
-	if fetchData != nil {
-		body.WriteString(fmt.Sprintf("Error when fetching API data: %s\n", fetchData.Error()))
+	if !serviceStatus.nginx {
+		body.WriteString("Service nginx down\n")
 	}
+	if !serviceStatus.postgresql {
+		body.WriteString("Service postgresql down\n")
+	}
+
+	if apiTestStatus.newUser != nil {
+		body.WriteString(fmt.Sprintf("Error when creating new user: %s\n", apiTestStatus.newUser.Error()))
+	}
+	if apiTestStatus.fetchDashboardData != nil {
+		body.WriteString(fmt.Sprintf("Error when fetching dashboard data: %s\n", apiTestStatus.fetchDashboardData.Error()))
+	}
+	if apiTestStatus.fetchData != nil {
+		body.WriteString(fmt.Sprintf("Error when fetching API data: %s\n", apiTestStatus.fetchData.Error()))
+	}
+
 	return body.String()
 }
 
+type ServiceStatus struct {
+	api        bool
+	logger     bool
+	nginx      bool
+	postgresql bool
+}
+
+func (s ServiceStatus) ServiceDown() bool {
+	return s.api && s.logger && s.nginx && s.postgresql
+}
+
+type APITestStatus struct {
+	newUser            error
+	fetchDashboardData error
+	fetchData          error
+}
+
+func (s APITestStatus) TestFailed() bool {
+	return s.newUser != nil || s.fetchDashboardData != nil || s.fetchData != nil
+}
+
 func main() {
-	newUserSuccessful := TestNewUser()
-	fetchDashboardDataSuccessful := TestFetchDashboardData()
-	fetchDataSuccessful := TestFetchData()
-	newUserSuccessful = errors.New("test error")
-	if newUserSuccessful != nil || fetchDashboardDataSuccessful != nil || fetchDataSuccessful != nil {
+	serviceStatus := ServiceStatus{
+		api:        !ServiceDown("api"),
+		logger:     !ServiceDown("logger"),
+		nginx:      !ServiceDown("nginx"),
+		postgresql: !ServiceDown("postgreql"),
+	}
+	apiTestStatus := APITestStatus{
+		newUser:            TryNewUser(),
+		fetchDashboardData: TryFetchDashboardData(),
+		fetchData:          TryFetchData(),
+	}
+	if serviceStatus.ServiceDown() || apiTestStatus.TestFailed() {
 		address := email.GetEmailAddress()
-		body := buildEmailBody(newUserSuccessful, fetchDashboardDataSuccessful, fetchDataSuccessful)
+		body := buildEmailBody(serviceStatus, apiTestStatus)
 		err := email.SendEmail("Failure detected at API Analytics", body, address)
 		if err != nil {
 			panic(err)
