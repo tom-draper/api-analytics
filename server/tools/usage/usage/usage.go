@@ -20,11 +20,11 @@ func DisplayUserCounts(counts []UserCount) {
 	}
 }
 
-func DatabaseSize() (string, error) {
+func TableSize(table string) (string, error) {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
-	query := "SELECT pg_size_pretty(pg_total_relation_size('requests'));"
+	query := fmt.Sprintf("SELECT pg_size_pretty(pg_total_relation_size('%s'));", table)
 	rows, err := db.Query(query)
 	if err != nil {
 		return "", err
@@ -36,11 +36,11 @@ func DatabaseSize() (string, error) {
 	return size, err
 }
 
-func DatabaseColumnSize(column string) (string, error) {
+func TableColumnSize(table string, column string) (string, error) {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
-	query := fmt.Sprintf("SELECT pg_size_pretty(sum(pg_column_size(%s))) AS total_size, pg_size_pretty(avg(pg_column_size(%s))) AS average_size, sum(pg_column_size(%s)) * 100.0 / pg_total_relation_size('requests') AS percentage FROM requests;", column, column, column)
+	query := fmt.Sprintf("SELECT pg_size_pretty(sum(pg_column_size(%s))) AS total_size, pg_size_pretty(avg(pg_column_size(%s))) AS average_size, sum(pg_column_size(%s)) * 100.0 / pg_total_relation_size('%s') AS percentage FROM %s;", column, column, column, table, table)
 	rows, err := db.Query(query)
 	if err != nil {
 		return "", err

@@ -139,6 +139,37 @@ func UserRequests(days int) ([]UserCount, error) {
 	return requests, nil
 }
 
+type RequestsTableSize struct {
+	RequestID    string `json:"request_id"`
+	APIKey       string `json:"api_key"`
+	Path         string `json:"path"`
+	Hostname     string `json:"hostname"`
+	IPAddress    string `json:"ip_address"`
+	Location     string `json:"location"`
+	UserAgent    string `json:"user_agent"`
+	Method       string `json:"method"`
+	Status       string `json:"status"`
+	ResponseTime string `json:"response_time"`
+	Framework    string `json:"framework"`
+	CreatedAt    string `json:"created_at"`
+}
+
+func ColumnsSize() (RequestsTableSize, error) {
+	db := database.OpenDBConnection()
+	defer db.Close()
+
+	query := "SELECT pg_size_pretty(sum(pg_column_size(request_id))) AS request_id, pg_size_pretty(sum(pg_column_size(api_key))) AS api_key, pg_size_pretty(sum(pg_column_size(path))) AS path, pg_size_pretty(sum(pg_column_size(hostname))) AS hostname, pg_size_pretty(sum(pg_column_size(ip_address))) AS ip_address, pg_size_pretty(sum(pg_column_size(location))) AS location, pg_size_pretty(sum(pg_column_size(user_agent))) AS user_agent, pg_size_pretty(sum(pg_column_size(method))) AS method, pg_size_pretty(sum(pg_column_size(status))) AS status, pg_size_pretty(sum(pg_column_size(response_time))) AS response_time, pg_size_pretty(sum(pg_column_size(framework))) AS framework, pg_size_pretty(sum(pg_column_size(created_at))) AS created_at FROM requests;"
+	rows, err := db.Query(query)
+	if err != nil {
+		return RequestsTableSize{}, err
+	}
+
+	var size RequestsTableSize
+	rows.Next()
+	err = rows.Scan(&size.RequestID, &size.APIKey, &size.Path, &size.Hostname, &size.IPAddress, &size.Location, &size.UserAgent, &size.Method, &size.Status, &size.ResponseTime, &size.Framework, &size.CreatedAt)
+	return size, err
+}
+
 type StringCount struct {
 	Value string
 	Count string
