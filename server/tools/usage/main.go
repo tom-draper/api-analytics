@@ -15,11 +15,16 @@ func main() {
 		panic(err)
 	}
 	p.Println("Active database connections:", connections)
-	size, err := usage.DatabaseSize()
+	size, err := usage.TableSize("requests")
 	if err != nil {
 		panic(err)
 	}
 	p.Println("Database size:", size)
+	columnSize := usage.RequestsColumnSize()
+	if err != nil {
+		panic(err)
+	}
+	columnSize.Display()
 
 	p.Println("---- Last 24-hours ----------------")
 	dailyUsers, err := usage.DailyUsersCount()
