@@ -1,4 +1,4 @@
-module github.com/tom-draper/api-analytics/server/tools/monitor
+module github.com/tom-draper/api-analytics/server/tools/notifications/monitor
 
 go 1.20
 

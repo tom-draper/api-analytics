@@ -5,7 +5,7 @@ import (
 
 	"github.com/tom-draper/api-analytics/server/database"
 	"github.com/tom-draper/api-analytics/server/email"
-	"github.com/tom-draper/api-analytics/server/tools/usage/usage"
+	"github.com/tom-draper/api-analytics/server/tools/usage"
 )
 
 func emailBody(users []database.UserRow, usage []usage.UserCount, monitors []usage.UserCount, size string, connections int) string {
