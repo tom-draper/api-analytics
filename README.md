@@ -529,12 +529,12 @@ curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 
 Your data can be filtered by providing URL parameters in your request.
 
-- `date` - specifies a particular day (`YYYY-MM-DD`)
-- `dateFrom` - specifies the lower bound of a date range  (`YYYY-MM-DD`)
-- `dateTo` - specifies the upper bound of a date range  (`YYYY-MM-DD`)
-- `ipAddress` - an IP address string
-- `status` - an integer status code
-- `location` - a two-character location code
+- `date` - specifies a particular day the requests occurred on (`YYYY-MM-DD`)
+- `dateFrom` - specifies the lower bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `dateTo` - specifies the upper bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `ipAddress` - an IP address string of the client
+- `status` - an integer status code of the response
+- `location` - a two-character location code of the client
 
 Example:
 
