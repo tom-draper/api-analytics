@@ -197,7 +197,7 @@ app.use((ctx) => {
 });
 
 app.listen(8080, () =>
-  console.log('Server listening at https://localhost:8080')
+  console.log('Server listening at http://localhost:8080')
 );
 ```
 
@@ -529,12 +529,12 @@ curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 
 Your data can be filtered by providing URL parameters in your request.
 
-- `date` - specifies a particular day (`YYYY-MM-DD`)
-- `dateFrom` - specifies the lower bound of a date range  (`YYYY-MM-DD`)
-- `dateTo` - specifies the upper bound of a date range  (`YYYY-MM-DD`)
-- `ipAddress` - an IP address string
-- `status` - an integer status code
-- `location` - a two-character location code
+- `date` - specifies a particular day the requests occurred on (`YYYY-MM-DD`)
+- `dateFrom` - specifies the lower bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `dateTo` - specifies the upper bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `ipAddress` - an IP address string of the client
+- `status` - an integer status code of the response
+- `location` - a two-character location code of the client
 
 Example:
 
@@ -566,7 +566,7 @@ For any given request to your API, data recorded is limited to:
 
 Data collected is only ever used to populate your analytics dashboard. All data stored is anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
 
-### Delete Data
+### Data Deletion
 
 At any time, you can delete all stored data associated with your API key by going to https://apianalytics.dev/delete and entering your API key.
 
