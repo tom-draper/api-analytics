@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/tom-draper/api-analytics/server/tools/usage/usage"
+	"github.com/tom-draper/api-analytics/server/tools/usage"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
@@ -20,7 +20,7 @@ func main() {
 		panic(err)
 	}
 	p.Println("Database size:", size)
-	columnSize := usage.RequestsColumnSize()
+	columnSize, err := usage.RequestsColumnSize()
 	if err != nil {
 		panic(err)
 	}
