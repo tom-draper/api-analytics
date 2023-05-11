@@ -1,19 +1,8 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"os/exec"
-	"strings"
-	"time"
-
-	"github.com/tom-draper/api-analytics/server/database"
 	"github.com/tom-draper/api-analytics/server/email"
-
-	"github.com/joho/godotenv"
+	"github.com/tom-draper/api-analytics/server/tools/monitor"
 )
 
 type ServiceStatus struct {
@@ -39,19 +28,19 @@ func (s APITestStatus) TestFailed() bool {
 
 func main() {
 	serviceStatus := ServiceStatus{
-		api:        !ServiceDown("api"),
-		logger:     !ServiceDown("logger"),
-		nginx:      !ServiceDown("nginx"),
-		postgresql: !ServiceDown("postgreql"),
+		api:        !monitor.ServiceDown("api"),
+		logger:     !monitor.ServiceDown("logger"),
+		nginx:      !monitor.ServiceDown("nginx"),
+		postgresql: !monitor.ServiceDown("postgreql"),
 	}
 	apiTestStatus := APITestStatus{
-		newUser:            TryNewUser(),
-		fetchDashboardData: TryFetchDashboardData(),
-		fetchData:          TryFetchData(),
+		newUser:            monitor.TryNewUser(),
+		fetchDashboardData: monitor.TryFetchDashboardData(),
+		fetchData:          monitor.TryFetchData(),
 	}
 	if serviceStatus.ServiceDown() || apiTestStatus.TestFailed() {
 		address := email.GetEmailAddress()
-		body := buildEmailBody(serviceStatus, apiTestStatus)
+		body := email.buildEmailBody(serviceStatus, apiTestStatus)
 		err := email.SendEmail("Failure detected at API Analytics", body, address)
 		if err != nil {
 			panic(err)

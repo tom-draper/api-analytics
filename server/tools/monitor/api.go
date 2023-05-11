@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/tom-draper/api-analytics/server/database"
 )
 
 var url string = "https://apianalytics-server.com/api/"

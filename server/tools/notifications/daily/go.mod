@@ -3,9 +3,9 @@ module github.com/tom-draper/api-analytics/server/tools/notifications/daily
 go 1.20
 
 require (
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20230506133711-e3a2f42842bf
-	github.com/tom-draper/api-analytics/server/email v0.0.0-20230506133711-e3a2f42842bf
-	github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230506133711-e3a2f42842bf
+	github.com/tom-draper/api-analytics/server/database v0.0.0-20230511162938-ca7f8adc009d
+	github.com/tom-draper/api-analytics/server/email v0.0.0-20230511162938-ca7f8adc009d
+	github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230511162938-ca7f8adc009d
 )
 
 require (

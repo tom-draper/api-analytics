@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/tom-draper/api-analytics/server/tools/monitor"
 	"github.com/tom-draper/api-analytics/server/tools/usage"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -8,6 +9,19 @@ import (
 
 func main() {
 	p := message.NewPrinter(language.English)
+
+	apiDown := monitor.ServiceDown("api")
+	if apiDown {
+		p.Println("api: offline")
+	} else {
+		p.Println("api: live")
+	}
+	loggerDown := monitor.ServiceDown("logger")
+	if loggerDown {
+		p.Println("logger: offline")
+	} else {
+		p.Println("logger: live")
+	}
 
 	p.Println("---- Database --------------------")
 	connections, err := usage.DatabaseConnections()

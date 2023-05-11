@@ -6,7 +6,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/nedpals/supabase-go v0.2.0
 	github.com/oschwald/geoip2-golang v1.8.0
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20230506133711-e3a2f42842bf
+	github.com/tom-draper/api-analytics/server/database v0.0.0-20230511162938-ca7f8adc009d
 )
 
 require (

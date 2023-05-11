@@ -4,3 +4,5 @@ github.com/lib/pq v1.10.9 h1:YXG7RB+JIjhP29X+OtkiDnYaXQwpS4JEWq7dtCCRUEw=
 github.com/lib/pq v1.10.9/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20230511162938-ca7f8adc009d h1:W7NZp5bbN1omOB9dzTCeWYzOtXF+10LB0XvhlPch8mw=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20230511162938-ca7f8adc009d/go.mod h1:lIn0A0F5ajpY441EygoGIrBsd5phUoLjCgtKimTSK/I=
+golang.org/x/text v0.9.0 h1:2sjJmO8cDvYveuX97RDLsxlyUxLl+GHoLxBiRdHllBE=
+golang.org/x/text v0.9.0/go.mod h1:e1OnstbJyHTd6l/uOt8jFFHp6TRDWZR/bV3emEE/zU8=
