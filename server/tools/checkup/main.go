@@ -1,13 +1,48 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
+	"github.com/tom-draper/api-analytics/server/database"
+	"github.com/tom-draper/api-analytics/server/email"
 	"github.com/tom-draper/api-analytics/server/tools/monitor"
 	"github.com/tom-draper/api-analytics/server/tools/usage"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
 
-func main() {
+func emailBody(users []database.UserRow, usage []usage.UserCount, monitors []usage.UserCount, size string, connections int) string {
+	return fmt.Sprintf("%d new users\n%d requests\n%d monitors\nDatabase size: %s\nActive database connections: %d", len(users), len(usage), len(monitors), size, connections)
+}
+
+func email_checkup() {
+	users, err := usage.DailyUsers()
+	if err != nil {
+		panic(err)
+	}
+	usage, err := usage.DailyUsage()
+	if err != nil {
+		panic(err)
+	}
+	monitors, err := usage.DailyMonitors()
+	if err != nil {
+		panic(err)
+	}
+	size, err := usage.DatabaseSize()
+	if err != nil {
+		panic(err)
+	}
+	connections, err := usage.DatabaseConnections()
+	if err != nil {
+		panic(err)
+	}
+	body := emailBody(users, usage, monitors, size, connections)
+	address := email.GetEmailAddress()
+	email.SendEmail("API Analytics", body, address)
+}
+
+func print_checkup() {
 	p := message.NewPrinter(language.English)
 
 	apiDown := monitor.ServiceDown("api")
@@ -111,4 +146,12 @@ func main() {
 		panic(err)
 	}
 	usage.DisplayUserTimes(sinceLastRequestUsers)
+}
+
+func main() {
+	if len(os.Args) > 1 && os.Args[1] == "--email" {
+		email_checkup()
+	} else {
+		print_checkup()
+	}
 }

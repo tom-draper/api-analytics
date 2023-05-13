@@ -1,3 +1,11 @@
+github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
+github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
+github.com/lib/pq v1.10.9 h1:YXG7RB+JIjhP29X+OtkiDnYaXQwpS4JEWq7dtCCRUEw=
+github.com/lib/pq v1.10.9/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20230511203826-9b91dfbe6649 h1:KoHSBXCwpHTb2knNJjnlZlmWgQBYZLf7bgOZeBPf4b8=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20230511203826-9b91dfbe6649/go.mod h1:SQTCdpxNLRUzwokeY71HA2+8YokbcpUOTjifQONW3oM=
+github.com/tom-draper/api-analytics/server/email v0.0.0-20230511203826-9b91dfbe6649 h1:UJC358taqdPzfGOtYdC6Uj3C+RWZpc4KyHgOWe4gmZg=
+github.com/tom-draper/api-analytics/server/email v0.0.0-20230511203826-9b91dfbe6649/go.mod h1:OVOiclokr+iG+hkzATj1uEwuvvK0DggdVz5sYMYix2U=
 github.com/tom-draper/api-analytics/server/tools/monitor v0.0.0-20230511202400-d36b202836b7 h1:Iib/O/YwGYC4mu4KZiZqp84LShsuhd8IoL1p9b/1XKA=
 github.com/tom-draper/api-analytics/server/tools/monitor v0.0.0-20230511202400-d36b202836b7/go.mod h1:6kKg9zbbrZxv/05k6fPujJrPAxYNq7AD8tycT3GYfIw=
 golang.org/x/text v0.9.0 h1:2sjJmO8cDvYveuX97RDLsxlyUxLl+GHoLxBiRdHllBE=
