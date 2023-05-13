@@ -22,15 +22,15 @@ func email_checkup() {
 	if err != nil {
 		panic(err)
 	}
-	usage, err := usage.DailyUsage()
+	usage, err := usage.DailyUserRequests()
 	if err != nil {
 		panic(err)
 	}
-	monitors, err := usage.DailyMonitors()
+	monitors, err := usage.DailyUserMonitors()
 	if err != nil {
 		panic(err)
 	}
-	size, err := usage.DatabaseSize()
+	size, err := usage.TableSize("requests")
 	if err != nil {
 		panic(err)
 	}
