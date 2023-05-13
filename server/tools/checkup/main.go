@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/fatih/color"
 	"github.com/tom-draper/api-analytics/server/database"
 	"github.com/tom-draper/api-analytics/server/email"
 	"github.com/tom-draper/api-analytics/server/tools/monitor"
@@ -47,15 +48,15 @@ func print_checkup() {
 
 	apiDown := monitor.ServiceDown("api")
 	if apiDown {
-		p.Println("api: offline")
+		color.Red("api: offline")
 	} else {
-		p.Println("api: live")
+		color.Green("api: live")
 	}
 	loggerDown := monitor.ServiceDown("logger")
 	if loggerDown {
-		p.Println("logger: offline")
+		color.Red("logger: offline")
 	} else {
-		p.Println("logger: live")
+		color.Green("logger: live")
 	}
 
 	p.Println("---- Database --------------------")
