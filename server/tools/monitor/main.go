@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/tom-draper/api-analytics/server/email"
-	"github.com/tom-draper/api-analytics/server/tools/monitor"
+	"github.com/tom-draper/api-analytics/server/tools/monitor/monitor"
 )
 
 type ServiceStatus struct {
