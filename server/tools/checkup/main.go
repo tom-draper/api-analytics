@@ -13,8 +13,8 @@ import (
 	"golang.org/x/text/message"
 )
 
-func emailBody(users []database.UserRow, usage []usage.UserCount, monitors []usage.UserCount, size string, connections int) string {
-	return fmt.Sprintf("%d new users\n%d requests\n%d monitors\nDatabase size: %s\nActive database connections: %d", len(users), len(usage), len(monitors), size, connections)
+func emailBody(users []database.UserRow, requests []usage.UserCount, monitors []usage.UserCount, size string, connections int) string {
+	return fmt.Sprintf("%d new users\n%d requests\n%d monitors\nDatabase size: %s\nActive database connections: %d", len(users), len(requests), len(monitors), size, connections)
 }
 
 func email_checkup() {
@@ -22,7 +22,7 @@ func email_checkup() {
 	if err != nil {
 		panic(err)
 	}
-	usage, err := usage.DailyUserRequests()
+	requests, err := usage.DailyUserRequests()
 	if err != nil {
 		panic(err)
 	}
@@ -38,7 +38,7 @@ func email_checkup() {
 	if err != nil {
 		panic(err)
 	}
-	body := emailBody(users, usage, monitors, size, connections)
+	body := emailBody(users, requests, monitors, size, connections)
 	address := email.GetEmailAddress()
 	email.SendEmail("API Analytics", body, address)
 }
