@@ -105,10 +105,10 @@ type User struct {
 	CreatedAt      time.Time `json:"created_at"`
 }
 
-func DisplayUserTimes(users []UserTime) {
+func DisplayUsers(users []User) {
 	p := message.NewPrinter(language.English)
-	for i, user := range users {
-		p.Printf("[%d] %s %s (%s)\n", i, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
+	for _, c := range users {
+		p.Printf("%s: %d (+%d -- +%d) %s\n", c.APIKey, c.TotalRequests, c.DailyRequests, c.WeeklyRequests, c.CreatedAt.Format("2006-01-02"))
 	}
 }
 
@@ -168,8 +168,8 @@ type UserTime struct {
 
 func DisplayUserTimes(users []UserTime) {
 	p := message.NewPrinter(language.English)
-	for _, user := range users {
-		p.Printf("%s: %s (%s)", user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
+	for i, user := range users {
+		p.Printf("[%d] %s: %s (%s)\n", i, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
 	}
 }
 

@@ -7,7 +7,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/tom-draper/api-analytics/server/database"
 	"github.com/tom-draper/api-analytics/server/email"
-	"github.com/tom-draper/api-analytics/server/tools/monitor"
+	"github.com/tom-draper/api-analytics/server/tools/monitor/monitor"
 	"github.com/tom-draper/api-analytics/server/tools/usage"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
