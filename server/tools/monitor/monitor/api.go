@@ -147,6 +147,27 @@ func getTestUserID() string {
 	return userID
 }
 
+type ServiceStatus struct {
+	api        bool
+	logger     bool
+	nginx      bool
+	postgresql bool
+}
+
+func (s ServiceStatus) ServiceDown() bool {
+	return s.api && s.logger && s.nginx && s.postgresql
+}
+
+type APITestStatus struct {
+	newUser            error
+	fetchDashboardData error
+	fetchData          error
+}
+
+func (s APITestStatus) TestFailed() bool {
+	return s.newUser != nil || s.fetchDashboardData != nil || s.fetchData != nil
+}
+
 func buildEmailBody(serviceStatus ServiceStatus, apiTestStatus APITestStatus) string {
 	var body strings.Builder
 	body.WriteString(fmt.Sprintf("Failure detected at %v\n", time.Now()))

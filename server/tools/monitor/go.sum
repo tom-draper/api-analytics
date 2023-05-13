@@ -6,6 +6,8 @@ github.com/tom-draper/api-analytics/server/database v0.0.0-20230511162938-ca7f8a
 github.com/tom-draper/api-analytics/server/database v0.0.0-20230511162938-ca7f8adc009d/go.mod h1:lIn0A0F5ajpY441EygoGIrBsd5phUoLjCgtKimTSK/I=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20230511203826-9b91dfbe6649 h1:KoHSBXCwpHTb2knNJjnlZlmWgQBYZLf7bgOZeBPf4b8=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20230511203826-9b91dfbe6649/go.mod h1:SQTCdpxNLRUzwokeY71HA2+8YokbcpUOTjifQONW3oM=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20230513113345-2d573255f772 h1:OZSg4nx8/owHIAicG5JuBmkSqRf5jtJbOuxRIlfBpTE=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20230513113345-2d573255f772/go.mod h1:SQTCdpxNLRUzwokeY71HA2+8YokbcpUOTjifQONW3oM=
 github.com/tom-draper/api-analytics/server/email v0.0.0-20230511203826-9b91dfbe6649 h1:UJC358taqdPzfGOtYdC6Uj3C+RWZpc4KyHgOWe4gmZg=
 github.com/tom-draper/api-analytics/server/email v0.0.0-20230511203826-9b91dfbe6649/go.mod h1:OVOiclokr+iG+hkzATj1uEwuvvK0DggdVz5sYMYix2U=
 github.com/tom-draper/api-analytics/server/email v0.0.0-20230513111736-ebb638f14027 h1:fLXQ013bn1HN5xc7ldBeNy5rGIRTD7XgHAYIv4dSzM8=
