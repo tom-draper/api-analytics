@@ -189,7 +189,7 @@ func UnusedUsers() ([]UserTime, error) {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
-	query := "SELECT api_key, created_at, (NOW()::date - created_at) AS days FROM users u WHERE NOT EXISTS (SELECT FROM requests WHERE api_key = u.api_key) ORDER BY created_at;"
+	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM users u WHERE NOT EXISTS (SELECT FROM requests WHERE api_key = u.api_key) ORDER BY created_at;"
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -211,7 +211,7 @@ func SinceLastRequestUsers() ([]UserTime, error) {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
-	query := "SELECT api_key, created_at, (NOW()::date - created_at) AS days FROM (SELECT DISTINCT ON (api_key) api_key, created_at FROM requests ORDER BY api_key, created_at DESC) AS derived_table ORDER BY created_at;"
+	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM (SELECT DISTINCT ON (api_key) api_key, created_at FROM requests ORDER BY api_key, created_at DESC) AS derived_table ORDER BY created_at;"
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
