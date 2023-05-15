@@ -105,14 +105,14 @@ type User struct {
 }
 
 func DisplayUsers(users []User) {
-	var c func(a ...interface{}) string
+	var c func(format string, a ...interface{})
 	for i, user := range users {
 		if user.DailyRequests == 0 && user.TotalRequests == 0 {
-			c = color.New(color.FgRed).SprintFunc()
+			c = color.Red
 		} else if user.DailyRequests == 0 || user.TotalRequests == 0 {
-			c = color.New(color.FgYellow).SprintFunc()
+			c = color.Yellow
 		} else {
-			c = color.New(color.FgGreen).SprintFunc()
+			c = color.Green
 		}
 		c("[%d] %s %d (+%d / +%d) %s\n", i, user.APIKey, user.TotalRequests, user.DailyRequests, user.WeeklyRequests, user.CreatedAt.Format("2006-01-02"))
 	}
