@@ -46,20 +46,37 @@ func email_checkup() {
 func print_checkup() {
 	p := message.NewPrinter(language.English)
 
+	p.Println("---- Services -----------------------")
 	apiDown := monitor.ServiceDown("api")
+	fmt.Printf("api: ")
 	if apiDown {
-		color.Red("api: offline")
+		color.Red("offline")
 	} else {
-		color.Green("api: live")
+		color.Green("online")
 	}
 	loggerDown := monitor.ServiceDown("logger")
+	fmt.Printf("logger: ")
 	if loggerDown {
-		color.Red("logger: offline")
+		color.Red("offline")
 	} else {
-		color.Green("logger: live")
+		color.Green("online")
+	}
+	nginxDown := monitor.ServiceDown("nginx")
+	fmt.Printf("nginx: ")
+	if nginxDown {
+		color.Red("offline")
+	} else {
+		color.Green("online")
+	}
+	postgresqlDown := monitor.ServiceDown("postgresql")
+	fmt.Printf("postgresql: ")
+	if postgresqlDown {
+		color.Red("offline")
+	} else {
+		color.Green("online")
 	}
 
-	p.Println("---- Database --------------------")
+	p.Println("---- Database -----------------------")
 	connections, err := usage.DatabaseConnections()
 	if err != nil {
 		panic(err)
@@ -76,7 +93,7 @@ func print_checkup() {
 	}
 	columnSize.Display()
 
-	p.Println("---- Last 24-hours ----------------")
+	p.Println("---- Last 24-hours -------------------")
 	dailyUsers, err := usage.DailyUsersCount()
 	if err != nil {
 		panic(err)
@@ -93,7 +110,7 @@ func print_checkup() {
 	}
 	p.Println("Monitors:", dailyMonitors)
 
-	p.Println("---- Last week --------------------")
+	p.Println("---- Last week -----------------------")
 	weeklyUsers, err := usage.WeeklyUsersCount()
 	if err != nil {
 		panic(err)
@@ -110,7 +127,7 @@ func print_checkup() {
 	}
 	p.Println("Monitors:", weeklyMonitors)
 
-	p.Println("---- Total ------------------------")
+	p.Println("---- Total ---------------------------")
 	totalUsers, err := usage.UsersCount(0)
 	if err != nil {
 		panic(err)
@@ -127,21 +144,21 @@ func print_checkup() {
 	}
 	p.Println("Monitors:", totalMonitors)
 
-	p.Println("---- Top Users --------------------")
+	p.Println("---- Top Users -----------------------")
 	topUsers, err := usage.TopUsers(10)
 	if err != nil {
 		panic(err)
 	}
 	usage.DisplayUsers(topUsers)
 
-	p.Println("---- Unused Users -----------------")
+	p.Println("---- Unused Users --------------------")
 	unusedUsers, err := usage.UnusedUsers()
 	if err != nil {
 		panic(err)
 	}
 	usage.DisplayUserTimes(unusedUsers)
 
-	p.Println("---- Users Since Last Request -----")
+	p.Println("---- Users Since Last Request --------")
 	sinceLastRequestUsers, err := usage.SinceLastRequestUsers()
 	if err != nil {
 		panic(err)

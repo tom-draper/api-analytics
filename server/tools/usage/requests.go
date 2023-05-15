@@ -139,6 +139,28 @@ func UserRequests(days int) ([]UserCount, error) {
 	return requests, nil
 }
 
+func UserRequestsOverLimit(limit int) ([]UserCount, error) {
+	db := database.OpenDBConnection()
+	defer db.Close()
+
+	query := fmt.Sprintf("SELECT * FROM (SELECT api_key, COUNT(*) as count FROM requests GROUP BY api_key) as derived_table WHERE count > %d ORDER BY count;", limit)
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	var requests []UserCount
+	for rows.Next() {
+		userRequests := new(UserCount)
+		err := rows.Scan(&userRequests.APIKey, &userRequests.Count)
+		if err == nil {
+			requests = append(requests, *userRequests)
+		}
+	}
+
+	return requests, nil
+}
+
 type requestsColumnSize struct {
 	RequestID    string `json:"request_id"`
 	APIKey       string `json:"api_key"`
