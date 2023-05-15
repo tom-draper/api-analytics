@@ -105,16 +105,16 @@ type User struct {
 }
 
 func DisplayUsers(users []User) {
-	var c func(format string, a ...interface{})
+	var colorPrintf func(format string, a ...interface{})
 	for i, user := range users {
-		if user.DailyRequests == 0 && user.TotalRequests == 0 {
-			c = color.Red
-		} else if user.DailyRequests == 0 || user.TotalRequests == 0 {
-			c = color.Yellow
+		if user.DailyRequests == 0 && user.WeeklyRequests == 0 {
+			colorPrintf = color.Red
+		} else if user.DailyRequests == 0 || user.WeeklyRequests == 0 {
+			colorPrintf = color.Yellow
 		} else {
-			c = color.Green
+			colorPrintf = color.Green
 		}
-		c("[%d] %s %d (+%d / +%d) %s\n", i, user.APIKey, user.TotalRequests, user.DailyRequests, user.WeeklyRequests, user.CreatedAt.Format("2006-01-02"))
+		colorPrintf("[%d] %s %d (+%d / +%d) %s\n", i, user.APIKey, user.TotalRequests, user.DailyRequests, user.WeeklyRequests, user.CreatedAt.Format("2006-01-02"))
 	}
 }
 
@@ -173,11 +173,14 @@ type UserTime struct {
 }
 
 func DisplayUserTimes(users []UserTime) {
+	format := "[%d] %s %s (%s)\n"
 	for i, user := range users {
 		if time.Since(user.CreatedAt) > time.Hour*24*30*6 {
-			color.Red("[%d] %s %s (%s)\n", i, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
+			color.Red(format, i, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
+		} else if time.Since(user.CreatedAt) > time.Hour*24*30*3 {
+			color.Yellow(format, i, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
 		} else {
-			fmt.Printf("[%d] %s %s (%s)\n", i, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
+			fmt.Printf(format, i, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
 		}
 	}
 }
