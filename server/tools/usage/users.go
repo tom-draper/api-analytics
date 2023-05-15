@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/tom-draper/api-analytics/server/database"
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 )
 
 func DailyUsersCount() (int, error) {
@@ -106,9 +105,16 @@ type User struct {
 }
 
 func DisplayUsers(users []User) {
-	p := message.NewPrinter(language.English)
-	for _, c := range users {
-		p.Printf("%s: %d (+%d -- +%d) %s\n", c.APIKey, c.TotalRequests, c.DailyRequests, c.WeeklyRequests, c.CreatedAt.Format("2006-01-02"))
+	var c func(a ...interface{}) string
+	for i, user := range users {
+		if user.DailyRequests == 0 && user.TotalRequests == 0 {
+			c = color.New(color.FgRed).SprintFunc()
+		} else if user.DailyRequests == 0 || user.TotalRequests == 0 {
+			c = color.New(color.FgYellow).SprintFunc()
+		} else {
+			c = color.New(color.FgGreen).SprintFunc()
+		}
+		c("[%d] %s %d (+%d / +%d) %s\n", i, user.APIKey, user.TotalRequests, user.DailyRequests, user.WeeklyRequests, user.CreatedAt.Format("2006-01-02"))
 	}
 }
 
@@ -167,9 +173,12 @@ type UserTime struct {
 }
 
 func DisplayUserTimes(users []UserTime) {
-	p := message.NewPrinter(language.English)
 	for i, user := range users {
-		p.Printf("[%d] %s: %s (%s)\n", i, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
+		if time.Since(user.CreatedAt) > time.Hour*24*30*6 {
+			color.Red("[%d] %s %s (%s)\n", i, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
+		} else {
+			fmt.Printf("[%d] %s %s (%s)\n", i, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
+		}
 	}
 }
 
