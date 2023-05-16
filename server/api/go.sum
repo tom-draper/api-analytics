@@ -91,8 +91,8 @@ github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/stretchr/testify v1.8.2 h1:+h33VjcLVPDHtOdpUCuF+7gSuG3yGIftsP1YvFihtJ8=
 github.com/stretchr/testify v1.8.2/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
-github.com/tom-draper/api-analytics/server/database v0.0.0-20230511162938-ca7f8adc009d h1:W7NZp5bbN1omOB9dzTCeWYzOtXF+10LB0XvhlPch8mw=
-github.com/tom-draper/api-analytics/server/database v0.0.0-20230511162938-ca7f8adc009d/go.mod h1:lIn0A0F5ajpY441EygoGIrBsd5phUoLjCgtKimTSK/I=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20230516191941-6b7915597435 h1:HoZCTIKtert0SbdUqsfDF/fcP4i2maKneeAWvWK6Ado=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20230516191941-6b7915597435/go.mod h1:SQTCdpxNLRUzwokeY71HA2+8YokbcpUOTjifQONW3oM=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
 github.com/ugorji/go v1.2.7/go.mod h1:nF9osbDWLy6bDVv/Rtoh6QgnvNDpmCalQV5urGCCS6M=

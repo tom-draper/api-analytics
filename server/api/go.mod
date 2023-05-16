@@ -7,7 +7,7 @@ require (
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/lib/pq v1.10.9
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20230511162938-ca7f8adc009d
+	github.com/tom-draper/api-analytics/server/database v0.0.0-20230516191941-6b7915597435
 )
 
 require (

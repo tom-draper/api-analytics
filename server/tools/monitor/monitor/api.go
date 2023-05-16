@@ -148,7 +148,7 @@ func TryLogRequests() error {
 		"framework": "FastAPI",
 		"requests": []Request{
 			Request{
-				Path:         "\test",
+				Path:         "\\test",
 				Hostname:     "api-analytics.com",
 				IPAddress:    "192.168.0.1",
 				UserAgent:    "test",
@@ -158,7 +158,7 @@ func TryLogRequests() error {
 				CreatedAt:    time.Now().Format(time.RFC3339),
 			},
 			Request{
-				Path:         "\test",
+				Path:         "\\test",
 				Hostname:     "api-analytics.com",
 				IPAddress:    "192.168.0.1",
 				UserAgent:    "test",
@@ -226,34 +226,4 @@ type APITestStatus struct {
 
 func (s APITestStatus) TestFailed() bool {
 	return s.newUser != nil || s.fetchDashboardData != nil || s.fetchData != nil
-}
-
-func buildEmailBody(serviceStatus ServiceStatus, apiTestStatus APITestStatus) string {
-	var body strings.Builder
-	body.WriteString(fmt.Sprintf("Failure detected at %v\n", time.Now()))
-
-	if !serviceStatus.api {
-		body.WriteString("Service api down\n")
-	}
-	if !serviceStatus.logger {
-		body.WriteString("Service logger down\n")
-	}
-	if !serviceStatus.nginx {
-		body.WriteString("Service nginx down\n")
-	}
-	if !serviceStatus.postgresql {
-		body.WriteString("Service postgresql down\n")
-	}
-
-	if apiTestStatus.newUser != nil {
-		body.WriteString(fmt.Sprintf("Error when creating new user: %s\n", apiTestStatus.newUser.Error()))
-	}
-	if apiTestStatus.fetchDashboardData != nil {
-		body.WriteString(fmt.Sprintf("Error when fetching dashboard data: %s\n", apiTestStatus.fetchDashboardData.Error()))
-	}
-	if apiTestStatus.fetchData != nil {
-		body.WriteString(fmt.Sprintf("Error when fetching API data: %s\n", apiTestStatus.fetchData.Error()))
-	}
-
-	return body.String()
 }

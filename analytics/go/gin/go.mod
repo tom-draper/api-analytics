@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/gin-gonic/gin v1.9.0
-	github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230511202400-d36b202836b7
+	github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20230516191941-6b7915597435
 )
 
 require (
