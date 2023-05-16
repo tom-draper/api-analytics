@@ -1,6 +1,7 @@
 package monitor
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -112,6 +113,64 @@ func TryFetchUserID() error {
 func TryFetchMonitorPings() error {
 	userID := getTestUserID()
 	response, err := http.Get(url + "monitor/pings/" + userID)
+	if err != nil {
+		return err
+	} else if response.StatusCode != 200 {
+		return fmt.Errorf("status code: %d", response.StatusCode)
+	}
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+
+	var data interface{}
+	err = json.Unmarshal(body, &data)
+	return err
+}
+
+type Request struct {
+	Path         string `json:"path"`
+	Hostname     string `json:"hostname"`
+	IPAddress    string `json:"ip_address"`
+	UserAgent    string `json:"user_agent"`
+	Method       string `json:"method"`
+	Status       int16  `json:"status"`
+	ResponseTime int16  `json:"response_time"`
+	CreatedAt    string `json:"created_at"`
+}
+
+func TryLogRequests() error {
+	apiKey := getTestAPIKey()
+
+	postBody, _ := json.Marshal(map[string]interface{}{
+		"apiKey":    apiKey,
+		"framework": "FastAPI",
+		"requests": []Request{
+			Request{
+				Path:         "\test",
+				Hostname:     "api-analytics.com",
+				IPAddress:    "192.168.0.1",
+				UserAgent:    "test",
+				Method:       "GET",
+				Status:       200,
+				ResponseTime: 10,
+				CreatedAt:    time.Now().Format(time.RFC3339),
+			},
+			Request{
+				Path:         "\test",
+				Hostname:     "api-analytics.com",
+				IPAddress:    "192.168.0.1",
+				UserAgent:    "test",
+				Method:       "POST",
+				Status:       201,
+				ResponseTime: 20,
+				CreatedAt:    time.Now().Format(time.RFC3339),
+			},
+		},
+	})
+
+	response, err := http.Post(url+"log-request", "application/json", bytes.NewBuffer(postBody))
 	if err != nil {
 		return err
 	} else if response.StatusCode != 200 {

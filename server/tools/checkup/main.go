@@ -17,7 +17,7 @@ func emailBody(users []database.UserRow, requests []usage.UserCount, monitors []
 	return fmt.Sprintf("%d new users\n%d requests\n%d monitors\nDatabase size: %s\nActive database connections: %d", len(users), len(requests), len(monitors), size, connections)
 }
 
-func email_checkup() {
+func emailCheckup() {
 	users, err := usage.DailyUsers()
 	if err != nil {
 		panic(err)
@@ -43,10 +43,22 @@ func email_checkup() {
 	email.SendEmail("API Analytics", body, address)
 }
 
-func print_checkup() {
-	p := message.NewPrinter(language.English)
+func printCheckup() {
+	printServicesTest()
+	printAPITest()
 
-	p.Println("---- Services -----------------------")
+	printDatabaseStats()
+	printLast24Hours()
+	printLastWeek()
+	printTotal()
+
+	// printTopUsers()
+	// printUnusedUsers()
+	// printUsersSinceLastRequest()
+}
+
+func printServicesTest() {
+	fmt.Println("---- Services -----------------------")
 	apiDown := monitor.ServiceDown("api")
 	fmt.Printf("api: ")
 	if apiDown {
@@ -75,7 +87,63 @@ func print_checkup() {
 	} else {
 		color.Green("online")
 	}
+}
 
+func printAPITest() {
+	fmt.Println("---- API Test -----------------------")
+	var err error
+	err = monitor.TryNewUser()
+	fmt.Printf("/generate-api-key ")
+	if err != nil {
+		color.Red("offline")
+		fmt.Println(err)
+	} else {
+		color.Green("online")
+	}
+	err = monitor.TryFetchDashboardData()
+	fmt.Printf("/requests/<user-id> ")
+	if err != nil {
+		color.Red("offline")
+		fmt.Println(err)
+	} else {
+		color.Green("online")
+	}
+	err = monitor.TryFetchData()
+	fmt.Printf("/data ")
+	if err != nil {
+		color.Red("offline")
+		fmt.Println(err)
+	} else {
+		color.Green("online")
+	}
+	err = monitor.TryFetchUserID()
+	fmt.Printf("/user-id/<api-key> ")
+	if err != nil {
+		color.Red("offline")
+		fmt.Println(err)
+	} else {
+		color.Green("online")
+	}
+	err = monitor.TryFetchMonitorPings()
+	fmt.Printf("/monitor/pings/<user-id> ")
+	if err != nil {
+		color.Red("offline")
+		fmt.Println(err)
+	} else {
+		color.Green("online")
+	}
+	// err = monitor.TryLogRequests()
+	// fmt.Printf("/log-request ")
+	// if err != nil {
+	// 	color.Red("offline")
+	// 	fmt.Println(err)
+	// } else {
+	// 	color.Green("online")
+	// }
+}
+
+func printDatabaseStats() {
+	p := message.NewPrinter(language.English)
 	p.Println("---- Database -----------------------")
 	connections, err := usage.DatabaseConnections()
 	if err != nil {
@@ -92,7 +160,10 @@ func print_checkup() {
 		panic(err)
 	}
 	columnSize.Display()
+}
 
+func printLast24Hours() {
+	p := message.NewPrinter(language.English)
 	p.Println("---- Last 24-hours -------------------")
 	dailyUsers, err := usage.DailyUsersCount()
 	if err != nil {
@@ -109,7 +180,10 @@ func print_checkup() {
 		panic(err)
 	}
 	p.Println("Monitors:", dailyMonitors)
+}
 
+func printLastWeek() {
+	p := message.NewPrinter(language.English)
 	p.Println("---- Last week -----------------------")
 	weeklyUsers, err := usage.WeeklyUsersCount()
 	if err != nil {
@@ -126,7 +200,10 @@ func print_checkup() {
 		panic(err)
 	}
 	p.Println("Monitors:", weeklyMonitors)
+}
 
+func printTotal() {
+	p := message.NewPrinter(language.English)
 	p.Println("---- Total ---------------------------")
 	totalUsers, err := usage.UsersCount(0)
 	if err != nil {
@@ -143,22 +220,28 @@ func print_checkup() {
 		panic(err)
 	}
 	p.Println("Monitors:", totalMonitors)
+}
 
-	p.Println("---- Top Users -----------------------")
+func printTopUsers() {
+	fmt.Println("---- Top Users -----------------------")
 	topUsers, err := usage.TopUsers(10)
 	if err != nil {
 		panic(err)
 	}
 	usage.DisplayUsers(topUsers)
+}
 
-	p.Println("---- Unused Users --------------------")
+func printUnusedUsers() {
+	fmt.Println("---- Unused Users --------------------")
 	unusedUsers, err := usage.UnusedUsers()
 	if err != nil {
 		panic(err)
 	}
 	usage.DisplayUserTimes(unusedUsers)
+}
 
-	p.Println("---- Users Since Last Request --------")
+func printUsersSinceLastRequest() {
+	fmt.Println("---- Users Since Last Request --------")
 	sinceLastRequestUsers, err := usage.SinceLastRequestUsers()
 	if err != nil {
 		panic(err)
@@ -168,8 +251,8 @@ func print_checkup() {
 
 func main() {
 	if len(os.Args) > 1 && os.Args[1] == "--email" {
-		email_checkup()
+		emailCheckup()
 	} else {
-		print_checkup()
+		printCheckup()
 	}
 }

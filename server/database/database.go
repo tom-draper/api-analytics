@@ -124,6 +124,7 @@ func CreatePingsTable(db *sql.DB) error {
 
 func DeleteUser(apiKey string) error {
 	db := OpenDBConnection()
+	defer db.Close()
 
 	query := fmt.Sprintf("DELETE FROM users WHERE api_key = '%s';", apiKey)
 	_, err := db.Query(query)
@@ -132,6 +133,7 @@ func DeleteUser(apiKey string) error {
 
 func DeleteRequests(apiKey string) error {
 	db := OpenDBConnection()
+	defer db.Close()
 
 	query := fmt.Sprintf("DELETE FROM requests WHERE api_key = '%s';", apiKey)
 	_, err := db.Query(query)
@@ -140,6 +142,7 @@ func DeleteRequests(apiKey string) error {
 
 func DeleteMonitors(apiKey string) error {
 	db := OpenDBConnection()
+	defer db.Close()
 
 	query := fmt.Sprintf("DELETE FROM monitor WHERE api_key = '%s';", apiKey)
 	_, err := db.Query(query)
@@ -148,6 +151,7 @@ func DeleteMonitors(apiKey string) error {
 
 func DeletePings(apiKey string) error {
 	db := OpenDBConnection()
+	defer db.Close()
 
 	query := fmt.Sprintf("DELETE FROM pings WHERE api_key = '%s';", apiKey)
 	_, err := db.Query(query)

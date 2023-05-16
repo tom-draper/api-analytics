@@ -18,7 +18,7 @@ import (
 )
 
 func main() {
-	db := database.OpenDBConnection()
+	// db := database.OpenDBConnection()
 
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
@@ -36,7 +36,7 @@ func main() {
 	})
 	app.Use(rateLimiter)
 
-	app.POST("/api/log-request", logRequestHandler(db))
+	app.POST("/api/log-request", logRequest)
 
 	app.Run(":8000")
 }
@@ -159,6 +159,107 @@ func fmtNullableString(value string) string {
 		return "NULL"
 	} else {
 		return fmt.Sprintf("'%s'", value)
+	}
+}
+
+func logRequest(c *gin.Context) {
+	// Collect API request data sent via POST request
+	var payload Payload
+	if err := c.BindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
+		return
+	}
+
+	if len(payload.Requests) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Payload contains no logged requests."})
+		return
+	} else if payload.APIKey == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
+		return
+	} else {
+		var query strings.Builder
+		query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES")
+		inserted := 0
+		for _, request := range payload.Requests {
+			// Temporary 1000 request per minute limit
+			if inserted > 1000 {
+				break
+			}
+
+			location := getCountryCode(request.IPAddress)
+
+			method, err := methodMap(request.Method)
+			if err != nil {
+				continue
+			}
+
+			framework, err := frameworkMap(payload.Framework)
+			if err != nil {
+				continue
+			}
+
+			userAgent := request.UserAgent
+			if len(userAgent) > 255 {
+				userAgent = userAgent[:255]
+			}
+			if !database.SanitizeUserAgent(userAgent) {
+				continue
+			}
+
+			if !database.SanitizeHostname(request.Hostname) {
+				continue
+			}
+
+			if !database.SanitizePath(request.Path) {
+				continue
+			}
+
+			// Convert to NULL or '<value>' for SQL query
+			fmtHostname := fmtNullableString(request.Hostname)
+			fmtIPAddress := fmtNullableString(request.IPAddress)
+			fmtUserAgent := fmtNullableString(userAgent)
+			fmtLocation := fmtNullableString(location)
+
+			if inserted > 0 {
+				query.WriteString(",")
+			}
+			query.WriteString(
+				fmt.Sprintf("('%s','%s',%s,%s,%s,%d,%d,%d,%d,%s,'%s')",
+					payload.APIKey,
+					request.Path,
+					fmtHostname,
+					fmtIPAddress,
+					fmtUserAgent,
+					request.Status,
+					request.ResponseTime,
+					method,
+					framework,
+					fmtLocation,
+					request.CreatedAt,
+				),
+			)
+			inserted += 1
+		}
+
+		// If no valid logged requests received
+		if inserted == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
+			return
+		}
+
+		query.WriteString(";")
+
+		// Insert logged requests into database
+		db := database.OpenDBConnection()
+		_, err := db.Query(query.String())
+		db.Close()
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+			return
+		}
+
+		// Return success response
+		c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "API request logged successfully."})
 	}
 }
 
