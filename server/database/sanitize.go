@@ -18,8 +18,7 @@ func SanitizeString(value string) bool {
 		!strings.Contains(value, "UPDATE") &&
 		!strings.Contains(value, "SELECT") &&
 		!strings.Contains(value, "--") &&
-		!strings.Contains(value, "'") &&
-		!strings.Contains(value, ";"))
+		!strings.Contains(value, "'"))
 }
 
 func SanitizeHostname(hostname string) bool {

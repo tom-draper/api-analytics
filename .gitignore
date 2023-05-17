@@ -3,3 +3,4 @@ __pycache__
 upload.txt
 Project
 analytics/php
+analytics/rust/rocket
