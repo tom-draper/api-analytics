@@ -394,7 +394,7 @@ use axum::{
 use serde::Serialize;
 use std::net::SocketAddr;
 use tokio;
-use actum_analytics::Analytics;
+use axum_analytics::Analytics;
 
 #[derive(Serialize)]
 struct JsonData {
