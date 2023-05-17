@@ -6,7 +6,7 @@ A lightweight API analytics solution, complete with a dashboard.
 
 ### 1. Generate an API key
 
-Head to https://apianalytics.dev/generate to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It's also required in order to view your API analytics dashboard.
+Head to https://apianalytics.dev/generate to generate your unique API key with a single click. This key is used to monitor your API server and should be stored privately. It's also required in order to view your API analytics dashboard and data.
 
 ### 2. Add middleware to your API
 
@@ -106,6 +106,23 @@ fetch("https://apianalytics-server.com/api/data", {
 curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 ```
 
+##### Parameters
+
+Your data can be filtered by providing URL parameters in your request.
+
+- `date` - specifies a particular day the requests occurred on (`YYYY-MM-DD`)
+- `dateFrom` - specifies the lower bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `dateTo` - specifies the upper bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `ipAddress` - an IP address string of the client
+- `status` - an integer status code of the response
+- `location` - a two-character location code of the client
+
+Example:
+
+```bash
+curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?dateFrom=2022-01-01&dateTo=2022-06-01&status=200
+```
+
 ## Monitoring (coming soon)
 
 Opt-in active API monitoring is coming soon. Our servers will regularly ping your API endpoints to monitor uptime and response time. Optional email alerts to notify you when your endpoints are down can be subscribed to.
@@ -130,15 +147,11 @@ For any given request to your API, data recorded is limited to:
 
 Data collected is only ever used to populate your analytics dashboard. All data stored is anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
 
-### Delete Data
+### Data Deletion
 
 At any time, you can delete all stored data associated with your API key by going to https://apianalytics.dev/delete and entering your API key.
 
-API keys and their associated API request data are scheduled be deleted after 1 year of inactivity.
-
-## Development
-
-This project is still in the early stages of development and bugs are to be expected.
+API keys and their associated API request data are scheduled to be deleted after 6 months of inactivity.
 
 ## Contributions
 
@@ -149,3 +162,4 @@ Contributions, issues and feature requests are welcome.
 - Commit your changes (`git commit -am 'Add some feature'`)
 - Push to the branch (`git push origin my-new-feature`)
 - Create a new Pull Request
+
