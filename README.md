@@ -346,7 +346,7 @@ cargo add actix-analytics
 ```
 
 ```rust
-use actix_web::{get, web, Responder, Result};
+use actix_web::{get, web, App, HttpServer, Responder, Result};
 use serde::Serialize;
 use actix_analytics::Analytics;
 
@@ -365,8 +365,6 @@ async fn index() -> Result<impl Responder> {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    use actix_web::{App, HttpServer};
-
     HttpServer::new(|| {
         App::new()
             .wrap(Analytics::new(<API-KEY>))  // Add middleware
