@@ -6,7 +6,7 @@ Currently compatible with:
  - Python: <b>FastAPI</b>, <b>Flask</b>, <b>Django</b> and <b>Tornado</b>
  - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
  - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
- - Rust: <b>Actix</b> and <b>Axum</b>
+ - Rust: <b>Actix</b>, <b>Axum</b> and <b>Rocket</b>
  - Ruby: <b>Rails</b> and <b>Sinatra</b>
 
 ## Getting Started
@@ -419,6 +419,42 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
+}
+```
+
+### Rocket
+
+[![Crates.io](https://img.shields.io/crates/v/rocket-analytics.svg)](https://crates.io/crates/rocket-analytics)
+
+```bash
+cargo add rocket-analytics
+```
+
+```rust
+#[macro_use]
+extern crate rocket;
+use rocket::serde::json::Json;
+use rocket_analytics::Analytics;
+use serde::Serialize;
+
+#[derive(Serialize)]
+pub struct JsonData {
+    message: String,
+}
+
+#[get("/")]
+fn root() -> Json<JsonData> {
+    let data = JsonData {
+        message: "Hello World".to_string(),
+    };
+    Json(data)
+}
+
+#[launch]
+fn rocket() -> _ {
+    rocket::build()
+        .mount("/", routes![root])
+        .attach(Analytics::new(<API-KEY>))
 }
 ```
 
