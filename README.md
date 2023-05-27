@@ -104,7 +104,6 @@ from api_analytics.tornado import Analytics
 # Inherit from the Analytics middleware class
 class MainHandler(Analytics):
     def __init__(self, app, res):
-        api_key = os.environ.get("API_KEY")
         super().__init__(app, res, <API-KEY>)  # Provide api key
     
     def get(self):
