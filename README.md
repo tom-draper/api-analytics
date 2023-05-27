@@ -6,7 +6,7 @@ Currently compatible with:
  - Python: <b>FastAPI</b>, <b>Flask</b>, <b>Django</b> and <b>Tornado</b>
  - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
  - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
- - Rust: <b>Actix</b> and <b>Axum</b>
+ - Rust: <b>Actix</b>, <b>Axum</b> and <b>Rocket</b>
  - Ruby: <b>Rails</b> and <b>Sinatra</b>
 
 ## Getting Started
@@ -80,7 +80,7 @@ Assign your API key to `ANALYTICS_API_KEY` in `settings.py` and add the Analytic
 ANALYTICS_API_KEY = <API-KEY>
 
 MIDDLEWARE = [
-    'api_analytics.django.Analytics',
+    'api_analytics.django.Analytics',  # Add middleware
     ...
 ]
 ```
@@ -104,7 +104,6 @@ from api_analytics.tornado import Analytics
 # Inherit from the Analytics middleware class
 class MainHandler(Analytics):
     def __init__(self, app, res):
-        api_key = os.environ.get("API_KEY")
         super().__init__(app, res, <API-KEY>)  # Provide api key
     
     def get(self):
@@ -197,7 +196,7 @@ app.use((ctx) => {
 });
 
 app.listen(8080, () =>
-  console.log('Server listening at https://localhost:8080')
+  console.log('Server listening at http://localhost:8080')
 );
 ```
 
@@ -263,7 +262,7 @@ func main() {
 
     router := echo.New()
 
-    router.Use(analytics.Analytics(apiKey))
+    router.Use(analytics.Analytics(apiKey)) // Add middleware
 
     router.GET("/", root)
     router.Start(":8080")
@@ -346,7 +345,7 @@ cargo add actix-analytics
 ```
 
 ```rust
-use actix_web::{get, web, Responder, Result};
+use actix_web::{get, web, App, HttpServer, Responder, Result};
 use serde::Serialize;
 use actix_analytics::Analytics;
 
@@ -365,8 +364,6 @@ async fn index() -> Result<impl Responder> {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    use actix_web::{App, HttpServer};
-
     HttpServer::new(|| {
         App::new()
             .wrap(Analytics::new(<API-KEY>))  // Add middleware
@@ -394,7 +391,7 @@ use axum::{
 use serde::Serialize;
 use std::net::SocketAddr;
 use tokio;
-use actum_analytics::Analytics;
+use axum_analytics::Analytics;
 
 #[derive(Serialize)]
 struct JsonData {
@@ -419,6 +416,42 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
+}
+```
+
+#### Rocket
+
+[![Crates.io](https://img.shields.io/crates/v/rocket-analytics.svg)](https://crates.io/crates/rocket-analytics)
+
+```bash
+cargo add rocket-analytics
+```
+
+```rust
+#[macro_use]
+extern crate rocket;
+use rocket::serde::json::Json;
+use rocket_analytics::Analytics;
+use serde::Serialize;
+
+#[derive(Serialize)]
+pub struct JsonData {
+    message: String,
+}
+
+#[get("/")]
+fn root() -> Json<JsonData> {
+    let data = JsonData {
+        message: "Hello World".to_string(),
+    };
+    Json(data)
+}
+
+#[launch]
+fn rocket() -> _ {
+    rocket::build()
+        .mount("/", routes![root])
+        .attach(Analytics::new(<API-KEY>))
 }
 ```
 
@@ -525,6 +558,23 @@ fetch("https://apianalytics-server.com/api/data", {
 curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 ```
 
+##### Parameters
+
+Your data can be filtered by providing URL parameters in your request.
+
+- `date` - specifies a particular day the requests occurred on (`YYYY-MM-DD`)
+- `dateFrom` - specifies the lower bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `dateTo` - specifies the upper bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `ipAddress` - an IP address string of the client
+- `status` - an integer status code of the response
+- `location` - a two-character location code of the client
+
+Example:
+
+```bash
+curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?dateFrom=2022-01-01&dateTo=2022-06-01&status=200
+```
+
 ## Monitoring (coming soon)
 
 Opt-in active API monitoring is coming soon. Our servers will regularly ping your API endpoints to monitor uptime and response time. Optional email alerts to notify you when your endpoints are down can be subscribed to.
@@ -549,11 +599,11 @@ For any given request to your API, data recorded is limited to:
 
 Data collected is only ever used to populate your analytics dashboard. All data stored is anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
 
-### Delete Data
+### Data Deletion
 
 At any time, you can delete all stored data associated with your API key by going to https://apianalytics.dev/delete and entering your API key.
 
-API keys and their associated API request data are scheduled be deleted after 1 year of inactivity.
+API keys and their associated API request data are scheduled to be deleted after 6 months of inactivity.
 
 ## Contributions
 

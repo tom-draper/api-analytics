@@ -52,16 +52,16 @@
   }
 
   function periodToMarkers(period: string): number {
-    if (period === "24h") {
-      return 24 * 2;
-    } else if (period === "7d") {
-      return 12 * 7;
-    } else if (period === "30d") {
-      return 30 * 4;
-    } else if (period === "60d") {
-      return 60 * 2;
-    } else {
-      return null;
+    switch (period) {
+      case "24h":
+        return 38;
+      case "7d":
+        return 84;
+      case "30d":
+      case "60d":
+        return 120;
+      default:
+        return null;
     }
   }
 
@@ -69,23 +69,25 @@
     /* Sample ping recordings at regular intervals if number of bars fewer than 
     total recordings the current period length */
     let sample = [];
-    if (period == "30d") {
-      // Sample 1 in 4
-      for (let i = 0; i < data[url].length; i++) {
-        if (i % 4 == 0) {
-          sample.push(data[url][i]);
+    switch (period) {
+      case "30d":
+        // Sample 1 in 4
+        for (let i = 0; i < data[url].length; i++) {
+          if (i % 4 == 0) {
+            sample.push(data[url][i]);
+          }
         }
-      }
-    } else if (period == "60d") {
-      // Sample 1 in 8
-      for (let i = 0; i < data[url].length; i++) {
-        if (i % 8 == 0) {
-          sample.push(data[url][i]);
+        break;
+      case "60d":
+        // Sample 1 in 8
+        for (let i = 0; i < data[url].length; i++) {
+          if (i % 8 == 0) {
+            sample.push(data[url][i]);
+          }
         }
-      }
-    } else {
-      // No sampling - use all
-      sample = data[url];
+        break;
+      default:
+        sample = data[url];
     }
     return sample;
   }

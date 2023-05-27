@@ -2,7 +2,9 @@
   import { onMount } from "svelte";
 
   function getDevice(userAgent: string): string {
-    if (userAgent.match(/iPhone/)) {
+    if (userAgent == null) {
+      return "Unknown";
+    } else if (userAgent.match(/iPhone/)) {
       return "iPhone";
     } else if (userAgent.match(/Android/)) {
       return "Android";

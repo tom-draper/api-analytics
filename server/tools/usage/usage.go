@@ -1,106 +1,73 @@
-package main
+package usage
 
 import (
 	"fmt"
 
 	"github.com/tom-draper/api-analytics/server/database"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
-func TotalRequests() {
-	db := database.OpenDBConnection()
-
-	query := "SELECT COUNT(*) AS count FROM requests;"
-	rows, err := db.Query(query)
-	if err != nil {
-		panic(err)
-	}
-
-	var count int
-	rows.Next()
-	err = rows.Scan(&count)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(count)
-}
-
-type UserRequestCount struct {
+type UserCount struct {
 	APIKey string
-	Count  string
+	Count  int
 }
 
-func TopUsers() {
-	db := database.OpenDBConnection()
+func DisplayUserCounts(counts []UserCount) {
+	p := message.NewPrinter(language.English)
+	for _, c := range counts {
+		p.Printf("%s: %d\n", c.APIKey, c.Count)
+	}
+}
 
-	query := "SELECT api_key, COUNT(*) AS count FROM requests GROUP BY api_key ORDER BY count DESC;"
+func TableSize(table string) (string, error) {
+	db := database.OpenDBConnection()
+	defer db.Close()
+
+	query := fmt.Sprintf("SELECT pg_size_pretty(pg_total_relation_size('%s'));", table)
 	rows, err := db.Query(query)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
-	var requests []UserRequestCount
-	for rows.Next() {
-		request := new(UserRequestCount)
-		err := rows.Scan(&request.APIKey, &request.Count)
-		if err == nil {
-			requests = append(requests, *request)
-		}
-	}
-
-	fmt.Println(requests)
+	var size string
+	rows.Next()
+	err = rows.Scan(&size)
+	return size, err
 }
 
-func NewUsers() {
+func TableColumnSize(table string, column string) (string, error) {
 	db := database.OpenDBConnection()
+	defer db.Close()
 
-	query := "SELECT * FROM users WHERE created_at >= NOW() - interval '7 days';"
+	query := fmt.Sprintf("SELECT pg_size_pretty(sum(pg_column_size(%s))) AS total_size, pg_size_pretty(avg(pg_column_size(%s))) AS average_size, sum(pg_column_size(%s)) * 100.0 / pg_total_relation_size('%s') AS percentage FROM %s;", column, column, column, table, table)
 	rows, err := db.Query(query)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
-	var users []database.UserRow
-	for rows.Next() {
-		user := new(database.UserRow)
-		err := rows.Scan(&user.APIKey, &user.UserID, &user.CreatedAt)
-		if err == nil {
-			users = append(users, *user)
-		}
+	var size struct {
+		totalSize   string
+		averageSize float64
+		percentage  float64
 	}
-
-	fmt.Println(users)
+	rows.Next()
+	err = rows.Scan(&size.totalSize, &size.averageSize, &size.percentage)
+	return size.totalSize, err
 }
 
-func DailyUsage() {
-	Usage(1)
-}
-
-func WeeklyUsage() {
-	Usage(7)
-}
-
-func MonthlyUsage() {
-	Usage(30)
-}
-
-func Usage(days int) {
+func DatabaseConnections() (int, error) {
 	db := database.OpenDBConnection()
+	defer db.Close()
 
-	query := fmt.Sprintf("SELECT api_key, COUNT(*) AS count FROM requests where created_at >= NOW() - interval '%d day' GROUP BY api_key ORDER BY count DESC;", days)
+	query := "SELECT count(*) from pg_stat_activity;"
 	rows, err := db.Query(query)
 	if err != nil {
-		panic(err)
+		return 0, err
 	}
 
-	var requests []UserRequestCount
-	for rows.Next() {
-		request := new(UserRequestCount)
-		err := rows.Scan(&request.APIKey, &request.Count)
-		if err == nil {
-			requests = append(requests, *request)
-		}
-	}
-
-	fmt.Println(requests)
+	var connections int
+	rows.Next()
+	err = rows.Scan(&connections)
+	return connections, err
 }

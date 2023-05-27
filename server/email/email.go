@@ -15,9 +15,19 @@ func getEmailLogin() (string, string) {
 		panic(err)
 	}
 
-	address := os.Getenv("EMAIL_ADDRESS")
-	password := os.Getenv("EMAIL_PASSWORD")
+	address := os.Getenv("AUTOMATION_EMAIL_ADDRESS")
+	password := os.Getenv("AUTOMATION_EMAIL_PASSWORD")
 	return address, password
+}
+
+func GetEmailAddress() string {
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic(err)
+	}
+
+	address := os.Getenv("EMAIL_ADDRESS")
+	return address
 }
 
 // Login solution provided by andelf
@@ -55,13 +65,17 @@ func SendEmail(subject string, body string, dest string) error {
 	address, password := getEmailLogin()
 	from := address
 
+	fmt.Println(address, password)
+
 	auth := LoginAuth(address, password)
+	fmt.Println("logged in")
 
 	to := []string{dest}
 
 	msg := []byte(fmt.Sprintf("From: %s\nTo: %s\nSubject: %s\nOK", from, dest, subject))
 
 	endpoint := fmt.Sprintf("%s:%d", server, port)
+	fmt.Println(endpoint)
 	err := smtp.SendMail(endpoint, auth, from, to, msg)
 	return err
 }

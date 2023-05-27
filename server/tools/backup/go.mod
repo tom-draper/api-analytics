@@ -1,9 +1,10 @@
-module backup
+module github.com/tom-draper/api-analytics/server/tools/backup
 
 go 1.20
 
+require github.com/tom-draper/api-analytics/server/database v0.0.0-20230516191941-6b7915597435
+
 require (
 	github.com/joho/godotenv v1.5.1 // indirect
-	github.com/lib/pq v1.10.7 // indirect
-	github.com/tom-draper/api-analytics v0.0.0-20230410181157-3cc55d695897 // indirect
+	github.com/lib/pq v1.10.9 // indirect
 )

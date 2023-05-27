@@ -1,12 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"database/sql"
 	"fmt"
 	"math/rand"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -37,22 +37,22 @@ func ping(client http.Client, domain string, secure bool, ping bool) (int, time.
 	url := getURL(domain, secure)
 	method := getMethod(ping)
 
-	req, err := http.NewRequest(method, url, nil)
+	request, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		return 0, time.Duration(0), err
 	}
 
 	// Make request
 	start := time.Now()
-	resp, err := client.Do(req)
+	response, err := client.Do(request)
 	if err != nil {
 		return 0, time.Duration(0), err
 	}
 	elapsed := time.Since(start)
 
-	resp.Body.Close()
+	response.Body.Close()
 
-	return resp.StatusCode, elapsed, nil
+	return response.StatusCode, elapsed, nil
 }
 
 func getMonitoredURLs(db *sql.DB) []database.MonitorRow {
@@ -75,7 +75,7 @@ func getMonitoredURLs(db *sql.DB) []database.MonitorRow {
 	return monitors
 }
 
-func deleteOldPings(db *sql.DB) {
+func deleteExpiredPings(db *sql.DB) {
 	query := fmt.Sprintf("DELETE FROM pings WHERE created_at < '%s';", time.Now().Add(-60*24*time.Hour).UTC().Format("2006-01-02T15:04:05-0700"))
 	_, err := db.Query(query)
 	if err != nil {
@@ -84,7 +84,7 @@ func deleteOldPings(db *sql.DB) {
 }
 
 func uploadPings(pings []database.PingsRow, db *sql.DB) {
-	var query bytes.Buffer
+	var query strings.Builder
 	query.WriteString("INSERT INTO pings (api_key, url, response_time, status, created_at) VALUES")
 	for i, ping := range pings {
 		if i > 0 {
@@ -145,5 +145,5 @@ func main() {
 	client := getClient()
 	pings := pingMonitored(monitored, client, db)
 	uploadPings(pings, db)
-	deleteOldPings(db)
+	deleteExpiredPings(db)
 }

@@ -6,12 +6,12 @@ keywords = ["api", "analytics", "axum", "dashboard", "middleware"]
 license = "MIT"
 name = "axum-analytics"
 repository = "https://github.com/tom-draper/api-analytics"
-version = "1.1.1"
+version = "1.1.2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-crate-type = ["lib"] # The crate types to generate.      
+crate-type = ["lib"] # The crate types to generate.       
 path = "src/analytics.rs" # The source file of the target.
 
 [dependencies]

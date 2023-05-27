@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/csv"
 	"fmt"
@@ -9,6 +8,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/tom-draper/api-analytics/server/database"
@@ -58,7 +58,7 @@ func FixUserAgents() {
 	}
 
 	// "user_agent","method","created_at","path","api_key","status","response_time","request_id","framework","hostname","ip_address","location"
-	var query bytes.Buffer
+	var query strings.Builder
 	query.WriteString("UPDATE requests as r SET user_agent = r2.user_agent from (values ")
 	for i, record := range records {
 		var userAgent string = record[0]
@@ -139,13 +139,13 @@ func MigrateSupabaseRequests() {
 	result := readRequests()
 
 	var db *sql.DB
-	var query bytes.Buffer
+	var query strings.Builder
 	i := 0
 	for _, request := range result {
 		if i > 0 {
 			query.WriteString(",")
 		} else {
-			query = bytes.Buffer{}
+			query = strings.Builder{}
 			query.WriteString("INSERT INTO requests (api_key, method, created_at, path, status, response_time, framework, hostname, ip_address, location) VALUES")
 		}
 		if request.IPAddress == "" || request.IPAddress == "testclient" {
@@ -190,7 +190,7 @@ func MigrateSupabaseUsers(db *sql.DB, supabase *supa.Client) {
 		panic(err)
 	}
 
-	var query bytes.Buffer
+	var query strings.Builder
 	query.WriteString("INSERT INTO users (api_key, user_id, created_at) VALUES")
 	for i, user := range result {
 		if i > 0 {
@@ -213,7 +213,7 @@ func MigrateSupabaseMonitors(db *sql.DB, supabase *supa.Client) {
 		panic(err)
 	}
 
-	var query bytes.Buffer
+	var query strings.Builder
 	query.WriteString("INSERT INTO monitor (api_key, url, secure, ping, created_at) VALUES")
 	for i, monitor := range result {
 		if i > 0 {
@@ -236,7 +236,7 @@ func MigrateSupabasePings(db *sql.DB, supabase *supa.Client) {
 		panic(err)
 	}
 
-	var query bytes.Buffer
+	var query strings.Builder
 	query.WriteString("INSERT INTO pings (api_key, url, response_time, status, created_at) VALUES")
 	for i, monitor := range result {
 		if i > 0 {

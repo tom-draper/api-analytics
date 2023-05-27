@@ -2,6 +2,9 @@
   import { onMount } from "svelte";
 
   function getBrowser(userAgent: string): string {
+    if (userAgent == null) {
+      return "Unknown";
+    }
     if (userAgent.match(/curl\//)) {
       return "Curl";
     } else if (userAgent.match(/PostmanRuntime\//)) {

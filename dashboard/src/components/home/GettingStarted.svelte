@@ -20,6 +20,7 @@
     ["go", "Chi"],
     ["rust", "Actix"],
     ["rust", "Axum"],
+    ["rust", "Rocket"],
     ["ruby", "Rails"],
     ["ruby", "Sinatra"],
   ];

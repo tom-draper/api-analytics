@@ -1,10 +1,16 @@
 package email
 
-import "testing"
+import (
+	"os"
+	"testing"
 
-func TestSendEmail(t *testing.T){
-    err := SendEmail("Test Subject", "Test Body", "")
-    if err != nil {
+	"github.com/joho/godotenv"
+)
+
+func TestSendEmail(t *testing.T) {
+	address := GetEmailAddress()
+	err := SendEmail("Test Subject", "Test Body", address)
+	if err != nil {
 		t.Error(err)
 	}
 }
