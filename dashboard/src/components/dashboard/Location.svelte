@@ -60,6 +60,7 @@
 <div class="card">
   <div class="card-title">Location</div>
   {#if locations.length > 0}
+    <div class="locations-count">{locations.length} locations</div>
     <div class="bars">
       {#each locations as location}
         <div class="bar-container">
@@ -84,6 +85,7 @@
   .card {
     flex: 1.2;
     margin: 2em 1em 2em 0;
+    position: relative;
   }
   .bars {
     height: 150px;
@@ -122,6 +124,13 @@
   }
   .label {
     padding-top: 8px;
+  }
+  .locations-count {
+    position: absolute;
+    top: 1.5em;
+    right: 2em;
+    font-size: 0.9em;
+    color: #505050;
   }
 
   @media screen and (max-width: 1600px) {

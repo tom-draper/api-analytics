@@ -191,6 +191,7 @@
     position: relative;
     flex-grow: 1;
     z-index: 1;
+    pointer-events: none;
     color: #505050;
     padding: 3px 12px;
   }

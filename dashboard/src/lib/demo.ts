@@ -152,25 +152,28 @@ export default function genDemoData(): RequestsData {
     addDemoSamples(demoData, "/v2/", 200, 7000, [0, 70], [100, 200], [0, 2054]);
     addDemoSamples(demoData, "/v2/help", 400, 800, [0, 70], [100, 400], [0, 2054]);
 
+    addDemoSamples(demoData, "/v3/", 404, 300, [0, 40], [100, 200], [0, 2054]);
+    addDemoSamples(demoData, "/v3/help", 404, 53, [0, 40], [100, 400], [0, 2054]);
+
     addDemoSamples(demoData, "/v2/account", 200, 1000, [0, 24], [100, 200], [0, 2054]);
     addDemoSamples(demoData, "/v1/", 400, 80, [0, 24], [100, 400], [0, 2054]);
 
     addDemoSamples(demoData, "/v2/account", 200, 300, [122, 14], [100, 300], [0, 1654]);
-    addDemoSamples(demoData, "/v2/account", 400, 800, [122, 14], [100, 300], [0, 1654]);
+    addDemoSamples(demoData, "/v2/account", 500, 800, [122, 14], [100, 300], [0, 1654]);
 
     addDemoSamples(demoData, "/v2/account", 200, 300, [130, 8], [100, 300], [0, 1654]);
     addDemoSamples(demoData, "/v2/account", 400, 800, [130, 8], [100, 300], [0, 1654]);
 
     addDemoSamples(demoData, "/v2/account", 200, 200, [135, 5], [100, 300], [0, 1654]);
-    addDemoSamples(demoData, "/v2/account", 400, 700, [135, 5], [100, 300], [0, 1654]);
+    addDemoSamples(demoData, "/v2/account", 500, 700, [135, 5], [100, 300], [0, 1654]);
 
     addDemoSamples(demoData, "/v2/account", 200, 200, [138, 2], [100, 300], [0, 1654]);
-    addDemoSamples(demoData, "/v2/account", 400, 700, [138, 2], [100, 300], [0, 1654]);
+    addDemoSamples(demoData, "/v2/account", 500, 700, [138, 2], [100, 300], [0, 1654]);
 
     addDemoSamples(demoData, "/v2/account", 200, 150, [139, 1], [200, 1000], [0, 1654]);
-    addDemoSamples(demoData, "/v2/account", 400, 150, [139, 1], [200, 1000], [0, 1654]);
+    addDemoSamples(demoData, "/v2/account", 500, 150, [139, 1], [200, 1000], [0, 1654]);
 
     addDemoSamples(demoData, "/v2/account", 200, 8000, [0, 140], [200, 300], [0, 1654]);
-    addDemoSamples(demoData, "/v2/account", 400, 800, [0, 140], [200, 300], [0, 1654]);
+    addDemoSamples(demoData, "/v2/account", 500, 800, [0, 140], [200, 300], [0, 1654]);
     return demoData
 }
