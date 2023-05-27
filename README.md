@@ -420,7 +420,7 @@ async fn main() {
 }
 ```
 
-### Rocket
+#### Rocket
 
 [![Crates.io](https://img.shields.io/crates/v/rocket-analytics.svg)](https://crates.io/crates/rocket-analytics)
 
