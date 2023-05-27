@@ -62,7 +62,6 @@ from api_analytics.tornado import Analytics
 # Inherit from the Analytics middleware class
 class MainHandler(Analytics):
     def __init__(self, app, res):
-        api_key = os.environ.get("API_KEY")
         super().__init__(app, res, <API-KEY>)  # Provide api key
     
     def get(self):
@@ -86,7 +85,7 @@ import { expressAnalytics } from 'node-api-analytics';
 
 const app = express();
 
-app.use(expressAnalytics(<API-KEY >));  // Add middleware
+app.use(expressAnalytics(<API-KEY>));  // Add middleware
 
 app.get('/', (req, res) => {
     res.send({ message: 'Hello World' });
@@ -104,7 +103,7 @@ import { fastifyAnalytics } from 'node-api-analytics;
 
 const fastify = Fastify();
 
-fastify.addHook('onRequest', fastifyAnalytics(<API-KEY >));  // Add middleware
+fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>));  // Add middleware
 
 fastify.get('/', function (request, reply) {
     reply.send({ message: 'Hello World!' });
@@ -126,7 +125,7 @@ import { koaAnalytics } from 'node-api-analytics';
 
 const app = new Koa();
 
-app.use(koaAnalytics(<API-KEY >));  // Add middleware
+app.use(koaAnalytics(<API-KEY>));  // Add middleware
 
 app.use((ctx) => {
     ctx.body = { message: 'Hello World!' };
@@ -168,8 +167,6 @@ func main() {
 
 import (
     "net/http"
-    "os"
-
     echo "github.com/labstack/echo/v4"
     analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
 )
@@ -180,11 +177,9 @@ func root(c echo.Context) error {
 }
 
 func main() {
-    apiKey := getAPIKey()
-
     router := echo.New()
 
-    router.Use(analytics.Analytics(apiKey))
+    router.Use(analytics.Analytics(<API-KEY>))
 
     router.GET("/", root)
     router.Start(":8080")
@@ -246,7 +241,7 @@ func main() {
     Actix: {
         install: 'cargo add actix-analytics',
         codeFile: '',
-        example: `use actix_web::{get, web, Responder, Result};
+        example: `use actix_web::{get, web, App, HttpServer, Responder, Result};
 use serde::Serialize;
 use actix_analytics::Analytics;
 
@@ -265,8 +260,6 @@ async fn index() -> Result<impl Responder> {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    use actix_web::{App, HttpServer};
-
     HttpServer::new(|| {
         App::new()
             .wrap(Analytics::new(<API-KEY>))  // Add middleware
@@ -312,6 +305,35 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
+}`
+    },
+    Rocket: {
+        install: 'cargo add rocket-analytics',
+        codeFile: '',
+        example: `#[macro_use]
+extern crate rocket;
+use rocket::serde::json::Json;
+use rocket_analytics::Analytics;
+use serde::Serialize;
+
+#[derive(Serialize)]
+pub struct JsonData {
+    message: String,
+}
+
+#[get("/")]
+fn root() -> Json<JsonData> {
+    let data = JsonData {
+        message: "Hello World".to_string(),
+    };
+    Json(data)
+}
+
+#[launch]
+fn rocket() -> _ {
+    rocket::build()
+        .mount("/", routes![root])
+        .attach(Analytics::new(<API-KEY>))
 }`
     },
     Rails: {
