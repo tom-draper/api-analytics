@@ -43,13 +43,23 @@
   function bars() {
     let markers = periodToMarkers(period);
 
-    let dates = Array(markers);
-    let requests = Array(markers);
+    let dates: Date[] = Array(markers);
+    let requests: number[] = Array(markers);
     for (let i = 0; i < markers; i++) {
-      let now = new Date();
-      now.setMinutes(now.getMinutes() - i * 30);
-      dates[i] = now.toISOString();
-      requests[markers - i] = data[i].responseTime;
+      requests[markers - i - 1] = data[i].responseTime;
+      dates[markers - i - 1] = data[i].createdAt;
+    }
+
+    for (let i = 0; i < dates.length; i++) {
+      if (dates[i] === null) {
+        if (i === 0) {
+          dates[i] = new Date();
+        } else {
+          // 30 mins from previous date
+          dates[i] = new Date(dates[i - 1]);
+          dates[i].setMinutes(dates[i].getMinutes() - 30);
+        }
+      }
     }
 
     return [
@@ -59,7 +69,7 @@
         type: "lines",
         marker: { color: "#707070" },
         fill: "tonexty",
-        hovertemplate: `<b>%{y:.0f}ms</b><br>%{x|%d %b %Y}</b><extra></extra>`,
+        hovertemplate: `<b>%{y:.0f}ms</b><br>%{x|%d %b %Y %H:%M:%S}</b><extra></extra>`,
         showlegend: false,
       },
     ];

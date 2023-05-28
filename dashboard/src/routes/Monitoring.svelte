@@ -37,6 +37,7 @@
       group[data[i].url].push({
         status: data[i].status,
         responseTime: data[i].response_time,
+        createdAt: new Date(data[i].created_at),
       });
     }
     return group;
@@ -49,16 +50,11 @@
     created_at: Date;
   };
 
-  type MonitorSample = {
-    status: number;
-    responseTime: number;
-  };
-
   let error = false;
   let periods = ["24h", "7d", "30d", "60d"];
   let period = periods[1];
   let data: PingsData[];
-  let monitorData: { [url: string]: MonitorSample[] };
+  let monitorData: MonitorData;
 
   let showTrackNew = false;
   onMount(async () => {
@@ -119,7 +115,11 @@
     </div>
     {#if monitorData != undefined}
       {#if showTrackNew || Object.keys(monitorData).length == 0}
-        <TrackNew {userID} {showTrackNew} />
+        <TrackNew
+          {userID}
+          {showTrackNew}
+          monitorCount={Object.keys(monitorData).length}
+        />
       {/if}
       {#each Object.keys(monitorData) as url}
         <Card

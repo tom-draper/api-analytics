@@ -47,7 +47,7 @@
     if (per === 100) {
       uptime = "100";
     } else {
-      uptime = per.toFixed(1);
+      uptime = per.toFixed(2);
     }
   }
 
@@ -65,10 +65,10 @@
     }
   }
 
-  function periodSample() {
+  function periodSample(): MonitorSample[] {
     /* Sample ping recordings at regular intervals if number of bars fewer than 
     total recordings the current period length */
-    let sample = [];
+    let sample: MonitorSample[] = [];
     switch (period) {
       case "30d":
         // Sample 1 in 4
@@ -94,15 +94,21 @@
 
   function setSamples() {
     let markers = periodToMarkers(period);
-    samples = Array(markers).fill({ label: "no-request", responseTime: 0 });
+    samples = Array(markers).fill({
+      label: "no-request",
+      responseTime: 0,
+      status: 0,
+      createdAt: null,
+    });
     let sampledData = periodSample();
-    let start = markers - sampledData.length;
+    const start = markers - sampledData.length;
 
     for (let i = 0; i < sampledData.length; i++) {
       samples[i + start] = {
         label: "no-request",
         status: sampledData[i].status,
         responseTime: sampledData[i].responseTime,
+        createdAt: new Date(sampledData[i].createdAt),
       };
       if (sampledData[i].status >= 200 && sampledData[i].status <= 299) {
         samples[i + start].label = "success";
@@ -127,9 +133,12 @@
     setUptime();
   }
 
+  // Monitor sample with label for status colour CSS class
+  type Sample = MonitorSample & { label: string };
+
   let uptime = "";
   let error = false;
-  let samples: { label: string; status: number; responseTime: string }[];
+  let samples: Sample[];
   onMount(() => {
     build();
   });
@@ -137,7 +146,7 @@
   $: period && build();
 
   export let url: string,
-    data: any,
+    data: MonitorData,
     userID: string,
     period: string,
     anyError: boolean;
@@ -171,7 +180,7 @@
       {#each samples as sample}
         <div
           class="measurement {sample.label}"
-          title="Status {sample.status}"
+          title="Status: {sample.status}"
         />
       {/each}
     </div>

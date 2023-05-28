@@ -1,5 +1,9 @@
 <script lang="ts">
   async function postMonitor() {
+    if (monitorCount >= 3) {
+      alert("Max 3 URL monitors allowed at one time.");
+    }
+
     try {
       let response = await fetch(
         `https://www.apianalytics-server.com/api/monitor/add`,
@@ -34,7 +38,7 @@
   let url: string;
   let pingType = "simple-ping";
 
-  export let userID: string, showTrackNew: boolean;
+  export let userID: string, showTrackNew: boolean, monitorCount: number;
 </script>
 
 <div class="card">
