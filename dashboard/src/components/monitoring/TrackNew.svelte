@@ -44,7 +44,11 @@
 <div class="card">
   <div class="card-text">
     <div class="url">
-      <div class="start">http://</div>
+      <!-- <div class="start">http://</div> -->
+      <select name="protocol" class="protocol">
+        <option value="volvo">http</option>
+        <option value="saab">https</option>
+      </select>
       <input type="text" placeholder="example.com/endpoint/" bind:value={url} />
       <button class="add" on:click={postMonitor}>Add</button>
     </div>
@@ -99,6 +103,13 @@
   .start {
     margin: auto;
     color: var(--dim-text);
+  }
+  .protocol {
+    cursor: pointer;
+    padding: 3px 4px 3px 8px;
+    background: transparent;
+    color: white;
+    border-radius: 4px;
   }
   .detail {
     margin-top: 30px;
