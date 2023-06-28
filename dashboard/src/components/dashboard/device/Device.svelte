@@ -38,13 +38,13 @@
       >
     </div>
   </div>
-  <div class="client" style={activeBtn == "client" ? "display: initial" : ""}>
+  <div class="client" style={activeBtn === "client" ? "display: initial" : ""}>
     <Client {data} />
   </div>
-  <div class="os" style={activeBtn == "os" ? "display: initial" : ""}>
+  <div class="os" style={activeBtn === "os" ? "display: initial" : ""}>
     <OperatingSystem {data} />
   </div>
-  <div class="device" style={activeBtn == "device" ? "display: initial" : ""}>
+  <div class="device" style={activeBtn === "device" ? "display: initial" : ""}>
     <DeviceType {data} />
   </div>
 </div>

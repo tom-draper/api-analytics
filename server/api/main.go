@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/tom-draper/api-analytics/server/api/routes"
-	"github.com/tom-draper/api-analytics/server/database"
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
 	"github.com/gin-contrib/cors"
@@ -21,8 +20,6 @@ func errorHandler(c *gin.Context, info ratelimit.Info) {
 }
 
 func main() {
-	db := database.OpenDBConnection()
-
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
 
@@ -41,7 +38,7 @@ func main() {
 	})
 	app.Use(rateLimiter)
 
-	routes.RegisterRouter(r, db)
+	routes.RegisterRouter(r)
 
 	app.Run(":3000")
 }

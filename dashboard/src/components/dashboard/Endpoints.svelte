@@ -35,11 +35,19 @@
 
   function statusMatch(status: number): boolean {
     return (
-      activeBtn == "all" ||
-      (activeBtn == "success" && status >= 200 && status <= 299) ||
-      (activeBtn == "bad" && status >= 300 && status <= 399) ||
-      (activeBtn == "error" && status >= 400)
+      activeBtn === "all" ||
+      (activeBtn === "success" && status >= 200 && status <= 299) ||
+      (activeBtn === "bad" && status >= 300 && status <= 399) ||
+      (activeBtn === "error" && status >= 400)
     );
+  }
+
+  function setTargetEndpoint(endpoint: string) {
+    if (endpoint === targetEndpoint) {
+      targetEndpoint = null;
+    } else {
+      targetEndpoint = endpoint;
+    }
   }
 
   function build() {
@@ -96,7 +104,7 @@
 
   $: data && mounted && build();
 
-  export let data: RequestsData;
+  export let data: RequestsData, targetEndpoint: string;
 </script>
 
 <div class="card">
@@ -104,25 +112,32 @@
     Endpoints
     <div class="toggle">
       <button
-        class:active={activeBtn == "all"}
+      class="cancel"
+        class:visible={targetEndpoint != null}
+        on:click={() => {
+          setTargetEndpoint(null);
+        }}>Cancel</button
+      >
+      <button
+        class:active={activeBtn === "all"}
         on:click={() => {
           setBtn("all");
         }}>All</button
       >
       <button
-        class:active={activeBtn == "success"}
+        class:active={activeBtn === "success"}
         on:click={() => {
           setBtn("success");
         }}>Success</button
       >
       <button
-        class:active={activeBtn == "bad"}
+        class:bad-active={activeBtn === "bad"}
         on:click={() => {
           setBtn("bad");
         }}>Bad</button
       >
       <button
-        class:active={activeBtn == "error"}
+        class:error-active={activeBtn === "error"}
         on:click={() => {
           setBtn("error");
         }}>Error</button
@@ -134,7 +149,7 @@
     <div class="endpoints">
       {#each endpoints as endpoint, i}
         <div class="endpoint-container">
-          <div class="endpoint" id="endpoint-{i}">
+          <div class="endpoint" id="endpoint-{i}"  on:click={() => setTargetEndpoint(endpoint.path.split(' ')[2])}>
             <div class="path">
               <b>{endpoint.count.toLocaleString()}</b>
               {endpoint.path}
@@ -167,6 +182,12 @@
   .active {
     background: var(--highlight);
   }
+  .bad-active {
+    background: rgb(235, 235, 129);
+  }
+  .error-active {
+    background: var(--red);
+  }
   button {
     border: none;
     border-radius: 4px;
@@ -186,6 +207,7 @@
     position: relative;
     font-size: 0.85em;
     width: 100%;
+    cursor: pointer;
   }
   .path {
     position: relative;
@@ -206,6 +228,13 @@
   }
   .error {
     background: var(--red);
+  }
+  .cancel {
+    display: none;
+    background: gold;
+  }
+  .visible {
+    display: inline;
   }
   .background {
     border-radius: 3px;

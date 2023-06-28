@@ -12,6 +12,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var dbUsername string
+var dbPassword string
+var dbName string
+
 type UserRow struct {
 	UserID    string    `json:"user_id"`
 	APIKey    string    `json:"api_key"`
@@ -72,14 +76,25 @@ func openDBConnection(database string, username string, password string) *sql.DB
 }
 
 func OpenDBConnection() *sql.DB {
-	username, password := getDBLogin()
-	database := os.Getenv("POSTGRES_DATABASE")
-	return openDBConnection(database, username, password)
+	if dbUsername == "" || dbPassword == "" || dbName == "" {
+		username, password := getDBLogin()
+		database := os.Getenv("POSTGRES_DATABASE")
+		dbUsername = username
+		dbPassword = password
+		dbName = database
+		return openDBConnection(database, username, password)
+	} else {
+		return openDBConnection(dbName, dbUsername, dbPassword)
+	}
 }
 
 func OpenDBConnectionNamed(database string) *sql.DB {
-	username, password := getDBLogin()
-	return openDBConnection(database, username, password)
+	if dbUsername == "" || dbPassword == "" {
+		username, password := getDBLogin()
+		return openDBConnection(database, username, password)
+	} else {
+		return openDBConnection(database, dbUsername, dbPassword)
+	}
 }
 
 func CreateUsersTable(db *sql.DB) error {

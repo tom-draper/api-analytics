@@ -24,7 +24,7 @@ Add our lightweight middleware to your API. Almost all processing is handled by 
 [![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
 ```bash
-pip install api-analytics
+pip install fastapi-analytics
 ```
 
 ```py
@@ -90,7 +90,7 @@ MIDDLEWARE = [
 [![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
 ```bash
-pip install api-analytics
+pip install tornado-analytics
 ```
 
 Modify your handler to inherit from `Analytics`. Create a `__init__()` method, passing along the application and response along with your unique API key.
@@ -560,7 +560,7 @@ curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 
 ##### Parameters
 
-Your data can be filtered by providing URL parameters in your request.
+You can filter your data by providing URL parameters in your request.
 
 - `date` - specifies a particular day the requests occurred on (`YYYY-MM-DD`)
 - `dateFrom` - specifies the lower bound of a date range the requests occurred in (`YYYY-MM-DD`)
