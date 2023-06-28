@@ -38,7 +38,7 @@
 
     let dataSubset = [];
     for (let i = 1; i < data.length; i++) {
-      if (disable404 && data[i][5] == 404) {
+      if ((disable404 && data[i][5] === 404) || (targetEndpoint != null && targetEndpoint != data[i][1])) {
         continue;
       }
       let date = new Date(data[i][7]);
@@ -70,7 +70,7 @@
 
     let dataSubset = [];
     for (let i = 1; i < data.length; i++) {
-      if (disable404 && data[i][5] == 404) {
+      if ((disable404 && data[i][5] === 404) || (targetEndpoint != null && targetEndpoint != data[i][1])) {
         continue;
       }
       let date = new Date(data[i][7]);
@@ -83,6 +83,12 @@
 
   function setPeriod(value: string) {
     currentPeriod = value;
+    // if (value in periodDataCache) {
+    //   periodData = periodDataCache[currentPeriod].periodData
+    //   prevPeriodData = periodDataCache[currentPeriod].prevPeriodData
+    // } else {
+    //   periodDataCache[currentPeriod] = {periodData, prevPeriodData}
+    // }
     setPeriodData();
     setPrevPeriodData();
   }
@@ -113,7 +119,15 @@
     }
   }
 
+  type PeriodDataCache = {
+    [period: string]: {
+      periodData: RequestsData,
+      prevPeriodData: RequestsData
+    }
+  }
+
   let data: RequestsData;
+  let periodDataCache: PeriodDataCache = {};
   let periodData: RequestsData;
   let prevPeriodData: RequestsData;
   let timePeriods = [
@@ -128,6 +142,7 @@
   let currentPeriod = timePeriods[2].name;
   let failed = false;
   let disable404 = false;
+  let targetEndpoint = null;
   onMount(() => {
     if (demo) {
       data = genDemoData() as RequestsData;
@@ -137,6 +152,17 @@
     }
   });
 
+  function refreshDataFilter() {
+    if (data === undefined) {
+      return
+    }
+    setPeriodData();
+    setPrevPeriodData();
+  }
+
+  $: if (targetEndpoint === null || targetEndpoint) {
+    refreshDataFilter();
+  }
   export let userID: string, demo: boolean;
 </script>
 
@@ -183,7 +209,7 @@
           />
         </div>
         <ResponseTimes data={periodData} />
-        <Endpoints data={periodData} />
+        <Endpoints data={periodData} bind:targetEndpoint={targetEndpoint}/>
         <Version data={periodData} />
       </div>
       <div class="right">
