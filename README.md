@@ -98,7 +98,6 @@ Modify your handler to inherit from `Analytics`. Create a `__init__()` method, p
 ```py
 import asyncio
 from tornado.web import Application
-
 from api_analytics.tornado import Analytics
 
 # Inherit from the Analytics middleware class
@@ -135,7 +134,7 @@ import { expressAnalytics } from 'node-api-analytics';
 
 const app = express();
 
-app.use(expressAnalytics(<API-KEY>));  // Add middleware
+app.use(expressAnalytics(<API-KEY>)); // Add middleware
 
 app.get('/', (req, res) => {
     res.send({ message: 'Hello World' });
@@ -160,7 +159,7 @@ import { fastifyAnalytics } from 'node-api-analytics;
 
 const fastify = Fastify();
 
-fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>));  // Add middleware
+fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>)); // Add middleware
 
 fastify.get('/', function (request, reply) {
   reply.send({ message: 'Hello World!' });
@@ -189,7 +188,7 @@ import { koaAnalytics } from 'node-api-analytics';
 
 const app = new Koa();
 
-app.use(koaAnalytics(<API-KEY>));  // Add middleware
+app.use(koaAnalytics(<API-KEY>)); // Add middleware
 
 app.use((ctx) => {
   ctx.body = { message: 'Hello World!' };
@@ -212,9 +211,9 @@ go get -u github.com/tom-draper/api-analytics/analytics/go/gin
 package main
 
 import (
-    analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
     "net/http"
     "github.com/gin-gonic/gin"
+    analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
 )
 
 func root(c *gin.Context) {
@@ -247,7 +246,6 @@ package main
 import (
     "net/http"
     "os"
-
     echo "github.com/labstack/echo/v4"
     analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
 )
@@ -282,8 +280,8 @@ package main
 
 import (
     "os"
-    analytics "github.com/tom-draper/api-analytics/analytics/go/fiber"
     "github.com/gofiber/fiber/v2"
+    analytics "github.com/tom-draper/api-analytics/analytics/go/fiber"
 )
 
 func root(c *fiber.Ctx) error {
