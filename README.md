@@ -123,7 +123,6 @@ if __name__ == "__main__":
 
 [![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://img.shields.io/npm/v/node-api-analytics)
 
-
 ```bash
 npm install node-api-analytics
 ```
@@ -575,7 +574,7 @@ curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 
 ## Monitoring (coming soon)
 
-Opt-in active API monitoring is coming soon. Our servers will regularly ping your API endpoints to monitor uptime and response time. Optional email alerts to notify you when your endpoints are down can be subscribed to.
+Opt-in active API monitoring is coming soon. Our servers will regularly ping chosen API endpoints to monitor uptime and response time. Optional email alerts when your endpoints are down can be subscribed to.
 
 ![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)
 
