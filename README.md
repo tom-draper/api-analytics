@@ -350,10 +350,10 @@ struct JsonData {
 
 #[get("/")]
 async fn index() -> Result<impl Responder> {
-    let json_data = JsonData {
+    let data = JsonData {
         message: "Hello World!".to_string(),
     };
-    Ok(web::Json(json_data))
+    Ok(web::Json(data))
 }
 
 #[actix_web::main]
@@ -393,10 +393,10 @@ struct JsonData {
 }
 
 async fn root() -> Json<JsonData> {
-    let json_data = JsonData {
+    let data = JsonData {
         message: "Hello World!".to_string(),
     };
-    Json(json_data)
+    Json(data)
 }
 
 #[tokio::main]
@@ -425,8 +425,8 @@ cargo add rocket-analytics
 #[macro_use]
 extern crate rocket;
 use rocket::serde::json::Json;
-use rocket_analytics::Analytics;
 use serde::Serialize;
+use rocket_analytics::Analytics;
 
 #[derive(Serialize)]
 pub struct JsonData {
