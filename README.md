@@ -244,7 +244,6 @@ package main
 
 import (
     "net/http"
-    "os"
     echo "github.com/labstack/echo/v4"
     analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
 )
@@ -278,7 +277,6 @@ go get -u github.com/tom-draper/api-analytics/analytics/go/fiber
 package main
 
 import (
-    "os"
     "github.com/gofiber/fiber/v2"
     analytics "github.com/tom-draper/api-analytics/analytics/go/fiber"
 )
@@ -311,7 +309,6 @@ package main
 
 import (
     "net/http"
-    "os"
     analytics "github.com/tom-draper/api-analytics/analytics/go/chi"
     chi "github.com/go-chi/chi/v5"
 )
