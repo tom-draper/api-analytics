@@ -98,7 +98,6 @@ Modify your handler to inherit from `Analytics`. Create a `__init__()` method, p
 ```py
 import asyncio
 from tornado.web import Application
-
 from api_analytics.tornado import Analytics
 
 # Inherit from the Analytics middleware class
@@ -124,7 +123,6 @@ if __name__ == "__main__":
 
 [![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://img.shields.io/npm/v/node-api-analytics)
 
-
 ```bash
 npm install node-api-analytics
 ```
@@ -135,7 +133,7 @@ import { expressAnalytics } from 'node-api-analytics';
 
 const app = express();
 
-app.use(expressAnalytics(<API-KEY>));  // Add middleware
+app.use(expressAnalytics(<API-KEY>)); // Add middleware
 
 app.get('/', (req, res) => {
     res.send({ message: 'Hello World' });
@@ -160,7 +158,7 @@ import { fastifyAnalytics } from 'node-api-analytics;
 
 const fastify = Fastify();
 
-fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>));  // Add middleware
+fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>)); // Add middleware
 
 fastify.get('/', function (request, reply) {
   reply.send({ message: 'Hello World!' });
@@ -189,7 +187,7 @@ import { koaAnalytics } from 'node-api-analytics';
 
 const app = new Koa();
 
-app.use(koaAnalytics(<API-KEY>));  // Add middleware
+app.use(koaAnalytics(<API-KEY>)); // Add middleware
 
 app.use((ctx) => {
   ctx.body = { message: 'Hello World!' };
@@ -212,9 +210,9 @@ go get -u github.com/tom-draper/api-analytics/analytics/go/gin
 package main
 
 import (
-    analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
     "net/http"
     "github.com/gin-gonic/gin"
+    analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
 )
 
 func root(c *gin.Context) {
@@ -246,8 +244,6 @@ package main
 
 import (
     "net/http"
-    "os"
-
     echo "github.com/labstack/echo/v4"
     analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
 )
@@ -281,9 +277,8 @@ go get -u github.com/tom-draper/api-analytics/analytics/go/fiber
 package main
 
 import (
-    "os"
-    analytics "github.com/tom-draper/api-analytics/analytics/go/fiber"
     "github.com/gofiber/fiber/v2"
+    analytics "github.com/tom-draper/api-analytics/analytics/go/fiber"
 )
 
 func root(c *fiber.Ctx) error {
@@ -314,7 +309,6 @@ package main
 
 import (
     "net/http"
-    "os"
     analytics "github.com/tom-draper/api-analytics/analytics/go/chi"
     chi "github.com/go-chi/chi/v5"
 )
@@ -356,10 +350,10 @@ struct JsonData {
 
 #[get("/")]
 async fn index() -> Result<impl Responder> {
-    let json_data = JsonData {
+    let data = JsonData {
         message: "Hello World!".to_string(),
     };
-    Ok(web::Json(json_data))
+    Ok(web::Json(data))
 }
 
 #[actix_web::main]
@@ -399,10 +393,10 @@ struct JsonData {
 }
 
 async fn root() -> Json<JsonData> {
-    let json_data = JsonData {
+    let data = JsonData {
         message: "Hello World!".to_string(),
     };
-    Json(json_data)
+    Json(data)
 }
 
 #[tokio::main]
@@ -431,8 +425,8 @@ cargo add rocket-analytics
 #[macro_use]
 extern crate rocket;
 use rocket::serde::json::Json;
-use rocket_analytics::Analytics;
 use serde::Serialize;
+use rocket_analytics::Analytics;
 
 #[derive(Serialize)]
 pub struct JsonData {
@@ -577,7 +571,7 @@ curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 
 ## Monitoring (coming soon)
 
-Opt-in active API monitoring is coming soon. Our servers will regularly ping your API endpoints to monitor uptime and response time. Optional email alerts to notify you when your endpoints are down can be subscribed to.
+Opt-in active API monitoring is coming soon. Our servers will regularly ping chosen API endpoints to monitor uptime and response time. Optional email alerts when your endpoints are down can be subscribed to.
 
 ![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)
 

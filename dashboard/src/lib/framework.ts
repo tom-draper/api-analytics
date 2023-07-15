@@ -52,7 +52,7 @@ if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)`
     },
     Tornado: {
-        install: "pip install api-analytics",
+        install: "pip install tornado-analytics",
         codeFile: '',
         example: `import asyncio
 from tornado.web import Application
@@ -85,7 +85,7 @@ import { expressAnalytics } from 'node-api-analytics';
 
 const app = express();
 
-app.use(expressAnalytics(<API-KEY>));  // Add middleware
+app.use(expressAnalytics(<API-KEY>)); // Add middleware
 
 app.get('/', (req, res) => {
     res.send({ message: 'Hello World' });
@@ -103,7 +103,7 @@ import { fastifyAnalytics } from 'node-api-analytics;
 
 const fastify = Fastify();
 
-fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>));  // Add middleware
+fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>)); // Add middleware
 
 fastify.get('/', function (request, reply) {
     reply.send({ message: 'Hello World!' });
@@ -125,7 +125,7 @@ import { koaAnalytics } from 'node-api-analytics';
 
 const app = new Koa();
 
-app.use(koaAnalytics(<API-KEY>));  // Add middleware
+app.use(koaAnalytics(<API-KEY>)); // Add middleware
 
 app.use((ctx) => {
     ctx.body = { message: 'Hello World!' };
@@ -191,7 +191,6 @@ func main() {
         example: `package main
 
 import (
-	"os"
 	"github.com/gofiber/fiber/v2"
 	analytics "github.com/tom-draper/api-analytics/analytics/go/fiber"
 )
@@ -217,7 +216,6 @@ func main() {
 
 import (
 	"net/http"
-	"os"
 	"github.com/go-chi/chi/v5"
 	analytics "github.com/tom-draper/api-analytics/analytics/go/chi"
 )
@@ -252,10 +250,10 @@ struct JsonData {
 
 #[get("/")]
 async fn index() -> Result<impl Responder> {
-    let json_data = JsonData {
+    let data = JsonData {
         message: "Hello World!".to_string(),
     };
-    Ok(web::Json(json_data))
+    Ok(web::Json(data))
 }
 
 #[actix_web::main]
@@ -288,10 +286,10 @@ struct JsonData {
 }
 
 async fn root() -> Json<JsonData> {
-    let json_data = JsonData {
+    let data = JsonData {
         message: "Hello World!".to_string(),
     };
-    Json(json_data)
+    Json(data)
 }
 
 #[tokio::main]
@@ -313,8 +311,8 @@ async fn main() {
         example: `#[macro_use]
 extern crate rocket;
 use rocket::serde::json::Json;
-use rocket_analytics::Analytics;
 use serde::Serialize;
+use rocket_analytics::Analytics;
 
 #[derive(Serialize)]
 pub struct JsonData {
