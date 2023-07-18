@@ -591,13 +591,13 @@ For any given request to your API, data recorded is limited to:
  - API hostname
  - API framework (FastAPI, Flask, Express etc.)
 
-Data collected is only ever used to populate your analytics dashboard. All data stored is anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
+Data collected is only ever used to populate your analytics dashboard. All stored data is anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
 
 ### Data Deletion
 
-At any time, you can delete all stored data associated with your API key by going to https://apianalytics.dev/delete and entering your API key.
+At any time you can delete all stored data associated with your API key by going to https://apianalytics.dev/delete and entering your API key.
 
-API keys and their associated API request data are scheduled to be deleted after 6 months of inactivity.
+API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity.
 
 ## Contributions
 
