@@ -46,14 +46,54 @@ impl RequestData {
     }
 }
 
+type StringMapper = dyn for<'a, 'r> Fn(&'r Request<'a>, &'r Response) -> String + Send + Sync;
+
+#[derive(Default)]
+struct Mappers {
+    hostname: Option<Box<StringMapper>>,
+    ip_address: Option<Box<StringMapper>>,
+    path: Option<Box<StringMapper>>,
+}
+
 #[derive(Default)]
 pub struct Analytics {
     api_key: String,
+    batch_length_seconds: f64,
+    mappers: Mappers,
 }
 
 impl Analytics {
     pub fn new(api_key: String) -> Self {
-        Self { api_key }
+        Self { api_key, batch_length_seconds: 60.0, mappers: Default::default() }
+    }
+
+    pub fn with_batch_length_seconds(mut self, batch_length_seconds: f64) -> Self {
+        self.batch_length_seconds = batch_length_seconds;
+        self
+    }
+
+    pub fn with_hostname_mapper<F>(mut self, mapper: F) -> Self
+    where 
+        F: for<'a, 'r> Fn(&'r Request<'a>, &'r Response) -> String + Send + Sync + 'static
+    {
+        self.mappers.hostname = Some(Box::new(mapper));
+        self
+    }
+
+    pub fn with_ip_address_mapper<F>(mut self, mapper: F) -> Self
+    where 
+        F: for<'a, 'r> Fn(&'r Request<'a>, &'r Response) -> String + Send + Sync + 'static
+    {
+        self.mappers.ip_address = Some(Box::new(mapper));
+        self
+    }
+
+    pub fn with_path_mapper<F>(mut self, mapper: F) -> Self
+    where 
+        F: for<'a, 'r> Fn(&'r Request<'a>, &'r Response) -> String + Send + Sync + 'static
+    {
+        self.mappers.path = Some(Box::new(mapper));
+        self
     }
 }
 
@@ -89,9 +129,9 @@ fn post_requests(data: Payload) {
         .send();
 }
 
-fn log_request(api_key: &str, request_data: RequestData) {
+fn log_request(api_key: &str, request_data: RequestData, batch_length_seconds: f64) {
     REQUESTS.lock().unwrap().push(request_data);
-    if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > 60.0 {
+    if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > batch_length_seconds {
         let payload = Payload::new(api_key.to_string(), REQUESTS.lock().unwrap().to_vec());
         REQUESTS.lock().unwrap().clear();
         spawn(|| post_requests(payload));
@@ -113,15 +153,15 @@ impl Fairing for Analytics {
 
     async fn on_response<'r>(&self, req: &'r Request<'_>, res: &mut Response<'r>) {
         let start = &req.local_cache(|| Start::<Option<Instant>>(None)).0;
-        let hostname = req.host().unwrap().to_string();
-        let ip_address = req.client_ip().unwrap().to_string();
+        let hostname = self.mappers.hostname.as_ref().map(|m| m(req, res)).unwrap_or_else(|| req.host().unwrap().to_string());
+        let ip_address = self.mappers.ip_address.as_ref().map(|m| m(req, res)).unwrap_or_else(|| req.client_ip().unwrap().to_string());
         let method = req.method().to_string();
         let user_agent = req
             .headers()
             .get_one("User-Agent")
             .unwrap_or_default()
             .to_owned();
-        let path = req.uri().path().to_string();
+        let path = self.mappers.path.as_ref().map(|m| m(req, res)).unwrap_or_else(|| req.uri().path().to_string());
 
         let request_data = RequestData::new(
             hostname,
@@ -134,7 +174,7 @@ impl Fairing for Analytics {
             Utc::now().to_rfc3339(),
         );
 
-        log_request(&self.api_key, request_data);
+        log_request(&self.api_key, request_data, self.batch_length_seconds);
     }
 }
 
