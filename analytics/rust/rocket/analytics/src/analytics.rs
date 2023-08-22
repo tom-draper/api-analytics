@@ -58,18 +58,12 @@ struct Mappers {
 #[derive(Default)]
 pub struct Analytics {
     api_key: String,
-    batch_length_seconds: f64,
     mappers: Mappers,
 }
 
 impl Analytics {
     pub fn new(api_key: String) -> Self {
-        Self { api_key, batch_length_seconds: 60.0, mappers: Default::default() }
-    }
-
-    pub fn with_batch_length_seconds(mut self, batch_length_seconds: f64) -> Self {
-        self.batch_length_seconds = batch_length_seconds;
-        self
+        Self { api_key, mappers: Default::default() }
     }
 
     pub fn with_hostname_mapper<F>(mut self, mapper: F) -> Self
@@ -129,9 +123,9 @@ fn post_requests(data: Payload) {
         .send();
 }
 
-fn log_request(api_key: &str, request_data: RequestData, batch_length_seconds: f64) {
+fn log_request(api_key: &str, request_data: RequestData) {
     REQUESTS.lock().unwrap().push(request_data);
-    if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > batch_length_seconds {
+    if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > 60.0 {
         let payload = Payload::new(api_key.to_string(), REQUESTS.lock().unwrap().to_vec());
         REQUESTS.lock().unwrap().clear();
         spawn(|| post_requests(payload));
@@ -174,7 +168,7 @@ impl Fairing for Analytics {
             Utc::now().to_rfc3339(),
         );
 
-        log_request(&self.api_key, request_data, self.batch_length_seconds);
+        log_request(&self.api_key, request_data);
     }
 }
 
