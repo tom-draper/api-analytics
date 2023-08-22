@@ -255,7 +255,7 @@ func logRequest(c *gin.Context) {
 		inserted += 1
 	}
 
-	// Record in log file for debugging purposes
+	// Record in log file for debugging
 	logRequestsToFile(c.ClientIP(), payload.APIKey, inserted, len(payload.Requests), requestErrors)
 
 	// If no valid logged requests received
