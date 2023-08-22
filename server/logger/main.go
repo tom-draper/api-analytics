@@ -27,10 +27,10 @@ func main() {
 
 	app.Use(cors.Default())
 
-	// Limit a single IP's request logs to 5 per minute
+	// Limit a single IP's request logs to 60 per minute
 	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
 		Rate:  time.Minute,
-		Limit: 5,
+		Limit: 60,
 	})
 	rateLimiter := ratelimit.RateLimiter(store, &ratelimit.Options{
 		ErrorHandler: errorHandler,
@@ -255,7 +255,7 @@ func logRequest(c *gin.Context) {
 		inserted += 1
 	}
 
-	// Record in log file for debugging
+	// Record in log file for debugging purposes
 	logRequestsToFile(c.ClientIP(), payload.APIKey, inserted, len(payload.Requests), requestErrors)
 
 	// If no valid logged requests received
