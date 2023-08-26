@@ -3,8 +3,8 @@ module github.com/tom-draper/api-analytics/server/tools/cleanup
 go 1.20
 
 require (
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20230718222900-92b172f3e180
-	github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230718222900-92b172f3e180
+	github.com/tom-draper/api-analytics/server/database v0.0.0-20230826102106-451cf439fb26
+	github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230826080008-77a47ff77bb9
 )
 
 require (
