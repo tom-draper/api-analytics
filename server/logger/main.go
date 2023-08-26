@@ -146,7 +146,7 @@ func logRequest(c *gin.Context) {
 	// Collect API request data sent via POST request
 	var payload Payload
 	if err := c.BindJSON(&payload); err != nil {
-		lib.logErrorToFile(c.ClientIP(), "", "Invalid request data.")
+		lib.LogErrorToFile(c.ClientIP(), "", "Invalid request data.")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
 		return
 	} else if payload.APIKey == "" {

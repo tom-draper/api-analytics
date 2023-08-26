@@ -7,11 +7,11 @@ import (
 )
 
 type RequestErrors struct {
-	method    int
-	framework int
-	userAgent int
-	hostname  int
-	path      int
+	Method    int
+	Framework int
+	UserAgent int
+	Hostname  int
+	Path      int
 }
 
 func LogErrorToFile(ipAddress string, apiKey string, msg string) {
@@ -20,7 +20,7 @@ func LogErrorToFile(ipAddress string, apiKey string, msg string) {
 }
 
 func LogRequestsToFile(ipAddress string, apiKey string, inserted int, totalRequests int, requestErrors RequestErrors) {
-	text := fmt.Sprintf("%s %s :: inserted=%d totalRequest=%d :: %d %d %d %d %d", ipAddress, apiKey, inserted, totalRequests, requestErrors.method, requestErrors.framework, requestErrors.userAgent, requestErrors.hostname, requestErrors.path)
+	text := fmt.Sprintf("%s %s :: inserted=%d totalRequest=%d :: %d %d %d %d %d", ipAddress, apiKey, inserted, totalRequests, requestErrors.Method, requestErrors.Framework, requestErrors.UserAgent, requestErrors.Hostname, requestErrors.Path)
 	LogToFile(text)
 }
 
