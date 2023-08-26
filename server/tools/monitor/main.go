@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/tom-draper/api-analytics/server/email"
-	"github.com/tom-draper/api-analytics/server/tools/monitor/monitor"
+	"github.com/tom-draper/api-analytics/server/tools/monitor/lib"
 )
 
-func buildEmailBody(serviceStatus monitor.ServiceStatus, apiTestStatus monitor.APITestStatus) string {
+func buildEmailBody(serviceStatus lib.ServiceStatus, apiTestStatus lib.APITestStatus) string {
 	var body strings.Builder
 	body.WriteString(fmt.Sprintf("Failure detected at %v\n", time.Now()))
 
@@ -40,16 +40,16 @@ func buildEmailBody(serviceStatus monitor.ServiceStatus, apiTestStatus monitor.A
 }
 
 func main() {
-	serviceStatus := monitor.ServiceStatus{
-		api:        !monitor.ServiceDown("api"),
-		logger:     !monitor.ServiceDown("logger"),
-		nginx:      !monitor.ServiceDown("nginx"),
-		postgresql: !monitor.ServiceDown("postgreql"),
+	serviceStatus := lib.ServiceStatus{
+		api:        !lib.ServiceDown("api"),
+		logger:     !lib.ServiceDown("logger"),
+		nginx:      !lib.ServiceDown("nginx"),
+		postgresql: !lib.ServiceDown("postgreql"),
 	}
-	apiTestStatus := monitor.APITestStatus{
-		newUser:            monitor.TryNewUser(),
-		fetchDashboardData: monitor.TryFetchDashboardData(),
-		fetchData:          monitor.TryFetchData(),
+	apiTestStatus := lib.APITestStatus{
+		newUser:            lib.TryNewUser(),
+		fetchDashboardData: lib.TryFetchDashboardData(),
+		fetchData:          lib.TryFetchData(),
 	}
 	if serviceStatus.ServiceDown() || apiTestStatus.TestFailed() {
 		address := email.GetEmailAddress()

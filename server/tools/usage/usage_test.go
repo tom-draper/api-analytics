@@ -4,8 +4,8 @@ import (
 	"testing"
 )
 
-func TestDatabaseSize(t *testing.T) {
-	size, err := DatabaseSize()
+func TestTableSize(t *testing.T) {
+	size, err := TableSize("requests")
 	if err != nil {
 		t.Error(err)
 	}
@@ -14,8 +14,8 @@ func TestDatabaseSize(t *testing.T) {
 	}
 }
 
-func TestDatabaseColumnSize(t *testing.T) {
-	size, err := DatabaseColumnSize()
+func TestTableColumnSize(t *testing.T) {
+	size, err := TableColumnSize("requests", "api_key")
 	if err != nil {
 		t.Error(err)
 	}
