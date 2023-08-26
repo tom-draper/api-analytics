@@ -7,7 +7,8 @@ import (
 	"strings"
 
 	"github.com/tom-draper/api-analytics/server/database"
-	"github.com/tom-draper/api-analytics/server/logger/lib"
+	"github.com/tom-draper/api-analytics/server/logger/lib/log"
+	"github.com/tom-draper/api-analytics/server/logger/lib/ratelimit"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -15,14 +16,14 @@ import (
 )
 
 func main() {
-	lib.LogToFile("Starting logger...")
+	log.LogToFile("Starting logger...")
 
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
 
 	app.Use(cors.Default())
 
-	rateLimiter := lib.RateLimiter{}
+	rateLimiter := ratelimit.RateLimiter{}
 
 	app.POST("/api/log-request", logRequestHandler(rateLimiter))
 
@@ -138,15 +139,15 @@ func logRequest(c *gin.Context) {
 	// Collect API request data sent via POST request
 	var payload Payload
 	if err := c.BindJSON(&payload); err != nil {
-		lib.LogErrorToFile(c.ClientIP(), "", "Invalid request data.")
+		log.LogErrorToFile(c.ClientIP(), "", "Invalid request data.")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
 		return
 	} else if payload.APIKey == "" {
-		lib.LogErrorToFile(c.ClientIP(), payload.APIKey, "API key required.")
+		log.LogErrorToFile(c.ClientIP(), payload.APIKey, "API key required.")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
 		return
 	} else if len(payload.Requests) == 0 {
-		lib.LogErrorToFile(c.ClientIP(), payload.APIKey, "Payload contains no logged requests.")
+		log.LogErrorToFile(c.ClientIP(), payload.APIKey, "Payload contains no logged requests.")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Payload contains no logged requests."})
 		return
 	}
@@ -155,7 +156,7 @@ func logRequest(c *gin.Context) {
 	arguments := make([]any, 0)
 	query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES")
 	inserted := 0
-	requestErrors := lib.RequestErrors{}
+	requestErrors := log.RequestErrors{}
 	for _, request := range payload.Requests {
 		// Temporary 1000 request per minute limit
 		if inserted > 1000 {
@@ -212,7 +213,7 @@ func logRequest(c *gin.Context) {
 	}
 
 	// Record in log file for debugging purposes
-	lib.LogRequestsToFile(c.ClientIP(), payload.APIKey, inserted, len(payload.Requests), requestErrors)
+	log.LogRequestsToFile(c.ClientIP(), payload.APIKey, inserted, len(payload.Requests), requestErrors)
 
 	// If no valid logged requests received
 	if inserted == 0 {
@@ -235,24 +236,24 @@ func logRequest(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "API request logged successfully."})
 }
 
-func logRequestHandler(rateLimiter lib.RateLimiter) gin.HandlerFunc {
+func logRequestHandler(rateLimiter ratelimit.RateLimiter) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Collect API request data sent via POST request
 		var payload Payload
 		if err := c.BindJSON(&payload); err != nil {
-			lib.LogErrorToFile(c.ClientIP(), "", "Invalid request data.")
+			log.LogErrorToFile(c.ClientIP(), "", "Invalid request data.")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
 			return
 		} else if payload.APIKey == "" {
-			lib.LogErrorToFile(c.ClientIP(), payload.APIKey, "API key required.")
+			log.LogErrorToFile(c.ClientIP(), payload.APIKey, "API key required.")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
 			return
 		} else if rateLimiter.RateLimited(payload.APIKey) {
-			lib.LogErrorToFile(c.ClientIP(), payload.APIKey, "Too many requests.")
+			log.LogErrorToFile(c.ClientIP(), payload.APIKey, "Too many requests.")
 			c.String(http.StatusTooManyRequests, "Too many requests.")
 			return
 		} else if len(payload.Requests) == 0 {
-			lib.LogErrorToFile(c.ClientIP(), payload.APIKey, "Payload contains no logged requests.")
+			log.LogErrorToFile(c.ClientIP(), payload.APIKey, "Payload contains no logged requests.")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Payload contains no logged requests."})
 			return
 		}
@@ -261,7 +262,7 @@ func logRequestHandler(rateLimiter lib.RateLimiter) gin.HandlerFunc {
 		query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES")
 		arguments := make([]any, 0)
 		inserted := 0
-		requestErrors := lib.RequestErrors{}
+		requestErrors := log.RequestErrors{}
 		for _, request := range payload.Requests {
 			// Temporary 1000 request per minute limit
 			if inserted > 1000 {
@@ -318,11 +319,11 @@ func logRequestHandler(rateLimiter lib.RateLimiter) gin.HandlerFunc {
 		}
 
 		// Record in log file for debugging purposes
-		lib.LogRequestsToFile(c.ClientIP(), payload.APIKey, inserted, len(payload.Requests), requestErrors)
+		log.LogRequestsToFile(c.ClientIP(), payload.APIKey, inserted, len(payload.Requests), requestErrors)
 
 		// If no valid logged requests received
 		if inserted == 0 {
-			lib.LogToFile("No rows inserted.")
+			log.LogToFile("No rows inserted.")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
 			return
 		}
@@ -334,7 +335,7 @@ func logRequestHandler(rateLimiter lib.RateLimiter) gin.HandlerFunc {
 		_, err := db.Query(query.String(), arguments...)
 		db.Close()
 		if err != nil {
-			lib.LogToFile(err.Error())
+			log.LogToFile(err.Error())
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 			return
 		}
