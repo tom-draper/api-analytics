@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/tom-draper/api-analytics/server/database"
+	"github.com/tom-draper/api-analytics/server/logger/lib"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -24,22 +25,11 @@ func main() {
 
 	app.Use(cors.Default())
 
-	rateLimitStore := make(map[string]time.Time)
+	rateLimiter := lib.RateLimiter{}
 
-	app.POST("/api/log-request", logRequestHandler(rateLimitStore))
+	app.POST("/api/log-request", logRequestHandler(rateLimiter))
 
 	app.Run(":8000")
-}
-
-func rateLimited(apiKey string, rateLimitStore map[string]time.Time) bool {
-	rateLimited := false
-	timestamp, ok := rateLimitStore[apiKey]
-	if ok && time.Since(timestamp) < time.Second*2 {
-		rateLimited = true
-	} else {
-		rateLimitStore[apiKey] = time.Now()
-	}
-	return rateLimited
 }
 
 type RequestData struct {
@@ -285,7 +275,7 @@ func logToFile(msg string) {
 	log.Println(msg)
 }
 
-func logRequestHandler(rateLimitStore map[string]time.Time) gin.HandlerFunc {
+func logRequestHandler(rateLimiter lib.RateLimiter) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Collect API request data sent via POST request
 		var payload Payload
@@ -297,7 +287,7 @@ func logRequestHandler(rateLimitStore map[string]time.Time) gin.HandlerFunc {
 			logErrorToFile(c.ClientIP(), payload.APIKey, "API key required.")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
 			return
-		} else if rateLimited(payload.APIKey, rateLimitStore) {
+		} else if rateLimiter.RateLimited(payload.APIKey) {
 			logErrorToFile(c.ClientIP(), payload.APIKey, "Too many requests.")
 			c.String(http.StatusTooManyRequests, "Too many requests.")
 			return

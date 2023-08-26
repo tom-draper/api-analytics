@@ -2,16 +2,16 @@ package lib
 
 import "time"
 
-type RateLimiter map[string]UserRate
+type RateLimiter map[string]userRate
 
 const accessesPerMinute int = 10
 
-type UserRate struct {
+type userRate struct {
 	timestamps [accessesPerMinute]time.Time // Circular array
 	current    int                          // Current timestamp index
 }
 
-func (u *UserRate) increment() {
+func (u *userRate) increment() {
 	if u.current < len(u.timestamps)-1 {
 		u.current += 1
 	} else {
@@ -19,33 +19,37 @@ func (u *UserRate) increment() {
 	}
 }
 
-func (u *UserRate) RateLimited() bool {
+func (u *userRate) rateLimited() bool {
 	oldest := u.timestamps[u.current]
 	// If the oldest timestamp recorded is less than a minute ago -> rate limited
 	if time.Since(oldest) < time.Minute {
 		// Rate limited, user access denied, do not record access
 		return true
 	} else {
-		u.RecordAccess() // Register user access and record current time
+		u.recordAccess() // Register user access and record current time
 		return false
 	}
 }
 
-func (u *UserRate) RecordAccess() {
+func (u *userRate) recordAccess() {
 	u.increment()
 	u.timestamps[u.current] = time.Now()
 }
 
+func newUserRate() userRate {
+	ur := userRate{}
+	ur.recordAccess()
+	return ur
+}
+
 func (r RateLimiter) RateLimited(apiKey string) bool {
-	userRate, ok := r[apiKey]
+	ur, ok := r[apiKey]
 
 	if ok {
-		return userRate.RateLimited()
+		return ur.rateLimited()
 	} else {
 		// Add new API to rate limiter
-		userRate := UserRate{}
-		userRate.RecordAccess()
-		r[apiKey] = userRate
+		r[apiKey] = newUserRate()
 		return false
 	}
 }
