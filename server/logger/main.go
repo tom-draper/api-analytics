@@ -36,8 +36,9 @@ func rateLimited(apiKey string, rateLimitStore map[string]time.Time) bool {
 	timestamp, ok := rateLimitStore[apiKey]
 	if ok && time.Since(timestamp) < time.Second*2 {
 		rateLimited = true
+	} else {
+		rateLimitStore[apiKey] = time.Now()
 	}
-	rateLimitStore[apiKey] = time.Now()
 	return rateLimited
 }
 
@@ -219,12 +220,6 @@ func logRequest(c *gin.Context) {
 			continue
 		}
 
-		// Convert to NULL or '<value>' for SQL query
-		// fmtHostname := fmtNullableString(request.Hostname)
-		// fmtIPAddress := fmtNullableString(request.IPAddress)
-		// fmtUserAgent := fmtNullableString(userAgent)
-		// fmtLocation := fmtNullableString(location)
-
 		if inserted > 0 {
 			query.WriteString(",")
 		}
@@ -352,13 +347,7 @@ func logRequestHandler(rateLimitStore map[string]time.Time) gin.HandlerFunc {
 				continue
 			}
 
-			// Convert to NULL or '<value>' for SQL query
-			// fmtHostname := fmtNullableString(request.Hostname)
-			// fmtIPAddress := fmtNullableString(request.IPAddress)
-			// fmtUserAgent := fmtNullableString(userAgent)
-			// fmtLocation := fmtNullableString(location)
-
-			if inserted > 0 {
+			if inserted > 0 && inserted < 999 && inserted < len(payload.Requests)-1 {
 				query.WriteString(",")
 			}
 			query.WriteString("(?,?,?,?,?,?,?,?,?,?,?)")
@@ -383,6 +372,7 @@ func logRequestHandler(rateLimitStore map[string]time.Time) gin.HandlerFunc {
 
 		// If no valid logged requests received
 		if inserted == 0 {
+			logToFile("No rows inserted.")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
 			return
 		}
@@ -394,6 +384,7 @@ func logRequestHandler(rateLimitStore map[string]time.Time) gin.HandlerFunc {
 		_, err := db.Query(query.String(), arguments...)
 		db.Close()
 		if err != nil {
+			logToFile(err.Error())
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 			return
 		}
