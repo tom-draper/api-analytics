@@ -134,14 +134,6 @@ func getCountryCode(IPAddress string) string {
 	return location
 }
 
-func fmtNullableString(value string) string {
-	if value == "" {
-		return "NULL"
-	} else {
-		return fmt.Sprintf("'%s'", value)
-	}
-}
-
 func logRequest(c *gin.Context) {
 	// Collect API request data sent via POST request
 	var payload Payload
@@ -174,13 +166,13 @@ func logRequest(c *gin.Context) {
 
 		method, err := methodMap(request.Method)
 		if err != nil {
-			requestErrors.method += 1
+			requestErrors.Method += 1
 			continue
 		}
 
 		framework, err := frameworkMap(payload.Framework)
 		if err != nil {
-			requestErrors.framework += 1
+			requestErrors.Framework += 1
 			continue
 		}
 
@@ -189,13 +181,13 @@ func logRequest(c *gin.Context) {
 			userAgent = userAgent[:255]
 		}
 		if !database.SanitizeUserAgent(userAgent) {
-			requestErrors.userAgent += 1
+			requestErrors.UserAgent += 1
 			continue
 		} else if !database.SanitizeHostname(request.Hostname) {
-			requestErrors.hostname += 1
+			requestErrors.Hostname += 1
 			continue
 		} else if !database.SanitizePath(request.Path) {
-			requestErrors.path += 1
+			requestErrors.Path += 1
 			continue
 		}
 
@@ -280,13 +272,13 @@ func logRequestHandler(rateLimiter lib.RateLimiter) gin.HandlerFunc {
 
 			method, err := methodMap(request.Method)
 			if err != nil {
-				requestErrors.method += 1
+				requestErrors.Method += 1
 				continue
 			}
 
 			framework, err := frameworkMap(payload.Framework)
 			if err != nil {
-				requestErrors.framework += 1
+				requestErrors.Framework += 1
 				continue
 			}
 
@@ -295,13 +287,13 @@ func logRequestHandler(rateLimiter lib.RateLimiter) gin.HandlerFunc {
 				userAgent = userAgent[:255]
 			}
 			if !database.SanitizeUserAgent(userAgent) {
-				requestErrors.userAgent += 1
+				requestErrors.UserAgent += 1
 				continue
 			} else if !database.SanitizeHostname(request.Hostname) {
-				requestErrors.hostname += 1
+				requestErrors.Hostname += 1
 				continue
 			} else if !database.SanitizePath(request.Path) {
-				requestErrors.path += 1
+				requestErrors.Path += 1
 				continue
 			}
 
