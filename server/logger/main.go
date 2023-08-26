@@ -154,7 +154,7 @@ func logRequest(c *gin.Context) {
 
 	var query strings.Builder
 	arguments := make([]any, 0)
-	query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES")
+	query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES ")
 	inserted := 0
 	requestErrors := log.RequestErrors{}
 	for _, request := range payload.Requests {
