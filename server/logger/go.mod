@@ -6,7 +6,7 @@ require (
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/oschwald/geoip2-golang v1.9.0
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20230826144708-31a9a95e08c5
+	github.com/tom-draper/api-analytics/server/database v0.0.0-20230827111830-b83173de4b83
 )
 
 require (
