@@ -24,7 +24,7 @@ func (u *userRate) increment() {
 func (u *userRate) rateLimited() bool {
 	oldest := u.timestamps[u.current]
 
-	// If the oldest timestamp recorded is less than a minute ago -> rate limited
+	// If the oldest timestamp recorded is less than a minute ago => rate limited
 	if time.Since(oldest) < time.Minute {
 		// User access denied, do not record attempted access
 		return true
@@ -51,7 +51,7 @@ func (r RateLimiter) RateLimited(apiKey string) bool {
 	if ok {
 		return ur.rateLimited()
 	} else {
-		// Add new API to rate limiter
+		// Add new API key to rate limiter
 		r[apiKey] = newUserRate()
 		return false
 	}
