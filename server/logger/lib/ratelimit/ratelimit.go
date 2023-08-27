@@ -26,10 +26,10 @@ func (u *userRate) rateLimited() bool {
 
 	// If the oldest timestamp recorded is less than a minute ago -> rate limited
 	if time.Since(oldest) < time.Minute {
-		// Rate limited, user access denied, do not record access
+		// User access denied, do not record attempted access
 		return true
 	} else {
-		u.recordAccess() // Register user access and record current time
+		u.recordAccess() // User access successful, register access and record current time
 		return false
 	}
 }
