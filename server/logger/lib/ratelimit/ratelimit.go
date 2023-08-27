@@ -1,14 +1,16 @@
 package ratelimit
 
-import "time"
+import (
+	"time"
+)
 
-type RateLimiter map[string]userRate
+type RateLimiter map[string]*userRate
 
 const accessesPerMinute int = 10
 
 type userRate struct {
 	timestamps [accessesPerMinute]time.Time // Circular array
-	current    int                          // Current timestamp index
+	current    int                          // Index of oldest timestamp to be replaced next
 }
 
 func (u *userRate) increment() {
@@ -21,6 +23,7 @@ func (u *userRate) increment() {
 
 func (u *userRate) rateLimited() bool {
 	oldest := u.timestamps[u.current]
+
 	// If the oldest timestamp recorded is less than a minute ago -> rate limited
 	if time.Since(oldest) < time.Minute {
 		// Rate limited, user access denied, do not record access
@@ -32,14 +35,14 @@ func (u *userRate) rateLimited() bool {
 }
 
 func (u *userRate) recordAccess() {
-	u.increment()
 	u.timestamps[u.current] = time.Now()
+	u.increment()
 }
 
-func newUserRate() userRate {
+func newUserRate() *userRate {
 	ur := userRate{}
 	ur.recordAccess()
-	return ur
+	return &ur
 }
 
 func (r RateLimiter) RateLimited(apiKey string) bool {

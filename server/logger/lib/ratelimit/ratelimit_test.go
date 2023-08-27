@@ -16,4 +16,17 @@ func TestRateLimit(t *testing.T) {
 		}
 	}
 
+	for i, expected := range expecteds {
+		got := ratelimiter.RateLimited("test2")
+		if got != expected {
+			t.Errorf("%d: got %t, expected %t", i, got, expected)
+		}
+	}
+
+	for i, expected := range expecteds {
+		got := ratelimiter.RateLimited("test3")
+		if got != expected {
+			t.Errorf("%d: got %t, expected %t", i, got, expected)
+		}
+	}
 }
