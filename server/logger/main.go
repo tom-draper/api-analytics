@@ -25,7 +25,7 @@ func main() {
 
 	rateLimiter := ratelimit.RateLimiter{}
 
-	app.POST("/api/log-request", logRequestHandler(rateLimiter))
+	app.POST("/api/log-request", logRequestHandler(&rateLimiter))
 
 	app.Run(":8000")
 }
@@ -236,7 +236,7 @@ func logRequest(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "API request logged successfully."})
 }
 
-func logRequestHandler(rateLimiter ratelimit.RateLimiter) gin.HandlerFunc {
+func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Collect API request data sent via POST request
 		var payload Payload
@@ -259,7 +259,7 @@ func logRequestHandler(rateLimiter ratelimit.RateLimiter) gin.HandlerFunc {
 		}
 
 		var query strings.Builder
-		query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES")
+		query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES ")
 		arguments := make([]any, 0)
 		inserted := 0
 		requestErrors := log.RequestErrors{}
@@ -298,10 +298,11 @@ func logRequestHandler(rateLimiter ratelimit.RateLimiter) gin.HandlerFunc {
 				continue
 			}
 
-			if inserted > 0 && inserted < 999 && inserted < len(payload.Requests)-1 {
+			if inserted > 0 && inserted < 999 && inserted < len(payload.Requests) {
 				query.WriteString(",")
 			}
-			query.WriteString("(?,?,?,?,?,?,?,?,?,?,?)")
+			numArgs := len(arguments)
+			query.WriteString(fmt.Sprintf("($%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d)", numArgs+1, numArgs+2, numArgs+3, numArgs+4, numArgs+5, numArgs+6, numArgs+7, numArgs+8, numArgs+9, numArgs+10, numArgs+11))
 			arguments = append(
 				arguments,
 				payload.APIKey,
@@ -318,7 +319,7 @@ func logRequestHandler(rateLimiter ratelimit.RateLimiter) gin.HandlerFunc {
 			inserted += 1
 		}
 
-		// Record in log file for debugging purposes
+		// Record in log file for debugging
 		log.LogRequestsToFile(c.ClientIP(), payload.APIKey, inserted, len(payload.Requests), requestErrors)
 
 		// If no valid logged requests received
