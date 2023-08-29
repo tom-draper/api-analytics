@@ -1,7 +1,10 @@
 package routes
 
 import (
+	"bytes"
+	"compress/gzip"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -96,7 +99,7 @@ func getUserRequests(c *gin.Context) {
 	defer db.Close()
 
 	// Fetch user ID corresponding with API key
-	query := fmt.Sprintf("SELECT ip_address, path, user_agent, method, response_time, status, location, requests.created_at FROM requests INNER JOIN users ON users.api_key = requests.api_key WHERE users.user_id = '%s';", userID)
+	query := fmt.Sprintf("SELECT ip_address, path, user_agent, method, response_time, status, location, requests.created_at FROM requests INNER JOIN users ON users.api_key = requests.api_key WHERE users.user_id = '%s' LIMIT 500000;", userID)
 	rows, err := db.Query(query)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
@@ -110,11 +113,40 @@ func getUserRequests(c *gin.Context) {
 	}
 
 	// Read data into compact list of lists to return
-	cols := []interface{}{"ip_address", "path", "user_agent", "method", "response_time", "status", "location", "created_at"}
+	cols := []any{"ip_address", "path", "user_agent", "method", "response_time", "status", "location", "created_at"}
 	requests := buildRequestDataCompact(rows, cols)
 
+	gzipOutput, err := compressJSON(requests)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Compression failed."})
+		return
+	}
+
 	// Return API request data
-	c.JSON(http.StatusOK, requests)
+	c.Writer.Header().Set("Accept-Encoding", "gzip")
+	c.Writer.Header().Set("Content-Encoding", "gzip")
+	c.Writer.Header().Set("Content-Type", "application/json")
+	c.Data(http.StatusOK, "gzip", gzipOutput)
+}
+
+func compressJSON(response any) ([]byte, error) {
+	body, err := json.Marshal(response)
+	if err != nil {
+		return nil, err
+	}
+
+	var buffer bytes.Buffer
+	zw := gzip.NewWriter(&buffer)
+	_, err = zw.Write(body)
+	if err != nil {
+		return nil, err
+	}
+
+	closeErr := zw.Close()
+	if closeErr != nil {
+		return nil, err
+	}
+	return buffer.Bytes(), nil
 }
 
 func updateLastAccessedByUserID(db *sql.DB, userID string) error {
@@ -129,9 +161,9 @@ func updateLastAccessedByAPIKey(db *sql.DB, apiKey string) error {
 	return err
 }
 
-func buildRequestDataCompact(rows *sql.Rows, cols []interface{}) [][]interface{} {
+func buildRequestDataCompact(rows *sql.Rows, cols []any) [][]any {
 	// First value in list holds column names
-	requests := [][]interface{}{cols}
+	requests := [][]any{cols}
 	request := new(PublicRequestRow) // Reused to avoid repeated memory allocation
 	for rows.Next() {
 		err := rows.Scan(&request.IPAddress, &request.Path, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
@@ -139,7 +171,7 @@ func buildRequestDataCompact(rows *sql.Rows, cols []interface{}) [][]interface{}
 			request.Location.String = ""
 		}
 		if err == nil {
-			requests = append(requests, []interface{}{request.IPAddress.String, request.Path, request.UserAgent.String, request.Method, request.ResponseTime, request.Status, request.Location.String, request.CreatedAt})
+			requests = append(requests, []any{request.IPAddress.String, request.Path, request.UserAgent.String, request.Method, request.ResponseTime, request.Status, request.Location.String, request.CreatedAt})
 		}
 	}
 	return requests
@@ -224,7 +256,7 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 		query.WriteString(fmt.Sprintf(" and status = %d", queries.status))
 	}
 
-	query.WriteString(";")
+	query.WriteString("LIMIT 500000;")
 	return query.String()
 }
 
