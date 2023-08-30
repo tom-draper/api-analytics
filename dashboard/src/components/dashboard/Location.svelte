@@ -43,9 +43,9 @@
     locations.sort((a, b) => {
       return b[1] - a[1];
     });
-    locations = locations.slice(0, 10);
   }
 
+  
   let locations: [string, number, number][] = [];
   let mounted = false;
   onMount(() => {
@@ -62,7 +62,7 @@
   {#if locations.length > 0}
     <div class="locations-count">{locations.length} locations</div>
     <div class="bars">
-      {#each locations as location}
+      {#each locations.slice(0, 10) as location}
         <div class="bar-container">
           <div
             class="bar"
