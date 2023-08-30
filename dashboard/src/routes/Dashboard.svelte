@@ -176,6 +176,9 @@
           class:time-period-btn-active={disable404}>Disable 404</button
         >
       </div>
+      <button class="settings">
+        <img class="settings-icon" src="../img/cog.png" alt=""/>
+      </button>
       <div class="nav-btn time-period">
         {#each timePeriods as period}
           <button
@@ -304,6 +307,20 @@
   .time-period-btn-active {
     background: var(--highlight);
     color: black;
+  }
+  .settings {
+    background: transparent;
+    outline: none;
+    border: none;
+    margin-right: 10px;
+    cursor: pointer;
+    display: none;
+  }
+  .settings-icon {
+    width: 20px;
+    height: 20px;
+    filter: contrast(0.5);
+    margin-top: 2px;
   }
   @media screen and (max-width: 1600px) {
     .grid-row {
