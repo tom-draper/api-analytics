@@ -75,7 +75,10 @@ function getHour(): number {
 }
 
 function getLocation(): string {
-    return ["GB", "US", "MX", "CA", "FR", "AU", "ID", "IE", "DE", "PL"][randomChoice([0.56, 1, 0.18, 0.2, 0.4, 0.3, 0.1, 0.05, 0.2, 0.06])] as string
+    const locations = ["GB", "US", "MX", "CA", "FR", "AU", "ID", "IE", "DE", "PL", "AF", "AL", "DZ", "AS", "AD", "AO", "AI", "AQ", "AG", "AR", "AM", "AW", "AT", "AZ", "BS", "BH", "BD", "BB", "BY", "BE", "BZ", "BJ", "BM", "BT", "BO", "BQ"]
+    const p = [0.56, 1, 0.18, 0.2, 0.4, 0.3, 0.1, 0.05, 0.2, 0.06, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
+    const idx = randomChoice(p)
+    return locations[idx] as string
 }
 
 function addDemoSamples(

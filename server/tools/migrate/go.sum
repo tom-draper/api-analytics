@@ -19,6 +19,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20230718222900-92b172f3e180 h1:2C1crenqNPXZ1pfyzB9XgyuJeeEt5T+lJKxjuw4Lu1U=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20230718222900-92b172f3e180/go.mod h1:SQTCdpxNLRUzwokeY71HA2+8YokbcpUOTjifQONW3oM=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20230826102106-451cf439fb26 h1:8pLGX0BLePJsr7iZLhovXSdCivpd12cz/8fde2QoIKE=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20230826102106-451cf439fb26/go.mod h1:SQTCdpxNLRUzwokeY71HA2+8YokbcpUOTjifQONW3oM=
 golang.org/x/sys v0.11.0 h1:eG7RXZHdqOJ1i+0lgLgCpSXAp6M3LYlAo6osgSi0xOM=
 golang.org/x/sys v0.11.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=

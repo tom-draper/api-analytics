@@ -11,8 +11,12 @@ github.com/mattn/go-isatty v0.0.19 h1:JITubQf0MOLdlGRuRq+jtsDlekdYPia9ZFsB8h/APP
 github.com/mattn/go-isatty v0.0.19/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20230718222900-92b172f3e180 h1:2C1crenqNPXZ1pfyzB9XgyuJeeEt5T+lJKxjuw4Lu1U=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20230718222900-92b172f3e180/go.mod h1:SQTCdpxNLRUzwokeY71HA2+8YokbcpUOTjifQONW3oM=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20230826102106-451cf439fb26 h1:8pLGX0BLePJsr7iZLhovXSdCivpd12cz/8fde2QoIKE=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20230826102106-451cf439fb26/go.mod h1:SQTCdpxNLRUzwokeY71HA2+8YokbcpUOTjifQONW3oM=
 github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230718222900-92b172f3e180 h1:/hhcIgZd+wYZ4tZ2LDag0BvZ9I9TqdhwZ8/vhsCs5MU=
 github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230718222900-92b172f3e180/go.mod h1:uuhZgELEpplnMMpBOP3eTzznXzmU1WocBQVy6lubolQ=
+github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230826080008-77a47ff77bb9 h1:bxEp/KAHEOHTQ6OE9EVuaCA3ApKKP2kG0y26qM0GCw8=
+github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230826080008-77a47ff77bb9/go.mod h1:ye0b6Bg78x+6jUjTwI3HuiMD8Vc9n8+Fna05emwVFxM=
 golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.11.0 h1:eG7RXZHdqOJ1i+0lgLgCpSXAp6M3LYlAo6osgSi0xOM=

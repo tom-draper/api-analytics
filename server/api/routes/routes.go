@@ -1,7 +1,10 @@
 package routes
 
 import (
+	"bytes"
+	"compress/gzip"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -18,7 +21,7 @@ func genAPIKey(c *gin.Context) {
 	db := database.OpenDBConnection()
 	defer db.Close()
 	// Fetch all API request data associated with this account
-	query := "INSERT INTO users (api_key, user_id, created_at) VALUES (gen_random_uuid(), gen_random_uuid(), NOW()) RETURNING api_key;"
+	query := "INSERT INTO users (api_key, user_id, created_at, last_accessed) VALUES (gen_random_uuid(), gen_random_uuid(), NOW(), NOW()) RETURNING api_key;"
 
 	rows, err := db.Query(query)
 	if err != nil {
@@ -96,24 +99,71 @@ func getUserRequests(c *gin.Context) {
 	defer db.Close()
 
 	// Fetch user ID corresponding with API key
-	query := fmt.Sprintf("SELECT ip_address, path, user_agent, method, response_time, status, location, requests.created_at FROM requests INNER JOIN users ON users.api_key = requests.api_key WHERE users.user_id = '%s';", userID)
+	query := fmt.Sprintf("SELECT ip_address, path, user_agent, method, response_time, status, location, requests.created_at FROM requests INNER JOIN users ON users.api_key = requests.api_key WHERE users.user_id = '%s' LIMIT 500000;", userID)
 	rows, err := db.Query(query)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
 
+	err = updateLastAccessedByUserID(db, userID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
+		return
+	}
+
 	// Read data into compact list of lists to return
-	cols := []interface{}{"ip_address", "path", "user_agent", "method", "response_time", "status", "location", "created_at"}
+	cols := []any{"ip_address", "path", "user_agent", "method", "response_time", "status", "location", "created_at"}
 	requests := buildRequestDataCompact(rows, cols)
 
+	gzipOutput, err := compressJSON(requests)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Compression failed."})
+		return
+	}
+
 	// Return API request data
-	c.JSON(http.StatusOK, requests)
+	c.Writer.Header().Set("Accept-Encoding", "gzip")
+	c.Writer.Header().Set("Content-Encoding", "gzip")
+	c.Writer.Header().Set("Content-Type", "application/json")
+	c.Data(http.StatusOK, "gzip", gzipOutput)
 }
 
-func buildRequestDataCompact(rows *sql.Rows, cols []interface{}) [][]interface{} {
+func compressJSON(response any) ([]byte, error) {
+	body, err := json.Marshal(response)
+	if err != nil {
+		return nil, err
+	}
+
+	var buffer bytes.Buffer
+	zw := gzip.NewWriter(&buffer)
+	_, err = zw.Write(body)
+	if err != nil {
+		return nil, err
+	}
+
+	closeErr := zw.Close()
+	if closeErr != nil {
+		return nil, err
+	}
+	return buffer.Bytes(), nil
+}
+
+func updateLastAccessedByUserID(db *sql.DB, userID string) error {
+	query := fmt.Sprintf("UPDATE users SET last_accessed = NOW() WHERE user_id = '%s';", userID)
+	_, err := db.Query(query)
+	return err
+}
+
+func updateLastAccessedByAPIKey(db *sql.DB, apiKey string) error {
+	query := fmt.Sprintf("UPDATE users SET last_accessed = NOW() WHERE api_key = '%s';", apiKey)
+	_, err := db.Query(query)
+	return err
+}
+
+func buildRequestDataCompact(rows *sql.Rows, cols []any) [][]any {
 	// First value in list holds column names
-	requests := [][]interface{}{cols}
+	requests := [][]any{cols}
 	request := new(PublicRequestRow) // Reused to avoid repeated memory allocation
 	for rows.Next() {
 		err := rows.Scan(&request.IPAddress, &request.Path, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
@@ -121,7 +171,7 @@ func buildRequestDataCompact(rows *sql.Rows, cols []interface{}) [][]interface{}
 			request.Location.String = ""
 		}
 		if err == nil {
-			requests = append(requests, []interface{}{request.IPAddress.String, request.Path, request.UserAgent.String, request.Method, request.ResponseTime, request.Status, request.Location.String, request.CreatedAt})
+			requests = append(requests, []any{request.IPAddress.String, request.Path, request.UserAgent.String, request.Method, request.ResponseTime, request.Status, request.Location.String, request.CreatedAt})
 		}
 	}
 	return requests
@@ -143,34 +193,40 @@ func getData(c *gin.Context) {
 	if apiKey == "" {
 		// Check old (deprecated) identifier
 		apiKey = c.GetHeader("API-Key")
+		if apiKey == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
+			return
+		}
 	}
 
 	// Get any queries from url
 	queries := getQueriesFromRequest(c)
 
-	if apiKey != "" {
-		db := database.OpenDBConnection()
-		defer db.Close()
+	db := database.OpenDBConnection()
+	defer db.Close()
 
-		// Fetch all API request data associated with this account
-		query := buildDataFetchQuery(apiKey, queries)
-		rows, err := db.Query(query)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
-			return
-		}
-
-		// Read data into list of objects to return
-		if queries.compact {
-			cols := []interface{}{"hostname", "ip_address", "path", "user_agent", "method", "response_time", "status", "location", "created_at"}
-			requests := buildRequestDataCompact(rows, cols)
-			c.JSON(http.StatusOK, requests)
-		} else {
-			requests := buildRequestData(rows)
-			c.JSON(http.StatusOK, requests)
-		}
-	} else {
+	// Fetch all API request data associated with this account
+	query := buildDataFetchQuery(apiKey, queries)
+	rows, err := db.Query(query)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
+		return
+	}
+
+	err = updateLastAccessedByAPIKey(db, apiKey)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
+		return
+	}
+
+	// Read data into list of objects to return
+	if queries.compact {
+		cols := []interface{}{"hostname", "ip_address", "path", "user_agent", "method", "response_time", "status", "location", "created_at"}
+		requests := buildRequestDataCompact(rows, cols)
+		c.JSON(http.StatusOK, requests)
+	} else {
+		requests := buildRequestData(rows)
+		c.JSON(http.StatusOK, requests)
 	}
 }
 
@@ -200,7 +256,7 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 		query.WriteString(fmt.Sprintf(" and status = %d", queries.status))
 	}
 
-	query.WriteString(";")
+	query.WriteString("LIMIT 500000;")
 	return query.String()
 }
 
@@ -435,56 +491,56 @@ func addUserMonitor(c *gin.Context) {
 	if monitor.UserID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User ID required."})
 		return
-	} else {
-		db := database.OpenDBConnection()
-		defer db.Close()
-
-		// Get API key from user ID
-		query := fmt.Sprintf("SELECT api_key FROM users WHERE user_id = '%s';", monitor.UserID)
-		rows, err := db.Query(query)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
-			return
-		}
-		rows.Next()
-		var apiKey string
-		err = rows.Scan(&apiKey)
-		if err != nil || apiKey == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
-			return
-		}
-
-		// Get monitor count
-		query = fmt.Sprintf("SELECT count(*) FROM monitor WHERE api_key = '%s';", apiKey)
-		rows, err = db.Query(query)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
-			return
-		}
-		rows.Next()
-		var count int
-		err = rows.Scan(&count)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
-			return
-		}
-
-		if count > 3 {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Monitor limit reached."})
-			return
-		}
-
-		// Insert new monitor into database
-		query = fmt.Sprintf("INSERT INTO monitor (api_key, url, secure, ping, created_at) VALUES ('%s', '%s', %t, %t, NOW())", apiKey, monitor.URL, monitor.Secure, monitor.Ping)
-		_, err = db.Query(query)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
-			return
-		}
-
-		// Return success response
-		c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "New monitor added successfully."})
 	}
+
+	db := database.OpenDBConnection()
+	defer db.Close()
+
+	// Get API key from user ID
+	query := fmt.Sprintf("SELECT api_key FROM users WHERE user_id = '%s';", monitor.UserID)
+	rows, err := db.Query(query)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+		return
+	}
+	rows.Next()
+	var apiKey string
+	err = rows.Scan(&apiKey)
+	if err != nil || apiKey == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+		return
+	}
+
+	// Get monitor count
+	query = fmt.Sprintf("SELECT count(*) FROM monitor WHERE api_key = '%s';", apiKey)
+	rows, err = db.Query(query)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+		return
+	}
+	rows.Next()
+	var count int
+	err = rows.Scan(&count)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+		return
+	}
+
+	if count > 3 {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Monitor limit reached."})
+		return
+	}
+
+	// Insert new monitor into database
+	query = fmt.Sprintf("INSERT INTO monitor (api_key, url, secure, ping, created_at) VALUES ('%s', '%s', %t, %t, NOW())", apiKey, monitor.URL, monitor.Secure, monitor.Ping)
+	_, err = db.Query(query)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+		return
+	}
+
+	// Return success response
+	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "New monitor added successfully."})
 }
 
 func deleteMonitor(apiKey string, url string, c *gin.Context, db *sql.DB) error {
@@ -522,41 +578,41 @@ func deleteUserMonitor(c *gin.Context) {
 	if body.UserID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User ID required."})
 		return
-	} else {
-		db := database.OpenDBConnection()
-		defer db.Close()
-
-		// Get API key from user ID
-		query := fmt.Sprintf("SELECT api_key FROM users WHERE user_id = '%s';", body.UserID)
-		rows, err := db.Query(query)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
-			return
-		}
-		rows.Next()
-		var apiKey string
-		err = rows.Scan(&apiKey)
-		if err != nil || apiKey == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
-			return
-		}
-
-		// Delete monitor from database
-		err = deleteMonitor(apiKey, body.URL, c, db)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
-			return
-		}
-		// Delete recorded pings from database for this monitor
-		err = deletePings(apiKey, body.URL, c, db)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
-			return
-		}
-
-		// Return success response
-		c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "Monitor deleted successfully."})
 	}
+
+	db := database.OpenDBConnection()
+	defer db.Close()
+
+	// Get API key from user ID
+	query := fmt.Sprintf("SELECT api_key FROM users WHERE user_id = '%s';", body.UserID)
+	rows, err := db.Query(query)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+		return
+	}
+	rows.Next()
+	var apiKey string
+	err = rows.Scan(&apiKey)
+	if err != nil || apiKey == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+		return
+	}
+
+	// Delete monitor from database
+	err = deleteMonitor(apiKey, body.URL, c, db)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+		return
+	}
+	// Delete recorded pings from database for this monitor
+	err = deletePings(apiKey, body.URL, c, db)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
+		return
+	}
+
+	// Return success response
+	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "Monitor deleted successfully."})
 }
 
 type PublicPingsRow struct {
