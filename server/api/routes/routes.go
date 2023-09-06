@@ -20,6 +20,7 @@ import (
 func genAPIKey(c *gin.Context) {
 	db := database.OpenDBConnection()
 	defer db.Close()
+
 	// Fetch all API request data associated with this account
 	query := "INSERT INTO users (api_key, user_id, created_at, last_accessed) VALUES (gen_random_uuid(), gen_random_uuid(), NOW(), NOW()) RETURNING api_key;"
 
@@ -98,9 +99,26 @@ func getUserRequests(c *gin.Context) {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
-	// Fetch user ID corresponding with API key
-	query := fmt.Sprintf("SELECT ip_address, path, user_agent, method, response_time, status, location, requests.created_at FROM requests INNER JOIN users ON users.api_key = requests.api_key WHERE users.user_id = '%s' LIMIT 500000;", userID)
+	// Fetch API key corresponding with user_id
+	query := fmt.Sprintf("SELECT api_key FROM users WHERE user_id = '%s';", userID)
 	rows, err := db.Query(query)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
+		return
+	}
+
+	rows.Next()
+	var apiKey string
+	err = rows.Scan(&apiKey)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
+		return
+	}
+
+	// Fetch user ID corresponding with API key
+	// Left table join was originally used but often exceeded postgresql working memory limit with large numbers of requests
+	query = fmt.Sprintf("SELECT ip_address, path, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s' LIMIT 1000000;", apiKey)
+	rows, err = db.Query(query)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
@@ -129,21 +147,23 @@ func getUserRequests(c *gin.Context) {
 	c.Data(http.StatusOK, "gzip", gzipOutput)
 }
 
-func compressJSON(response any) ([]byte, error) {
-	body, err := json.Marshal(response)
+func compressJSON(data any) ([]byte, error) {
+	// Convert data to []byte
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
 	}
 
+	// Compress using gzip
 	var buffer bytes.Buffer
-	zw := gzip.NewWriter(&buffer)
-	_, err = zw.Write(body)
+	gzw := gzip.NewWriter(&buffer)
+	_, err = gzw.Write(body)
 	if err != nil {
 		return nil, err
 	}
 
-	closeErr := zw.Close()
-	if closeErr != nil {
+	err = gzw.Close()
+	if err != nil {
 		return nil, err
 	}
 	return buffer.Bytes(), nil
@@ -256,7 +276,7 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 		query.WriteString(fmt.Sprintf(" and status = %d", queries.status))
 	}
 
-	query.WriteString("LIMIT 500000;")
+	query.WriteString("LIMIT 1000000;")
 	return query.String()
 }
 
