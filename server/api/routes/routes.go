@@ -29,8 +29,6 @@ func genAPIKey(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
 		return
 	}
-
-	// Get API key auto generated from new row insertion
 	rows.Next()
 	var apiKey string
 	err = rows.Scan(&apiKey)
@@ -62,8 +60,6 @@ func getUserID(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
-
-	// API key is primary key so assumed only one row returned
 	rows.Next()
 	var userID string
 	err = rows.Scan(&userID)
@@ -106,7 +102,6 @@ func getUserRequests(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
-
 	rows.Next()
 	var apiKey string
 	err = rows.Scan(&apiKey)
@@ -269,9 +264,11 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 	if database.SanitizeIPAddress(queries.ipAddress) {
 		query.WriteString(fmt.Sprintf(" and ip_address = '%s'", queries.ipAddress))
 	}
+
 	if database.SanitizeLocation(queries.location) {
 		query.WriteString(fmt.Sprintf(" and location = '%s'", queries.location))
 	}
+
 	if database.SanitizeStatus(queries.status) {
 		query.WriteString(fmt.Sprintf(" and status = %d", queries.status))
 	}
