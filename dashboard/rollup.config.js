@@ -40,7 +40,7 @@ export default [
       !production &&
         livereload({
           watch: "public/App.js",
-          delay: 200,
+          delay: 300,
         }),
         production && terser(),
     ],
