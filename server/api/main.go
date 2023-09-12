@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/tom-draper/api-analytics/server/api/routes"
+	"github.com/tom-draper/api-analytics/server/api/lib/log"
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
 	"github.com/gin-contrib/cors"
@@ -20,6 +21,8 @@ func errorHandler(c *gin.Context, info ratelimit.Info) {
 }
 
 func main() {
+	log.LogToFile("Starting api...")
+
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
 
