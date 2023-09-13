@@ -27,9 +27,9 @@ func RequestsCount(days int) (int, error) {
 	defer db.Close()
 
 	query := "SELECT COUNT(*) FROM requests"
-	if days == 999 {
+	if days == 1 {
 		query += " WHERE created_at >= NOW() - interval '24 hours';"
-	} else if days >= 1 {
+	} else if days > 1 {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%d day';", days)
 	} else {
 		query += ";"
