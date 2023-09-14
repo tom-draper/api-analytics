@@ -14,6 +14,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/gin-gonic/gin"
+	"github.com/tom-draper/api-analytics/server/api/lib/log"
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
@@ -26,16 +27,22 @@ func genAPIKey(c *gin.Context) {
 
 	rows, err := db.Query(query)
 	if err != nil {
+		log.LogToFile("API key generation failed")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
 		return
 	}
+
+	// Get API key auto generated from new row insertion
 	rows.Next()
 	var apiKey string
 	err = rows.Scan(&apiKey)
 	if err != nil {
+		log.LogToFile("API key generation failed")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
 		return
 	}
+
+	log.LogToFile(apiKey + ": API key generated")
 
 	// Return API key
 	c.JSON(http.StatusOK, apiKey)
@@ -60,6 +67,8 @@ func getUserID(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
+
+	// API key is primary key so assumed only one row returned
 	rows.Next()
 	var userID string
 	err = rows.Scan(&userID)
@@ -88,9 +97,12 @@ func getUserRequests(c *gin.Context) {
 	var userID string = c.Param("userID")
 
 	if userID == "" {
+		log.LogToFile("User ID empty")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
+
+	log.LogToFile(userID + ": Dashboard access")
 
 	db := database.OpenDBConnection()
 	defer db.Close()
@@ -99,13 +111,16 @@ func getUserRequests(c *gin.Context) {
 	query := fmt.Sprintf("SELECT api_key FROM users WHERE user_id = '%s';", userID)
 	rows, err := db.Query(query)
 	if err != nil {
+		log.LogToFile(userID + ": No API key associated with user ID")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
+
 	rows.Next()
 	var apiKey string
 	err = rows.Scan(&apiKey)
 	if err != nil {
+		log.LogToFile(userID + ": No API key associated with user ID")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
@@ -115,12 +130,14 @@ func getUserRequests(c *gin.Context) {
 	query = fmt.Sprintf("SELECT ip_address, path, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s' LIMIT 1000000;", apiKey)
 	rows, err = db.Query(query)
 	if err != nil {
+		log.LogToFile(apiKey + ": Invalid API key")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
 
-	err = updateLastAccessedByUserID(db, userID)
+	err = updateLastAccessed(db, apiKey)
 	if err != nil {
+		log.LogToFile(apiKey + ": User last access update failed")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
@@ -134,6 +151,8 @@ func getUserRequests(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Compression failed."})
 		return
 	}
+
+	log.LogToFile(apiKey + ": Dashboard access successful")
 
 	// Return API request data
 	c.Writer.Header().Set("Accept-Encoding", "gzip")
@@ -170,7 +189,7 @@ func updateLastAccessedByUserID(db *sql.DB, userID string) error {
 	return err
 }
 
-func updateLastAccessedByAPIKey(db *sql.DB, apiKey string) error {
+func updateLastAccessed(db *sql.DB, apiKey string) error {
 	query := fmt.Sprintf("UPDATE users SET last_accessed = NOW() WHERE api_key = '%s';", apiKey)
 	_, err := db.Query(query)
 	return err
@@ -209,10 +228,13 @@ func getData(c *gin.Context) {
 		// Check old (deprecated) identifier
 		apiKey = c.GetHeader("API-Key")
 		if apiKey == "" {
+			log.LogToFile("API key empty")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 			return
 		}
 	}
+
+	log.LogToFile(apiKey + ": Data access")
 
 	// Get any queries from url
 	queries := getQueriesFromRequest(c)
@@ -224,15 +246,19 @@ func getData(c *gin.Context) {
 	query := buildDataFetchQuery(apiKey, queries)
 	rows, err := db.Query(query)
 	if err != nil {
+		log.LogToFile(apiKey + ": Queries failed")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
 
-	err = updateLastAccessedByAPIKey(db, apiKey)
+	err = updateLastAccessed(db, apiKey)
 	if err != nil {
+		log.LogToFile(apiKey + ": User last access update failed")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
+
+	log.LogToFile(apiKey + ": Data access successful")
 
 	// Read data into list of objects to return
 	if queries.compact {
@@ -264,11 +290,9 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 	if database.SanitizeIPAddress(queries.ipAddress) {
 		query.WriteString(fmt.Sprintf(" and ip_address = '%s'", queries.ipAddress))
 	}
-
 	if database.SanitizeLocation(queries.location) {
 		query.WriteString(fmt.Sprintf(" and location = '%s'", queries.location))
 	}
-
 	if database.SanitizeStatus(queries.status) {
 		query.WriteString(fmt.Sprintf(" and status = %d", queries.status))
 	}
