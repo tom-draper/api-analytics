@@ -48,7 +48,7 @@ func printCheckup() {
 	printAPITest()
 
 	printDatabaseStats()
-	//printLastHour()
+	printLastHour()
 	printLast24Hours()
 	printLastWeek()
 	printTotal()
@@ -166,21 +166,21 @@ func printDatabaseStats() {
 func printLastHour() {
 	p := message.NewPrinter(language.English)
 	p.Println("---- Last 24-hours -------------------")
-	//dailyUsers, err := usage.HourlyUsersCount()
-	//if err != nil {
-	//	panic(err)
-	//}
-	//p.Println("Users:", dailyUsers)
-	//dailyRequests, err := usage.HourlyRequestsCount()
-	//if err != nil {
-	//	panic(err)
-	//}
-	//p.Println("Requests:", dailyRequests)
-	//dailyMonitors, err := usage.HourlyMonitorsCount()
-	//if err != nil {
-	//	panic(err)
-	//}
-	//p.Println("Monitors:", dailyMonitors)
+	dailyUsers, err := usage.HourlyUsersCount()
+	if err != nil {
+		panic(err)
+	}
+	p.Println("Users:", dailyUsers)
+	dailyRequests, err := usage.HourlyRequestsCount()
+	if err != nil {
+		panic(err)
+	}
+	p.Println("Requests:", dailyRequests)
+	dailyMonitors, err := usage.HourlyMonitorsCount()
+	if err != nil {
+		panic(err)
+	}
+	p.Println("Monitors:", dailyMonitors)
 }
 
 func printLast24Hours() {
