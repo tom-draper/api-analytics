@@ -31,10 +31,8 @@ func RequestsCount(interval string) (int, error) {
 	defer db.Close()
 
 	query := "SELECT COUNT(*) FROM requests"
-	if days == 1 {
-		query += " WHERE created_at >= NOW() - interval '24 hours';"
-	} else if days > 1 {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%d day';", days)
+	if interval != "" {
+		query += " WHERE created_at >= NOW() - interval '%s';"
 	} else {
 		query += ";"
 	}

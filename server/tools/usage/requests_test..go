@@ -5,7 +5,7 @@ import (
 )
 
 func TestRequests(t *testing.T) {
-	requests, err := Requests(0)
+	requests, err := Requests("")
 	if err != nil {
 		t.Error(err)
 	}
@@ -45,7 +45,7 @@ func TestMonthlyRequests(t *testing.T) {
 }
 
 func TestRequestsCount(t *testing.T) {
-	requests, err := RequestsCount(0)
+	requests, err := RequestsCount("")
 	if err != nil {
 		t.Error(err)
 	}
