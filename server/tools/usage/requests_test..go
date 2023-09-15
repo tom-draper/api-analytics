@@ -85,7 +85,7 @@ func TestMonthlyRequestsCount(t *testing.T) {
 }
 
 func TestUserRequests(t *testing.T) {
-	requests, err := UserRequests(0)
+	requests, err := UserRequests("")
 	if err != nil {
 		t.Error(err)
 	}
