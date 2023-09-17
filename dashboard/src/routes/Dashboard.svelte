@@ -15,6 +15,10 @@
   import periodToDays from "../lib/period";
   import genDemoData from "../lib/demo";
   import formatUUID from "../lib/uuid";
+  import Settings from "../components/dashboard/Settings.svelte";
+  import type { DashboardSettings } from "../lib/settings";
+  import { initSettings } from "../lib/settings";
+  import { CREATED_AT, PATH, STATUS, SERVER_URL } from "../lib/consts";
 
   function inPeriod(date: Date, days: number): boolean {
     let periodAgo = new Date();
@@ -22,7 +26,7 @@
     return date > periodAgo;
   }
 
-  function allTimePeriod(date: Date) {
+  function allTimePeriod(_: Date) {
     return true;
   }
 
@@ -38,10 +42,13 @@
 
     let dataSubset = [];
     for (let i = 1; i < data.length; i++) {
-      if ((disable404 && data[i][5] === 404) || (targetEndpoint != null && targetEndpoint != data[i][1])) {
+      if (
+        (settings.disable404 && data[i][STATUS] === 404) ||
+        (targetEndpoint != null && targetEndpoint != data[i][PATH])
+      ) {
         continue;
       }
-      let date = new Date(data[i][7]);
+      let date = new Date(data[i][CREATED_AT]);
       if (counted(date)) {
         dataSubset.push(data[i]);
       }
@@ -70,10 +77,13 @@
 
     let dataSubset = [];
     for (let i = 1; i < data.length; i++) {
-      if ((disable404 && data[i][5] === 404) || (targetEndpoint != null && targetEndpoint != data[i][1])) {
+      if (
+        (settings.disable404 && data[i][STATUS] === 404) ||
+        (targetEndpoint != null && targetEndpoint != data[i][PATH])
+      ) {
         continue;
       }
-      let date = new Date(data[i][7]);
+      let date = new Date(data[i][CREATED_AT]);
       if (inPeriod(date)) {
         dataSubset.push(data[i]);
       }
@@ -89,16 +99,14 @@
     // } else {
     //   periodDataCache[currentPeriod] = {periodData, prevPeriodData}
     // }
-    setPeriodData();
-    setPrevPeriodData();
+    refreshData()
   }
 
   function toggleEnable404() {
-    disable404 = !disable404;
+    settings.disable404 = !settings.disable404;
     // Allow button to toggle colour responsively
     setTimeout(() => {
-      setPeriodData();
-      setPrevPeriodData();
+      refreshData
     }, 10);
   }
 
@@ -106,7 +114,7 @@
     userID = formatUUID(userID);
     try {
       const response = await fetch(
-        `https://www.apianalytics-server.com/api/requests/${userID}`
+        `${SERVER_URL}/api/requests/${userID}`
       );
       if (response.status === 200) {
         const json = await response.json();
@@ -121,12 +129,14 @@
 
   type PeriodDataCache = {
     [period: string]: {
-      periodData: RequestsData,
-      prevPeriodData: RequestsData
-    }
-  }
+      periodData: RequestsData;
+      prevPeriodData: RequestsData;
+    };
+  };
 
   let data: RequestsData;
+  let settings: DashboardSettings = initSettings();
+  let showSettings: boolean = true;
   let periodDataCache: PeriodDataCache = {};
   let periodData: RequestsData;
   let prevPeriodData: RequestsData;
@@ -141,7 +151,6 @@
   ];
   let currentPeriod = timePeriods[2].name;
   let failed = false;
-  let disable404 = false;
   let targetEndpoint = null;
   onMount(() => {
     if (demo) {
@@ -152,32 +161,38 @@
     }
   });
 
-  function refreshDataFilter() {
+  function refreshData() {
     if (data === undefined) {
-      return
+      return;
     }
     setPeriodData();
     setPrevPeriodData();
   }
 
   $: if (targetEndpoint === null || targetEndpoint) {
-    refreshDataFilter();
+    refreshData();
   }
+  $: settings.disable404 && refreshData()
   export let userID: string, demo: boolean;
 </script>
 
 {#if periodData != undefined}
   <div class="dashboard">
     <div class="button-nav">
-      <div class="nav-btn enable-404">
+      <!-- <div class="nav-btn enable-404">
         <button
           class="enable-404-btn"
           on:click={toggleEnable404}
-          class:time-period-btn-active={disable404}>Disable 404</button
+          class:time-period-btn-active={settings.disable404}>Disable 404</button
         >
-      </div>
-      <button class="settings">
-        <img class="settings-icon" src="../img/cog.png" alt=""/>
+      </div> -->
+      <button
+        class="settings"
+        on:click={() => {
+          showSettings = true;
+        }}
+      >
+        <img class="settings-icon" src="../img/cog.png" alt="" />
       </button>
       <div class="nav-btn time-period">
         {#each timePeriods as period}
@@ -212,7 +227,7 @@
           />
         </div>
         <ResponseTimes data={periodData} />
-        <Endpoints data={periodData} bind:targetEndpoint={targetEndpoint}/>
+        <Endpoints data={periodData} bind:targetEndpoint />
         <Version data={periodData} />
       </div>
       <div class="right">
@@ -235,6 +250,7 @@
     </div>
   </div>
 {/if}
+<Settings bind:show={showSettings} bind:settings={settings}/>
 <Footer />
 
 <style scoped>
@@ -314,7 +330,12 @@
     border: none;
     margin-right: 10px;
     cursor: pointer;
-    display: none;
+    margin-left: auto;
+    text-align: right;
+    flex-grow: 1;
+    /* margin-right: 1.5em; */
+    width: fit-content;
+    /* display: none; */
   }
   .settings-icon {
     width: 20px;
@@ -322,6 +343,7 @@
     filter: contrast(0.5);
     margin-top: 2px;
   }
+
   @media screen and (max-width: 1600px) {
     .grid-row {
       flex-direction: column;

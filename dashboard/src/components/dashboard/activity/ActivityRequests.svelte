@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import periodToDays from "../../../lib/period";
+  import { CREATED_AT } from "../../../lib/consts";
 
   function defaultLayout() {
     let periodAgo = new Date();
@@ -70,7 +71,7 @@
 
     let days = periodToDays(period);
     for (let i = 1; i < data.length; i++) {
-      let date = new Date(data[i][7]);
+      let date = new Date(data[i][CREATED_AT]);
       if (days === 1) {
         // Round down to multiple of 5
         date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);

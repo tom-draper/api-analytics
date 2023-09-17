@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { METHOD, PATH, STATUS } from "../../lib/consts";
 
   // Integer to method string mapping used by server
   let methodMap = [
@@ -20,11 +21,11 @@
     let freq = {};
     for (let i = 1; i < data.length; i++) {
       // Create groups of endpoints by path + status
-      let endpointID = `${data[i][1]}${data[i][5]}`;
+      let endpointID = `${data[i][PATH]}${data[i][STATUS]}`;
       if (!(endpointID in freq)) {
         freq[endpointID] = {
-          path: `${methodMap[data[i][3]]}  ${data[i][1]}`,
-          status: data[i][5],
+          path: `${methodMap[data[i][METHOD]]}  ${data[i][PATH]}`,
+          status: data[i][STATUS],
           count: 0,
         };
       }

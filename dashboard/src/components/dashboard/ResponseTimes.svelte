@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { RESPONSE_TIME } from "../../lib/consts";
 
   // Median and quartiles from StackOverflow answer
   // https://stackoverflow.com/a/55297611/8851732
@@ -49,7 +50,7 @@
   function build() {
     let responseTimes: number[] = [];
     for (let i = 1; i < data.length; i++) {
-      responseTimes.push(data[i][4]);
+      responseTimes.push(data[i][RESPONSE_TIME]);
     }
     LQ = quantile(responseTimes, 0.25);
     median = quantile(responseTimes, 0.5);

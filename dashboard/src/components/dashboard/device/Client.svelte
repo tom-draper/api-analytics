@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { USER_AGENT } from "../../../lib/consts";
 
   function getBrowser(userAgent: string): string {
     if (userAgent == null) {
@@ -40,7 +41,7 @@
     }
   }
 
-  function browserPlotLayout() {
+  function clientPlotLayout() {
     let monthAgo = new Date();
     monthAgo.setDate(monthAgo.getDate() - 30);
     let tomorrow = new Date();
@@ -79,25 +80,25 @@
   ];
 
   function pieChart() {
-    let browserCount = {};
+    let clientCount = {};
     for (let i = 1; i < data.length; i++) {
-      let browser = getBrowser(data[i][2]);
-      if (!(browser in browserCount)) {
-        browserCount[browser] = 0;
+      let client = getBrowser(data[i][USER_AGENT]);
+      if (!(client in clientCount)) {
+        clientCount[client] = 0;
       }
-      browserCount[browser]++;
+      clientCount[client]++;
     }
 
-    let browsers = [];
+    let clients = [];
     let count = [];
-    for (let browser in browserCount) {
-      browsers.push(browser);
-      count.push(browserCount[browser]);
+    for (let browser in clientCount) {
+      clients.push(browser);
+      count.push(clientCount[browser]);
     }
     return [
       {
         values: count,
-        labels: browsers,
+        labels: clients,
         type: "pie",
         marker: {
           colors: colors,
@@ -109,7 +110,7 @@
   function browserPlotData() {
     return {
       data: pieChart(),
-      layout: browserPlotLayout(),
+      layout: clientPlotLayout(),
       config: {
         responsive: true,
         showSendToCloud: false,

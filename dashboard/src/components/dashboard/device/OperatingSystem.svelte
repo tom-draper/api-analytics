@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { USER_AGENT } from "../../../lib/consts";
 
   function getOS(userAgent: string): string {
     if (userAgent === null) {
@@ -96,7 +97,7 @@
   function pieChart() {
     let osCount = {};
     for (let i = 1; i < data.length; i++) {
-      let os = getOS(data[i][2]);
+      let os = getOS(data[i][USER_AGENT]);
       if (!(os in osCount)) {
         osCount[os] = 0;
       }

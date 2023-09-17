@@ -1,11 +1,13 @@
 <script lang="ts">
+  import { SERVER_URL } from "../lib/consts";
+
   let state: "sign-in" | "loading" = "sign-in";
   let apiKey = "";
   async function genAPIKey() {
     setState("loading");
     try {
       const response = await fetch(
-        `https://www.apianalytics-server.com/api/user-id/${apiKey}`
+        `${SERVER_URL}/api/user-id/${apiKey}`
       );
 
       if (response.status === 200) {

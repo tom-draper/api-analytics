@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { LOCATION } from "../../lib/consts";
 
   function getFlagEmoji(countryCode: string) {
     const codePoints = countryCode
@@ -18,35 +19,36 @@
     let max = 0;
     let locationsFreq = {};
     for (let i = 0; i < data.length; i++) {
-      if (data[i][6] === "") {
+      if (data[i][LOCATION] === "") {
         continue;
       }
-      if (!(data[i][6] in locationsFreq)) {
-        locationsFreq[data[i][6]] = 1;
+      if (!(data[i][LOCATION] in locationsFreq)) {
+        locationsFreq[data[i][LOCATION]] = 1;
       } else {
-        locationsFreq[data[i][6]] += 1;
+        locationsFreq[data[i][LOCATION]] += 1;
       }
-      if (locationsFreq[data[i][6]] > max) {
-        max = locationsFreq[data[i][6]];
+      if (locationsFreq[data[i][LOCATION]] > max) {
+        max = locationsFreq[data[i][LOCATION]];
       }
     }
 
     locations = [];
     for (let location in locationsFreq) {
-      locations.push([
-        location,
-        locationsFreq[location],
-        locationsFreq[location] / max,
-      ]);
+      locations.push({
+        location: location,
+        frequency: locationsFreq[location],
+        height: locationsFreq[location] / max,
+    });
     }
 
+    // Sort by desc frequency
     locations.sort((a, b) => {
-      return b[1] - a[1];
+      return b.frequency - a.frequency;
     });
   }
 
   
-  let locations: [string, number, number][] = [];
+  let locations: {location: string, frequency: number, height: number}[] = [];
   let mounted = false;
   onMount(() => {
     mounted = true;
@@ -66,11 +68,11 @@
         <div class="bar-container">
           <div
             class="bar"
-            title="{countryCodeToName(location[0])}: {location[1]} requests"
+            title="{countryCodeToName(location.location)}: {location.frequency} requests"
           >
-            <div class="bar-inner" style="height: {location[2] * 100}%" />
+            <div class="bar-inner" style="height: {location.height * 100}%" />
           </div>
-          <div class="label">{getFlagEmoji(location[0])}</div>
+          <div class="label">{getFlagEmoji(location.location)}</div>
         </div>
       {/each}
     </div>

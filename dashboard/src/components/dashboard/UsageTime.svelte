@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { CREATED_AT } from "../../lib/consts";
 
   function defaultLayout() {
     return {
@@ -20,26 +21,25 @@
     let responseTimes = Array(24).fill(0);
 
     for (let i = 1; i < data.length; i++) {
-      let date = new Date(data[i][7]);
+      let date = new Date(data[i][CREATED_AT]);
       let time = date.getHours();
       // @ts-ignore
       responseTimes[time]++;
     }
 
-    let requestFreqArr = [];
+    let requestFreqArr: {hour: number, responseTime: number}[] = [];
     for (let i = 0; i < 24; i++) {
-      let point = [i, responseTimes[i]];
-      requestFreqArr.push(point);
+      requestFreqArr.push({hour: i, responseTime: responseTimes[i]});
     }
     requestFreqArr.sort((a, b) => {
-      return a[0] - b[0];
+      return a.hour - b.hour;
     });
 
     let dates = [];
     let requests = [];
     for (let i = 0; i < requestFreqArr.length; i++) {
-      dates.push(requestFreqArr[i][0].toString() + ":00");
-      requests.push(requestFreqArr[i][1]);
+      dates.push(requestFreqArr[i].hour.toString() + ":00");
+      requests.push(requestFreqArr[i].responseTime);
     }
 
     // Shift to 12 onwards to make barpolar like clock face

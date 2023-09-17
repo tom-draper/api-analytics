@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import periodToDays from "../../lib/period";
+  import { IP_ADDRESS } from "../../lib/consts";
 
   function usersPlotLayout() {
     return {
@@ -31,7 +32,7 @@
     let y = Array(n).fill(0);
     for (let i = 1; i < data.length; i++) {
       let idx = Math.floor(i / (data.length / n));
-      if (data[i][0] != null && data[i][0] != "") {
+      if (data[i][IP_ADDRESS] != null && data[i][IP_ADDRESS] != "") {
         y[idx] += 1;
       }
     }
@@ -87,8 +88,8 @@
   function getUsers(data: RequestsData): Set<string> {
     let users: Set<string> = new Set();
     for (let i = 1; i < data.length; i++) {
-      if (data[i][0] != "" && data[i][0] != null) {
-        users.add(data[i][0]);
+      if (data[i][IP_ADDRESS] != null && data[i][IP_ADDRESS] != "") {
+        users.add(data[i][IP_ADDRESS]);
       }
     }
     return users;

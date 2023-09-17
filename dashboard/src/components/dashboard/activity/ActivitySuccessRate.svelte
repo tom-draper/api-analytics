@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import periodToDays from "../../../lib/period";
+  import { CREATED_AT } from "../../../lib/consts";
 
   function daysAgo(date: Date): number {
     let now = new Date();
@@ -11,7 +12,7 @@
     let success = {};
     let minDate = Number.POSITIVE_INFINITY;
     for (let i = 1; i < data.length; i++) {
-      let date = new Date(data[i][7]);
+      let date = new Date(data[i][CREATED_AT]);
       date.setHours(0, 0, 0, 0);
       let dateStr = date.toDateString();
       if (!(dateStr in success)) {
