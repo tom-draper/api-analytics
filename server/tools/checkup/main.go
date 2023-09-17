@@ -165,7 +165,7 @@ func printDatabaseStats() {
 
 func printLastHour() {
 	p := message.NewPrinter(language.English)
-	p.Println("---- Last 24-hours -------------------")
+	p.Println("---- Last hour -----------------------")
 	dailyUsers, err := usage.HourlyUsersCount()
 	if err != nil {
 		panic(err)
