@@ -127,17 +127,17 @@ func getUserRequests(c *gin.Context) {
 
 	// Fetch user ID corresponding with API key
 	// Left table join was originally used but often exceeded postgresql working memory limit with large numbers of requests
-	query = fmt.Sprintf("SELECT ip_address, path, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s' LIMIT 1000000;", apiKey)
+	query = fmt.Sprintf("SELECT ip_address, path, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s' LIMIT 750000;", apiKey)
 	rows, err = db.Query(query)
 	if err != nil {
-		log.LogToFile(apiKey + ": Invalid API key")
+		log.LogToFile(userID + ": Invalid API key")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
 
 	err = updateLastAccessed(db, apiKey)
 	if err != nil {
-		log.LogToFile(apiKey + ": User last access update failed")
+		log.LogToFile(userID + ": User last access update failed")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
@@ -148,11 +148,12 @@ func getUserRequests(c *gin.Context) {
 
 	gzipOutput, err := compressJSON(requests)
 	if err != nil {
+		log.LogToFile(userID + ": Compression failed")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Compression failed."})
 		return
 	}
 
-	log.LogToFile(apiKey + ": Dashboard access successful")
+	log.LogToFile(userID + ": Dashboard access successful")
 
 	// Return API request data
 	c.Writer.Header().Set("Accept-Encoding", "gzip")
@@ -258,15 +259,15 @@ func getData(c *gin.Context) {
 		return
 	}
 
-	log.LogToFile(apiKey + ": Data access successful")
-
 	// Read data into list of objects to return
 	if queries.compact {
 		cols := []interface{}{"hostname", "ip_address", "path", "user_agent", "method", "response_time", "status", "location", "created_at"}
 		requests := buildRequestDataCompact(rows, cols)
+		log.LogToFile(apiKey + ": Data access successful")
 		c.JSON(http.StatusOK, requests)
 	} else {
 		requests := buildRequestData(rows)
+		log.LogToFile(apiKey + ": Data access successful")
 		c.JSON(http.StatusOK, requests)
 	}
 }
@@ -297,7 +298,7 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 		query.WriteString(fmt.Sprintf(" and status = %d", queries.status))
 	}
 
-	query.WriteString("LIMIT 1000000;")
+	query.WriteString("LIMIT 750000;")
 	return query.String()
 }
 
