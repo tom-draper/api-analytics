@@ -226,17 +226,17 @@ func printLastWeek() {
 func printTotal() {
 	p := message.NewPrinter(language.English)
 	p.Println("---- Total ---------------------------")
-	totalUsers, err := usage.UsersCount(0)
+	totalUsers, err := usage.UsersCount("")
 	if err != nil {
 		panic(err)
 	}
 	p.Println("Users:", totalUsers)
-	totalRequests, err := usage.RequestsCount(0)
+	totalRequests, err := usage.RequestsCount("")
 	if err != nil {
 		panic(err)
 	}
 	p.Println("Requests:", totalRequests)
-	totalMonitors, err := usage.MonitorsCount(0)
+	totalMonitors, err := usage.MonitorsCount("")
 	if err != nil {
 		panic(err)
 	}
