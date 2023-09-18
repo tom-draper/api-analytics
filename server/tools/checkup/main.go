@@ -7,7 +7,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/tom-draper/api-analytics/server/database"
 	"github.com/tom-draper/api-analytics/server/email"
-	"github.com/tom-draper/api-analytics/server/tools/monitor/monitor"
+	monitor "github.com/tom-draper/api-analytics/server/tools/monitor/lib"
 	"github.com/tom-draper/api-analytics/server/tools/usage"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -52,10 +52,12 @@ func printCheckup() {
 	printLast24Hours()
 	printLastWeek()
 	printTotal()
+}
 
-	// printTopUsers()
-	// printUnusedUsers()
-	// printUsersSinceLastRequest()
+func printUsersCheckup() {
+	printTopUsers()
+	printUnusedUsers()
+	printUsersSinceLastRequest()
 }
 
 func printServicesTest() {
@@ -273,6 +275,8 @@ func printUsersSinceLastRequest() {
 func main() {
 	if len(os.Args) > 1 && os.Args[1] == "--email" {
 		emailCheckup()
+	} else if len(os.Args) > 1 && os.Args[1] == "--users" {
+		printUsersCheckup()
 	} else {
 		printCheckup()
 	}
