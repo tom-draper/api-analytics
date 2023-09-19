@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import periodToDays from "../../../lib/period";
   import { CREATED_AT } from "../../../lib/consts";
+  import type { Period } from "../../../lib/settings";
 
   function daysAgo(date: Date): number {
     let now = new Date();
@@ -56,7 +57,7 @@
 
   $: data && mounted && build();
 
-  export let data: RequestsData, period: string;
+  export let data: RequestsData, period: Period;
 </script>
 
 <div class="success-rate-container">

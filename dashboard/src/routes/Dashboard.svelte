@@ -16,9 +16,10 @@
   import genDemoData from "../lib/demo";
   import formatUUID from "../lib/uuid";
   import Settings from "../components/dashboard/Settings.svelte";
-  import type { DashboardSettings } from "../lib/settings";
+  import type { DashboardSettings, Period } from "../lib/settings";
   import { initSettings } from "../lib/settings";
   import { CREATED_AT, PATH, STATUS, SERVER_URL } from "../lib/consts";
+  import Dropdown from "../components/dashboard/Dropdown.svelte";
 
   function inPeriod(date: Date, days: number): boolean {
     let periodAgo = new Date();
@@ -31,7 +32,7 @@
   }
 
   function setPeriodData() {
-    let days = periodToDays(currentPeriod);
+    let days = periodToDays(settings.period);
 
     let counted = allTimePeriod;
     if (days != null) {
@@ -44,11 +45,11 @@
     for (let i = 1; i < data.length; i++) {
       if (
         (settings.disable404 && data[i][STATUS] === 404) ||
-        (targetEndpoint != null && targetEndpoint != data[i][PATH])
+        (settings.endpoint != null && settings.endpoint != data[i][PATH])
       ) {
         continue;
       }
-      let date = new Date(data[i][CREATED_AT]);
+      const date = new Date(data[i][CREATED_AT]);
       if (counted(date)) {
         dataSubset.push(data[i]);
       }
@@ -66,7 +67,7 @@
   }
 
   function setPrevPeriodData() {
-    let days = periodToDays(currentPeriod);
+    let days = periodToDays(settings.period);
 
     let inPeriod = allTimePeriod;
     if (days != null) {
@@ -79,11 +80,12 @@
     for (let i = 1; i < data.length; i++) {
       if (
         (settings.disable404 && data[i][STATUS] === 404) ||
-        (targetEndpoint != null && targetEndpoint != data[i][PATH])
-      ) {
+        (settings.endpoint != null && settings.endpoint != data[i][PATH])
+        )
+       {
         continue;
       }
-      let date = new Date(data[i][CREATED_AT]);
+      const date = new Date(data[i][CREATED_AT]);
       if (inPeriod(date)) {
         dataSubset.push(data[i]);
       }
@@ -91,8 +93,8 @@
     prevPeriodData = dataSubset;
   }
 
-  function setPeriod(value: string) {
-    currentPeriod = value;
+  function setPeriod(value: Period) {
+    settings.period = value;
     // if (value in periodDataCache) {
     //   periodData = periodDataCache[currentPeriod].periodData
     //   prevPeriodData = periodDataCache[currentPeriod].prevPeriodData
@@ -120,7 +122,7 @@
         const json = await response.json();
         data = json;
         console.log(data);
-        setPeriod(currentPeriod);
+        setPeriod(settings.period);
       }
     } catch (e) {
       failed = true;
@@ -136,26 +138,23 @@
 
   let data: RequestsData;
   let settings: DashboardSettings = initSettings();
-  let showSettings: boolean = true;
+  let showSettings: boolean = false;
   let periodDataCache: PeriodDataCache = {};
   let periodData: RequestsData;
   let prevPeriodData: RequestsData;
-  let timePeriods = [
-    { name: "24-hours", label: "24 hours" },
-    { name: "week", label: "Week" },
-    { name: "month", label: "Month" },
-    { name: "3-months", label: "3 months" },
-    { name: "6-months", label: "6 months" },
-    { name: "year", label: "Year" },
-    { name: "all-time", label: "All time" },
+  let timePeriods: Period[] = [
+    "24 hours",
+    "Week",
+    "Month",
+    "6 months",
+    "Year",
+    "All time"
   ];
-  let currentPeriod = timePeriods[2].name;
   let failed = false;
-  let targetEndpoint = null;
   onMount(() => {
     if (demo) {
       data = genDemoData() as RequestsData;
-      setPeriod(currentPeriod);
+      setPeriod(settings.period);
     } else {
       fetchData();
     }
@@ -169,10 +168,10 @@
     setPrevPeriodData();
   }
 
-  $: if (targetEndpoint === null || targetEndpoint) {
+  $: if (settings.endpoint === null || settings.endpoint) {
     refreshData();
   }
-  $: settings.disable404 && refreshData()
+  $: settings.disable404 && settings.period && refreshData()
   export let userID: string, demo: boolean;
 </script>
 
@@ -187,23 +186,24 @@
         >
       </div> -->
       <button
-        class="settings"
-        on:click={() => {
-          showSettings = true;
-        }}
+      class="settings"
+      on:click={() => {
+        showSettings = true;
+      }}
       >
-        <img class="settings-icon" src="../img/cog.png" alt="" />
-      </button>
+      <img class="settings-icon" src="../img/cog.png" alt="" />
+    </button>
+    <Dropdown options={["Item1", "Item2", "Item3", "Item4"]} selected={"Item2"} />
       <div class="nav-btn time-period">
         {#each timePeriods as period}
           <button
             class="time-period-btn"
-            class:time-period-btn-active={currentPeriod === period.name}
+            class:time-period-btn-active={settings.period === period}
             on:click={() => {
-              setPeriod(period.name);
+              setPeriod(period);
             }}
           >
-            {period.label}
+            {period}
           </button>
         {/each}
       </div>
@@ -218,20 +218,20 @@
           <Requests
             data={periodData}
             prevData={prevPeriodData}
-            period={currentPeriod}
+            period={settings.period}
           />
           <Users
             data={periodData}
             prevData={prevPeriodData}
-            period={currentPeriod}
+            period={settings.period}
           />
         </div>
         <ResponseTimes data={periodData} />
-        <Endpoints data={periodData} bind:targetEndpoint />
+        <Endpoints data={periodData} bind:targetEndpoint={settings.endpoint} />
         <Version data={periodData} />
       </div>
       <div class="right">
-        <Activity data={periodData} period={currentPeriod} />
+        <Activity data={periodData} period={settings.period} />
         <div class="grid-row">
           <!-- <Growth data={periodData} prevData={prevPeriodData} /> -->
           <Location data={periodData} />
@@ -309,7 +309,7 @@
   }
   .enable-404-btn,
   .time-period-btn {
-    background: var(--light-background);
+    background: var(--background);
     padding: 3px 12px;
     border: none;
     color: var(--dim-text);

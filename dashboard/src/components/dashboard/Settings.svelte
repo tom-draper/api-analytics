@@ -31,7 +31,7 @@
     width: 100%;
     display: grid;
     place-items: center;
-    position: absolute;
+    position: fixed;
     top: 0;
     cursor: pointer;
     z-index: 10;

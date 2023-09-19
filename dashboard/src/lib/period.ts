@@ -1,17 +1,21 @@
-export default function periodToDays(period: string): number {
-    if (period == "24-hours") {
-        return 1;
-    } else if (period == "week") {
-        return 7;
-    } else if (period == "month") {
-        return 30;
-    } else if (period == "3-months") {
-        return 30 * 3;
-    } else if (period == "6-months") {
-        return 30 * 6;
-    } else if (period == "year") {
-        return 365;
-    } else {
-        return null;
+import type { Period } from "./settings";
+
+export default function periodToDays(period: Period): number {
+    switch (period) {
+        case "24 hours":
+            return 1
+        case "Week":
+            return 7
+        case "Month":
+            return 30
+        case "3 months":
+            return 90
+        case "6 months":
+            return 30 * 7
+        case "Year":
+            return 365
+        default:
+            return null
     }
+
 }

@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import periodToDays from "../../lib/period";
   import { IP_ADDRESS } from "../../lib/consts";
+  import type { Period } from "../../lib/settings";
 
   function usersPlotLayout() {
     return {
@@ -127,7 +128,7 @@
 
   $: data && mounted && build();
 
-  export let data: RequestsData, prevData: RequestsData, period: string;
+  export let data: RequestsData, prevData: RequestsData, period: Period;
 </script>
 
 <button class="card" on:click={togglePeriod} title="Based on IP address">

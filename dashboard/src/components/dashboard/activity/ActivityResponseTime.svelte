@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import periodToDays from "../../../lib/period";
   import { CREATED_AT } from "../../../lib/consts";
+  import type { Period } from "../../../lib/settings";
 
   function defaultLayout() {
     let periodAgo = new Date();
@@ -170,7 +171,7 @@
 
   $: data && mounted && genPlot();
 
-  export let data: RequestsData, period: string;
+  export let data: RequestsData, period: Period;
 </script>
 
 <div id="plotly">
