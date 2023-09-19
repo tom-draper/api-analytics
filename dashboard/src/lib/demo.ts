@@ -81,6 +81,13 @@ function getLocation(): string {
     return locations[idx] as string
 }
 
+function getHostname(): string {
+    const locations = ["example.com", "example2.com", "example3.com"]
+    const p = [0.3, 0.3, 0.3]
+    const idx = randomChoice(p)
+    return locations[idx] as string
+}
+
 function addDemoSamples(
     demoData: RequestsData,
     endpoint: string,
@@ -99,6 +106,7 @@ function addDemoSamples(
         demoData.push([
             Math.floor(Math.random() * user[1] + user[0]).toString(),
             endpoint,
+            getHostname(),
             getDemoUserAgent(),
             0,
             getDemoResponseTime(date, Math.floor(Math.random() * responseTime[1] + responseTime[0])),

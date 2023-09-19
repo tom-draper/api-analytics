@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import periodToDays from "../../../lib/period";
-  import { CREATED_AT } from "../../../lib/consts";
+  import { CREATED_AT, STATUS } from "../../../lib/consts";
   import type { Period } from "../../../lib/settings";
 
   function daysAgo(date: Date): number {
@@ -19,7 +19,7 @@
       if (!(dateStr in success)) {
         success[dateStr] = { total: 0, successful: 0 };
       }
-      if (data[i][5] >= 200 && data[i][5] <= 299) {
+      if (data[i][STATUS] >= 200 && data[i][STATUS] <= 299) {
         success[dateStr].successful++;
       }
       success[dateStr].total++;

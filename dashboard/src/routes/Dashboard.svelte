@@ -18,8 +18,15 @@
   import Settings from "../components/dashboard/Settings.svelte";
   import type { DashboardSettings, Period } from "../lib/settings";
   import { initSettings } from "../lib/settings";
-  import { CREATED_AT, PATH, STATUS, SERVER_URL } from "../lib/consts";
+  import {
+    CREATED_AT,
+    PATH,
+    STATUS,
+    SERVER_URL,
+    HOSTNAME,
+  } from "../lib/consts";
   import Dropdown from "../components/dashboard/Dropdown.svelte";
+  import { construct_svelte_component } from "svelte/internal";
 
   function inPeriod(date: Date, days: number): boolean {
     let periodAgo = new Date();
@@ -45,7 +52,8 @@
     for (let i = 1; i < data.length; i++) {
       if (
         (settings.disable404 && data[i][STATUS] === 404) ||
-        (settings.endpoint != null && settings.endpoint != data[i][PATH])
+        (settings.endpoint != null && settings.endpoint != data[i][PATH]) ||
+        (settings.hostname != null && settings.hostname != data[i][HOSTNAME])
       ) {
         continue;
       }
@@ -80,9 +88,9 @@
     for (let i = 1; i < data.length; i++) {
       if (
         (settings.disable404 && data[i][STATUS] === 404) ||
-        (settings.endpoint != null && settings.endpoint != data[i][PATH])
-        )
-       {
+        (settings.endpoint != null && settings.endpoint != data[i][PATH]) ||
+(settings.hostname != null && settings.hostname != data[i][HOSTNAME])
+      ) {
         continue;
       }
       const date = new Date(data[i][CREATED_AT]);
@@ -101,23 +109,48 @@
     // } else {
     //   periodDataCache[currentPeriod] = {periodData, prevPeriodData}
     // }
-    refreshData()
+    // refreshData();
+  }
+
+  function setHostnames() {
+    let hostnameFreq: {[hostname: string]: number} = {}
+    for (let i = 0; i < data.length; i++) {
+      if (!(data[i][HOSTNAME] in hostnameFreq)) {
+        hostnameFreq[data[i][HOSTNAME]] = 0
+      }
+      hostnameFreq[data[i][HOSTNAME]] += 1
+    }
+
+    let sortedHostnames = []
+    for (let hostname of Object.keys(hostnameFreq)) {
+      sortedHostnames.push({hostname: hostname, count: hostnameFreq[hostname]})
+    }
+    sortedHostnames.sort((a, b) => {
+      return b.count - a.count;
+    });
+
+    let _hostnames = []
+    for (let value of sortedHostnames) {
+      _hostnames.push(value.hostname)
+    }
+    hostnames = _hostnames
+    if (hostnames.length > 0) {
+      settings.hostname = hostnames[0]
+    } 
   }
 
   function toggleEnable404() {
     settings.disable404 = !settings.disable404;
     // Allow button to toggle colour responsively
     setTimeout(() => {
-      refreshData
+      refreshData;
     }, 10);
   }
 
   async function fetchData() {
     userID = formatUUID(userID);
     try {
-      const response = await fetch(
-        `${SERVER_URL}/api/requests/${userID}`
-      );
+      const response = await fetch(`${SERVER_URL}/api/requests/${userID}`);
       if (response.status === 200) {
         const json = await response.json();
         data = json;
@@ -139,6 +172,7 @@
   let data: RequestsData;
   let settings: DashboardSettings = initSettings();
   let showSettings: boolean = false;
+  let hostnames: string[];
   let periodDataCache: PeriodDataCache = {};
   let periodData: RequestsData;
   let prevPeriodData: RequestsData;
@@ -148,13 +182,14 @@
     "Month",
     "6 months",
     "Year",
-    "All time"
+    "All time",
   ];
   let failed = false;
   onMount(() => {
     if (demo) {
       data = genDemoData() as RequestsData;
       setPeriod(settings.period);
+      setHostnames()
     } else {
       fetchData();
     }
@@ -164,6 +199,7 @@
     if (data === undefined) {
       return;
     }
+
     setPeriodData();
     setPrevPeriodData();
   }
@@ -171,7 +207,8 @@
   $: if (settings.endpoint === null || settings.endpoint) {
     refreshData();
   }
-  $: settings.disable404 && settings.period && refreshData()
+  // $: settings.hostname && refreshData();
+  $: settings.disable404 && settings.period && refreshData();
   export let userID: string, demo: boolean;
 </script>
 
@@ -186,14 +223,16 @@
         >
       </div> -->
       <button
-      class="settings"
-      on:click={() => {
-        showSettings = true;
-      }}
+        class="settings"
+        on:click={() => {
+          showSettings = true;
+        }}
       >
-      <img class="settings-icon" src="../img/cog.png" alt="" />
-    </button>
-    <Dropdown options={["Item1", "Item2", "Item3", "Item4"]} selected={"Item2"} />
+        <img class="settings-icon" src="../img/cog.png" alt="" />
+      </button>
+      {#if hostnames.length > 0}
+        <Dropdown options={hostnames} bind:selected={settings.hostname} />
+      {/if}
       <div class="nav-btn time-period">
         {#each timePeriods as period}
           <button
@@ -250,7 +289,7 @@
     </div>
   </div>
 {/if}
-<Settings bind:show={showSettings} bind:settings={settings}/>
+<Settings bind:show={showSettings} bind:settings />
 <Footer />
 
 <style scoped>

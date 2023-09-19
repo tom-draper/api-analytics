@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import periodToDays from "../../../lib/period";
-  import { CREATED_AT } from "../../../lib/consts";
+  import { CREATED_AT, RESPONSE_TIME } from "../../../lib/consts";
   import type { Period } from "../../../lib/settings";
 
   function defaultLayout() {
@@ -87,7 +87,7 @@
       if (!(dateStr in responseTimes)) {
         responseTimes[dateStr] = { total: 0, count: 0 };
       }
-      responseTimes[dateStr].total += data[i][4];
+      responseTimes[dateStr].total += data[i][RESPONSE_TIME];
       responseTimes[dateStr].count++;
     }
 
