@@ -127,7 +127,7 @@ func getUserRequests(c *gin.Context) {
 
 	// Fetch user ID corresponding with API key
 	// Left table join was originally used but often exceeded postgresql working memory limit with large numbers of requests
-	query = fmt.Sprintf("SELECT ip_address, path, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s' LIMIT 750000;", apiKey)
+	query = fmt.Sprintf("SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s' LIMIT 750000;", apiKey)
 	rows, err = db.Query(query)
 	if err != nil {
 		log.LogToFile(userID + ": Invalid API key")
@@ -143,7 +143,7 @@ func getUserRequests(c *gin.Context) {
 	}
 
 	// Read data into compact list of lists to return
-	cols := []any{"ip_address", "path", "user_agent", "method", "response_time", "status", "location", "created_at"}
+	cols := []any{"ip_address", "path", "hostname", "user_agent", "method", "response_time", "status", "location", "created_at"}
 	requests := buildRequestDataCompact(rows, cols)
 
 	gzipOutput, err := compressJSON(requests)
@@ -201,12 +201,12 @@ func buildRequestDataCompact(rows *sql.Rows, cols []any) [][]any {
 	requests := [][]any{cols}
 	request := new(PublicRequestRow) // Reused to avoid repeated memory allocation
 	for rows.Next() {
-		err := rows.Scan(&request.IPAddress, &request.Path, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
+		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
 		if request.Location.String == "  " {
 			request.Location.String = ""
 		}
 		if err == nil {
-			requests = append(requests, []any{request.IPAddress.String, request.Path, request.UserAgent.String, request.Method, request.ResponseTime, request.Status, request.Location.String, request.CreatedAt})
+			requests = append(requests, []any{request.IPAddress.String, request.Path, request.Hostname.String, request.UserAgent.String, request.Method, request.ResponseTime, request.Status, request.Location.String, request.CreatedAt})
 		}
 	}
 	return requests
@@ -261,7 +261,7 @@ func getData(c *gin.Context) {
 
 	// Read data into list of objects to return
 	if queries.compact {
-		cols := []interface{}{"hostname", "ip_address", "path", "user_agent", "method", "response_time", "status", "location", "created_at"}
+		cols := []interface{}{"ip_address", "path", "hostname", "user_agent", "method", "response_time", "status", "location", "created_at"}
 		requests := buildRequestDataCompact(rows, cols)
 		log.LogToFile(apiKey + ": Data access successful")
 		c.JSON(http.StatusOK, requests)
@@ -274,7 +274,7 @@ func getData(c *gin.Context) {
 
 func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 	var query strings.Builder
-	query.WriteString(fmt.Sprintf("SELECT hostname, ip_address, path, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s'", apiKey))
+	query.WriteString(fmt.Sprintf("SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s'", apiKey))
 
 	// Providing a single date takes priority over range with dateFrom and dateTo
 	if database.SanitizeDate(queries.date) {
@@ -296,6 +296,9 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 	}
 	if database.SanitizeStatus(queries.status) {
 		query.WriteString(fmt.Sprintf(" and status = %d", queries.status))
+	}
+	if database.SanitizeString(queries.hostname) {
+		query.WriteString(fmt.Sprintf(" and hostname = '%s'", queries.hostname))
 	}
 
 	query.WriteString("LIMIT 750000;")
@@ -381,12 +384,12 @@ func buildRequestData(rows *sql.Rows) []PublicRequestData {
 	requests := make([]PublicRequestData, 0)
 	for rows.Next() {
 		request := new(PublicRequestRow)
-		err := rows.Scan(&request.Hostname, &request.IPAddress, &request.Path, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
+		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
 		if err == nil {
 			r := PublicRequestData{
-				Hostname:     request.Hostname.String,
 				IPAddress:    request.IPAddress.String,
 				Path:         request.Path,
+				Hostname:     request.Hostname.String,
 				UserAgent:    request.UserAgent.String,
 				Method:       request.Method,
 				Status:       request.Status,
