@@ -1,26 +1,22 @@
 from datetime import datetime
 from time import time
-from typing import Callable
 
 from api_analytics.core import log_request
-from flask import Flask, Request, Response
-from flask_http_middleware import BaseHTTPMiddleware, MiddlewareManager
+from flask import Flask, request
 
 
 def add_middleware(app: Flask, api_key: str):
-    app.wsgi_app = MiddlewareManager(app)
-    app.wsgi_app.add_middleware(Analytics, api_key=api_key)
+    start  = 0.
 
-
-class Analytics(BaseHTTPMiddleware):
-    def __init__(self, api_key: str):
-        super().__init__()
-        self.api_key = api_key
-
-    def dispatch(self, request: Request, call_next: Callable[[Request], Response]):
+    @app.before_request
+    def prepare():
+        global start
         start = time()
-        response = call_next(request)
 
+
+    @app.after_request
+    def on_finish(response):
+        global start
         request_data = {
             'hostname': request.host,
             'ip_address': request.remote_addr,
@@ -32,5 +28,5 @@ class Analytics(BaseHTTPMiddleware):
             'created_at': datetime.now().isoformat()
         }
 
-        log_request(self.api_key, request_data, 'Flask')
+        log_request(api_key, request_data, 'Flask')
         return response
