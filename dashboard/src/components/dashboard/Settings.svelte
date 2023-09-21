@@ -9,7 +9,7 @@
 
     })
   })
-  export let show: boolean, settings: DashboardSettings;
+  export let show: boolean, settings: DashboardSettings, refreshData: Function;
 </script>
 
 <div class="background" class:hidden={!show} on:click={() => { show = false} }>
@@ -19,7 +19,7 @@
       <div class="setting-label">
         Disable 404
       </div>
-      <input type="checkbox" name="disable404" id="checkbox" bind:value={settings.disable404}>
+      <input type="checkbox" name="disable404" id="checkbox" on:change={() => {settings.disable404 = !settings.disable404}}>
     </div>
   </div>
 </div>
