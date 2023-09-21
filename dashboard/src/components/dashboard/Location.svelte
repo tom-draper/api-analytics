@@ -19,7 +19,7 @@
     let max = 0;
     let locationsFreq = {};
     for (let i = 0; i < data.length; i++) {
-      if (data[i][LOCATION] === "") {
+      if (!data[i][LOCATION]) {
         continue;
       }
       if (!(data[i][LOCATION] in locationsFreq)) {

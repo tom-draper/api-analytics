@@ -140,7 +140,7 @@
       <div class="value">{usersPerHour}</div>
     {/if}
   {:else}
-    {#if percentageChange != null}
+    {#if percentageChange != null && percentageChange != 0}
       <div
         class="percentage-change"
         class:positive={percentageChange > 0}
