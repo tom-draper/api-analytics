@@ -8,31 +8,33 @@ import (
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
+func HourlyUsersCount() (int, error) {
+	return UsersCount("1 hour")
+}
+
 func DailyUsersCount() (int, error) {
-	return UsersCount(1)
+	return UsersCount("24 hours")
 }
 
 func WeeklyUsersCount() (int, error) {
-	return UsersCount(7)
+	return UsersCount("7 days")
 }
 
 func MonthlyUsersCount() (int, error) {
-	return UsersCount(30)
+	return UsersCount("30 days")
 }
 
 func TotalUsersCount() (int, error) {
-	return UsersCount(0)
+	return UsersCount("")
 }
 
-func UsersCount(days int) (int, error) {
+func UsersCount(interval string) (int, error) {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
 	query := "SELECT COUNT(*) FROM users"
-	if days == 1 {
-		query += " WHERE created_at >= NOW() - interval '24 hours';"
-	} else if days > 1 {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%d day';", days)
+	if interval != "" {
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s';", interval)
 	} else {
 		query += ";"
 	}
@@ -51,31 +53,33 @@ func UsersCount(days int) (int, error) {
 	return count, nil
 }
 
+func HourlyUsers() ([]database.UserRow, error) {
+	return Users("1 hour")
+}
+
 func DailyUsers() ([]database.UserRow, error) {
-	return Users(1)
+	return Users("24 hours")
 }
 
 func WeeklyUsers() ([]database.UserRow, error) {
-	return Users(7)
+	return Users("7 days")
 }
 
 func MonthlyUsers() ([]database.UserRow, error) {
-	return Users(30)
+	return Users("30 days")
 }
 
 func TotalUsers() ([]database.UserRow, error) {
-	return Users(0)
+	return Users("")
 }
 
-func Users(days int) ([]database.UserRow, error) {
+func Users(interval string) ([]database.UserRow, error) {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
 	query := "SELECT api_key, user_id, created_at FROM users"
-	if days == 1 {
-		query += " WHERE created_at >= NOW() - interval '24 hours';"
-	} else if days > 1 {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%d day';", days)
+	if interval != "" {
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s interval';", interval)
 	} else {
 		query += ";"
 	}

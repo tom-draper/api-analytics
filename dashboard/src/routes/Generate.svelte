@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { SERVER_URL } from "../lib/consts";
+
   let state: "generate" | "loading" | "copy" | "copied" | "error" = "generate";
   let generatedKey = false;
   let apiKey = "";
@@ -7,7 +9,7 @@
       setState("loading");
       try {
         const response = await fetch(
-          "https://www.apianalytics-server.com/api/generate-api-key"
+          `${SERVER_URL}/api/generate-api-key`
         );
         if (response.status == 200) {
           const data = await response.json();

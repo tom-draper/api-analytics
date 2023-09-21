@@ -15,6 +15,18 @@
   import periodToDays from "../lib/period";
   import genDemoData from "../lib/demo";
   import formatUUID from "../lib/uuid";
+  import Settings from "../components/dashboard/Settings.svelte";
+  import type { DashboardSettings, Period } from "../lib/settings";
+  import { initSettings } from "../lib/settings";
+  import {
+    CREATED_AT,
+    PATH,
+    STATUS,
+    SERVER_URL,
+    HOSTNAME,
+  } from "../lib/consts";
+  import Dropdown from "../components/dashboard/Dropdown.svelte";
+  import { construct_svelte_component } from "svelte/internal";
 
   function inPeriod(date: Date, days: number): boolean {
     let periodAgo = new Date();
@@ -22,12 +34,12 @@
     return date > periodAgo;
   }
 
-  function allTimePeriod(date: Date) {
+  function allTimePeriod(_: Date) {
     return true;
   }
 
   function setPeriodData() {
-    let days = periodToDays(currentPeriod);
+    let days = periodToDays(settings.period);
 
     let counted = allTimePeriod;
     if (days != null) {
@@ -38,10 +50,14 @@
 
     let dataSubset = [];
     for (let i = 1; i < data.length; i++) {
-      if ((disable404 && data[i][5] === 404) || (targetEndpoint != null && targetEndpoint != data[i][1])) {
+      if (
+        (settings.disable404 && data[i][STATUS] === 404) ||
+        (settings.endpoint != null && settings.endpoint != data[i][PATH]) ||
+        (settings.hostname != null && settings.hostname != data[i][HOSTNAME])
+      ) {
         continue;
       }
-      let date = new Date(data[i][7]);
+      const date = new Date(data[i][CREATED_AT]);
       if (counted(date)) {
         dataSubset.push(data[i]);
       }
@@ -59,7 +75,7 @@
   }
 
   function setPrevPeriodData() {
-    let days = periodToDays(currentPeriod);
+    let days = periodToDays(settings.period);
 
     let inPeriod = allTimePeriod;
     if (days != null) {
@@ -70,10 +86,14 @@
 
     let dataSubset = [];
     for (let i = 1; i < data.length; i++) {
-      if ((disable404 && data[i][5] === 404) || (targetEndpoint != null && targetEndpoint != data[i][1])) {
+      if (
+        (settings.disable404 && data[i][STATUS] === 404) ||
+        (settings.endpoint != null && settings.endpoint != data[i][PATH]) ||
+(settings.hostname != null && settings.hostname != data[i][HOSTNAME])
+      ) {
         continue;
       }
-      let date = new Date(data[i][7]);
+      const date = new Date(data[i][CREATED_AT]);
       if (inPeriod(date)) {
         dataSubset.push(data[i]);
       }
@@ -81,38 +101,61 @@
     prevPeriodData = dataSubset;
   }
 
-  function setPeriod(value: string) {
-    currentPeriod = value;
+  function setPeriod(value: Period) {
+    settings.period = value;
     // if (value in periodDataCache) {
     //   periodData = periodDataCache[currentPeriod].periodData
     //   prevPeriodData = periodDataCache[currentPeriod].prevPeriodData
     // } else {
     //   periodDataCache[currentPeriod] = {periodData, prevPeriodData}
     // }
-    setPeriodData();
-    setPrevPeriodData();
+    // refreshData();
+  }
+
+  function setHostnames() {
+    let hostnameFreq: {[hostname: string]: number} = {}
+    for (let i = 0; i < data.length; i++) {
+      if (!(data[i][HOSTNAME] in hostnameFreq)) {
+        hostnameFreq[data[i][HOSTNAME]] = 0
+      }
+      hostnameFreq[data[i][HOSTNAME]] += 1
+    }
+
+    let sortedHostnames = []
+    for (let hostname of Object.keys(hostnameFreq)) {
+      sortedHostnames.push({hostname: hostname, count: hostnameFreq[hostname]})
+    }
+    sortedHostnames.sort((a, b) => {
+      return b.count - a.count;
+    });
+
+    let _hostnames = []
+    for (let value of sortedHostnames) {
+      _hostnames.push(value.hostname)
+    }
+    hostnames = _hostnames
+    if (hostnames.length > 0) {
+      settings.hostname = hostnames[0]
+    } 
   }
 
   function toggleEnable404() {
-    disable404 = !disable404;
+    settings.disable404 = !settings.disable404;
     // Allow button to toggle colour responsively
     setTimeout(() => {
-      setPeriodData();
-      setPrevPeriodData();
+      refreshData;
     }, 10);
   }
 
   async function fetchData() {
     userID = formatUUID(userID);
     try {
-      const response = await fetch(
-        `https://www.apianalytics-server.com/api/requests/${userID}`
-      );
+      const response = await fetch(`${SERVER_URL}/api/requests/${userID}`);
       if (response.status === 200) {
         const json = await response.json();
         data = json;
         console.log(data);
-        setPeriod(currentPeriod);
+        setPeriod(settings.period);
       }
     } catch (e) {
       failed = true;
@@ -121,74 +164,85 @@
 
   type PeriodDataCache = {
     [period: string]: {
-      periodData: RequestsData,
-      prevPeriodData: RequestsData
-    }
-  }
+      periodData: RequestsData;
+      prevPeriodData: RequestsData;
+    };
+  };
 
   let data: RequestsData;
+  let settings: DashboardSettings = initSettings();
+  let showSettings: boolean = false;
+  let hostnames: string[];
   let periodDataCache: PeriodDataCache = {};
   let periodData: RequestsData;
   let prevPeriodData: RequestsData;
-  let timePeriods = [
-    { name: "24-hours", label: "24 hours" },
-    { name: "week", label: "Week" },
-    { name: "month", label: "Month" },
-    { name: "3-months", label: "3 months" },
-    { name: "6-months", label: "6 months" },
-    { name: "year", label: "Year" },
-    { name: "all-time", label: "All time" },
+  let timePeriods: Period[] = [
+    "24 hours",
+    "Week",
+    "Month",
+    "6 months",
+    "Year",
+    "All time",
   ];
-  let currentPeriod = timePeriods[2].name;
   let failed = false;
-  let disable404 = false;
-  let targetEndpoint = null;
   onMount(() => {
     if (demo) {
       data = genDemoData() as RequestsData;
-      setPeriod(currentPeriod);
+      setPeriod(settings.period);
+      setHostnames()
     } else {
       fetchData();
     }
   });
 
-  function refreshDataFilter() {
+  function refreshData() {
     if (data === undefined) {
-      return
+      return;
     }
+
     setPeriodData();
     setPrevPeriodData();
   }
 
-  $: if (targetEndpoint === null || targetEndpoint) {
-    refreshDataFilter();
+  $: if (settings.endpoint === null || settings.endpoint) {
+    refreshData();
   }
+  // $: settings.hostname && refreshData();
+  $: settings.disable404 && settings.period && refreshData();
   export let userID: string, demo: boolean;
 </script>
 
 {#if periodData != undefined}
   <div class="dashboard">
     <div class="button-nav">
-      <div class="nav-btn enable-404">
+      <!-- <div class="nav-btn enable-404">
         <button
           class="enable-404-btn"
           on:click={toggleEnable404}
-          class:time-period-btn-active={disable404}>Disable 404</button
+          class:time-period-btn-active={settings.disable404}>Disable 404</button
         >
-      </div>
-      <button class="settings">
-        <img class="settings-icon" src="../img/cog.png" alt=""/>
+      </div> -->
+      <button
+        class="settings"
+        on:click={() => {
+          showSettings = true;
+        }}
+      >
+        <img class="settings-icon" src="../img/cog.png" alt="" />
       </button>
+      {#if hostnames.length > 0}
+        <Dropdown options={hostnames} bind:selected={settings.hostname} />
+      {/if}
       <div class="nav-btn time-period">
         {#each timePeriods as period}
           <button
             class="time-period-btn"
-            class:time-period-btn-active={currentPeriod === period.name}
+            class:time-period-btn-active={settings.period === period}
             on:click={() => {
-              setPeriod(period.name);
+              setPeriod(period);
             }}
           >
-            {period.label}
+            {period}
           </button>
         {/each}
       </div>
@@ -203,20 +257,20 @@
           <Requests
             data={periodData}
             prevData={prevPeriodData}
-            period={currentPeriod}
+            period={settings.period}
           />
           <Users
             data={periodData}
             prevData={prevPeriodData}
-            period={currentPeriod}
+            period={settings.period}
           />
         </div>
         <ResponseTimes data={periodData} />
-        <Endpoints data={periodData} bind:targetEndpoint={targetEndpoint}/>
+        <Endpoints data={periodData} bind:targetEndpoint={settings.endpoint} />
         <Version data={periodData} />
       </div>
       <div class="right">
-        <Activity data={periodData} period={currentPeriod} />
+        <Activity data={periodData} period={settings.period} />
         <div class="grid-row">
           <!-- <Growth data={periodData} prevData={prevPeriodData} /> -->
           <Location data={periodData} />
@@ -235,6 +289,7 @@
     </div>
   </div>
 {/if}
+<Settings bind:show={showSettings} bind:settings />
 <Footer />
 
 <style scoped>
@@ -293,7 +348,7 @@
   }
   .enable-404-btn,
   .time-period-btn {
-    background: var(--light-background);
+    background: var(--background);
     padding: 3px 12px;
     border: none;
     color: var(--dim-text);
@@ -314,7 +369,12 @@
     border: none;
     margin-right: 10px;
     cursor: pointer;
-    display: none;
+    margin-left: auto;
+    text-align: right;
+    flex-grow: 1;
+    /* margin-right: 1.5em; */
+    width: fit-content;
+    /* display: none; */
   }
   .settings-icon {
     width: 20px;

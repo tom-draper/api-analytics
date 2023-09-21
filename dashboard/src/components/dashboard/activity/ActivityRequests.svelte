@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import periodToDays from "../../../lib/period";
+  import { CREATED_AT } from "../../../lib/consts";
+  import type { Period } from "../../../lib/settings";
 
   function defaultLayout() {
     let periodAgo = new Date();
@@ -70,7 +72,7 @@
 
     let days = periodToDays(period);
     for (let i = 1; i < data.length; i++) {
-      let date = new Date(data[i][7]);
+      let date = new Date(data[i][CREATED_AT]);
       if (days === 1) {
         // Round down to multiple of 5
         date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
@@ -144,7 +146,7 @@
 
   $: data && mounted && genPlot();
 
-  export let data: RequestsData, period: string;
+  export let data: RequestsData, period: Period;
 </script>
 
 <div id="plotly">

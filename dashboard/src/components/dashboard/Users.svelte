@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import periodToDays from "../../lib/period";
+  import { IP_ADDRESS } from "../../lib/consts";
+  import type { Period } from "../../lib/settings";
 
   function usersPlotLayout() {
     return {
@@ -31,7 +33,7 @@
     let y = Array(n).fill(0);
     for (let i = 1; i < data.length; i++) {
       let idx = Math.floor(i / (data.length / n));
-      if (data[i][0] != null && data[i][0] != "") {
+      if (data[i][IP_ADDRESS] != null && data[i][IP_ADDRESS] != "") {
         y[idx] += 1;
       }
     }
@@ -87,8 +89,8 @@
   function getUsers(data: RequestsData): Set<string> {
     let users: Set<string> = new Set();
     for (let i = 1; i < data.length; i++) {
-      if (data[i][0] != "" && data[i][0] != null) {
-        users.add(data[i][0]);
+      if (data[i][IP_ADDRESS] != null && data[i][IP_ADDRESS] != "") {
+        users.add(data[i][IP_ADDRESS]);
       }
     }
     return users;
@@ -126,7 +128,7 @@
 
   $: data && mounted && build();
 
-  export let data: RequestsData, prevData: RequestsData, period: string;
+  export let data: RequestsData, prevData: RequestsData, period: Period;
 </script>
 
 <button class="card" on:click={togglePeriod} title="Based on IP address">
@@ -138,7 +140,7 @@
       <div class="value">{usersPerHour}</div>
     {/if}
   {:else}
-    {#if percentageChange != null}
+    {#if percentageChange != null && percentageChange != 0}
       <div
         class="percentage-change"
         class:positive={percentageChange > 0}

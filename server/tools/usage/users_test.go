@@ -5,7 +5,7 @@ import (
 )
 
 func TestUsers(t *testing.T) {
-	users, err := Users(0)
+	users, err := Users("")
 	if err != nil {
 		t.Error(err)
 	}
@@ -45,7 +45,7 @@ func TestMonthlyUsers(t *testing.T) {
 }
 
 func TestUsersCount(t *testing.T) {
-	users, err := UsersCount(0)
+	users, err := UsersCount("")
 	if err != nil {
 		t.Error(err)
 	}

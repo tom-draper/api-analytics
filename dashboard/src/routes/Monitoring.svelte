@@ -4,12 +4,13 @@
   import Card from "../components/monitoring/Card.svelte";
   import TrackNew from "../components/monitoring/TrackNew.svelte";
   import formatUUID from "../lib/uuid";
+  import { SERVER_URL } from "../lib/consts";
 
   async function fetchData() {
     userID = formatUUID(userID);
     try {
       const response = await fetch(
-        `https://www.apianalytics-server.com/api/monitor/pings/${userID}`
+        `${SERVER_URL}/api/monitor/pings/${userID}`
       );
       if (response.status === 200) {
         data = await response.json();

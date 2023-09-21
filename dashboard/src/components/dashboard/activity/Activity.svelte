@@ -1,9 +1,10 @@
 <script lang="ts">
+  import type { Period } from "../../../lib/settings";
   import ActivityRequests from "./ActivityRequests.svelte";
   import ActivityResponseTime from "./ActivityResponseTime.svelte";
   import ActivitySuccessRate from "./ActivitySuccessRate.svelte";
 
-  export let data: RequestsData, period: string;
+  export let data: RequestsData, period: Period;
 </script>
 
 <div class="card">

@@ -46,8 +46,8 @@
     <div class="url">
       <!-- <div class="start">http://</div> -->
       <select name="protocol" class="protocol">
-        <option value="volvo">http</option>
-        <option value="saab">https</option>
+        <option value="http">http</option>
+        <option value="https">https</option>
       </select>
       <input type="text" placeholder="example.com/endpoint/" bind:value={url} />
       <button class="add" on:click={postMonitor}>Add</button>

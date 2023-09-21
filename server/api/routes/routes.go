@@ -14,17 +14,20 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/gin-gonic/gin"
+	"github.com/tom-draper/api-analytics/server/api/lib/log"
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
 func genAPIKey(c *gin.Context) {
 	db := database.OpenDBConnection()
 	defer db.Close()
+
 	// Fetch all API request data associated with this account
 	query := "INSERT INTO users (api_key, user_id, created_at, last_accessed) VALUES (gen_random_uuid(), gen_random_uuid(), NOW(), NOW()) RETURNING api_key;"
 
 	rows, err := db.Query(query)
 	if err != nil {
+		log.LogToFile("API key generation failed")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
 		return
 	}
@@ -34,9 +37,12 @@ func genAPIKey(c *gin.Context) {
 	var apiKey string
 	err = rows.Scan(&apiKey)
 	if err != nil {
+		log.LogToFile("API key generation failed")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
 		return
 	}
+
+	log.LogToFile(apiKey + ": API key generated")
 
 	// Return API key
 	c.JSON(http.StatusOK, apiKey)
@@ -91,36 +97,63 @@ func getUserRequests(c *gin.Context) {
 	var userID string = c.Param("userID")
 
 	if userID == "" {
+		log.LogToFile("User ID empty")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
+
+	log.LogToFile(userID + ": Dashboard access")
 
 	db := database.OpenDBConnection()
 	defer db.Close()
 
-	// Fetch user ID corresponding with API key
-	query := fmt.Sprintf("SELECT ip_address, path, user_agent, method, response_time, status, location, requests.created_at FROM requests INNER JOIN users ON users.api_key = requests.api_key WHERE users.user_id = '%s' LIMIT 500000;", userID)
+	// Fetch API key corresponding with user_id
+	query := fmt.Sprintf("SELECT api_key FROM users WHERE user_id = '%s';", userID)
 	rows, err := db.Query(query)
 	if err != nil {
+		log.LogToFile(userID + ": No API key associated with user ID")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
 
-	err = updateLastAccessedByUserID(db, userID)
+	rows.Next()
+	var apiKey string
+	err = rows.Scan(&apiKey)
 	if err != nil {
+		log.LogToFile(userID + ": No API key associated with user ID")
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
+		return
+	}
+
+	// Fetch user ID corresponding with API key
+	// Left table join was originally used but often exceeded postgresql working memory limit with large numbers of requests
+	query = fmt.Sprintf("SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s' LIMIT 750000;", apiKey)
+	rows, err = db.Query(query)
+	if err != nil {
+		log.LogToFile(userID + ": Invalid API key")
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
+		return
+	}
+
+	err = updateLastAccessed(db, apiKey)
+	if err != nil {
+		log.LogToFile(userID + ": User last access update failed")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
 
 	// Read data into compact list of lists to return
-	cols := []any{"ip_address", "path", "user_agent", "method", "response_time", "status", "location", "created_at"}
+	cols := []any{"ip_address", "path", "hostname", "user_agent", "method", "response_time", "status", "location", "created_at"}
 	requests := buildRequestDataCompact(rows, cols)
 
 	gzipOutput, err := compressJSON(requests)
 	if err != nil {
+		log.LogToFile(userID + ": Compression failed")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Compression failed."})
 		return
 	}
+
+	log.LogToFile(userID + ": Dashboard access successful")
 
 	// Return API request data
 	c.Writer.Header().Set("Accept-Encoding", "gzip")
@@ -129,21 +162,23 @@ func getUserRequests(c *gin.Context) {
 	c.Data(http.StatusOK, "gzip", gzipOutput)
 }
 
-func compressJSON(response any) ([]byte, error) {
-	body, err := json.Marshal(response)
+func compressJSON(data any) ([]byte, error) {
+	// Convert data to []byte
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
 	}
 
+	// Compress using gzip
 	var buffer bytes.Buffer
-	zw := gzip.NewWriter(&buffer)
-	_, err = zw.Write(body)
+	gzw := gzip.NewWriter(&buffer)
+	_, err = gzw.Write(body)
 	if err != nil {
 		return nil, err
 	}
 
-	closeErr := zw.Close()
-	if closeErr != nil {
+	err = gzw.Close()
+	if err != nil {
 		return nil, err
 	}
 	return buffer.Bytes(), nil
@@ -155,7 +190,7 @@ func updateLastAccessedByUserID(db *sql.DB, userID string) error {
 	return err
 }
 
-func updateLastAccessedByAPIKey(db *sql.DB, apiKey string) error {
+func updateLastAccessed(db *sql.DB, apiKey string) error {
 	query := fmt.Sprintf("UPDATE users SET last_accessed = NOW() WHERE api_key = '%s';", apiKey)
 	_, err := db.Query(query)
 	return err
@@ -166,12 +201,12 @@ func buildRequestDataCompact(rows *sql.Rows, cols []any) [][]any {
 	requests := [][]any{cols}
 	request := new(PublicRequestRow) // Reused to avoid repeated memory allocation
 	for rows.Next() {
-		err := rows.Scan(&request.IPAddress, &request.Path, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
+		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
 		if request.Location.String == "  " {
 			request.Location.String = ""
 		}
 		if err == nil {
-			requests = append(requests, []any{request.IPAddress.String, request.Path, request.UserAgent.String, request.Method, request.ResponseTime, request.Status, request.Location.String, request.CreatedAt})
+			requests = append(requests, []any{request.IPAddress.String, request.Path, request.Hostname.String, request.UserAgent.String, request.Method, request.ResponseTime, request.Status, request.Location.String, request.CreatedAt})
 		}
 	}
 	return requests
@@ -194,10 +229,13 @@ func getData(c *gin.Context) {
 		// Check old (deprecated) identifier
 		apiKey = c.GetHeader("API-Key")
 		if apiKey == "" {
+			log.LogToFile("API key empty")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 			return
 		}
 	}
+
+	log.LogToFile(apiKey + ": Data access")
 
 	// Get any queries from url
 	queries := getQueriesFromRequest(c)
@@ -209,30 +247,34 @@ func getData(c *gin.Context) {
 	query := buildDataFetchQuery(apiKey, queries)
 	rows, err := db.Query(query)
 	if err != nil {
+		log.LogToFile(apiKey + ": Queries failed")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
 
-	err = updateLastAccessedByAPIKey(db, apiKey)
+	err = updateLastAccessed(db, apiKey)
 	if err != nil {
+		log.LogToFile(apiKey + ": User last access update failed")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
 
 	// Read data into list of objects to return
 	if queries.compact {
-		cols := []interface{}{"hostname", "ip_address", "path", "user_agent", "method", "response_time", "status", "location", "created_at"}
+		cols := []interface{}{"ip_address", "path", "hostname", "user_agent", "method", "response_time", "status", "location", "created_at"}
 		requests := buildRequestDataCompact(rows, cols)
+		log.LogToFile(apiKey + ": Data access successful")
 		c.JSON(http.StatusOK, requests)
 	} else {
 		requests := buildRequestData(rows)
+		log.LogToFile(apiKey + ": Data access successful")
 		c.JSON(http.StatusOK, requests)
 	}
 }
 
 func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 	var query strings.Builder
-	query.WriteString(fmt.Sprintf("SELECT hostname, ip_address, path, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s'", apiKey))
+	query.WriteString(fmt.Sprintf("SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s'", apiKey))
 
 	// Providing a single date takes priority over range with dateFrom and dateTo
 	if database.SanitizeDate(queries.date) {
@@ -255,8 +297,11 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 	if database.SanitizeStatus(queries.status) {
 		query.WriteString(fmt.Sprintf(" and status = %d", queries.status))
 	}
+	if database.SanitizeString(queries.hostname) {
+		query.WriteString(fmt.Sprintf(" and hostname = '%s'", queries.hostname))
+	}
 
-	query.WriteString("LIMIT 500000;")
+	query.WriteString("LIMIT 750000;")
 	return query.String()
 }
 
@@ -339,12 +384,12 @@ func buildRequestData(rows *sql.Rows) []PublicRequestData {
 	requests := make([]PublicRequestData, 0)
 	for rows.Next() {
 		request := new(PublicRequestRow)
-		err := rows.Scan(&request.Hostname, &request.IPAddress, &request.Path, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
+		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
 		if err == nil {
 			r := PublicRequestData{
-				Hostname:     request.Hostname.String,
 				IPAddress:    request.IPAddress.String,
 				Path:         request.Path,
+				Hostname:     request.Hostname.String,
 				UserAgent:    request.UserAgent.String,
 				Method:       request.Method,
 				Status:       request.Status,

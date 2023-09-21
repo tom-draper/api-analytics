@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { USER_AGENT } from "../../../lib/consts";
 
   function getDevice(userAgent: string): string {
     if (userAgent === null) {
@@ -47,23 +48,23 @@
   function pieChart() {
     let deviceCount = {};
     for (let i = 1; i < data.length; i++) {
-      let browser = getDevice(data[i][2]);
-      if (!(browser in deviceCount)) {
-        deviceCount[browser] = 0;
+      let device = getDevice(data[i][USER_AGENT]);
+      if (!(device in deviceCount)) {
+        deviceCount[device] = 0;
       }
-      deviceCount[browser]++;
+      deviceCount[device]++;
     }
 
-    let device = [];
+    let devices = [];
     let count = [];
     for (let browser in deviceCount) {
-      device.push(browser);
+      devices.push(browser);
       count.push(deviceCount[browser]);
     }
     return [
       {
         values: count,
-        labels: device,
+        labels: devices,
         type: "pie",
         marker: {
           colors: colors,

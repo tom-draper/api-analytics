@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import periodToDays from "../../../lib/period";
+  import { CREATED_AT, RESPONSE_TIME } from "../../../lib/consts";
+  import type { Period } from "../../../lib/settings";
 
   function defaultLayout() {
     let periodAgo = new Date();
@@ -72,7 +74,7 @@
 
     let days = periodToDays(period);
     for (let i = 1; i < data.length; i++) {
-      let date = new Date(data[i][7]);
+      let date = new Date(data[i][CREATED_AT]);
       if (days) {
         if (days <= 7) {
           // Round down to multiple of 5
@@ -85,7 +87,7 @@
       if (!(dateStr in responseTimes)) {
         responseTimes[dateStr] = { total: 0, count: 0 };
       }
-      responseTimes[dateStr].total += data[i][4];
+      responseTimes[dateStr].total += data[i][RESPONSE_TIME];
       responseTimes[dateStr].count++;
     }
 
@@ -115,26 +117,45 @@
     }
 
     return [
+      // {
+      //   x: dates,
+      //   y: rt,
+      //   type: "lines",
+      //   marker: { color: "#707070" },
+      //   hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
+      //   showlegend: false,
+      //   line: { shape: "spline", smoothing: 1 },
+      // },
+      // // 'Hidden' horizontal line at min y to provide fill colour up to response time line
+      // {
+      //   x: dates,
+      //   y: Array(rt.length).fill(Math.max(min_rt - 5, 0)),
+      //   type: "lines",
+      //   marker: { color: "transparent" },
+      //   fill: "tonexty",
+      //   fillcolor: "#70707030",
+      //   hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
+      //   showlegend: false,
+      // },
       {
         x: dates,
         y: rt,
-        type: "lines",
+        type: "bar",
         marker: { color: "#707070" },
         hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
         showlegend: false,
-        line: { shape: "spline", smoothing: 1 },
+        // line: { shape: "spline", smoothing: 1 },
       },
-      // 'Hidden' horizontal line at min y to provide fill colour up to response time line
-      {
-        x: dates,
-        y: Array(rt.length).fill(Math.max(min_rt - 5, 0)),
-        type: "lines",
-        marker: { color: "transparent" },
-        fill: "tonexty",
-        fillcolor: "#70707030",
-        hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
-        showlegend: false,
-      },
+      // {
+      //   x: dates,
+      //   y: ,
+      //   type: "lines",
+      //   marker: { color: "transparent" },
+      //   fill: "tonexty",
+      //   fillcolor: "#70707030",
+      //   hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
+      //   showlegend: false,
+      // },
     ];
   }
 
@@ -169,7 +190,7 @@
 
   $: data && mounted && genPlot();
 
-  export let data: RequestsData, period: string;
+  export let data: RequestsData, period: Period;
 </script>
 
 <div id="plotly">

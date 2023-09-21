@@ -5,31 +5,33 @@ import (
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
+func HourlyMonitorsCount() (int, error) {
+	return MonitorsCount("1 hour")
+}
+
 func DailyMonitorsCount() (int, error) {
-	return MonitorsCount(1)
+	return MonitorsCount("24 hours")
 }
 
 func WeeklyMonitorsCount() (int, error) {
-	return MonitorsCount(7)
+	return MonitorsCount("7 days")
 }
 
 func MonthlyMonitorsCount() (int, error) {
-	return MonitorsCount(30)
+	return MonitorsCount("30 days")
 }
 
 func TotalMonitorsCount() (int, error) {
-	return MonitorsCount(0)
+	return MonitorsCount("")
 }
 
-func MonitorsCount(days int) (int, error) {
+func MonitorsCount(interval string) (int, error) {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
 	query := "SELECT COUNT(*) FROM monitor"
-	if days == 1 {
-		query += " WHERE created_at >= NOW() - interval '24 hours';"
-	} else if days > 1 {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%d day';", days)
+	if interval != "" {
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s';", interval)
 	} else {
 		query += ";"
 	}
@@ -48,31 +50,33 @@ func MonitorsCount(days int) (int, error) {
 	return count, nil
 }
 
+func HourlyMonitors() ([]database.MonitorRow, error) {
+	return Monitors("1 hour")
+}
+
 func DailyMonitors() ([]database.MonitorRow, error) {
-	return Monitors(1)
+	return Monitors("24 hours")
 }
 
 func WeeklyMonitors() ([]database.MonitorRow, error) {
-	return Monitors(7)
+	return Monitors("7 days")
 }
 
 func MonthlyMonitors() ([]database.MonitorRow, error) {
-	return Monitors(30)
+	return Monitors("30 days")
 }
 
 func TotalMonitors() ([]database.MonitorRow, error) {
-	return Monitors(0)
+	return Monitors("")
 }
 
-func Monitors(days int) ([]database.MonitorRow, error) {
+func Monitors(interval string) ([]database.MonitorRow, error) {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
 	query := "SELECT api_key, url, secure, ping, created_at FROM monitor"
-	if days == 1 {
-		query += " where created_at >= NOW() - interval '24 hours';"
-	} else if days > 1 {
-		query += fmt.Sprintf(" where created_at >= NOW() - interval '%d day';", days)
+	if interval != "" {
+		query += fmt.Sprintf(" where created_at >= NOW() - interval '%s';", interval)
 	} else {
 		query += ";"
 	}
@@ -93,31 +97,33 @@ func Monitors(days int) ([]database.MonitorRow, error) {
 	return monitors, nil
 }
 
+func HourlyUserMonitors() ([]UserCount, error) {
+	return UserMonitors("1 hour")
+}
+
 func DailyUserMonitors() ([]UserCount, error) {
-	return UserMonitors(1)
+	return UserMonitors("24 hours")
 }
 
 func WeeklyUserMonitors() ([]UserCount, error) {
-	return UserMonitors(7)
+	return UserMonitors("7 days")
 }
 
 func MonthlyUserMonitors() ([]UserCount, error) {
-	return UserMonitors(30)
+	return UserMonitors("30 days")
 }
 
 func TotalUserMonitors() ([]UserCount, error) {
-	return UserMonitors(0)
+	return UserMonitors("")
 }
 
-func UserMonitors(days int) ([]UserCount, error) {
+func UserMonitors(interval string) ([]UserCount, error) {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
 	query := "SELECT api_key, COUNT(*) AS count FROM monitor"
-	if days == 1 {
-		query += " WHERE created_at >= NOW() - interval '24 hours' GROUP BY api_key ORDER BY count DESC"
-	} else if days > 1 {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%d day' GROUP BY api_key ORDER BY count DESC", days)
+	if interval != "" {
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s' GROUP BY api_key ORDER BY count DESC", interval)
 	}
 	query += " GROUP BY api_key ORDER BY count;"
 	rows, err := db.Query(query)

@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import periodToDays from "../../../lib/period";
+  import { CREATED_AT, STATUS } from "../../../lib/consts";
+  import type { Period } from "../../../lib/settings";
 
   function daysAgo(date: Date): number {
     let now = new Date();
@@ -11,13 +13,13 @@
     let success = {};
     let minDate = Number.POSITIVE_INFINITY;
     for (let i = 1; i < data.length; i++) {
-      let date = new Date(data[i][7]);
+      let date = new Date(data[i][CREATED_AT]);
       date.setHours(0, 0, 0, 0);
       let dateStr = date.toDateString();
       if (!(dateStr in success)) {
         success[dateStr] = { total: 0, successful: 0 };
       }
-      if (data[i][5] >= 200 && data[i][5] <= 299) {
+      if (data[i][STATUS] >= 200 && data[i][STATUS] <= 299) {
         success[dateStr].successful++;
       }
       success[dateStr].total++;
@@ -55,7 +57,7 @@
 
   $: data && mounted && build();
 
-  export let data: RequestsData, period: string;
+  export let data: RequestsData, period: Period;
 </script>
 
 <div class="success-rate-container">

@@ -6,31 +6,33 @@ import (
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
+func HourlyRequestsCount() (int, error) {
+	return RequestsCount("1 hour")
+}
+
 func DailyRequestsCount() (int, error) {
-	return RequestsCount(1)
+	return RequestsCount("24 hours")
 }
 
 func WeeklyRequestsCount() (int, error) {
-	return RequestsCount(7)
+	return RequestsCount("7 days")
 }
 
 func MonthlyRequestsCount() (int, error) {
-	return RequestsCount(30)
+	return RequestsCount("30 days")
 }
 
 func TotalRequestsCount() (int, error) {
-	return RequestsCount(0)
+	return RequestsCount("")
 }
 
-func RequestsCount(days int) (int, error) {
+func RequestsCount(interval string) (int, error) {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
 	query := "SELECT COUNT(*) FROM requests"
-	if days == 999 {
-		query += " WHERE created_at >= NOW() - interval '24 hours';"
-	} else if days >= 1 {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%d day';", days)
+	if interval != "" {
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s';", interval)
 	} else {
 		query += ";"
 	}
@@ -49,31 +51,33 @@ func RequestsCount(days int) (int, error) {
 	return count, nil
 }
 
+func HourlyRequests() ([]database.RequestRow, error) {
+	return Requests("1 hour")
+}
+
 func DailyRequests() ([]database.RequestRow, error) {
-	return Requests(1)
+	return Requests("24 hours")
 }
 
 func WeeklyRequests() ([]database.RequestRow, error) {
-	return Requests(7)
+	return Requests("7 days")
 }
 
 func MonthlyRequests() ([]database.RequestRow, error) {
-	return Requests(30)
+	return Requests("30 days")
 }
 
 func TotalRequests() ([]database.RequestRow, error) {
-	return Requests(0)
+	return Requests("")
 }
 
-func Requests(days int) ([]database.RequestRow, error) {
+func Requests(interval string) ([]database.RequestRow, error) {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
 	query := "SELECT request_id, api_key, path, hostname, ip_address, location, user_agent, method, status, response_time, framework, created_at FROM requests"
-	if days == 1 {
-		query += " WHERE created_at >= NOW() - interval '24 hours';"
-	} else if days > 1 {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%d day';", days)
+	if interval != "" {
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s';", interval)
 	} else {
 		query += ";"
 	}
@@ -95,31 +99,33 @@ func Requests(days int) ([]database.RequestRow, error) {
 	return requests, nil
 }
 
+func HourlyUserRequests() ([]UserCount, error) {
+	return UserRequests("1 hour")
+}
+
 func DailyUserRequests() ([]UserCount, error) {
-	return UserRequests(1)
+	return UserRequests("24 hours")
 }
 
 func WeeklyUserRequests() ([]UserCount, error) {
-	return UserRequests(7)
+	return UserRequests("7 days")
 }
 
 func MonthlyUserRequests() ([]UserCount, error) {
-	return UserRequests(30)
+	return UserRequests("30 days")
 }
 
 func TotalUserRequests() ([]UserCount, error) {
-	return UserRequests(0)
+	return UserRequests("")
 }
 
-func UserRequests(days int) ([]UserCount, error) {
+func UserRequests(interval string) ([]UserCount, error) {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
 	query := "SELECT api_key, COUNT(*) as count FROM requests"
-	if days == 1 {
-		query += " WHERE created_at >= NOW() - interval '24 hours'"
-	} else if days > 1 {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%d day'", days)
+	if interval != "" {
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
 	query += " GROUP BY api_key ORDER BY count;"
 	rows, err := db.Query(query)

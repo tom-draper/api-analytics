@@ -7,7 +7,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/tom-draper/api-analytics/server/database"
 	"github.com/tom-draper/api-analytics/server/email"
-	"github.com/tom-draper/api-analytics/server/tools/monitor/monitor"
+	monitor "github.com/tom-draper/api-analytics/server/tools/monitor/lib"
 	"github.com/tom-draper/api-analytics/server/tools/usage"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -48,13 +48,16 @@ func printCheckup() {
 	printAPITest()
 
 	printDatabaseStats()
+	printLastHour()
 	printLast24Hours()
 	printLastWeek()
 	printTotal()
+}
 
-	// printTopUsers()
-	// printUnusedUsers()
-	// printUsersSinceLastRequest()
+func printUsersCheckup() {
+	printTopUsers()
+	printUnusedUsers()
+	printUsersSinceLastRequest()
 }
 
 func printServicesTest() {
@@ -155,11 +158,31 @@ func printDatabaseStats() {
 		panic(err)
 	}
 	p.Println("Database size:", size)
-	columnSize, err := usage.RequestsColumnSize()
+	// columnSize, err := usage.RequestsColumnSize()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// columnSize.Display()
+}
+
+func printLastHour() {
+	p := message.NewPrinter(language.English)
+	p.Println("---- Last hour -----------------------")
+	dailyUsers, err := usage.HourlyUsersCount()
 	if err != nil {
 		panic(err)
 	}
-	columnSize.Display()
+	p.Println("Users:", dailyUsers)
+	dailyRequests, err := usage.HourlyRequestsCount()
+	if err != nil {
+		panic(err)
+	}
+	p.Println("Requests:", dailyRequests)
+	dailyMonitors, err := usage.HourlyMonitorsCount()
+	if err != nil {
+		panic(err)
+	}
+	p.Println("Monitors:", dailyMonitors)
 }
 
 func printLast24Hours() {
@@ -205,17 +228,17 @@ func printLastWeek() {
 func printTotal() {
 	p := message.NewPrinter(language.English)
 	p.Println("---- Total ---------------------------")
-	totalUsers, err := usage.UsersCount(0)
+	totalUsers, err := usage.UsersCount("")
 	if err != nil {
 		panic(err)
 	}
 	p.Println("Users:", totalUsers)
-	totalRequests, err := usage.RequestsCount(0)
+	totalRequests, err := usage.RequestsCount("")
 	if err != nil {
 		panic(err)
 	}
 	p.Println("Requests:", totalRequests)
-	totalMonitors, err := usage.MonitorsCount(0)
+	totalMonitors, err := usage.MonitorsCount("")
 	if err != nil {
 		panic(err)
 	}
@@ -252,6 +275,8 @@ func printUsersSinceLastRequest() {
 func main() {
 	if len(os.Args) > 1 && os.Args[1] == "--email" {
 		emailCheckup()
+	} else if len(os.Args) > 1 && os.Args[1] == "--users" {
+		printUsersCheckup()
 	} else {
 		printCheckup()
 	}

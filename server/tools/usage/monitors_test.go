@@ -5,7 +5,7 @@ import (
 )
 
 func TestMonitors(t *testing.T) {
-	monitors, err := Monitors(0)
+	monitors, err := Monitors("")
 	if err != nil {
 		t.Error(err)
 	}
@@ -45,7 +45,7 @@ func TestMonthlyMonitors(t *testing.T) {
 }
 
 func TestMonitorsCount(t *testing.T) {
-	monitors, err := MonitorsCount(0)
+	monitors, err := MonitorsCount("")
 	if err != nil {
 		t.Error(err)
 	}
@@ -85,7 +85,7 @@ func TestMonthlyMonitorsCount(t *testing.T) {
 }
 
 func TestUserMonitors(t *testing.T) {
-	monitors, err := UserMonitors(0)
+	monitors, err := UserMonitors("")
 	if err != nil {
 		t.Error(err)
 	}

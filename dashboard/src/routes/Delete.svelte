@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { SERVER_URL } from "../lib/consts";
+
   let state: "delete" | "loading" | "deleted" | "error" = "delete";
   let apiKey = "";
   async function genAPIKey() {
     setState("loading");
     const response = await fetch(
-      `https://www.apianalytics-server.com/api/delete/${apiKey}`
+      `${SERVER_URL}/api/delete/${apiKey}`
     );
 
     if (response.status === 200) {
