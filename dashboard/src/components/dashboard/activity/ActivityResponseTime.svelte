@@ -117,26 +117,45 @@
     }
 
     return [
+      // {
+      //   x: dates,
+      //   y: rt,
+      //   type: "lines",
+      //   marker: { color: "#707070" },
+      //   hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
+      //   showlegend: false,
+      //   line: { shape: "spline", smoothing: 1 },
+      // },
+      // // 'Hidden' horizontal line at min y to provide fill colour up to response time line
+      // {
+      //   x: dates,
+      //   y: Array(rt.length).fill(Math.max(min_rt - 5, 0)),
+      //   type: "lines",
+      //   marker: { color: "transparent" },
+      //   fill: "tonexty",
+      //   fillcolor: "#70707030",
+      //   hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
+      //   showlegend: false,
+      // },
       {
         x: dates,
         y: rt,
-        type: "lines",
+        type: "bar",
         marker: { color: "#707070" },
         hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
         showlegend: false,
-        line: { shape: "spline", smoothing: 1 },
+        // line: { shape: "spline", smoothing: 1 },
       },
-      // 'Hidden' horizontal line at min y to provide fill colour up to response time line
-      {
-        x: dates,
-        y: Array(rt.length).fill(Math.max(min_rt - 5, 0)),
-        type: "lines",
-        marker: { color: "transparent" },
-        fill: "tonexty",
-        fillcolor: "#70707030",
-        hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
-        showlegend: false,
-      },
+      // {
+      //   x: dates,
+      //   y: ,
+      //   type: "lines",
+      //   marker: { color: "transparent" },
+      //   fill: "tonexty",
+      //   fillcolor: "#70707030",
+      //   hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
+      //   showlegend: false,
+      // },
     ];
   }
 
