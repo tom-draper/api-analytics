@@ -103,13 +103,7 @@
 
   function setPeriod(value: Period) {
     settings.period = value;
-    // if (value in periodDataCache) {
-    //   periodData = periodDataCache[currentPeriod].periodData
-    //   prevPeriodData = periodDataCache[currentPeriod].prevPeriodData
-    // } else {
-    //   periodDataCache[currentPeriod] = {periodData, prevPeriodData}
-    // }
-    // refreshData();
+
   }
 
   function setHostnames() {
@@ -185,6 +179,7 @@
     "All time",
   ];
   let failed = false;
+  let setup = false;
   onMount(() => {
     if (demo) {
       data = genDemoData() as RequestsData;
@@ -193,6 +188,9 @@
     } else {
       fetchData();
     }
+    data?.sort(((a, b) => {
+      return new Date(a[CREATED_AT]) - new Date(b[CREATED_AT])
+    }))
   });
 
   function refreshData() {
@@ -202,13 +200,13 @@
 
     setPeriodData();
     setPrevPeriodData();
+
   }
 
   $: if (settings.endpoint === null || settings.endpoint) {
     refreshData();
   }
-  // $: settings.hostname && refreshData();
-  $: settings.disable404 && settings.period && refreshData();
+  // $: settings.period && refreshData();
   export let userID: string, demo: boolean;
 </script>
 
@@ -230,7 +228,7 @@
       >
         <img class="settings-icon" src="../img/cog.png" alt="" />
       </button>
-      {#if hostnames.length > 0}
+      {#if hostnames != undefined && hostnames.length > 0}
         <Dropdown options={hostnames} bind:selected={settings.hostname} />
       {/if}
       <div class="nav-btn time-period">
@@ -289,7 +287,7 @@
     </div>
   </div>
 {/if}
-<Settings bind:show={showSettings} bind:settings />
+<Settings bind:show={showSettings} bind:settings {refreshData}/>
 <Footer />
 
 <style scoped>

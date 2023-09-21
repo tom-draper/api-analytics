@@ -159,7 +159,7 @@
               class="background"
               title="Status: {endpoint.status}"
               style="width: {(endpoint.count / maxCount) * 100}%"
-              class:success={endpoint.status >= 200 && endpoint.status <= 299}
+              class:success={(endpoint.status >= 200 && endpoint.status <= 299) || endpoint.status === 0}
               class:bad={endpoint.status >= 300 && endpoint.status <= 399}
               class:error={endpoint.status >= 400}
             />
