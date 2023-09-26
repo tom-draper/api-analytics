@@ -31,10 +31,9 @@ func MonitorsCount(interval string) (int, error) {
 
 	query := "SELECT COUNT(*) FROM monitor"
 	if interval != "" {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s';", interval)
-	} else {
-		query += ";"
-	}
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
+	} 
+	query += ";"
 	rows, err := db.Query(query)
 	if err != nil {
 		return 0, err
@@ -76,10 +75,9 @@ func Monitors(interval string) ([]database.MonitorRow, error) {
 
 	query := "SELECT api_key, url, secure, ping, created_at FROM monitor"
 	if interval != "" {
-		query += fmt.Sprintf(" where created_at >= NOW() - interval '%s';", interval)
-	} else {
-		query += ";"
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
+	query += ";"
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -123,9 +121,9 @@ func UserMonitors(interval string) ([]UserCount, error) {
 
 	query := "SELECT api_key, COUNT(*) AS count FROM monitor"
 	if interval != "" {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s' GROUP BY api_key ORDER BY count DESC", interval)
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
-	query += " GROUP BY api_key ORDER BY count;"
+	query += " GROUP BY api_key ORDER BY count DESC;"
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
