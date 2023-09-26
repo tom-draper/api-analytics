@@ -151,7 +151,6 @@
       {#each endpoints as endpoint, i}
         <div class="endpoint-container">
           <div class="endpoint" id="endpoint-{i}" title="Status: {endpoint.status}" on:click={() => setTargetEndpoint(endpoint.path.split(' ')[2])}>
-             
             <div class="path">
               <b>{endpoint.count.toLocaleString()}</b>
               {endpoint.path}
