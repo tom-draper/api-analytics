@@ -4,7 +4,8 @@ export type DashboardSettings = {
     disable404: boolean
     hostname: string
     period: Period
-    endpoint: string
+    targetEndpoint: string,
+    hiddenEndpoints: Set<string>
 }
 
 export function initSettings(): DashboardSettings {
@@ -12,6 +13,7 @@ export function initSettings(): DashboardSettings {
         disable404: false,
         hostname: null,
         period: "Month",
-        endpoint: null,
+        targetEndpoint: null,
+        hiddenEndpoints: new Set()
     }
 }
