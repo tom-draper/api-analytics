@@ -34,10 +34,9 @@ func UsersCount(interval string) (int, error) {
 
 	query := "SELECT COUNT(*) FROM users"
 	if interval != "" {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s';", interval)
-	} else {
-		query += ";"
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
+	query += ";"
 	rows, err := db.Query(query)
 	if err != nil {
 		return 0, err
@@ -79,10 +78,9 @@ func Users(interval string) ([]database.UserRow, error) {
 
 	query := "SELECT api_key, user_id, created_at FROM users"
 	if interval != "" {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s interval';", interval)
-	} else {
-		query += ";"
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
+	query += ";"
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -108,17 +106,21 @@ type User struct {
 	CreatedAt      time.Time `json:"created_at"`
 }
 
-func DisplayUsers(users []User) {
+func (user User) Display(rank int) {
 	var colorPrintf func(format string, a ...interface{})
+	if user.DailyRequests == 0 && user.WeeklyRequests == 0 {
+		colorPrintf = color.Red
+	} else if user.DailyRequests == 0 || user.WeeklyRequests == 0 {
+		colorPrintf = color.Yellow
+	} else {
+		colorPrintf = color.Green
+	}
+	colorPrintf("[%d] %s %d (+%d / +%d) %s\n", rank, user.APIKey, user.TotalRequests, user.DailyRequests, user.WeeklyRequests, user.CreatedAt.Format("2006-01-02"))
+}
+
+func DisplayUsers(users []User) {
 	for i, user := range users {
-		if user.DailyRequests == 0 && user.WeeklyRequests == 0 {
-			colorPrintf = color.Red
-		} else if user.DailyRequests == 0 || user.WeeklyRequests == 0 {
-			colorPrintf = color.Yellow
-		} else {
-			colorPrintf = color.Green
-		}
-		colorPrintf("[%d] %s %d (+%d / +%d) %s\n", i, user.APIKey, user.TotalRequests, user.DailyRequests, user.WeeklyRequests, user.CreatedAt.Format("2006-01-02"))
+		user.Display(i)
 	}
 }
 
@@ -176,16 +178,20 @@ type UserTime struct {
 	Days      string    `json:"days"`
 }
 
-func DisplayUserTimes(users []UserTime) {
+func (user UserTime) Display(rank int) {
 	format := "[%d] %s %s (%s)\n"
+	if time.Since(user.CreatedAt) > time.Hour*24*30*6 {
+		color.Red(format, rank, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
+	} else if time.Since(user.CreatedAt) > time.Hour*24*30*3 {
+		color.Yellow(format, rank, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
+	} else {
+		fmt.Printf(format, rank, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
+	}
+}
+
+func DisplayUserTimes(users []UserTime) {
 	for i, user := range users {
-		if time.Since(user.CreatedAt) > time.Hour*24*30*6 {
-			color.Red(format, i, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
-		} else if time.Since(user.CreatedAt) > time.Hour*24*30*3 {
-			color.Yellow(format, i, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
-		} else {
-			fmt.Printf(format, i, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
-		}
+		user.Display(i)
 	}
 }
 

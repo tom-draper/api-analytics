@@ -13,10 +13,15 @@ type UserCount struct {
 	Count  int
 }
 
+var p = message.NewPrinter(language.English)
+
+func (u UserCount) Display() {
+	p.Printf("%s: %d\n", u.APIKey, u.Count)
+}
+
 func DisplayUserCounts(counts []UserCount) {
-	p := message.NewPrinter(language.English)
 	for _, c := range counts {
-		p.Printf("%s: %d\n", c.APIKey, c.Count)
+		c.Display()
 	}
 }
 
@@ -48,7 +53,7 @@ func TableColumnSize(table string, column string) (string, error) {
 
 	var size struct {
 		totalSize   string
-		averageSize float64
+		averageSize string
 		percentage  float64
 	}
 	rows.Next()
