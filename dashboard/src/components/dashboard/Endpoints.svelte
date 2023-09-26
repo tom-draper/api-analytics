@@ -150,14 +150,14 @@
     <div class="endpoints">
       {#each endpoints as endpoint, i}
         <div class="endpoint-container">
-          <div class="endpoint" id="endpoint-{i}"  on:click={() => setTargetEndpoint(endpoint.path.split(' ')[2])}>
+          <div class="endpoint" id="endpoint-{i}" title="Status: {endpoint.status}" on:click={() => setTargetEndpoint(endpoint.path.split(' ')[2])}>
+             
             <div class="path">
               <b>{endpoint.count.toLocaleString()}</b>
               {endpoint.path}
             </div>
             <div
               class="background"
-              title="Status: {endpoint.status}"
               style="width: {(endpoint.count / maxCount) * 100}%"
               class:success={(endpoint.status >= 200 && endpoint.status <= 299) || endpoint.status === 0}
               class:bad={endpoint.status >= 300 && endpoint.status <= 399}
