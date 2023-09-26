@@ -26,7 +26,6 @@
     HOSTNAME,
   } from "../lib/consts";
   import Dropdown from "../components/dashboard/Dropdown.svelte";
-  import { construct_svelte_component } from "svelte/internal";
 
   function inPeriod(date: Date, days: number): boolean {
     let periodAgo = new Date();
@@ -52,8 +51,9 @@
     for (let i = 1; i < data.length; i++) {
       if (
         (settings.disable404 && data[i][STATUS] === 404) ||
-        (settings.endpoint != null && settings.endpoint != data[i][PATH]) ||
-        (settings.hostname != null && settings.hostname != data[i][HOSTNAME])
+        (settings.targetEndpoint != null && settings.targetEndpoint !== data[i][PATH]) ||
+        (isHiddenEndpoint(data[i][PATH])) ||
+        (settings.hostname != null && settings.hostname !== data[i][HOSTNAME])
       ) {
         continue;
       }
@@ -74,6 +74,38 @@
     return startPeriodAgo < date && date < endPeriodAgo;
   }
 
+  function isHiddenEndpoint(endpoint: string): boolean {
+    return (settings.hiddenEndpoints.has(endpoint)) || 
+           (endpoint.charAt(0) === '/' && settings.hiddenEndpoints.has(endpoint.slice(1))) ||
+           (endpoint.charAt(endpoint.length-1) === '/' && settings.hiddenEndpoints.has(endpoint.slice(0, -1)) ||
+          //  (endpoint.charAt(0) !== '/' && settings.hiddenEndpoints.has('/' + endpoint)) ||
+           (endpoint.charAt(endpoint.length-1) !== '/' && settings.hiddenEndpoints.has(endpoint + '/'))) ||
+           wildCardMatch(endpoint);
+
+  }
+
+  function wildCardMatch(endpoint: string): boolean {
+    if (endpoint.charAt(endpoint.length-1) !== '/') {
+      endpoint = endpoint + '/'
+    }
+    for (let value of settings.hiddenEndpoints) {
+      if (value.charAt(value.length-1) === '*') {
+        value = value.slice(0, value.length-1) // Remove asterisk
+        // Format both paths with a starting '/' and no trailing '/'
+        if (value.charAt(0) !== '/') {
+          value = '/' + value
+        }
+        if (value.charAt(value.length-1) !== '/') {
+          value = value + '/'
+        }
+        if (endpoint.slice(0, value.length) === value) {
+          return true
+        }
+      }
+    }
+    return false
+  }
+
   function setPrevPeriodData() {
     let days = periodToDays(settings.period);
 
@@ -88,8 +120,9 @@
     for (let i = 1; i < data.length; i++) {
       if (
         (settings.disable404 && data[i][STATUS] === 404) ||
-        (settings.endpoint != null && settings.endpoint != data[i][PATH]) ||
-(settings.hostname != null && settings.hostname != data[i][HOSTNAME])
+        (settings.targetEndpoint != null && settings.targetEndpoint !== data[i][PATH]) ||
+        (isHiddenEndpoint(data[i][PATH])) ||
+        (settings.hostname != null && settings.hostname !== data[i][HOSTNAME])
       ) {
         continue;
       }
@@ -189,6 +222,7 @@
       fetchData();
     }
     data?.sort(((a, b) => {
+      //@ts-ignore
       return new Date(a[CREATED_AT]) - new Date(b[CREATED_AT])
     }))
   });
@@ -203,10 +237,10 @@
 
   }
 
-  $: if (settings.endpoint === null || settings.endpoint) {
+  $: if (settings.targetEndpoint === null || settings.targetEndpoint) {
     refreshData();
   }
-  // $: settings.period && refreshData();
+  // $: settings.hiddenEndpoints && refreshData();
   export let userID: string, demo: boolean;
 </script>
 
@@ -264,7 +298,7 @@
           />
         </div>
         <ResponseTimes data={periodData} />
-        <Endpoints data={periodData} bind:targetEndpoint={settings.endpoint} />
+        <Endpoints data={periodData} bind:targetEndpoint={settings.targetEndpoint} />
         <Version data={periodData} />
       </div>
       <div class="right">
@@ -287,7 +321,7 @@
     </div>
   </div>
 {/if}
-<Settings bind:show={showSettings} bind:settings {refreshData}/>
+<Settings bind:show={showSettings} bind:settings/>
 <Footer />
 
 <style scoped>
