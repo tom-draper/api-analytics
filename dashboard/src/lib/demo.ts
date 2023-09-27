@@ -7,6 +7,7 @@ function getDemoStatus(date: Date, status: number): number {
     end.setDate(end.getDate() - 96);
 
     if (date > start && date < end) {
+        // Create status code anomaly in down period
         return 400;
     } else {
         return status;
@@ -21,6 +22,7 @@ function getDemoResponseTime(date: Date, responseTime: number): number {
     end.setDate(end.getDate() - 96);
 
     if (date > start && date < end) {
+        // Create response time anomaly in down period
         return Math.floor(Math.random() * 400 + 200)
     } else {
         return responseTime
@@ -59,13 +61,15 @@ function randomChoices(p: number[], count: number): number[] {
     return Array.from(Array(count), randomChoice.bind(null, p));
 }
 
-function getHour(): number {
+function getDemoHour(): number {
     let p = Array(24).fill(1);
+    // Create daytime peak
     for (let i = 0; i < 3; i++) {
         for (let j = 5 + i; j < 11 - i; j++) {
             p[j] += 0.15;
         }
     }
+    // Create evening peak
     for (let i = 0; i < 4; i++) {
         for (let j = 11 + i; j < 21 - i; j++) {
             p[j] += 0.15;
@@ -74,18 +78,20 @@ function getHour(): number {
     return randomChoices(p, 1)[0];
 }
 
-function getLocation(): string {
-    const locations = ["GB", "US", "MX", "CA", "FR", "AU", "ID", "IE", "DE", "PL", "AF", "AL", "DZ", "AS", "AD", "AO", "AI", "AQ", "AG", "AR", "AM", "AW", "AT", "AZ", "BS", "BH", "BD", "BB", "BY", "BE", "BZ", "BJ", "BM", "BT", "BO", "BQ"]
-    const p = [0.56, 1, 0.18, 0.2, 0.4, 0.3, 0.1, 0.05, 0.2, 0.06, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
-    const idx = randomChoice(p)
-    return locations[idx] as string
+const demoLocations = ["GB", "US", "MX", "CA", "FR", "AU", "ID", "IE", "DE", "PL", "AF", "AL", "DZ", "AS", "AD", "AO", "AI", "AQ", "AG", "AR", "AM", "AW", "AT", "AZ", "BS", "BH", "BD", "BB", "BY", "BE", "BZ", "BJ", "BM", "BT", "BO", "BQ"]
+const demoLocationsDist = [0.56, 1, 0.18, 0.2, 0.4, 0.3, 0.1, 0.05, 0.2, 0.06, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
+
+function getDemoLocation(): string {
+    const idx = randomChoice(demoLocationsDist)
+    return demoLocations[idx] as string
 }
 
-function getHostname(): string {
-    const locations = ["example.com", "example2.com", "example3.com"]
-    const p = [0.3, 0.3, 0.3]
-    const idx = randomChoice(p)
-    return locations[idx] as string
+const demoHostnames = ["example.com", "example2.com", "example3.com"]
+const demoHostnamesDist = [0.5, 0.35, 0.15]
+
+function getDemoHostname(): string {
+    const idx = randomChoice(demoHostnamesDist)
+    return demoHostnames[idx] as string
 }
 
 function addDemoSamples(
@@ -102,16 +108,16 @@ function addDemoSamples(
         date.setDate(
             date.getDate() - Math.floor(Math.random() * daysAgo[1] + daysAgo[0])
         );
-        date.setHours(getHour(), Math.floor(Math.random() * 60));
+        date.setHours(getDemoHour(), Math.floor(Math.random() * 60));
         demoData.push([
             Math.floor(Math.random() * user[1] + user[0]).toString(),
             endpoint,
-            getHostname(),
+            getDemoHostname(),
             getDemoUserAgent(),
             0,
             getDemoResponseTime(date, Math.floor(Math.random() * responseTime[1] + responseTime[0])),
             getDemoStatus(date, status),
-            getLocation(),
+            getDemoLocation(),
             date.toISOString()
         ]);
     }
