@@ -1,9 +1,9 @@
 
 function getDemoStatus(date: Date, status: number): number {
     // Add down period
-    let start = new Date();
+    const start = new Date();
     start.setDate(start.getDate() - 100);
-    let end = new Date();
+    const end = new Date();
     end.setDate(end.getDate() - 96);
 
     if (date > start && date < end) {
@@ -16,9 +16,9 @@ function getDemoStatus(date: Date, status: number): number {
 
 function getDemoResponseTime(date: Date, responseTime: number): number {
     // Add down period
-    let start = new Date();
+    const start = new Date();
     start.setDate(start.getDate() - 100);
-    let end = new Date();
+    const end = new Date();
     end.setDate(end.getDate() - 96);
 
     if (date > start && date < end) {
@@ -30,7 +30,7 @@ function getDemoResponseTime(date: Date, responseTime: number): number {
 }
 
 function getDemoUserAgent(): string {
-    let p = Math.random();
+    const p = Math.random();
     if (p < 0.19) {
         return "Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Mobile/15E148 Safari/604.1";
     } else if (p < 0.3) {
@@ -94,6 +94,15 @@ function getDemoHostname(): string {
     return demoHostnames[idx] as string
 }
 
+function getDemoDate(daysAgo: [number, number]): Date {
+    const date = new Date();
+    date.setDate(
+        date.getDate() - Math.floor(Math.random() * daysAgo[1] + daysAgo[0])
+    );
+    date.setHours(getDemoHour(), Math.floor(Math.random() * 60));
+    return date
+}
+
 function addDemoSamples(
     demoData: RequestsData,
     endpoint: string,
@@ -104,11 +113,7 @@ function addDemoSamples(
     user: [number, number],
 ) {
     for (let i = 0; i < count; i++) {
-        let date = new Date();
-        date.setDate(
-            date.getDate() - Math.floor(Math.random() * daysAgo[1] + daysAgo[0])
-        );
-        date.setHours(getDemoHour(), Math.floor(Math.random() * 60));
+        const date = getDemoDate(daysAgo);
         demoData.push([
             Math.floor(Math.random() * user[1] + user[0]).toString(),
             endpoint,
@@ -124,7 +129,7 @@ function addDemoSamples(
 }
 
 export default function genDemoData(): RequestsData {
-    let demoData: RequestsData = [];
+    const demoData: RequestsData = [];
 
     addDemoSamples(demoData, "/v1/", 200, 18000, [0, 650], [55, 240], [0, 3956]);
     addDemoSamples(demoData, "/v1/", 400, 1000, [0, 650], [55, 240], [0, 2041]);
@@ -192,5 +197,6 @@ export default function genDemoData(): RequestsData {
 
     addDemoSamples(demoData, "/v2/account", 200, 8000, [0, 140], [200, 300], [0, 1654]);
     addDemoSamples(demoData, "/v2/account", 500, 800, [0, 140], [200, 300], [0, 1654]);
+
     return demoData
 }
