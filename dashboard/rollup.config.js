@@ -32,6 +32,7 @@ export default [
       resolve(),
       commonjs(),
       typescript({
+        rootDir: './src',
         sourceMap: !production,
         inlineSources: !production
       }),
@@ -52,7 +53,7 @@ export default [
     output: {
       exports: "default",
       sourcemap: false,
-      format: "cjs",
+      format: "esm",
       name: "app",
       file: "public/App.js",
     },

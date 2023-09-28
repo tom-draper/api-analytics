@@ -62,7 +62,7 @@ function randomChoices(p: number[], count: number): number[] {
 }
 
 function getDemoHour(): number {
-    let p = Array(24).fill(1);
+    const p = Array(24).fill(1);
     // Create daytime peak
     for (let i = 0; i < 3; i++) {
         for (let j = 5 + i; j < 11 - i; j++) {
