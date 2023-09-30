@@ -1,4 +1,4 @@
-type frameworkExamples = {
+type FrameworkExamples = {
   [framework: string]: {
     install: string
     codeFile: string
@@ -6,7 +6,7 @@ type frameworkExamples = {
   }
 }
 
-const frameworkExamples = {
+const frameworkExamples: FrameworkExamples = {
   Django: {
     install: 'pip install api-analytics',
     codeFile: 'settings.py',

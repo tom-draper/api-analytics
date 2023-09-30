@@ -8,7 +8,7 @@
     "sirv-cli": "^2.0.2",
     "svelte": "^3.49.0",
     "svelte-prism": "^1.1.6",
-    "svelte-routing": "^1.6.0"
+    "svelte-routing": "1.6.0"
   },
   "scripts": {
     "dev": "run-p watch server",
