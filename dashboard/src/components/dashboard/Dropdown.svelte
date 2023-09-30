@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+    import { onMount } from 'svelte';
 
     function selectOption(option: string) {
-        selected = option
+        selected = option;
         hideOptions = true;
     }
 
@@ -10,7 +10,7 @@
     let current: HTMLButtonElement;
     onMount(() => {
         dropdown.style.width = `${current.clientWidth}px`;
-    })
+    });
 
     let hideOptions: boolean = true;
     export let options: string[], selected: string;
@@ -18,13 +18,26 @@
 
 <div class="dropdown" bind:this={dropdown} id="dropdown">
     <div class="inner">
-        <button class="current" class:square-bottom={!hideOptions} bind:this={current} on:click={() => {hideOptions = !hideOptions}}>
+        <button
+            class="current"
+            class:square-bottom={!hideOptions}
+            bind:this={current}
+            on:click={() => {
+                hideOptions = !hideOptions;
+            }}
+        >
             {selected}
         </button>
         <div class="options" class:hidden={hideOptions}>
             {#each options as option, i}
                 {#if option !== selected}
-                    <button class="option" class:last-option={i === options.length - 1} on:click={() => {selectOption(option)}}>{option}</button>
+                    <button
+                        class="option"
+                        class:last-option={i === options.length - 1}
+                        on:click={() => {
+                            selectOption(option);
+                        }}>{option}</button
+                    >
                 {/if}
             {/each}
         </div>

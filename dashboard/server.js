@@ -1,6 +1,6 @@
-import { join } from "path";
-import express from "express";
-import app from "./public/App.js";
+import { join } from 'path';
+import express from 'express';
+import app from './public/App.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -10,12 +10,12 @@ const __dirname = dirname(__filename);
 const port = 3000;
 const server = express();
 
-server.use(express.static(join(__dirname, "public")));
+server.use(express.static(join(__dirname, 'public')));
 
-server.get("*", function(req, res) {
-  const { html } = app.render({ url: req.url });
+server.get('*', function (req, res) {
+    const { html } = app.render({ url: req.url });
 
-  res.write(`
+    res.write(`
     <!DOCTYPE html>
     <head>
       <link rel='stylesheet' href='/global.css'>
@@ -32,7 +32,7 @@ server.get("*", function(req, res) {
     </body>
   `);
 
-  res.end();
+    res.end();
 });
 
 server.listen(port, () => console.log(`Listening on http://localhost:${port}`));

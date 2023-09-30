@@ -1,460 +1,478 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import Requests from "../components/dashboard/Requests.svelte";
-  import Logo from "../components/dashboard/Logo.svelte";
-  import ResponseTimes from "../components/dashboard/ResponseTimes.svelte";
-  import Users from "../components/dashboard/Users.svelte";
-  import Endpoints from "../components/dashboard/Endpoints.svelte";
-  import Footer from "../components/Footer.svelte";
-  import SuccessRate from "../components/dashboard/SuccessRate.svelte";
-  import Activity from "../components/dashboard/activity/Activity.svelte";
-  import Version from "../components/dashboard/Version.svelte";
-  import UsageTime from "../components/dashboard/UsageTime.svelte";
-  import Location from "../components/dashboard/Location.svelte";
-  import Device from "../components/dashboard/device/Device.svelte";
-  import periodToDays from "../lib/period";
-  import genDemoData from "../lib/demo";
-  import formatUUID from "../lib/uuid";
-  import Settings from "../components/dashboard/Settings.svelte";
-  import type { DashboardSettings, Period } from "../lib/settings";
-  import { initSettings } from "../lib/settings";
-  import {
-    CREATED_AT,
-    PATH,
-    STATUS,
-    SERVER_URL,
-    HOSTNAME,
-  } from "../lib/consts";
-  import Dropdown from "../components/dashboard/Dropdown.svelte";
+    import { onMount } from 'svelte';
+    import Requests from '../components/dashboard/Requests.svelte';
+    import Logo from '../components/dashboard/Logo.svelte';
+    import ResponseTimes from '../components/dashboard/ResponseTimes.svelte';
+    import Users from '../components/dashboard/Users.svelte';
+    import Endpoints from '../components/dashboard/Endpoints.svelte';
+    import Footer from '../components/Footer.svelte';
+    import SuccessRate from '../components/dashboard/SuccessRate.svelte';
+    import Activity from '../components/dashboard/activity/Activity.svelte';
+    import Version from '../components/dashboard/Version.svelte';
+    import UsageTime from '../components/dashboard/UsageTime.svelte';
+    import Location from '../components/dashboard/Location.svelte';
+    import Device from '../components/dashboard/device/Device.svelte';
+    import periodToDays from '../lib/period';
+    import genDemoData from '../lib/demo';
+    import formatUUID from '../lib/uuid';
+    import Settings from '../components/dashboard/Settings.svelte';
+    import type { DashboardSettings, Period } from '../lib/settings';
+    import { initSettings } from '../lib/settings';
+    import {
+        CREATED_AT,
+        PATH,
+        STATUS,
+        SERVER_URL,
+        HOSTNAME,
+    } from '../lib/consts';
+    import Dropdown from '../components/dashboard/Dropdown.svelte';
 
-  function inPeriod(date: Date, days: number): boolean {
-    let periodAgo = new Date();
-    periodAgo.setDate(periodAgo.getDate() - days);
-    return date > periodAgo;
-  }
-
-  function allTimePeriod(_: Date) {
-    return true;
-  }
-
-  function setPeriodData() {
-    let days = periodToDays(settings.period);
-
-    let counted = allTimePeriod;
-    if (days != null) {
-      counted = (date) => {
-        return inPeriod(date, days);
-      };
+    function inPeriod(date: Date, days: number): boolean {
+        let periodAgo = new Date();
+        periodAgo.setDate(periodAgo.getDate() - days);
+        return date > periodAgo;
     }
 
-    let dataSubset = [];
-    for (let i = 1; i < data.length; i++) {
-      if (
-        (settings.disable404 && data[i][STATUS] === 404) ||
-        (settings.targetEndpoint != null && settings.targetEndpoint !== data[i][PATH]) ||
-        (isHiddenEndpoint(data[i][PATH])) ||
-        (settings.hostname != null && settings.hostname !== data[i][HOSTNAME])
-      ) {
-        continue;
-      }
-      const date = new Date(data[i][CREATED_AT]);
-      if (counted(date)) {
-        dataSubset.push(data[i]);
-      }
+    function allTimePeriod(_: Date) {
+        return true;
     }
 
-    periodData = dataSubset;
-  }
+    function setPeriodData() {
+        let days = periodToDays(settings.period);
 
-  function inPrevPeriod(date: Date, days: number): boolean {
-    let startPeriodAgo = new Date();
-    startPeriodAgo.setDate(startPeriodAgo.getDate() - days * 2);
-    let endPeriodAgo = new Date();
-    endPeriodAgo.setDate(endPeriodAgo.getDate() - days);
-    return startPeriodAgo < date && date < endPeriodAgo;
-  }
-
-  function isHiddenEndpoint(endpoint: string): boolean {
-    return (settings.hiddenEndpoints.has(endpoint)) || 
-           (endpoint.charAt(0) === '/' && settings.hiddenEndpoints.has(endpoint.slice(1))) ||
-           (endpoint.charAt(endpoint.length-1) === '/' && settings.hiddenEndpoints.has(endpoint.slice(0, -1)) ||
-          //  (endpoint.charAt(0) !== '/' && settings.hiddenEndpoints.has('/' + endpoint)) ||
-           (endpoint.charAt(endpoint.length-1) !== '/' && settings.hiddenEndpoints.has(endpoint + '/'))) ||
-           wildCardMatch(endpoint);
-
-  }
-
-  function wildCardMatch(endpoint: string): boolean {
-    if (endpoint.charAt(endpoint.length-1) !== '/') {
-      endpoint = endpoint + '/'
-    }
-    for (let value of settings.hiddenEndpoints) {
-      if (value.charAt(value.length-1) === '*') {
-        value = value.slice(0, value.length-1) // Remove asterisk
-        // Format both paths with a starting '/' and no trailing '/'
-        if (value.charAt(0) !== '/') {
-          value = '/' + value
+        let counted = allTimePeriod;
+        if (days != null) {
+            counted = (date) => {
+                return inPeriod(date, days);
+            };
         }
-        if (value.charAt(value.length-1) !== '/') {
-          value = value + '/'
+
+        let dataSubset = [];
+        for (let i = 1; i < data.length; i++) {
+            if (
+                (settings.disable404 && data[i][STATUS] === 404) ||
+                (settings.targetEndpoint != null &&
+                    settings.targetEndpoint !== data[i][PATH]) ||
+                isHiddenEndpoint(data[i][PATH]) ||
+                (settings.hostname != null &&
+                    settings.hostname !== data[i][HOSTNAME])
+            ) {
+                continue;
+            }
+            const date = new Date(data[i][CREATED_AT]);
+            if (counted(date)) {
+                dataSubset.push(data[i]);
+            }
         }
-        if (endpoint.slice(0, value.length) === value) {
-          return true
+
+        periodData = dataSubset;
+    }
+
+    function inPrevPeriod(date: Date, days: number): boolean {
+        let startPeriodAgo = new Date();
+        startPeriodAgo.setDate(startPeriodAgo.getDate() - days * 2);
+        let endPeriodAgo = new Date();
+        endPeriodAgo.setDate(endPeriodAgo.getDate() - days);
+        return startPeriodAgo < date && date < endPeriodAgo;
+    }
+
+    function isHiddenEndpoint(endpoint: string): boolean {
+        return (
+            settings.hiddenEndpoints.has(endpoint) ||
+            (endpoint.charAt(0) === '/' &&
+                settings.hiddenEndpoints.has(endpoint.slice(1))) ||
+            (endpoint.charAt(endpoint.length - 1) === '/' &&
+                settings.hiddenEndpoints.has(endpoint.slice(0, -1))) ||
+            //  (endpoint.charAt(0) !== '/' && settings.hiddenEndpoints.has('/' + endpoint)) ||
+            (endpoint.charAt(endpoint.length - 1) !== '/' &&
+                settings.hiddenEndpoints.has(endpoint + '/')) ||
+            wildCardMatch(endpoint)
+        );
+    }
+
+    function wildCardMatch(endpoint: string): boolean {
+        if (endpoint.charAt(endpoint.length - 1) !== '/') {
+            endpoint = endpoint + '/';
         }
-      }
-    }
-    return false
-  }
-
-  function setPrevPeriodData() {
-    let days = periodToDays(settings.period);
-
-    let inPeriod = allTimePeriod;
-    if (days != null) {
-      inPeriod = (date) => {
-        return inPrevPeriod(date, days);
-      };
-    }
-
-    let dataSubset = [];
-    for (let i = 1; i < data.length; i++) {
-      if (
-        (settings.disable404 && data[i][STATUS] === 404) ||
-        (settings.targetEndpoint != null && settings.targetEndpoint !== data[i][PATH]) ||
-        (isHiddenEndpoint(data[i][PATH])) ||
-        (settings.hostname != null && settings.hostname !== data[i][HOSTNAME])
-      ) {
-        continue;
-      }
-      const date = new Date(data[i][CREATED_AT]);
-      if (inPeriod(date)) {
-        dataSubset.push(data[i]);
-      }
-    }
-    prevPeriodData = dataSubset;
-  }
-
-  function setPeriod(value: Period) {
-    settings.period = value;
-
-  }
-
-  function setHostnames() {
-    let hostnameFreq: {[hostname: string]: number} = {}
-    for (let i = 0; i < data.length; i++) {
-      if (!(data[i][HOSTNAME] in hostnameFreq)) {
-        hostnameFreq[data[i][HOSTNAME]] = 0
-      }
-      hostnameFreq[data[i][HOSTNAME]] += 1
+        for (let value of settings.hiddenEndpoints) {
+            if (value.charAt(value.length - 1) === '*') {
+                value = value.slice(0, value.length - 1); // Remove asterisk
+                // Format both paths with a starting '/' and no trailing '/'
+                if (value.charAt(0) !== '/') {
+                    value = '/' + value;
+                }
+                if (value.charAt(value.length - 1) !== '/') {
+                    value = value + '/';
+                }
+                if (endpoint.slice(0, value.length) === value) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
-    let sortedHostnames = []
-    for (let hostname of Object.keys(hostnameFreq)) {
-      sortedHostnames.push({hostname: hostname, count: hostnameFreq[hostname]})
+    function setPrevPeriodData() {
+        let days = periodToDays(settings.period);
+
+        let inPeriod = allTimePeriod;
+        if (days != null) {
+            inPeriod = (date) => {
+                return inPrevPeriod(date, days);
+            };
+        }
+
+        let dataSubset = [];
+        for (let i = 1; i < data.length; i++) {
+            if (
+                (settings.disable404 && data[i][STATUS] === 404) ||
+                (settings.targetEndpoint != null &&
+                    settings.targetEndpoint !== data[i][PATH]) ||
+                isHiddenEndpoint(data[i][PATH]) ||
+                (settings.hostname != null &&
+                    settings.hostname !== data[i][HOSTNAME])
+            ) {
+                continue;
+            }
+            const date = new Date(data[i][CREATED_AT]);
+            if (inPeriod(date)) {
+                dataSubset.push(data[i]);
+            }
+        }
+        prevPeriodData = dataSubset;
     }
-    sortedHostnames.sort((a, b) => {
-      return b.count - a.count;
+
+    function setPeriod(value: Period) {
+        settings.period = value;
+    }
+
+    function setHostnames() {
+        let hostnameFreq: { [hostname: string]: number } = {};
+        for (let i = 0; i < data.length; i++) {
+            if (!(data[i][HOSTNAME] in hostnameFreq)) {
+                hostnameFreq[data[i][HOSTNAME]] = 0;
+            }
+            hostnameFreq[data[i][HOSTNAME]] += 1;
+        }
+
+        let sortedHostnames = [];
+        for (let hostname of Object.keys(hostnameFreq)) {
+            sortedHostnames.push({
+                hostname: hostname,
+                count: hostnameFreq[hostname],
+            });
+        }
+        sortedHostnames.sort((a, b) => {
+            return b.count - a.count;
+        });
+
+        let _hostnames = [];
+        for (let value of sortedHostnames) {
+            _hostnames.push(value.hostname);
+        }
+        hostnames = _hostnames;
+        if (hostnames.length > 0) {
+            settings.hostname = hostnames[0];
+        }
+    }
+
+    function toggleEnable404() {
+        settings.disable404 = !settings.disable404;
+        // Allow button to toggle colour responsively
+        setTimeout(() => {
+            refreshData;
+        }, 10);
+    }
+
+    async function fetchData() {
+        userID = formatUUID(userID);
+        try {
+            const response = await fetch(
+                `${SERVER_URL}/api/requests/${userID}`
+            );
+            if (response.status === 200) {
+                const json = await response.json();
+                data = json;
+                console.log(data);
+                setPeriod(settings.period);
+            }
+        } catch (e) {
+            failed = true;
+        }
+    }
+
+    type PeriodDataCache = {
+        [period: string]: {
+            periodData: RequestsData;
+            prevPeriodData: RequestsData;
+        };
+    };
+
+    let data: RequestsData;
+    let settings: DashboardSettings = initSettings();
+    let showSettings: boolean = false;
+    let hostnames: string[];
+    let periodDataCache: PeriodDataCache = {};
+    let periodData: RequestsData;
+    let prevPeriodData: RequestsData;
+    let timePeriods: Period[] = [
+        '24 hours',
+        'Week',
+        'Month',
+        '6 months',
+        'Year',
+        'All time',
+    ];
+    let failed = false;
+    let setup = false;
+    onMount(() => {
+        if (demo) {
+            data = genDemoData() as RequestsData;
+            setPeriod(settings.period);
+            setHostnames();
+        } else {
+            fetchData();
+        }
+        data?.sort((a, b) => {
+            //@ts-ignore
+            return new Date(a[CREATED_AT]) - new Date(b[CREATED_AT]);
+        });
     });
 
-    let _hostnames = []
-    for (let value of sortedHostnames) {
-      _hostnames.push(value.hostname)
-    }
-    hostnames = _hostnames
-    if (hostnames.length > 0) {
-      settings.hostname = hostnames[0]
-    } 
-  }
+    function refreshData() {
+        if (data === undefined) {
+            return;
+        }
 
-  function toggleEnable404() {
-    settings.disable404 = !settings.disable404;
-    // Allow button to toggle colour responsively
-    setTimeout(() => {
-      refreshData;
-    }, 10);
-  }
-
-  async function fetchData() {
-    userID = formatUUID(userID);
-    try {
-      const response = await fetch(`${SERVER_URL}/api/requests/${userID}`);
-      if (response.status === 200) {
-        const json = await response.json();
-        data = json;
-        console.log(data);
-        setPeriod(settings.period);
-      }
-    } catch (e) {
-      failed = true;
-    }
-  }
-
-  type PeriodDataCache = {
-    [period: string]: {
-      periodData: RequestsData;
-      prevPeriodData: RequestsData;
-    };
-  };
-
-  let data: RequestsData;
-  let settings: DashboardSettings = initSettings();
-  let showSettings: boolean = false;
-  let hostnames: string[];
-  let periodDataCache: PeriodDataCache = {};
-  let periodData: RequestsData;
-  let prevPeriodData: RequestsData;
-  let timePeriods: Period[] = [
-    "24 hours",
-    "Week",
-    "Month",
-    "6 months",
-    "Year",
-    "All time",
-  ];
-  let failed = false;
-  let setup = false;
-  onMount(() => {
-    if (demo) {
-      data = genDemoData() as RequestsData;
-      setPeriod(settings.period);
-      setHostnames()
-    } else {
-      fetchData();
-    }
-    data?.sort(((a, b) => {
-      //@ts-ignore
-      return new Date(a[CREATED_AT]) - new Date(b[CREATED_AT])
-    }))
-  });
-
-  function refreshData() {
-    if (data === undefined) {
-      return;
+        setPeriodData();
+        setPrevPeriodData();
     }
 
-    setPeriodData();
-    setPrevPeriodData();
-
-  }
-
-  $: if (settings.targetEndpoint === null || settings.targetEndpoint) {
-    refreshData();
-  }
-  // $: settings.hiddenEndpoints && refreshData();
-  export let userID: string, demo: boolean;
+    $: if (settings.targetEndpoint === null || settings.targetEndpoint) {
+        refreshData();
+    }
+    // $: settings.hiddenEndpoints && refreshData();
+    export let userID: string, demo: boolean;
 </script>
 
 {#if periodData != undefined}
-  <div class="dashboard">
-    <div class="button-nav">
-      <!-- <div class="nav-btn enable-404">
+    <div class="dashboard">
+        <div class="button-nav">
+            <!-- <div class="nav-btn enable-404">
         <button
           class="enable-404-btn"
           on:click={toggleEnable404}
           class:time-period-btn-active={settings.disable404}>Disable 404</button
         >
       </div> -->
-      <button
-        class="settings"
-        on:click={() => {
-          showSettings = true;
-        }}
-      >
-        <img class="settings-icon" src="../img/cog.png" alt="" />
-      </button>
-      {#if hostnames != undefined && hostnames.length > 0}
-        <Dropdown options={hostnames} bind:selected={settings.hostname} />
-      {/if}
-      <div class="nav-btn time-period">
-        {#each timePeriods as period}
-          <button
-            class="time-period-btn"
-            class:time-period-btn-active={settings.period === period}
-            on:click={() => {
-              setPeriod(period);
-            }}
-          >
-            {period}
-          </button>
-        {/each}
-      </div>
+            <button
+                class="settings"
+                on:click={() => {
+                    showSettings = true;
+                }}
+            >
+                <img class="settings-icon" src="../img/cog.png" alt="" />
+            </button>
+            {#if hostnames != undefined && hostnames.length > 0}
+                <Dropdown
+                    options={hostnames}
+                    bind:selected={settings.hostname}
+                />
+            {/if}
+            <div class="nav-btn time-period">
+                {#each timePeriods as period}
+                    <button
+                        class="time-period-btn"
+                        class:time-period-btn-active={settings.period ===
+                            period}
+                        on:click={() => {
+                            setPeriod(period);
+                        }}
+                    >
+                        {period}
+                    </button>
+                {/each}
+            </div>
+        </div>
+        <div class="dashboard-content">
+            <div class="left">
+                <div class="row">
+                    <Logo />
+                    <SuccessRate data={periodData} />
+                </div>
+                <div class="row">
+                    <Requests
+                        data={periodData}
+                        prevData={prevPeriodData}
+                        period={settings.period}
+                    />
+                    <Users
+                        data={periodData}
+                        prevData={prevPeriodData}
+                        period={settings.period}
+                    />
+                </div>
+                <ResponseTimes data={periodData} />
+                <Endpoints
+                    data={periodData}
+                    bind:targetEndpoint={settings.targetEndpoint}
+                />
+                <Version data={periodData} />
+            </div>
+            <div class="right">
+                <Activity data={periodData} period={settings.period} />
+                <div class="grid-row">
+                    <!-- <Growth data={periodData} prevData={prevPeriodData} /> -->
+                    <Location data={periodData} />
+                    <Device data={periodData} />
+                </div>
+                <UsageTime data={periodData} />
+            </div>
+        </div>
     </div>
-    <div class="dashboard-content">
-      <div class="left">
-        <div class="row">
-          <Logo />
-          <SuccessRate data={periodData} />
-        </div>
-        <div class="row">
-          <Requests
-            data={periodData}
-            prevData={prevPeriodData}
-            period={settings.period}
-          />
-          <Users
-            data={periodData}
-            prevData={prevPeriodData}
-            period={settings.period}
-          />
-        </div>
-        <ResponseTimes data={periodData} />
-        <Endpoints data={periodData} bind:targetEndpoint={settings.targetEndpoint} />
-        <Version data={periodData} />
-      </div>
-      <div class="right">
-        <Activity data={periodData} period={settings.period} />
-        <div class="grid-row">
-          <!-- <Growth data={periodData} prevData={prevPeriodData} /> -->
-          <Location data={periodData} />
-          <Device data={periodData} />
-        </div>
-        <UsageTime data={periodData} />
-      </div>
-    </div>
-  </div>
 {:else if failed}
-  <img class="no-requests" src="../img/no-requests-logged.png" alt="" />
+    <img class="no-requests" src="../img/no-requests-logged.png" alt="" />
 {:else}
-  <div class="placeholder" style="min-height: 85vh;">
-    <div class="spinner">
-      <div class="loader" />
+    <div class="placeholder" style="min-height: 85vh;">
+        <div class="spinner">
+            <div class="loader" />
+        </div>
     </div>
-  </div>
 {/if}
-<Settings bind:show={showSettings} bind:settings/>
+<Settings bind:show={showSettings} bind:settings />
 <Footer />
 
 <style scoped>
-  .dashboard {
-    min-height: 90vh;
-  }
-  .dashboard {
-    margin: 1.4em 5em 5em;
-  }
-  .dashboard-content {
-    margin-top: 1.4em;
-    display: flex;
-    position: relative;
-  }
-  .row {
-    display: flex;
-    margin-bottom: 2em;
-  }
-  .grid-row {
-    display: flex;
-  }
-  .no-requests {
-    width: 350px;
-    margin: 20vh 0;
-  }
-  .left {
-    margin: 0 2em;
-  }
-  .right {
-    flex-grow: 1;
-    margin-right: 2em;
-  }
-  .placeholder {
-    min-height: 85vh;
-    display: grid;
-    place-items: center;
-  }
-  .button-nav {
-    margin: 2.5em 2em 0;
-    display: flex;
-  }
-  .nav-btn {
-    margin-left: auto;
-  }
-  .enable-404 {
-    text-align: right;
-    flex-grow: 1;
-    margin-right: 1.5em;
-    width: fit-content;
-  }
-  .time-period {
-    display: flex;
-    border: 1px solid #2e2e2e;
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .enable-404-btn,
-  .time-period-btn {
-    background: var(--background);
-    padding: 3px 12px;
-    border: none;
-    color: var(--dim-text);
-    cursor: pointer;
-  }
-  .enable-404-btn {
-    border: 1px solid #2e2e2e;
-    padding: 3px 12px;
-    border-radius: 4px;
-  }
-  .time-period-btn-active {
-    background: var(--highlight);
-    color: black;
-  }
-  .settings {
-    background: transparent;
-    outline: none;
-    border: none;
-    margin-right: 10px;
-    cursor: pointer;
-    margin-left: auto;
-    text-align: right;
-    flex-grow: 1;
-    /* margin-right: 1.5em; */
-    width: fit-content;
-    /* display: none; */
-  }
-  .settings-icon {
-    width: 20px;
-    height: 20px;
-    filter: contrast(0.5);
-    margin-top: 2px;
-  }
-
-  @media screen and (max-width: 1600px) {
-    .grid-row {
-      flex-direction: column;
-    }
-  }
-  @media screen and (max-width: 1300px) {
     .dashboard {
-      margin: 0;
+        min-height: 90vh;
+    }
+    .dashboard {
+        margin: 1.4em 5em 5em;
     }
     .dashboard-content {
-      margin: 1.4em 1em 3.5em;
+        margin-top: 1.4em;
+        display: flex;
+        position: relative;
     }
-    .button-nav {
-      margin: 2.5em 3em 0;
+    .row {
+        display: flex;
+        margin-bottom: 2em;
     }
-  }
-  @media screen and (max-width: 1030px) {
-    .dashboard-content {
-      flex-direction: column;
+    .grid-row {
+        display: flex;
     }
-    .right,
+    .no-requests {
+        width: 350px;
+        margin: 20vh 0;
+    }
     .left {
-      margin: 0 2em;
+        margin: 0 2em;
     }
-  }
-  @media screen and (max-width: 750px) {
+    .right {
+        flex-grow: 1;
+        margin-right: 2em;
+    }
+    .placeholder {
+        min-height: 85vh;
+        display: grid;
+        place-items: center;
+    }
     .button-nav {
-      flex-direction: column;
+        margin: 2.5em 2em 0;
+        display: flex;
+    }
+    .nav-btn {
+        margin-left: auto;
     }
     .enable-404 {
-      margin: 0 0 1em auto;
-    }
-  }
-  @media screen and (max-width: 600px) {
-    .right,
-    .left {
-      margin: 0 1em;
+        text-align: right;
+        flex-grow: 1;
+        margin-right: 1.5em;
+        width: fit-content;
     }
     .time-period {
-      right: 1em;
+        display: flex;
+        border: 1px solid #2e2e2e;
+        border-radius: 4px;
+        overflow: hidden;
     }
-  }
+    .enable-404-btn,
+    .time-period-btn {
+        background: var(--background);
+        padding: 3px 12px;
+        border: none;
+        color: var(--dim-text);
+        cursor: pointer;
+    }
+    .enable-404-btn {
+        border: 1px solid #2e2e2e;
+        padding: 3px 12px;
+        border-radius: 4px;
+    }
+    .time-period-btn-active {
+        background: var(--highlight);
+        color: black;
+    }
+    .settings {
+        background: transparent;
+        outline: none;
+        border: none;
+        margin-right: 10px;
+        cursor: pointer;
+        margin-left: auto;
+        text-align: right;
+        flex-grow: 1;
+        /* margin-right: 1.5em; */
+        width: fit-content;
+        /* display: none; */
+    }
+    .settings-icon {
+        width: 20px;
+        height: 20px;
+        filter: contrast(0.5);
+        margin-top: 2px;
+    }
+
+    @media screen and (max-width: 1600px) {
+        .grid-row {
+            flex-direction: column;
+        }
+    }
+    @media screen and (max-width: 1300px) {
+        .dashboard {
+            margin: 0;
+        }
+        .dashboard-content {
+            margin: 1.4em 1em 3.5em;
+        }
+        .button-nav {
+            margin: 2.5em 3em 0;
+        }
+    }
+    @media screen and (max-width: 1030px) {
+        .dashboard-content {
+            flex-direction: column;
+        }
+        .right,
+        .left {
+            margin: 0 2em;
+        }
+    }
+    @media screen and (max-width: 750px) {
+        .button-nav {
+            flex-direction: column;
+        }
+        .enable-404 {
+            margin: 0 0 1em auto;
+        }
+    }
+    @media screen and (max-width: 600px) {
+        .right,
+        .left {
+            margin: 0 1em;
+        }
+        .time-period {
+            right: 1em;
+        }
+    }
 </style>

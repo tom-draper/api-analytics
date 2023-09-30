@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700&display=swap");
 
 :root {
   --highlight: #3fcf8e;
@@ -14,9 +14,8 @@
   --dark-green: #081d13;
 }
 
-
 body {
-  font-family: 'Noto Sans';
+  font-family: "Noto Sans";
   font-weight: 300;
   font-size: 16px;
   margin: 0;
@@ -65,7 +64,7 @@ p {
   color: var(--faded-text);
   width: 430px;
   border-radius: 6px;
-  border: 1px solid #2E2E2E;
+  border: 1px solid #2e2e2e;
   margin: 2rem 0;
 }
 
@@ -185,4 +184,3 @@ input {
     transform: rotate(360deg);
   }
 }
-
