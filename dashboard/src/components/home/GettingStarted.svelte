@@ -23,7 +23,7 @@
     { language: 'go', framework: 'Echo' },
     { language: 'go', framework: 'Fiber' },
     { language: 'go', framework: 'Chi' },
-    { language: 'rust', framework: 'Actux' },
+    { language: 'rust', framework: 'Actix' },
     { language: 'rust', framework: 'Axum' },
     { language: 'rust', framework: 'Rocket' },
     { language: 'ruby', framework: 'Rails' },
