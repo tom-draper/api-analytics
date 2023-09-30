@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { PATH } from "../../lib/consts";
+  import { onMount } from 'svelte';
+  import { PATH } from '../../lib/consts';
 
   function setVersions() {
     let v: Set<string> = new Set();
@@ -22,13 +22,13 @@
       title: false,
       autosize: true,
       margin: { r: 35, l: 70, t: 10, b: 20, pad: 0 },
-      hovermode: "closest",
-      plot_bgcolor: "transparent",
-      paper_bgcolor: "transparent",
+      hovermode: 'closest',
+      plot_bgcolor: 'transparent',
+      paper_bgcolor: 'transparent',
       height: 180,
       yaxis: {
-        title: { text: "Requests" },
-        gridcolor: "gray",
+        title: { text: 'Requests' },
+        gridcolor: 'gray',
         showgrid: false,
         fixedrange: true,
       },
@@ -40,14 +40,14 @@
   }
 
   let colors = [
-    "#3FCF8E", // Green
-    "#5784BA", // Blue
-    "#EBEB81", // Yellow
-    "#218B82", // Sea green
-    "#FFD6A5", // Orange
-    "#F9968B", // Salmon
-    "#B1A2CA", // Purple
-    "#E46161", // Red
+    '#3FCF8E', // Green
+    '#5784BA', // Blue
+    '#EBEB81', // Yellow
+    '#218B82', // Sea green
+    '#FFD6A5', // Orange
+    '#F9968B', // Salmon
+    '#B1A2CA', // Purple
+    '#E46161', // Red
   ];
 
   function pieChart() {
@@ -74,7 +74,7 @@
       {
         values: count,
         labels: versions,
-        type: "pie",
+        type: 'pie',
         marker: {
           colors: colors,
         },

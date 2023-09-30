@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import ResponseTime from "./ResponseTime.svelte";
+  import { onMount } from 'svelte';
+  import ResponseTime from './ResponseTime.svelte';
 
   async function deleteMonitor() {
     delete data[url];
@@ -8,13 +8,13 @@
 
     try {
       let response = await fetch(
-        "https://www.apianalytics-server.com/api/monitor/delete",
+        'https://www.apianalytics-server.com/api/monitor/delete',
         {
-          method: "POST",
-          mode: "no-cors",
+          method: 'POST',
+          mode: 'no-cors',
           headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             user_id: userID,
@@ -22,8 +22,8 @@
           }),
         }
       );
-      if (response.status != 201) {
-        console.log("Error", response.status);
+      if (response.status !== 201) {
+        console.log('Error', response.status);
       }
     } catch (e) {
       console.log(e);
@@ -34,10 +34,10 @@
     let success = 0;
     let total = 0;
     for (let i = 0; i < samples.length; i++) {
-      if (samples[i].label === "no-request") {
+      if (samples[i].label === 'no-request') {
         continue;
       }
-      if (samples[i].label === "success" || samples[i].label === "delay") {
+      if (samples[i].label === 'success' || samples[i].label === 'delay') {
         success++;
       }
       total++;
@@ -45,7 +45,7 @@
 
     let per = (success / total) * 100;
     if (per === 100) {
-      uptime = "100";
+      uptime = '100';
     } else {
       uptime = per.toFixed(2);
     }
@@ -53,12 +53,12 @@
 
   function periodToMarkers(period: string): number {
     switch (period) {
-      case "24h":
+      case '24h':
         return 38;
-      case "7d":
+      case '7d':
         return 84;
-      case "30d":
-      case "60d":
+      case '30d':
+      case '60d':
         return 120;
       default:
         return null;
@@ -70,7 +70,7 @@
     total recordings the current period length */
     let sample: MonitorSample[] = [];
     switch (period) {
-      case "30d":
+      case '30d':
         // Sample 1 in 4
         for (let i = 0; i < data[url].length; i++) {
           if (i % 4 == 0) {
@@ -78,7 +78,7 @@
           }
         }
         break;
-      case "60d":
+      case '60d':
         // Sample 1 in 8
         for (let i = 0; i < data[url].length; i++) {
           if (i % 8 == 0) {
@@ -95,7 +95,7 @@
   function setSamples() {
     let markers = periodToMarkers(period);
     samples = Array(markers).fill({
-      label: "no-request",
+      label: 'no-request',
       responseTime: 0,
       status: 0,
       createdAt: null,
@@ -105,15 +105,15 @@
 
     for (let i = 0; i < sampledData.length; i++) {
       samples[i + start] = {
-        label: "no-request",
+        label: 'no-request',
         status: sampledData[i].status,
         responseTime: sampledData[i].responseTime,
         createdAt: new Date(sampledData[i].createdAt),
       };
       if (sampledData[i].status >= 200 && sampledData[i].status <= 299) {
-        samples[i + start].label = "success";
+        samples[i + start].label = 'success';
       } else if (sampledData[i].status != null) {
-        samples[i + start].label = "error";
+        samples[i + start].label = 'error';
       }
     }
   }
@@ -122,7 +122,7 @@
     if (samples[samples.length - 1].label == null) {
       error = null; // Website not live
     } else {
-      error = samples[samples.length - 1].label === "error";
+      error = samples[samples.length - 1].label === 'error';
     }
     anyError = anyError || error;
   }
@@ -136,7 +136,7 @@
   // Monitor sample with label for status colour CSS class
   type Sample = MonitorSample & { label: string };
 
-  let uptime = "";
+  let uptime = '';
   let error = false;
   let samples: Sample[];
   onMount(() => {

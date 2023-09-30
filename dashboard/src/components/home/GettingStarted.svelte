@@ -1,35 +1,41 @@
 <script lang="ts">
-  import codeStyle from "svelte-highlight/styles/a11y-dark";
-  import frameworkExamples from "../../lib/framework";
+  import codeStyle from 'svelte-highlight/styles/a11y-dark';
+  import frameworkExamples from '../../lib/framework';
 
-  function setFramework(value: string) {
+  function setFramework(value: Framework) {
     currentFramework = value;
   }
 
-  let frameworks = [
-    ["python", "FastAPI"],
-    ["python", "Flask"],
-    ["python", "Django"],
-    ["python", "Tornado"],
-    ["javascript", "Express"],
-    ["javascript", "Fastify"],
-    ["javascript", "Koa"],
-    ["go", "Gin"],
-    ["go", "Echo"],
-    ["go", "Fiber"],
-    ["go", "Chi"],
-    ["rust", "Actix"],
-    ["rust", "Axum"],
-    ["rust", "Rocket"],
-    ["ruby", "Rails"],
-    ["ruby", "Sinatra"],
+  type Framework = {
+    language: 'python' | 'javascript' | 'go' | 'rust' | 'ruby';
+    framework: string;
+  };
+
+  const frameworks: Framework[] = [
+    { language: 'python', framework: 'FastAPI' },
+    { language: 'python', framework: 'Flask' },
+    { language: 'python', framework: 'Django' },
+    { language: 'python', framework: 'Tornado' },
+    { language: 'javascript', framework: 'Express' },
+    { language: 'javascript', framework: 'Fastify' },
+    { language: 'javascript', framework: 'Koa' },
+    { language: 'go', framework: 'Gin' },
+    { language: 'go', framework: 'Echo' },
+    { language: 'go', framework: 'Fiber' },
+    { language: 'go', framework: 'Chi' },
+    { language: 'rust', framework: 'Actux' },
+    { language: 'rust', framework: 'Axum' },
+    { language: 'rust', framework: 'Rocket' },
+    { language: 'ruby', framework: 'Rails' },
+    { language: 'ruby', framework: 'Sinatra' },
   ];
-  let currentFramework = frameworks[0][1];
+  let currentFramework = frameworks[0];
 </script>
 
 <svelte:head>
   <link href="prism.css" rel="stylesheet" />
   <script src="prism.js"></script>
+  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
   {@html codeStyle}
 </svelte:head>
 
@@ -42,12 +48,12 @@
 <div class="add-middleware">
   <div class="add-middleware-title">Getting Started</div>
   <div class="frameworks">
-    {#each frameworks as [language, framework]}
+    {#each frameworks as { language, framework }}
       <button
         class="framework {language}"
-        class:active={currentFramework == framework}
+        class:active={currentFramework.framework === framework}
         on:click={() => {
-          setFramework(framework);
+          setFramework({ language, framework });
         }}>{framework}</button
       >
     {/each}
@@ -57,21 +63,22 @@
       <div class="instructions">
         <div class="subtitle">Install</div>
         <code class="installation"
-          >{frameworkExamples[currentFramework].install}</code
+          >{frameworkExamples[currentFramework.framework].install}</code
         >
         <div class="subtitle">Add middleware to API</div>
         <!-- Render all code snippets to apply one-time syntax highlighting -->
         <!-- TODO: dynamic syntax highlight rendering to only render the 
             frameworks clicked on and reduce this code to one line -->
         <div class="code-file">
-          {frameworkExamples[currentFramework].codeFile}
+          {frameworkExamples[currentFramework.framework].codeFile}
         </div>
-        {#each frameworks as [language, framework]}
+        {#each frameworks as { language, framework }}
           <code
             id="code"
             class="code language-{language}"
-            style="{currentFramework == framework ? 'display: initial' : ''} "
-            >{frameworkExamples[framework].example}</code
+            style="{currentFramework.framework === framework
+              ? 'display: initial'
+              : ''} ">{frameworkExamples[framework].example}</code
           >
         {/each}
       </div>

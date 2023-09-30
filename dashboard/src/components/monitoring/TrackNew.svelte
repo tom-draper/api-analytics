@@ -1,29 +1,29 @@
 <script lang="ts">
   async function postMonitor() {
     if (monitorCount >= 3) {
-      alert("Max 3 URL monitors allowed at one time.");
+      alert('Max 3 URL monitors allowed at one time.');
     }
 
     try {
       let response = await fetch(
         `https://www.apianalytics-server.com/api/monitor/add`,
         {
-          method: "POST",
-          mode: "no-cors",
+          method: 'POST',
+          mode: 'no-cors',
           headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             user_id: userID,
             url: url,
-            ping: pingType === "simple-ping",
+            ping: pingType === 'simple-ping',
             secure: false,
           }),
         }
       );
-      if (response.status != 201) {
-        console.log("Error", response.status);
+      if (response.status !== 201) {
+        console.log('Error', response.status);
       }
       showTrackNew = false;
     } catch (e) {
@@ -36,7 +36,7 @@
   }
 
   let url: string;
-  let pingType = "simple-ping";
+  let pingType = 'simple-ping';
 
   export let userID: string, showTrackNew: boolean, monitorCount: number;
 </script>
@@ -55,15 +55,15 @@
     <div class="ping-types">
       <button
         class="ping-type"
-        on:click={() => setPingType("simple-ping")}
-        class:active={pingType == "simple-ping"}
+        on:click={() => setPingType('simple-ping')}
+        class:active={pingType == 'simple-ping'}
       >
         Ping
       </button>
       <button
         class="ping-type"
-        on:click={() => setPingType("get-request")}
-        class:active={pingType == "get-request"}
+        on:click={() => setPingType('get-request')}
+        class:active={pingType == 'get-request'}
       >
         GET
       </button>

@@ -1,0 +1,42 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    // "ecmaVersion": 2019,
+    "sourceType": "module",
+    "extraFileExtensions": [".svelte"],
+    "project": "./tsconfig.json"
+  },
+  "env": {
+    "es6": true,
+    "browser": true,
+    "node": true
+  },
+  "plugins": ["@typescript-eslint", "svelte3"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:svelte/recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
+  "ignorePatterns": ["public/", "rollup.config.js"],
+  "overrides": [
+    {
+      "files": ["**/*.svelte"],
+      "parser": "svelte-eslint-parser",
+      // "processor": "svelte3/svelte3"
+      // Parse the script tag in Svelte as TypeScript
+      "parserOptions": {
+        "parser": "@typescript-eslint/parser",
+        "project": "./tsconfig.json"
+      }
+    }
+  ],
+  "rules": {
+    "no-undef": "off",
+    "no-unused-vars": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/no-unused-vars": "off"
+  }
+}

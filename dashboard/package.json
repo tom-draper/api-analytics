@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "dependencies": {
     "express": "^4.18.1",
     "highlight.js": "^11.7.0",
@@ -14,7 +15,9 @@
     "build": "rollup -c",
     "watch": "rollup -c -w",
     "server": "nodemon server.js --watch server.js --watch public/App.js",
-    "check": "svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "lint": "eslint . --ext .js,.svelte --fix",
+    "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\""
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.4",
@@ -24,7 +27,19 @@
     "@rollup/plugin-terser": "^0.4.3",
     "@rollup/plugin-typescript": "^8.4.0",
     "@tsconfig/svelte": "^3.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
+    "@typescript-eslint/parser": "^6.7.3",
+    "eslint": "^8.50.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-standard": "^5.0.0",
+    "eslint-plugin-svelte": "^2.33.2",
     "npm-run-all": "^4.1.5",
+    "prettier": "^3.0.3",
+    "prettier-eslint": "^15.0.1",
     "rollup": "^2.79.1",
     "rollup-plugin-css-only": "^4.3.0",
     "rollup-plugin-livereload": "^2.0.5",

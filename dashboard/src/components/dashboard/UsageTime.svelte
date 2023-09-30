@@ -1,18 +1,18 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { CREATED_AT } from "../../lib/consts";
+  import { onMount } from 'svelte';
+  import { CREATED_AT } from '../../lib/consts';
 
   function defaultLayout() {
     return {
       font: { size: 12 },
-      paper_bgcolor: "transparent",
+      paper_bgcolor: 'transparent',
       height: 500,
       margin: { r: 35, l: 70, t: 20, b: 50, pad: 0 },
       polar: {
         bargap: 0,
-        bgcolor: "transparent",
-        angularaxis: { direction: "clockwise", showgrid: false },
-        radialaxis: { gridcolor: "#303030" },
+        bgcolor: 'transparent',
+        angularaxis: { direction: 'clockwise', showgrid: false },
+        radialaxis: { gridcolor: '#303030' },
       },
     };
   }
@@ -27,9 +27,9 @@
       responseTimes[time]++;
     }
 
-    let requestFreqArr: {hour: number, responseTime: number}[] = [];
+    let requestFreqArr: { hour: number; responseTime: number }[] = [];
     for (let i = 0; i < 24; i++) {
-      requestFreqArr.push({hour: i, responseTime: responseTimes[i]});
+      requestFreqArr.push({ hour: i, responseTime: responseTimes[i] });
     }
     requestFreqArr.sort((a, b) => {
       return a.hour - b.hour;
@@ -38,7 +38,7 @@
     let dates = [];
     let requests = [];
     for (let i = 0; i < requestFreqArr.length; i++) {
-      dates.push(requestFreqArr[i].hour.toString() + ":00");
+      dates.push(requestFreqArr[i].hour.toString() + ':00');
       requests.push(requestFreqArr[i].responseTime);
     }
 
@@ -50,8 +50,8 @@
       {
         r: requests,
         theta: dates,
-        marker: { color: "#3fcf8e" },
-        type: "barpolar",
+        marker: { color: '#3fcf8e' },
+        type: 'barpolar',
         hovertemplate: `<b>%{r}</b> requests at <b>%{theta}</b><extra></extra>`,
       },
     ];

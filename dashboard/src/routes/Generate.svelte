@@ -1,27 +1,25 @@
 <script lang="ts">
-  import { SERVER_URL } from "../lib/consts";
+  import { SERVER_URL } from '../lib/consts';
 
-  let state: "generate" | "loading" | "copy" | "copied" | "error" = "generate";
+  let state: 'generate' | 'loading' | 'copy' | 'copied' | 'error' = 'generate';
   let generatedKey = false;
-  let apiKey = "";
+  let apiKey = '';
   async function genAPIKey() {
     if (!generatedKey) {
-      setState("loading");
+      setState('loading');
       try {
-        const response = await fetch(
-          `${SERVER_URL}/api/generate-api-key`
-        );
+        const response = await fetch(`${SERVER_URL}/api/generate-api-key`);
         if (response.status == 200) {
           const data = await response.json();
           generatedKey = true;
           apiKey = data;
-          setState("copy");
+          setState('copy');
         } else {
-          setState("error");
+          setState('error');
         }
       } catch (e) {
         console.log(e);
-        setState("generate");
+        setState('generate');
       }
     }
   }
@@ -32,7 +30,7 @@
 
   function copyToClipboard() {
     navigator.clipboard.writeText(apiKey);
-    setState("copied");
+    setState('copied');
   }
 </script>
 
@@ -43,9 +41,9 @@
     <button
       id="formBtn"
       on:click={genAPIKey}
-      class:no-display={state != "generate"}>Generate</button
+      class:no-display={state != 'generate'}>Generate</button
     >
-    <button id="formBtn" class:no-display={state != "loading"}>
+    <button id="formBtn" class:no-display={state != 'loading'}>
       <div class="spinner">
         <div class="loader" />
       </div>
@@ -53,16 +51,16 @@
     <button
       id="formBtn"
       on:click={copyToClipboard}
-      class:no-display={state != "copy"}
+      class:no-display={state != 'copy'}
       ><img class="copy-icon" src="img/copy.png" alt="" /></button
     >
     <button
       id="formBtn"
       class="copied-btn"
       on:click={copyToClipboard}
-      class:no-display={state != "copied"}>Copied</button
+      class:no-display={state != 'copied'}>Copied</button
     >
-    <button id="formBtn" class:no-display={state != "error"}>Error</button>
+    <button id="formBtn" class:no-display={state != 'error'}>Error</button>
   </div>
   <div class="details">
     <div class="keep-secure">Keep your API key safe and secure.</div>

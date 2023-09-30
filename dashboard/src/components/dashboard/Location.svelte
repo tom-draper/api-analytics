@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { LOCATION } from "../../lib/consts";
+  import { onMount } from 'svelte';
+  import { LOCATION } from '../../lib/consts';
 
   function getFlagEmoji(countryCode: string) {
     const codePoints = countryCode
       .toUpperCase()
-      .split("")
+      .split('')
       .map((char) => 127397 + char.charCodeAt(undefined));
     return String.fromCodePoint(...codePoints);
   }
 
   function countryCodeToName(countryCode: string) {
-    let regionNames = new Intl.DisplayNames(["en"], { type: "region" });
+    let regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
     return regionNames.of(countryCode);
   }
 
@@ -38,7 +38,7 @@
         location: location,
         frequency: locationsFreq[location],
         height: locationsFreq[location] / max,
-    });
+      });
     }
 
     // Sort by desc frequency
@@ -47,8 +47,7 @@
     });
   }
 
-  
-  let locations: {location: string, frequency: number, height: number}[] = [];
+  let locations: { location: string; frequency: number; height: number }[] = [];
   let mounted = false;
   onMount(() => {
     mounted = true;
@@ -62,24 +61,26 @@
 <div class="card">
   <div class="card-title">Location</div>
   {#if locations.length > 0}
-    <div class="locations-count">{locations.length} locations</div>
-    <div class="bars">
-      {#each locations.slice(0, 10) as location}
-        <div class="bar-container">
-          <div
-            class="bar"
-            title="{countryCodeToName(location.location)}: {location.frequency} requests"
-          >
-            <div class="bar-inner" style="height: {location.height * 100}%" />
-          </div>
-          <div class="label">{getFlagEmoji(location.location)}</div>
-        </div>
-      {/each}
+  <div class="locations-count">{locations.length} locations</div>
+  <div class="bars">
+    {#each locations.slice(0, 10) as location}
+    <div class="bar-container">
+      <div
+        class="bar"
+        title="{countryCodeToName(
+                            location.location
+                        )}: {location.frequency} requests"
+      >
+        <div class="bar-inner" style="height: {location.height * 100}%" />
+      </div>
+      <div class="label">{getFlagEmoji(location.location)}</div>
     </div>
+    {/each}
+  </div>
   {:else}
-    <div class="no-locations">
-      <div class="no-locations-text">No Locations Found</div>
-    </div>
+  <div class="no-locations">
+    <div class="no-locations-text">No Locations Found</div>
+  </div>
   {/if}
 </div>
 

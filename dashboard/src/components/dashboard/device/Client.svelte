@@ -1,43 +1,43 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { USER_AGENT } from "../../../lib/consts";
+  import { onMount } from 'svelte';
+  import { USER_AGENT } from '../../../lib/consts';
 
   function getBrowser(userAgent: string): string {
     if (userAgent == null) {
-      return "Unknown";
+      return 'Unknown';
     }
     if (userAgent.match(/curl\//)) {
-      return "Curl";
+      return 'Curl';
     } else if (userAgent.match(/PostmanRuntime\//)) {
-      return "Postman";
+      return 'Postman';
     } else if (userAgent.match(/insomnia\//)) {
-      return "Insomnia";
+      return 'Insomnia';
     } else if (userAgent.match(/python-requests\//)) {
-      return "Python requests";
+      return 'Python requests';
     } else if (userAgent.match(/node-fetch\//)) {
-      return "Nodejs fetch";
+      return 'Nodejs fetch';
     } else if (userAgent.match(/go-http-client\//)) {
-      return "Go http";
+      return 'Go http';
     } else if (userAgent.match(/Java\//)) {
-      return "Java";
+      return 'Java';
     } else if (userAgent.match(/Seamonkey\//)) {
-      return "Seamonkey";
+      return 'Seamonkey';
     } else if (userAgent.match(/Firefox\//)) {
-      return "Firefox";
+      return 'Firefox';
     } else if (userAgent.match(/Chrome\//)) {
-      return "Chrome";
+      return 'Chrome';
     } else if (userAgent.match(/Chromium\//)) {
-      return "Chromium";
+      return 'Chromium';
     } else if (userAgent.match(/Safari\//)) {
-      return "Safari";
+      return 'Safari';
     } else if (userAgent.match(/Edg\//)) {
-      return "Edge";
+      return 'Edge';
     } else if (userAgent.match(/OPR\//) || userAgent.match(/Opera\//)) {
-      return "Opera";
+      return 'Opera';
     } else if (userAgent.match(/; MSIE /) || userAgent.match(/Trident\//)) {
-      return "Internet Explorer";
+      return 'Internet Explorer';
     } else {
-      return "Other";
+      return 'Other';
     }
   }
 
@@ -50,14 +50,14 @@
       title: false,
       autosize: true,
       margin: { r: 35, l: 70, t: 20, b: 20, pad: 0 },
-      hovermode: "closest",
-      plot_bgcolor: "transparent",
-      paper_bgcolor: "transparent",
+      hovermode: 'closest',
+      plot_bgcolor: 'transparent',
+      paper_bgcolor: 'transparent',
       height: 180,
       width: 411,
       yaxis: {
-        title: { text: "Requests" },
-        gridcolor: "gray",
+        title: { text: 'Requests' },
+        gridcolor: 'gray',
         showgrid: false,
         fixedrange: true,
       },
@@ -69,14 +69,14 @@
   }
 
   let colors = [
-    "#3FCF8E", // Green
-    "#5784BA", // Blue
-    "#EBEB81", // Yellow
-    "#218B82", // Sea green
-    "#FFD6A5", // Orange
-    "#F9968B", // Salmon
-    "#B1A2CA", // Purple
-    "#E46161", // Red
+    '#3FCF8E', // Green
+    '#5784BA', // Blue
+    '#EBEB81', // Yellow
+    '#218B82', // Sea green
+    '#FFD6A5', // Orange
+    '#F9968B', // Salmon
+    '#B1A2CA', // Purple
+    '#E46161', // Red
   ];
 
   function pieChart() {
@@ -99,7 +99,7 @@
       {
         values: count,
         labels: clients,
-        type: "pie",
+        type: 'pie',
         marker: {
           colors: colors,
         },

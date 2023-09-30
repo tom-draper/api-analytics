@@ -1,31 +1,31 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import Requests from "../components/dashboard/Requests.svelte";
-  import Logo from "../components/dashboard/Logo.svelte";
-  import ResponseTimes from "../components/dashboard/ResponseTimes.svelte";
-  import Users from "../components/dashboard/Users.svelte";
-  import Endpoints from "../components/dashboard/Endpoints.svelte";
-  import Footer from "../components/Footer.svelte";
-  import SuccessRate from "../components/dashboard/SuccessRate.svelte";
-  import Activity from "../components/dashboard/activity/Activity.svelte";
-  import Version from "../components/dashboard/Version.svelte";
-  import UsageTime from "../components/dashboard/UsageTime.svelte";
-  import Location from "../components/dashboard/Location.svelte";
-  import Device from "../components/dashboard/device/Device.svelte";
-  import periodToDays from "../lib/period";
-  import genDemoData from "../lib/demo";
-  import formatUUID from "../lib/uuid";
-  import Settings from "../components/dashboard/Settings.svelte";
-  import type { DashboardSettings, Period } from "../lib/settings";
-  import { initSettings } from "../lib/settings";
+  import { onMount } from 'svelte';
+  import Requests from '../components/dashboard/Requests.svelte';
+  import Logo from '../components/dashboard/Logo.svelte';
+  import ResponseTimes from '../components/dashboard/ResponseTimes.svelte';
+  import Users from '../components/dashboard/Users.svelte';
+  import Endpoints from '../components/dashboard/Endpoints.svelte';
+  import Footer from '../components/Footer.svelte';
+  import SuccessRate from '../components/dashboard/SuccessRate.svelte';
+  import Activity from '../components/dashboard/activity/Activity.svelte';
+  import Version from '../components/dashboard/Version.svelte';
+  import UsageTime from '../components/dashboard/UsageTime.svelte';
+  import Location from '../components/dashboard/Location.svelte';
+  import Device from '../components/dashboard/device/Device.svelte';
+  import periodToDays from '../lib/period';
+  import genDemoData from '../lib/demo';
+  import formatUUID from '../lib/uuid';
+  import Settings from '../components/dashboard/Settings.svelte';
+  import type { DashboardSettings, Period } from '../lib/settings';
+  import { initSettings } from '../lib/settings';
   import {
     CREATED_AT,
     PATH,
     STATUS,
     SERVER_URL,
     HOSTNAME,
-  } from "../lib/consts";
-  import Dropdown from "../components/dashboard/Dropdown.svelte";
+  } from '../lib/consts';
+  import Dropdown from '../components/dashboard/Dropdown.svelte';
 
   function inPeriod(date: Date, days: number): boolean {
     let periodAgo = new Date();
@@ -51,8 +51,9 @@
     for (let i = 1; i < data.length; i++) {
       if (
         (settings.disable404 && data[i][STATUS] === 404) ||
-        (settings.targetEndpoint != null && settings.targetEndpoint !== data[i][PATH]) ||
-        (isHiddenEndpoint(data[i][PATH])) ||
+        (settings.targetEndpoint != null &&
+          settings.targetEndpoint !== data[i][PATH]) ||
+        isHiddenEndpoint(data[i][PATH]) ||
         (settings.hostname != null && settings.hostname !== data[i][HOSTNAME])
       ) {
         continue;
@@ -75,35 +76,39 @@
   }
 
   function isHiddenEndpoint(endpoint: string): boolean {
-    return (settings.hiddenEndpoints.has(endpoint)) || 
-           (endpoint.charAt(0) === '/' && settings.hiddenEndpoints.has(endpoint.slice(1))) ||
-           (endpoint.charAt(endpoint.length-1) === '/' && settings.hiddenEndpoints.has(endpoint.slice(0, -1)) ||
-          //  (endpoint.charAt(0) !== '/' && settings.hiddenEndpoints.has('/' + endpoint)) ||
-           (endpoint.charAt(endpoint.length-1) !== '/' && settings.hiddenEndpoints.has(endpoint + '/'))) ||
-           wildCardMatch(endpoint);
-
+    return (
+      settings.hiddenEndpoints.has(endpoint) ||
+      (endpoint.charAt(0) === '/' &&
+        settings.hiddenEndpoints.has(endpoint.slice(1))) ||
+      (endpoint.charAt(endpoint.length - 1) === '/' &&
+        settings.hiddenEndpoints.has(endpoint.slice(0, -1))) ||
+      //  (endpoint.charAt(0) !== '/' && settings.hiddenEndpoints.has('/' + endpoint)) ||
+      (endpoint.charAt(endpoint.length - 1) !== '/' &&
+        settings.hiddenEndpoints.has(endpoint + '/')) ||
+      wildCardMatch(endpoint)
+    );
   }
 
   function wildCardMatch(endpoint: string): boolean {
-    if (endpoint.charAt(endpoint.length-1) !== '/') {
-      endpoint = endpoint + '/'
+    if (endpoint.charAt(endpoint.length - 1) !== '/') {
+      endpoint = endpoint + '/';
     }
     for (let value of settings.hiddenEndpoints) {
-      if (value.charAt(value.length-1) === '*') {
-        value = value.slice(0, value.length-1) // Remove asterisk
+      if (value.charAt(value.length - 1) === '*') {
+        value = value.slice(0, value.length - 1); // Remove asterisk
         // Format both paths with a starting '/' and no trailing '/'
         if (value.charAt(0) !== '/') {
-          value = '/' + value
+          value = '/' + value;
         }
-        if (value.charAt(value.length-1) !== '/') {
-          value = value + '/'
+        if (value.charAt(value.length - 1) !== '/') {
+          value = value + '/';
         }
         if (endpoint.slice(0, value.length) === value) {
-          return true
+          return true;
         }
       }
     }
-    return false
+    return false;
   }
 
   function setPrevPeriodData() {
@@ -120,8 +125,9 @@
     for (let i = 1; i < data.length; i++) {
       if (
         (settings.disable404 && data[i][STATUS] === 404) ||
-        (settings.targetEndpoint != null && settings.targetEndpoint !== data[i][PATH]) ||
-        (isHiddenEndpoint(data[i][PATH])) ||
+        (settings.targetEndpoint != null &&
+          settings.targetEndpoint !== data[i][PATH]) ||
+        isHiddenEndpoint(data[i][PATH]) ||
         (settings.hostname != null && settings.hostname !== data[i][HOSTNAME])
       ) {
         continue;
@@ -136,34 +142,36 @@
 
   function setPeriod(value: Period) {
     settings.period = value;
-
   }
 
   function setHostnames() {
-    let hostnameFreq: {[hostname: string]: number} = {}
+    let hostnameFreq: { [hostname: string]: number } = {};
     for (let i = 0; i < data.length; i++) {
       if (!(data[i][HOSTNAME] in hostnameFreq)) {
-        hostnameFreq[data[i][HOSTNAME]] = 0
+        hostnameFreq[data[i][HOSTNAME]] = 0;
       }
-      hostnameFreq[data[i][HOSTNAME]] += 1
+      hostnameFreq[data[i][HOSTNAME]] += 1;
     }
 
-    let sortedHostnames = []
+    let sortedHostnames = [];
     for (let hostname of Object.keys(hostnameFreq)) {
-      sortedHostnames.push({hostname: hostname, count: hostnameFreq[hostname]})
+      sortedHostnames.push({
+        hostname: hostname,
+        count: hostnameFreq[hostname],
+      });
     }
     sortedHostnames.sort((a, b) => {
       return b.count - a.count;
     });
 
-    let _hostnames = []
+    let _hostnames = [];
     for (let value of sortedHostnames) {
-      _hostnames.push(value.hostname)
+      _hostnames.push(value.hostname);
     }
-    hostnames = _hostnames
+    hostnames = _hostnames;
     if (hostnames.length > 0) {
-      settings.hostname = hostnames[0]
-    } 
+      settings.hostname = hostnames[0];
+    }
   }
 
   function toggleEnable404() {
@@ -204,12 +212,12 @@
   let periodData: RequestsData;
   let prevPeriodData: RequestsData;
   let timePeriods: Period[] = [
-    "24 hours",
-    "Week",
-    "Month",
-    "6 months",
-    "Year",
-    "All time",
+    '24 hours',
+    'Week',
+    'Month',
+    '6 months',
+    'Year',
+    'All time',
   ];
   let failed = false;
   let setup = false;
@@ -217,14 +225,14 @@
     if (demo) {
       data = genDemoData() as RequestsData;
       setPeriod(settings.period);
-      setHostnames()
+      setHostnames();
     } else {
       fetchData();
     }
-    data?.sort(((a, b) => {
+    data?.sort((a, b) => {
       //@ts-ignore
-      return new Date(a[CREATED_AT]) - new Date(b[CREATED_AT])
-    }))
+      return new Date(a[CREATED_AT]) - new Date(b[CREATED_AT]);
+    });
   });
 
   function refreshData() {
@@ -234,7 +242,6 @@
 
     setPeriodData();
     setPrevPeriodData();
-
   }
 
   $: if (settings.targetEndpoint === null || settings.targetEndpoint) {
@@ -298,7 +305,10 @@
           />
         </div>
         <ResponseTimes data={periodData} />
-        <Endpoints data={periodData} bind:targetEndpoint={settings.targetEndpoint} />
+        <Endpoints
+          data={periodData}
+          bind:targetEndpoint={settings.targetEndpoint}
+        />
         <Version data={periodData} />
       </div>
       <div class="right">
@@ -321,7 +331,7 @@
     </div>
   </div>
 {/if}
-<Settings bind:show={showSettings} bind:settings/>
+<Settings bind:show={showSettings} bind:settings />
 <Footer />
 
 <style scoped>

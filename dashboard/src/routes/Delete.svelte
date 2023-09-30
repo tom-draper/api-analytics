@@ -1,18 +1,16 @@
 <script lang="ts">
-  import { SERVER_URL } from "../lib/consts";
+  import { SERVER_URL } from '../lib/consts';
 
-  let state: "delete" | "loading" | "deleted" | "error" = "delete";
-  let apiKey = "";
+  let state: 'delete' | 'loading' | 'deleted' | 'error' = 'delete';
+  let apiKey = '';
   async function genAPIKey() {
-    setState("loading");
-    const response = await fetch(
-      `${SERVER_URL}/api/delete/${apiKey}`
-    );
+    setState('loading');
+    const response = await fetch(`${SERVER_URL}/api/delete/${apiKey}`);
 
     if (response.status === 200) {
-      setState("deleted");
+      setState('deleted');
     } else {
-      setState("error");
+      setState('error');
     }
   }
 
@@ -28,9 +26,9 @@
     <button
       id="formBtn"
       on:click={genAPIKey}
-      class:no-display={state != "delete"}>Delete</button
+      class:no-display={state != 'delete'}>Delete</button
     >
-    <button id="formBtn" class:no-display={state != "loading"}>
+    <button id="formBtn" class:no-display={state != 'loading'}>
       <div class="spinner">
         <div class="loader" />
       </div>
@@ -38,9 +36,9 @@
     <button
       id="formBtn"
       class="copied-btn"
-      class:no-display={state != "deleted"}>Deleted</button
+      class:no-display={state != 'deleted'}>Deleted</button
     >
-    <button id="formBtn" class:no-display={state != "error"}>Error</button>
+    <button id="formBtn" class:no-display={state != 'error'}>Error</button>
   </div>
   <div class="details">
     <div class="keep-secure">Keep your API key safe and secure.</div>

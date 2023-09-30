@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Landing from "../components/home/Landing.svelte";
-  import Highlight from "../components/home/Highlight.svelte";
-  import GettingStarted from "../components/home/GettingStarted.svelte";
-  import Footer from "../components/Footer.svelte";
+  import Landing from '../components/home/Landing.svelte';
+  import Highlight from '../components/home/Highlight.svelte';
+  import GettingStarted from '../components/home/GettingStarted.svelte';
+  import Footer from '../components/Footer.svelte';
 </script>
 
 <div class="home">

@@ -2,26 +2,28 @@
   function removeItem(item: string) {
     let newItems: Set<string> = new Set();
     for (let value of items) {
-        if (value === item) {
-            continue
-        }
-        newItems.add(value)
+      if (value === item) {
+        continue;
+      }
+      newItems.add(value);
     }
     items = newItems;
   }
 
   function addItem(item: string) {
-    let newItems = new Set(items)
+    let newItems = new Set(items);
     if (item.charAt(0) !== '/') {
-        item = '/' + item
+      item = '/' + item;
     }
-    newItems.add(item)
-    items = newItems
-    input.value = null
+    newItems.add(item);
+    items = newItems;
+    input.value = null;
   }
 
   function handleInputKeyDown(e: KeyboardEvent) {
-     if (e.keyCode === 13) {addItem(input.value)};
+    if (e.keyCode === 13) {
+      addItem(input.value);
+    }
   }
 
   let input: HTMLInputElement;
@@ -31,7 +33,13 @@
 
 <div class="container">
   <div class="inner">
-    <input type="text" name="item" id="" bind:this={input} on:keydown={handleInputKeyDown} />
+    <input
+      type="text"
+      name="item"
+      id=""
+      bind:this={input}
+      on:keydown={handleInputKeyDown}
+    />
     <div class="items" class:hidden={hideOptions}>
       {#each Array.from(items) as item, _}
         <div class="item">
@@ -41,7 +49,7 @@
               removeItem(item);
             }}
           >
-          x
+            x
           </button>
           <div class="item-text">
             {item}
@@ -93,11 +101,10 @@
     color: white;
     padding: 0 1em;
     cursor: pointer;
-    border-radius: 2px
+    border-radius: 2px;
   }
   .remove-btn:hover {
     background: grey;
-
   }
 
   .inner {

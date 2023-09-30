@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import periodToDays from "../../../lib/period";
-  import { CREATED_AT } from "../../../lib/consts";
-  import type { Period } from "../../../lib/settings";
+  import { onMount } from 'svelte';
+  import periodToDays from '../../../lib/period';
+  import { CREATED_AT } from '../../../lib/consts';
+  import type { Period } from '../../../lib/settings';
 
   function defaultLayout() {
     let periodAgo = new Date();
@@ -19,17 +19,17 @@
       title: false,
       autosize: true,
       margin: { r: 35, l: 70, t: 20, b: 20, pad: 10 },
-      hovermode: "closest",
-      plot_bgcolor: "transparent",
-      paper_bgcolor: "transparent",
+      hovermode: 'closest',
+      plot_bgcolor: 'transparent',
+      paper_bgcolor: 'transparent',
       height: 169,
       yaxis: {
-        title: { text: "Requests" },
-        gridcolor: "gray",
+        title: { text: 'Requests' },
+        gridcolor: 'gray',
         showgrid: false,
       },
       xaxis: {
-        title: { text: "Date" },
+        title: { text: 'Date' },
         fixedrange: true,
         range: [periodAgo, tomorrow],
         visible: false,
@@ -107,8 +107,8 @@
       {
         x: dates,
         y: requests,
-        type: "bar",
-        marker: { color: "#3fcf8e" },
+        type: 'bar',
+        marker: { color: '#3fcf8e' },
         hovertemplate: `<b>%{y} requests</b><br>%{x|%d %b %Y}</b><extra></extra>`,
         showlegend: false,
       },

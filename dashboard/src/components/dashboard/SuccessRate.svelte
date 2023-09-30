@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { CREATED_AT, STATUS } from "../../lib/consts";
+  import { onMount } from 'svelte';
+  import { CREATED_AT, STATUS } from '../../lib/consts';
 
   function successRatePlotLayout() {
     return {
@@ -8,11 +8,11 @@
       autosize: true,
       margin: { r: 0, l: 0, t: 0, b: 0, pad: 0 },
       hovermode: false,
-      plot_bgcolor: "transparent",
-      paper_bgcolor: "transparent",
+      plot_bgcolor: 'transparent',
+      paper_bgcolor: 'transparent',
       height: 60,
       yaxis: {
-        gridcolor: "gray",
+        gridcolor: 'gray',
         showgrid: false,
         fixedrange: true,
         dragmode: false,
@@ -40,12 +40,12 @@
       {
         x: x,
         y: y,
-        type: "lines",
-        marker: { color: "transparent" },
+        type: 'lines',
+        marker: { color: 'transparent' },
         showlegend: false,
-        line: { shape: "spline", smoothing: 1, color: "#3FCF8E30" },
-        fill: "tozeroy",
-        fillcolor: "#3fcf8e15",
+        line: { shape: 'spline', smoothing: 1, color: '#3FCF8E30' },
+        fill: 'tozeroy',
+        fillcolor: '#3fcf8e15',
       },
     ];
   }

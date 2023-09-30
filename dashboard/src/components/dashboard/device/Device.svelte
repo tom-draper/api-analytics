@@ -1,15 +1,15 @@
 <script lang="ts">
-  import Client from "./Client.svelte";
-  import OperatingSystem from "./OperatingSystem.svelte";
-  import DeviceType from "./DeviceType.svelte";
+  import Client from './Client.svelte';
+  import OperatingSystem from './OperatingSystem.svelte';
+  import DeviceType from './DeviceType.svelte';
 
-  function setBtn(target: "client" | "os" | "device") {
+  function setBtn(target: 'client' | 'os' | 'device') {
     activeBtn = target;
     // Resize window to trigger new plot resize to match current card size
-    window.dispatchEvent(new Event("resize"));
+    window.dispatchEvent(new Event('resize'));
   }
 
-  let activeBtn: "client" | "os" | "device" = "client";
+  let activeBtn: 'client' | 'os' | 'device' = 'client';
 
   export let data: RequestsData;
 </script>
@@ -19,32 +19,32 @@
     Device
     <div class="toggle">
       <button
-        class:active={activeBtn == "client"}
+        class:active={activeBtn == 'client'}
         on:click={() => {
-          setBtn("client");
+          setBtn('client');
         }}>Client</button
       >
       <button
-        class:active={activeBtn == "os"}
+        class:active={activeBtn == 'os'}
         on:click={() => {
-          setBtn("os");
+          setBtn('os');
         }}>OS</button
       >
       <button
-        class:active={activeBtn == "device"}
+        class:active={activeBtn == 'device'}
         on:click={() => {
-          setBtn("device");
+          setBtn('device');
         }}>Device</button
       >
     </div>
   </div>
-  <div class="client" style={activeBtn === "client" ? "display: initial" : ""}>
+  <div class="client" style={activeBtn === 'client' ? 'display: initial' : ''}>
     <Client {data} />
   </div>
-  <div class="os" style={activeBtn === "os" ? "display: initial" : ""}>
+  <div class="os" style={activeBtn === 'os' ? 'display: initial' : ''}>
     <OperatingSystem {data} />
   </div>
-  <div class="device" style={activeBtn === "device" ? "display: initial" : ""}>
+  <div class="device" style={activeBtn === 'device' ? 'display: initial' : ''}>
     <DeviceType {data} />
   </div>
 </div>

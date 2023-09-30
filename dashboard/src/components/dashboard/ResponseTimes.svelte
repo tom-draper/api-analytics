@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { RESPONSE_TIME } from "../../lib/consts";
+  import { onMount } from 'svelte';
+  import { RESPONSE_TIME } from '../../lib/consts';
 
   // Median and quartiles from StackOverflow answer
   // https://stackoverflow.com/a/55297611/8851732
@@ -29,7 +29,7 @@
     }
   }
 
-  function markerPosition(x: number) {
+  function markerPosition(x: number): number {
     // 170.125 ms -> 0
     // 1000 ms -> 100
     let position = Math.log10(x) * 130 - 290;

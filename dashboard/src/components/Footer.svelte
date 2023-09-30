@@ -1,5 +1,10 @@
 <div class="footer">
-  <a class="github-link" rel="noreferrer" target="_blank" href="https://github.com/tom-draper/api-analytics">
+  <a
+    class="github-link"
+    rel="noreferrer"
+    target="_blank"
+    href="https://github.com/tom-draper/api-analytics"
+  >
     <img class="github-logo" height="30px" src="../img/github.png" alt="" />
   </a>
   <div class="logo">API Analytics</div>

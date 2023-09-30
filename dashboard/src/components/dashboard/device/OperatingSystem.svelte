@@ -1,58 +1,58 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { USER_AGENT } from "../../../lib/consts";
+  import { onMount } from 'svelte';
+  import { USER_AGENT } from '../../../lib/consts';
 
   function getOS(userAgent: string): string {
     if (userAgent === null) {
-      return "Unknown";
+      return 'Unknown';
     } else if (userAgent.match(/Win16/)) {
-      return "Windows 3.11";
+      return 'Windows 3.11';
     } else if (userAgent.match(/(Windows 95)|(Win95)|(Windows_95)/)) {
-      return "Windows 95";
+      return 'Windows 95';
     } else if (userAgent.match(/(Windows 98)|(Win98)/)) {
-      return "Windows 98";
+      return 'Windows 98';
     } else if (userAgent.match(/(Windows NT 5.0)|(Windows 2000)/)) {
-      return "Windows 2000";
+      return 'Windows 2000';
     } else if (userAgent.match(/(Windows NT 5.1)|(Windows XP)/)) {
-      return "Windows XP";
+      return 'Windows XP';
     } else if (userAgent.match(/(Windows NT 5.2)/)) {
-      return "Windows Server 2003";
+      return 'Windows Server 2003';
     } else if (userAgent.match(/(Windows NT 6.0)/)) {
-      return "Windows Vista";
+      return 'Windows Vista';
     } else if (userAgent.match(/(Windows NT 6.1)/)) {
-      return "Windows 7";
+      return 'Windows 7';
     } else if (userAgent.match(/(Windows NT 6.2)/)) {
-      return "Windows 8";
+      return 'Windows 8';
     } else if (userAgent.match(/(Windows NT 10.0)/)) {
-      return "Windows 10";
+      return 'Windows 10';
     } else if (
       userAgent.match(/(Windows NT 4.0)|(WinNT4.0)|(WinNT)|(Windows NT)/)
     ) {
-      return "Windows NT 4.0";
+      return 'Windows NT 4.0';
     } else if (userAgent.match(/Windows ME/)) {
-      return "Windows ME";
+      return 'Windows ME';
     } else if (userAgent.match(/OpenBSD/)) {
-      return "OpenBSE";
+      return 'OpenBSE';
     } else if (userAgent.match(/SunOS/)) {
-      return "SunOS";
+      return 'SunOS';
     } else if (userAgent.match(/(Linux)|(X11)/)) {
-      return "Linux";
+      return 'Linux';
     } else if (userAgent.match(/(Mac_PowerPC)|(Macintosh)/)) {
-      return "MacOS";
+      return 'MacOS';
     } else if (userAgent.match(/QNX/)) {
-      return "QNX";
+      return 'QNX';
     } else if (userAgent.match(/BeOS/)) {
-      return "BeOS";
+      return 'BeOS';
     } else if (userAgent.match(/OS\/2/)) {
-      return "OS/2";
+      return 'OS/2';
     } else if (
       userAgent.match(
         /(APIs-Google)|(AdsBot)|(nuhk)|(Googlebot)|(Storebot)|(Google-Site-Verification)|(Mediapartners)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves\/Teoma)|(ia_archiver)/
       )
     ) {
-      return "Search Bot";
+      return 'Search Bot';
     } else {
-      return "Unknown";
+      return 'Unknown';
     }
   }
 
@@ -65,14 +65,14 @@
       title: false,
       autosize: true,
       margin: { r: 35, l: 70, t: 20, b: 20, pad: 0 },
-      hovermode: "closest",
-      plot_bgcolor: "transparent",
-      paper_bgcolor: "transparent",
+      hovermode: 'closest',
+      plot_bgcolor: 'transparent',
+      paper_bgcolor: 'transparent',
       height: 180,
       width: 411,
       yaxis: {
-        title: { text: "Requests" },
-        gridcolor: "gray",
+        title: { text: 'Requests' },
+        gridcolor: 'gray',
         showgrid: false,
         fixedrange: true,
       },
@@ -84,14 +84,14 @@
   }
 
   let colors = [
-    "#3FCF8E", // Green
-    "#5784BA", // Blue
-    "#EBEB81", // Yellow
-    "#218B82", // Sea green
-    "#FFD6A5", // Orange
-    "#F9968B", // Salmon
-    "#B1A2CA", // Purple
-    "#E46161", // Red
+    '#3FCF8E', // Green
+    '#5784BA', // Blue
+    '#EBEB81', // Yellow
+    '#218B82', // Sea green
+    '#FFD6A5', // Orange
+    '#F9968B', // Salmon
+    '#B1A2CA', // Purple
+    '#E46161', // Red
   ];
 
   function pieChart() {
@@ -114,7 +114,7 @@
       {
         values: count,
         labels: os,
-        type: "pie",
+        type: 'pie',
         marker: {
           colors: colors,
         },

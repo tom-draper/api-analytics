@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import periodToDays from "../../../lib/period";
-  import { CREATED_AT, RESPONSE_TIME } from "../../../lib/consts";
-  import type { Period } from "../../../lib/settings";
+  import { onMount } from 'svelte';
+  import periodToDays from '../../../lib/period';
+  import { CREATED_AT, RESPONSE_TIME } from '../../../lib/consts';
+  import type { Period } from '../../../lib/settings';
 
   function defaultLayout() {
     let periodAgo = new Date();
@@ -18,18 +18,18 @@
       title: false,
       autosize: true,
       margin: { r: 35, l: 70, t: 20, b: 20, pad: 10 },
-      hovermode: "closest",
-      plot_bgcolor: "transparent",
-      paper_bgcolor: "transparent",
+      hovermode: 'closest',
+      plot_bgcolor: 'transparent',
+      paper_bgcolor: 'transparent',
       height: 170,
       yaxis: {
-        title: { text: "Response time (ms)" },
-        gridcolor: "gray",
+        title: { text: 'Response time (ms)' },
+        gridcolor: 'gray',
         showgrid: false,
         fixedrange: true,
       },
       xaxis: {
-        title: { text: "Date" },
+        title: { text: 'Date' },
         showgrid: false,
         fixedrange: true,
         range: [periodAgo, tomorrow],
@@ -140,8 +140,8 @@
       {
         x: dates,
         y: rt,
-        type: "bar",
-        marker: { color: "#707070" },
+        type: 'bar',
+        marker: { color: '#707070' },
         hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
         showlegend: false,
         // line: { shape: "spline", smoothing: 1 },

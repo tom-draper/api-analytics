@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount } from 'svelte';
 
   function periodToMarkers(period: string): number {
     switch (period) {
-      case "24h":
+      case '24h':
         return 38;
-      case "7d":
+      case '7d':
         return 84;
-      case "30d":
-      case "60d":
+      case '30d':
+      case '60d':
         return 120;
       default:
         return null;
@@ -20,18 +20,18 @@
       title: false,
       autosize: true,
       margin: { r: 35, l: 55, t: 10, b: 30, pad: 10 },
-      hovermode: "closest",
-      plot_bgcolor: "transparent",
-      paper_bgcolor: "transparent",
+      hovermode: 'closest',
+      plot_bgcolor: 'transparent',
+      paper_bgcolor: 'transparent',
       height: 120,
       yaxis: {
         title: null,
-        gridcolor: "gray",
+        gridcolor: 'gray',
         showgrid: false,
         fixedrange: true,
       },
       xaxis: {
-        title: { text: "Date" },
+        title: { text: 'Date' },
         showgrid: false,
         fixedrange: true,
         visible: false,
@@ -66,9 +66,9 @@
       {
         x: dates,
         y: requests,
-        type: "lines",
-        marker: { color: "#707070" },
-        fill: "tonexty",
+        type: 'lines',
+        marker: { color: '#707070' },
+        fill: 'tonexty',
         hovertemplate: `<b>%{y:.0f}ms</b><br>%{x|%d %b %Y %H:%M:%S}</b><extra></extra>`,
         showlegend: false,
       },

@@ -1,18 +1,18 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { METHOD, PATH, STATUS } from "../../lib/consts";
+  import { onMount } from 'svelte';
+  import { METHOD, PATH, STATUS } from '../../lib/consts';
 
   // Integer to method string mapping used by server
   let methodMap = [
-    "GET",
-    "POST",
-    "PUT",
-    "PATCH",
-    "DELETE",
-    "OPTIONS",
-    "CONNECT",
-    "HEAD",
-    "TRACE",
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',
+    'CONNECT',
+    'HEAD',
+    'TRACE',
   ];
 
   function endpointFreq(): {
@@ -36,10 +36,10 @@
 
   function statusMatch(status: number): boolean {
     return (
-      activeBtn === "all" ||
-      (activeBtn === "success" && status >= 200 && status <= 299) ||
-      (activeBtn === "bad" && status >= 300 && status <= 399) ||
-      (activeBtn === "error" && status >= 400)
+      activeBtn === 'all' ||
+      (activeBtn === 'success' && status >= 200 && status <= 299) ||
+      (activeBtn === 'bad' && status >= 300 && status <= 399) ||
+      (activeBtn === 'error' && status >= 400)
     );
   }
 
@@ -82,11 +82,11 @@
       endpoint.clientWidth <
       endpointPath.clientWidth + endpointCount.clientWidth
     ) {
-      externalLabel.style.display = "flex";
-      endpointPath.style.display = "none";
+      externalLabel.style.display = 'flex';
+      endpointPath.style.display = 'none';
     }
     if (endpoint.clientWidth < endpointCount.clientWidth) {
-      endpointCount.style.display = "none";
+      endpointCount.style.display = 'none';
     }
   }
 
@@ -98,7 +98,7 @@
   let endpoints: any[];
   let maxCount: number;
   let mounted = false;
-  let activeBtn = "all";
+  let activeBtn = 'all';
   onMount(() => {
     mounted = true;
   });
@@ -113,34 +113,34 @@
     Endpoints
     <div class="toggle">
       <button
-      class="cancel"
+        class="cancel"
         class:visible={targetEndpoint != null}
         on:click={() => {
           setTargetEndpoint(null);
         }}>Cancel</button
       >
       <button
-        class:active={activeBtn === "all"}
+        class:active={activeBtn === 'all'}
         on:click={() => {
-          setBtn("all");
+          setBtn('all');
         }}>All</button
       >
       <button
-        class:active={activeBtn === "success"}
+        class:active={activeBtn === 'success'}
         on:click={() => {
-          setBtn("success");
+          setBtn('success');
         }}>Success</button
       >
       <button
-        class:bad-active={activeBtn === "bad"}
+        class:bad-active={activeBtn === 'bad'}
         on:click={() => {
-          setBtn("bad");
+          setBtn('bad');
         }}>Bad</button
       >
       <button
-        class:error-active={activeBtn === "error"}
+        class:error-active={activeBtn === 'error'}
         on:click={() => {
-          setBtn("error");
+          setBtn('error');
         }}>Error</button
       >
     </div>
@@ -150,7 +150,12 @@
     <div class="endpoints">
       {#each endpoints as endpoint, i}
         <div class="endpoint-container">
-          <div class="endpoint" id="endpoint-{i}" title="Status: {endpoint.status}" on:click={() => setTargetEndpoint(endpoint.path.split(' ')[2])}>
+          <div
+            class="endpoint"
+            id="endpoint-{i}"
+            title="Status: {endpoint.status}"
+            on:click={() => setTargetEndpoint(endpoint.path.split(' ')[2])}
+          >
             <div class="path">
               <b>{endpoint.count.toLocaleString()}</b>
               {endpoint.path}
@@ -158,7 +163,9 @@
             <div
               class="background"
               style="width: {(endpoint.count / maxCount) * 100}%"
-              class:success={(endpoint.status >= 200 && endpoint.status <= 299) || endpoint.status === 0}
+              class:success={(endpoint.status >= 200 &&
+                endpoint.status <= 299) ||
+                endpoint.status === 0}
               class:bad={endpoint.status >= 300 && endpoint.status <= 399}
               class:error={endpoint.status >= 400}
             />

@@ -1,18 +1,18 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { USER_AGENT } from "../../../lib/consts";
+  import { onMount } from 'svelte';
+  import { USER_AGENT } from '../../../lib/consts';
 
   function getDevice(userAgent: string): string {
     if (userAgent === null) {
-      return "Unknown";
+      return 'Unknown';
     } else if (userAgent.match(/iPhone/)) {
-      return "iPhone";
+      return 'iPhone';
     } else if (userAgent.match(/Android/)) {
-      return "Android";
+      return 'Android';
     } else if (userAgent.match(/Tizen\//)) {
-      return "Samsung";
+      return 'Samsung';
     } else {
-      return "Other";
+      return 'Other';
     }
   }
 
@@ -21,14 +21,14 @@
       title: false,
       autosize: true,
       margin: { r: 35, l: 70, t: 10, b: 20, pad: 0 },
-      hovermode: "closest",
-      plot_bgcolor: "transparent",
-      paper_bgcolor: "transparent",
+      hovermode: 'closest',
+      plot_bgcolor: 'transparent',
+      paper_bgcolor: 'transparent',
       height: 180,
       width: 411,
       yaxis: {
-        title: { text: "Requests" },
-        gridcolor: "gray",
+        title: { text: 'Requests' },
+        gridcolor: 'gray',
         showgrid: false,
         fixedrange: true,
       },
@@ -40,9 +40,9 @@
   }
 
   let colors = [
-    "#3FCF8E", // Green
-    "#E46161", // Red
-    "#EBEB81", // Yellow
+    '#3FCF8E', // Green
+    '#E46161', // Red
+    '#EBEB81', // Yellow
   ];
 
   function pieChart() {
@@ -65,7 +65,7 @@
       {
         values: count,
         labels: devices,
-        type: "pie",
+        type: 'pie',
         marker: {
           colors: colors,
         },

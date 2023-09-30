@@ -1,24 +1,22 @@
 <script lang="ts">
-  import { SERVER_URL } from "../lib/consts";
+  import { SERVER_URL } from '../lib/consts';
 
-  let state: "sign-in" | "loading" = "sign-in";
-  let apiKey = "";
+  let state: 'sign-in' | 'loading' = 'sign-in';
+  let apiKey = '';
   async function genAPIKey() {
-    setState("loading");
+    setState('loading');
     try {
-      const response = await fetch(
-        `${SERVER_URL}/api/user-id/${apiKey}`
-      );
+      const response = await fetch(`${SERVER_URL}/api/user-id/${apiKey}`);
 
       if (response.status === 200) {
         const userID = await response.json();
-        window.location.href = `/${page}/${userID.replaceAll("-", "")}`;
+        window.location.href = `/${page}/${userID.replaceAll('-', '')}`;
       } else {
-        setState("sign-in");
+        setState('sign-in');
       }
     } catch (e) {
       console.log(e);
-      setState("sign-in");
+      setState('sign-in');
     }
   }
 
@@ -26,23 +24,23 @@
     state = value;
   }
 
-  export let page: "dashboard" | "monitoring";
+  export let page: 'dashboard' | 'monitoring';
 </script>
 
 <div class="generate">
   <div class="content">
-    {#if page == "dashboard"}
+    {#if page == 'dashboard'}
       <h2>Dashboard</h2>
-    {:else if page == "monitoring"}
+    {:else if page == 'monitoring'}
       <h2>Monitoring</h2>
     {/if}
     <input type="text" bind:value={apiKey} placeholder="Enter API key" />
     <button
       id="formBtn"
       on:click={genAPIKey}
-      class:no-display={state != "sign-in"}>Load</button
+      class:no-display={state != 'sign-in'}>Load</button
     >
-    <button id="formBtn" class:no-display={state != "loading"}>
+    <button id="formBtn" class:no-display={state != 'loading'}>
       <div class="spinner">
         <div class="loader" />
       </div>

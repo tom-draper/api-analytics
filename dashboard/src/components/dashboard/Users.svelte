@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import periodToDays from "../../lib/period";
-  import { CREATED_AT, IP_ADDRESS } from "../../lib/consts";
-  import type { Period } from "../../lib/settings";
+  import { onMount } from 'svelte';
+  import periodToDays from '../../lib/period';
+  import { CREATED_AT, IP_ADDRESS } from '../../lib/consts';
+  import type { Period } from '../../lib/settings';
 
   function usersPlotLayout() {
     return {
@@ -10,11 +10,11 @@
       autosize: true,
       margin: { r: 0, l: 0, t: 0, b: 0, pad: 0 },
       hovermode: false,
-      plot_bgcolor: "transparent",
-      paper_bgcolor: "transparent",
+      plot_bgcolor: 'transparent',
+      paper_bgcolor: 'transparent',
       height: 60,
       yaxis: {
-        gridcolor: "gray",
+        gridcolor: 'gray',
         showgrid: false,
         fixedrange: true,
         dragmode: false,
@@ -40,7 +40,7 @@
         const time = new Date(data[i][CREATED_AT]).getTime();
         const diff = time - start;
         const idx = Math.floor(diff / (range / n));
-        if (data[i][IP_ADDRESS] != null && data[i][IP_ADDRESS] != "") {
+        if (data[i][IP_ADDRESS] != null && data[i][IP_ADDRESS] != '') {
           y[idx] += 1;
         }
       }
@@ -49,12 +49,12 @@
       {
         x: x,
         y: y,
-        type: "lines",
-        marker: { color: "transparent" },
+        type: 'lines',
+        marker: { color: 'transparent' },
         showlegend: false,
-        line: { shape: "spline", smoothing: 1, color: "#3FCF8E30" },
-        fill: "tozeroy",
-        fillcolor: "#3fcf8e15",
+        line: { shape: 'spline', smoothing: 1, color: '#3FCF8E30' },
+        fill: 'tozeroy',
+        fillcolor: '#3fcf8e15',
       },
     ];
   }
@@ -97,7 +97,7 @@
   function getUsers(data: RequestsData): Set<string> {
     let users: Set<string> = new Set();
     for (let i = 1; i < data.length; i++) {
-      if (data[i][IP_ADDRESS] != null && data[i][IP_ADDRESS] != "") {
+      if (data[i][IP_ADDRESS] != null && data[i][IP_ADDRESS] != '') {
         users.add(data[i][IP_ADDRESS]);
       }
     }
@@ -119,7 +119,7 @@
         usersPerHour = (numUsers / (24 * days)).toFixed(2);
       }
     } else {
-      usersPerHour = "0";
+      usersPerHour = '0';
     }
     genPlot();
   }
