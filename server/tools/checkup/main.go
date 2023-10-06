@@ -153,7 +153,6 @@ func printLoggerTest() {
 	fmt.Printf("/log-request ")
 	if err != nil {
 		color.Red("offline")
-		fmt.Println(err)
 	} else {
 		color.Green("online")
 	}
