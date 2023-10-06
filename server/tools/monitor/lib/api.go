@@ -13,7 +13,7 @@ import (
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
-var url string = "https://apianalytics-server.com/api/"
+const url string = "https://apianalytics-server.com/api/"
 
 func TryNewUser() error {
 	response, err := http.Get(url + "generate-api-key")

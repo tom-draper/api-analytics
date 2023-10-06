@@ -127,7 +127,7 @@ func getUserRequests(c *gin.Context) {
 
 	// Fetch user ID corresponding with API key
 	// Left table join was originally used but often exceeded postgresql working memory limit with large numbers of requests
-	query = fmt.Sprintf("SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s' LIMIT 750000;", apiKey)
+	query = fmt.Sprintf("SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s' LIMIT 700000;", apiKey)
 	rows, err = db.Query(query)
 	if err != nil {
 		log.LogToFile(userID + ": Invalid API key")
@@ -301,7 +301,7 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
 		query.WriteString(fmt.Sprintf(" and hostname = '%s'", queries.hostname))
 	}
 
-	query.WriteString("LIMIT 750000;")
+	query.WriteString("LIMIT 700000;")
 	return query.String()
 }
 

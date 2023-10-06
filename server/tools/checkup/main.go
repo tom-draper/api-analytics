@@ -46,6 +46,7 @@ func emailCheckup() {
 func printCheckup() {
 	printServicesTest()
 	printAPITest()
+	printLoggerTest()
 
 	printDatabaseStats()
 	printLastHour()
@@ -146,18 +147,10 @@ func printAPITest() {
 }
 
 func printLoggerTest() {
-	fmt.Println("---- API -----------------------------")
+	fmt.Println("---- Logger --------------------------")
 	var err error
-	err = monitor.TryNewUser()
-	fmt.Printf("/generate-api-key ")
-	if err != nil {
-		color.Red("offline")
-		fmt.Println(err)
-	} else {
-		color.Green("online")
-	}
-	err = monitor.TryFetchDashboardData()
-	fmt.Printf("/requests/<user-id> ")
+	err = monitor.TryLogRequests()
+	fmt.Printf("/log-request ")
 	if err != nil {
 		color.Red("offline")
 		fmt.Println(err)
