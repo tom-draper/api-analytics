@@ -32,10 +32,9 @@ func RequestsCount(interval string) (int, error) {
 
 	query := "SELECT COUNT(*) FROM requests"
 	if interval != "" {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s';", interval)
-	} else {
-		query += ";"
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
+	query += ";"
 	rows, err := db.Query(query)
 	if err != nil {
 		return 0, err
@@ -77,10 +76,9 @@ func Requests(interval string) ([]database.RequestRow, error) {
 
 	query := "SELECT request_id, api_key, path, hostname, ip_address, location, user_agent, method, status, response_time, framework, created_at FROM requests"
 	if interval != "" {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s';", interval)
-	} else {
-		query += ";"
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
+	query += ";"
 
 	rows, err := db.Query(query)
 	if err != nil {
@@ -202,12 +200,10 @@ func RequestsColumnSize() (requestsColumnSize, error) {
 	return size, err
 }
 
-type StringCount struct {
-	Value string
-	Count string
-}
-
-func columnStringValuesCount(column string) ([]StringCount, error) {
+func columnValuesCount[T string | int](column string) ([]struct {
+	Value T
+	Count int
+}, error) {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
@@ -217,9 +213,15 @@ func columnStringValuesCount(column string) ([]StringCount, error) {
 		return nil, err
 	}
 
-	var count []StringCount
+	var count []struct {
+		Value T
+		Count int
+	}
 	for rows.Next() {
-		var userAgent StringCount
+		var userAgent struct {
+			Value T
+			Count int
+		}
 		err := rows.Scan(&userAgent.Value, &userAgent.Count)
 		if err == nil {
 			count = append(count, userAgent)
@@ -229,16 +231,32 @@ func columnStringValuesCount(column string) ([]StringCount, error) {
 	return count, nil
 }
 
-func UserAgents() ([]StringCount, error) {
-	return columnStringValuesCount("user_agent")
+func TopFrameworks() ([]struct {
+	Value int
+	Count int
+}, error) {
+	return columnValuesCount[int]("framework")
 }
 
-func IPAddresses() ([]StringCount, error) {
-	return columnStringValuesCount("ip_address")
+func TopUserAgents() ([]struct {
+	Value string
+	Count int
+}, error) {
+	return columnValuesCount[string]("user_agent")
 }
 
-func Locations() ([]StringCount, error) {
-	return columnStringValuesCount("location")
+func TopIPAddresses() ([]struct {
+	Value string
+	Count int
+}, error) {
+	return columnValuesCount[string]("ip_address")
+}
+
+func TopLocations() ([]struct {
+	Value string
+	Count int
+}, error) {
+	return columnValuesCount[string]("location")
 }
 
 func AvgResponseTime() (float64, error) {

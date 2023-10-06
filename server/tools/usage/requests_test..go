@@ -1,6 +1,7 @@
 package usage
 
 import (
+	"log"
 	"testing"
 )
 
@@ -124,30 +125,65 @@ func TestMonthlyUserRequests(t *testing.T) {
 	}
 }
 
-func TestUserAgents(t *testing.T) {
-	_, err := UserAgents()
+func TestTopFrameworks(t *testing.T) {
+	frameworks, err := TopFrameworks()
 	if err != nil {
 		t.Error(err)
 	}
+	if len(frameworks) == 0 {
+		t.Error("no frameworks found")
+	}
+	for _, framework := range frameworks {
+		log.Println(framework.Value, framework.Count)
+	}
 }
 
-func TestIPAddresses(t *testing.T) {
-	_, err := IPAddresses()
+func TestTopUserAgents(t *testing.T) {
+	userAgents, err := TopUserAgents()
 	if err != nil {
 		t.Error(err)
+	}
+	if len(userAgents) == 0 {
+		t.Error("no user agents found")
+	}
+	for _, userAgent := range userAgents {
+		log.Println(userAgent.Value, userAgent.Count)
+	}
+}
+
+func TestTopIPAddresses(t *testing.T) {
+	ipAddresses, err := TopIPAddresses()
+	if err != nil {
+		t.Error(err)
+	}
+	if len(ipAddresses) == 0 {
+		t.Error("no IP addresses found")
+	}
+	for _, ipAddress := range ipAddresses {
+		log.Println(ipAddress.Value, ipAddress.Count)
 	}
 }
 
 func TestLocations(t *testing.T) {
-	_, err := Locations()
+	locations, err := TopLocations()
 	if err != nil {
 		t.Error(err)
+	}
+	if len(locations) == 0 {
+		t.Error("no locations found")
+	}
+	for _, location := range locations {
+		log.Println(location.Value, location.Count)
 	}
 }
 
 func TestAvgResponseTime(t *testing.T) {
-	_, err := AvgResponseTime()
+	avgResponseTime, err := AvgResponseTime()
 	if err != nil {
 		t.Error(err)
 	}
+	if avgResponseTime == 0 {
+		t.Error("average reponse time is 0")
+	}
+	log.Println("avg response time:", avgResponseTime)
 }
