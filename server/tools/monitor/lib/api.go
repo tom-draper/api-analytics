@@ -141,7 +141,6 @@ type Request struct {
 
 func TryLogRequests() error {
 	apiKey := getTestAPIKey()
-	fmt.Println(apiKey)
 
 	postBody, err := json.Marshal(map[string]interface{}{
 		"api_key":   apiKey,
@@ -183,7 +182,7 @@ func TryLogRequests() error {
 		return err
 	}
 
-	if response.StatusCode != 200 {
+	if response.StatusCode != 201 {
 		return fmt.Errorf("status code: %d\n%s", response.StatusCode, body)
 	}
 
