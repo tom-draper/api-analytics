@@ -145,6 +145,27 @@ func printAPITest() {
 	// }
 }
 
+func printLoggerTest() {
+	fmt.Println("---- API -----------------------------")
+	var err error
+	err = monitor.TryNewUser()
+	fmt.Printf("/generate-api-key ")
+	if err != nil {
+		color.Red("offline")
+		fmt.Println(err)
+	} else {
+		color.Green("online")
+	}
+	err = monitor.TryFetchDashboardData()
+	fmt.Printf("/requests/<user-id> ")
+	if err != nil {
+		color.Red("offline")
+		fmt.Println(err)
+	} else {
+		color.Green("online")
+	}
+}
+
 func printDatabaseStats() {
 	p := message.NewPrinter(language.English)
 	p.Println("---- Database ------------------------")

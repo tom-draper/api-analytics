@@ -19,8 +19,8 @@ func LogErrorToFile(ipAddress string, apiKey string, msg string) {
 	LogToFile(text)
 }
 
-func LogRequestsToFile(ipAddress string, apiKey string, inserted int, totalRequests int, requestErrors RequestErrors) {
-	text := fmt.Sprintf("%s %s :: inserted=%d totalRequest=%d :: %d %d %d %d %d", ipAddress, apiKey, inserted, totalRequests, requestErrors.Method, requestErrors.Framework, requestErrors.UserAgent, requestErrors.Hostname, requestErrors.Path)
+func LogRequestsToFile(ipAddress string, apiKey string, inserted int, totalRequests int) {
+	text := fmt.Sprintf("%s %s :: inserted=%d totalRequest=%d", ipAddress, apiKey, inserted, totalRequests)
 	LogToFile(text)
 }
 

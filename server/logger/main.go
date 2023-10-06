@@ -136,117 +136,6 @@ func getCountryCode(IPAddress string) string {
 	return location
 }
 
-// func logRequest(c *gin.Context) {
-// 	// Collect API request data sent via POST request
-// 	var payload Payload
-// 	if err := c.BindJSON(&payload); err != nil {
-// 		log.LogErrorToFile(c.ClientIP(), "", "Invalid request data.")
-// 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
-// 		return
-// 	} else if payload.APIKey == "" {
-// 		log.LogErrorToFile(c.ClientIP(), payload.APIKey, "API key required.")
-// 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
-// 		return
-// 	} else if len(payload.Requests) == 0 {
-// 		log.LogErrorToFile(c.ClientIP(), payload.APIKey, "Payload contains no logged requests.")
-// 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Payload contains no logged requests."})
-// 		return
-// 	}
-
-// 	var query strings.Builder
-// 	arguments := make([]any, 0)
-// 	query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES ")
-// 	inserted := 0
-// 	requestErrors := log.RequestErrors{}
-// 	badUserAgents := []string{}
-// 	for _, request := range payload.Requests {
-// 		// Temporary 1000 request per minute limit
-// 		if inserted > 1000 {
-// 			break
-// 		}
-
-// 		location := getCountryCode(request.IPAddress)
-
-// 		method, err := methodMap(request.Method)
-// 		if err != nil {
-// 			requestErrors.Method += 1
-// 			continue
-// 		}
-
-// 		framework, err := frameworkMap(payload.Framework)
-// 		if err != nil {
-// 			requestErrors.Framework += 1
-// 			continue
-// 		}
-
-// 		userAgent := request.UserAgent
-// 		if len(userAgent) > 255 {
-// 			userAgent = userAgent[:255]
-// 		}
-// 		if !database.SanitizeUserAgent(userAgent) {
-// 			requestErrors.UserAgent += 1
-// 			badUserAgents = append(badUserAgents, userAgent)
-// 			continue
-// 		} else if !database.SanitizeHostname(request.Hostname) {
-// 			requestErrors.Hostname += 1
-// 			continue
-// 		} else if !database.SanitizePath(request.Path) {
-// 			requestErrors.Path += 1
-// 			continue
-// 		}
-
-// 		if inserted > 0 {
-// 			query.WriteString(",")
-// 		}
-// 		query.WriteString("(?,?,?,?,?,?,?,?,?,?,?)")
-// 		arguments = append(
-// 			arguments,
-// 			payload.APIKey,
-// 			request.Path,
-// 			request.Hostname,
-// 			request.IPAddress,
-// 			userAgent,
-// 			request.Status,
-// 			request.ResponseTime,
-// 			method,
-// 			framework,
-// 			location,
-// 			request.CreatedAt)
-// 		inserted += 1
-// 	}
-
-// 	// Record in log file for debugging purposes
-// 	log.LogRequestsToFile(c.ClientIP(), payload.APIKey, inserted, len(payload.Requests), requestErrors)
-// 	if len(badUserAgents) > 0 {
-// 		var msg bytes.Buffer
-// 		for _, userAgent := range badUserAgents {
-// 			msg.WriteString(fmt.Sprintf("%s\n", userAgent))
-// 		}
-// 		log.LogToFile(msg.String())
-// 	}
-
-// 	// If no valid logged requests received
-// 	if inserted == 0 {
-// 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
-// 		return
-// 	}
-
-// 	query.WriteString(";")
-
-// 	// Insert logged requests into database
-// 	db := database.OpenDBConnection()
-// 	_, err := db.Query(query.String(), arguments...)
-// 	db.Close()
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
-// 		return
-// 	}
-
-// 	// Return success response
-// 	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "API request logged successfully."})
-// }
-
-
 func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 	const maxInsert int = 1000
 
@@ -254,20 +143,24 @@ func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 		// Collect API request data sent via POST request
 		var payload Payload
 		if err := c.BindJSON(&payload); err != nil {
-			log.LogErrorToFile(c.ClientIP(), "", "Invalid request data.")
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
+			msg := "Invalid request data."
+			log.LogErrorToFile(c.ClientIP(), "", msg)
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
 		} else if payload.APIKey == "" {
-			log.LogErrorToFile(c.ClientIP(), payload.APIKey, "API key required.")
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
+			msg := "API key requied."
+			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
 		} else if rateLimiter.RateLimited(payload.APIKey) {
-			log.LogErrorToFile(c.ClientIP(), payload.APIKey, "Too many requests.")
-			c.String(http.StatusTooManyRequests, "Too many requests.")
+			msg := "Too many requests."
+			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
+			c.JSON(http.StatusTooManyRequests, gin.H{"status": http.StatusTooManyRequests, "message": msg})
 			return
 		} else if len(payload.Requests) == 0 {
-			log.LogErrorToFile(c.ClientIP(), payload.APIKey, "Payload contains no logged requests.")
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Payload contains no logged requests."})
+			msg := "Payload contains no logged requests."
+			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
 		}
 
@@ -275,7 +168,6 @@ func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 		query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES ")
 		arguments := make([]any, 0)
 		inserted := 0
-		requestErrors := log.RequestErrors{}
 		badUserAgents := []string{}
 		for _, request := range payload.Requests {
 			// Temporary 1000 request per minute limit
@@ -287,13 +179,11 @@ func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 
 			method, err := methodMap(request.Method)
 			if err != nil {
-				requestErrors.Method += 1
 				continue
 			}
 
 			framework, err := frameworkMap(payload.Framework)
 			if err != nil {
-				requestErrors.Framework += 1
 				continue
 			}
 
@@ -302,22 +192,33 @@ func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 				userAgent = userAgent[:255]
 			}
 			if !database.SanitizeUserAgent(userAgent) && userAgent != "" {
-				requestErrors.UserAgent += 1
 				badUserAgents = append(badUserAgents, userAgent)
 				continue
 			} else if !database.SanitizeHostname(request.Hostname) {
-				requestErrors.Hostname += 1
 				continue
 			} else if !database.SanitizePath(request.Path) {
-				requestErrors.Path += 1
 				continue
 			}
 
+			// If not at final row in query, separate with comma
 			if inserted > 0 && inserted < maxInsert && inserted < len(payload.Requests) {
 				query.WriteString(",")
 			}
 			numArgs := len(arguments)
-			query.WriteString(fmt.Sprintf("($%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d)", numArgs+1, numArgs+2, numArgs+3, numArgs+4, numArgs+5, numArgs+6, numArgs+7, numArgs+8, numArgs+9, numArgs+10, numArgs+11))
+			query.WriteString(
+				fmt.Sprintf("($%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d)",
+					numArgs+1,
+					numArgs+2,
+					numArgs+3,
+					numArgs+4,
+					numArgs+5,
+					numArgs+6,
+					numArgs+7,
+					numArgs+8,
+					numArgs+9,
+					numArgs+10,
+					numArgs+11),
+			)
 			arguments = append(
 				arguments,
 				payload.APIKey,
@@ -335,11 +236,12 @@ func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 		}
 
 		// Record in log file for debugging
-		log.LogRequestsToFile(c.ClientIP(), payload.APIKey, inserted, len(payload.Requests), requestErrors)
+		log.LogRequestsToFile(c.ClientIP(), payload.APIKey, inserted, len(payload.Requests))
+		// Log any bad user agents found
 		if len(badUserAgents) > 0 {
 			var msg bytes.Buffer
-			for _, userAgent := range badUserAgents {
-				msg.WriteString(fmt.Sprintf("'%s'\n", userAgent))
+			for i, userAgent := range badUserAgents {
+				msg.WriteString(fmt.Sprintf("[%d] bad user agent: %s\n", i, userAgent))
 			}
 			log.LogToFile(msg.String())
 		}
@@ -364,6 +266,6 @@ func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 		}
 
 		// Return success response
-		c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "API request logged successfully."})
+		c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "API requests logged successfully."})
 	}
 }

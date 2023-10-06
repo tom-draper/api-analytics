@@ -130,8 +130,10 @@ func TopUsers(n int) ([]User, error) {
 	query := fmt.Sprintf("SELECT requests.api_key, users.created_at, COUNT(*) AS total_requests FROM requests left join users on users.api_key = requests.api_key GROUP BY requests.api_key, users.created_at ORDER BY total_requests DESC LIMIT %d", n)
 	rows, err := db.Query(query)
 	if err != nil {
+		db.Close()
 		return nil, err
 	}
+	db.Close()
 
 	var users []User
 	for rows.Next() {
@@ -141,7 +143,6 @@ func TopUsers(n int) ([]User, error) {
 			users = append(users, *user)
 		}
 	}
-	db.Close()
 
 	// Add daily requests for each top user
 	dailyRequests, err := DailyUserRequests()
