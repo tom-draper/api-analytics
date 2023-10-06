@@ -23,6 +23,8 @@ github.com/tom-draper/api-analytics/server/database v0.0.0-20230718222900-92b172
 github.com/tom-draper/api-analytics/server/database v0.0.0-20230718222900-92b172f3e180/go.mod h1:SQTCdpxNLRUzwokeY71HA2+8YokbcpUOTjifQONW3oM=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20230826102106-451cf439fb26 h1:8pLGX0BLePJsr7iZLhovXSdCivpd12cz/8fde2QoIKE=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20230826102106-451cf439fb26/go.mod h1:SQTCdpxNLRUzwokeY71HA2+8YokbcpUOTjifQONW3oM=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20231006212801-bb65425a6248 h1:C+7kuUXOfliwS5TYVYU5kJ6TZIuqqyu+u6qzhPldLYw=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20231006212801-bb65425a6248/go.mod h1:SQTCdpxNLRUzwokeY71HA2+8YokbcpUOTjifQONW3oM=
 github.com/tom-draper/api-analytics/server/email v0.0.0-20230513111736-ebb638f14027 h1:fLXQ013bn1HN5xc7ldBeNy5rGIRTD7XgHAYIv4dSzM8=
 github.com/tom-draper/api-analytics/server/email v0.0.0-20230513111736-ebb638f14027/go.mod h1:OVOiclokr+iG+hkzATj1uEwuvvK0DggdVz5sYMYix2U=
 github.com/tom-draper/api-analytics/server/email v0.0.0-20230515200645-ecd73440f89d h1:K/zyC+8wOvrVxHvSR0jiGauzEsEWKsW8ayzJj4TzZak=
@@ -33,6 +35,8 @@ github.com/tom-draper/api-analytics/server/email v0.0.0-20230718222900-92b172f3e
 github.com/tom-draper/api-analytics/server/email v0.0.0-20230718222900-92b172f3e180/go.mod h1:OVOiclokr+iG+hkzATj1uEwuvvK0DggdVz5sYMYix2U=
 github.com/tom-draper/api-analytics/server/email v0.0.0-20230826080008-77a47ff77bb9 h1:X+XF8lBxVUWIKwwjZQi+fhD6II1Oc7rRZuaXrJbOiWw=
 github.com/tom-draper/api-analytics/server/email v0.0.0-20230826080008-77a47ff77bb9/go.mod h1:OVOiclokr+iG+hkzATj1uEwuvvK0DggdVz5sYMYix2U=
+github.com/tom-draper/api-analytics/server/email v0.0.0-20231006213552-b9c9537b7bfd h1:nYj6ECktoO7T3llwbV3VuPkCDlJA4t+q7QdQipiWUv8=
+github.com/tom-draper/api-analytics/server/email v0.0.0-20231006213552-b9c9537b7bfd/go.mod h1:OVOiclokr+iG+hkzATj1uEwuvvK0DggdVz5sYMYix2U=
 github.com/tom-draper/api-analytics/server/tools/monitor v0.0.0-20230513112039-fdf40b92e97a h1:an3VwtT12MoZsto0eX9e0l5AgLygnBAxfweWtRlZMko=
 github.com/tom-draper/api-analytics/server/tools/monitor v0.0.0-20230513112039-fdf40b92e97a/go.mod h1:a0k3I8r5GOUpFQJ8WjJeo0VWKieyavelFbipQF+aUpQ=
 github.com/tom-draper/api-analytics/server/tools/monitor v0.0.0-20230513112956-576267a533c0 h1:Y39IEy/h27jbi6vFrKJEyp6vWqUFjIqqnMfoffLUFgo=
@@ -45,6 +49,8 @@ github.com/tom-draper/api-analytics/server/tools/monitor v0.0.0-20230718222900-9
 github.com/tom-draper/api-analytics/server/tools/monitor v0.0.0-20230718222900-92b172f3e180/go.mod h1:DXkDmmNqyhIPgq90NU+KKCro+/p2HcpS3u7WzFifQZE=
 github.com/tom-draper/api-analytics/server/tools/monitor v0.0.0-20230826102804-53508878d145 h1:trNaV0WoZsTFUwDm9eUjFL1RBnxVcT6qJYmwQ5Kp0oM=
 github.com/tom-draper/api-analytics/server/tools/monitor v0.0.0-20230826102804-53508878d145/go.mod h1:QLzvwba5JphmXshqR1rxcjsVWLMneLREhL0W68QQWLE=
+github.com/tom-draper/api-analytics/server/tools/monitor v0.0.0-20231006213552-b9c9537b7bfd h1:BqYGfSNMJN7bEx2FhgaF4kTrzSxWd2uPY9x7uqmIlcU=
+github.com/tom-draper/api-analytics/server/tools/monitor v0.0.0-20231006213552-b9c9537b7bfd/go.mod h1:P4g8vYoGw0OjQlbKjYCOnH5/7hj8HTHi8F2N7nOwSRE=
 github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230511203826-9b91dfbe6649 h1:R+0tbatrDC4trK5YPceKzLEs9gMiwoeUBugVSKXbak4=
 github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230511203826-9b91dfbe6649/go.mod h1:Lhr1hYyrGJ/QbBholJa4bSzqaaASAGC6f3Hq1Ci9Tz4=
 github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230515200645-ecd73440f89d h1:YdqfStTNAADjVNMa0HJuNjTkLEcmMqfSanJr10Sq3xQ=
@@ -55,13 +61,19 @@ github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230718222900-92b
 github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230718222900-92b172f3e180/go.mod h1:uuhZgELEpplnMMpBOP3eTzznXzmU1WocBQVy6lubolQ=
 github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230826080008-77a47ff77bb9 h1:bxEp/KAHEOHTQ6OE9EVuaCA3ApKKP2kG0y26qM0GCw8=
 github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20230826080008-77a47ff77bb9/go.mod h1:ye0b6Bg78x+6jUjTwI3HuiMD8Vc9n8+Fna05emwVFxM=
+github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20231006213552-b9c9537b7bfd h1:R7FJZl53x2D8SeakSiqiFnKkZUCA6CmgsiW/tI7JhlM=
+github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20231006213552-b9c9537b7bfd/go.mod h1:GN44/CJlc6fvYg47ADpOM1KdN7K/f8X9p6J7bwbGobI=
 golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.8.0 h1:EBmGv8NaZBZTWvrbjNoL6HVt+IVy3QDQpJs7VRIw3tU=
 golang.org/x/sys v0.8.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.11.0 h1:eG7RXZHdqOJ1i+0lgLgCpSXAp6M3LYlAo6osgSi0xOM=
 golang.org/x/sys v0.11.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.13.0 h1:Af8nKPmuFypiUBjVoU9V20FiaFXOcuZI21p0ycVYYGE=
+golang.org/x/sys v0.13.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/text v0.9.0 h1:2sjJmO8cDvYveuX97RDLsxlyUxLl+GHoLxBiRdHllBE=
 golang.org/x/text v0.9.0/go.mod h1:e1OnstbJyHTd6l/uOt8jFFHp6TRDWZR/bV3emEE/zU8=
 golang.org/x/text v0.12.0 h1:k+n5B8goJNdU7hSvEtMUz3d1Q6D/XW4COJSJR6fN0mc=
 golang.org/x/text v0.12.0/go.mod h1:TvPlkZtksWOMsz7fbANvkp4WM8x/WCo/om8BMLbz+aE=
+golang.org/x/text v0.13.0 h1:ablQoSUd0tRdKxZewP80B+BaqeKJuVhuRxj/dkrun3k=
+golang.org/x/text v0.13.0/go.mod h1:TvPlkZtksWOMsz7fbANvkp4WM8x/WCo/om8BMLbz+aE=

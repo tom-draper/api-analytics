@@ -19,6 +19,8 @@ github.com/tom-draper/api-analytics/server/database v0.0.0-20230914174801-162068
 github.com/tom-draper/api-analytics/server/database v0.0.0-20230914174801-162068a71070/go.mod h1:SQTCdpxNLRUzwokeY71HA2+8YokbcpUOTjifQONW3oM=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20231002190435-95664e54e2d0 h1:QnU9JiH5ddwsbDXZi3msmWkMCZheVDhbtIVhhudoH1Q=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20231002190435-95664e54e2d0/go.mod h1:SQTCdpxNLRUzwokeY71HA2+8YokbcpUOTjifQONW3oM=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20231006212801-bb65425a6248 h1:C+7kuUXOfliwS5TYVYU5kJ6TZIuqqyu+u6qzhPldLYw=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20231006212801-bb65425a6248/go.mod h1:SQTCdpxNLRUzwokeY71HA2+8YokbcpUOTjifQONW3oM=
 golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.11.0 h1:eG7RXZHdqOJ1i+0lgLgCpSXAp6M3LYlAo6osgSi0xOM=
