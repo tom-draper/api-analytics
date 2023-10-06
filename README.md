@@ -258,7 +258,7 @@ func main() {
 
     router := echo.New()
 
-    router.Use(analytics.Analytics(apiKey)) // Add middleware
+    router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
     router.GET("/", root)
     router.Start(":8080")
