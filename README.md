@@ -513,7 +513,7 @@ Head to https://apianalytics.dev/dashboard and paste in your API key to access y
 
 Demo: https://apianalytics.dev/dashboard/demo
 
-![Dashboard](https://user-images.githubusercontent.com/41476809/211800529-a84a0aa3-70c9-47d4-aa0d-7f9bbd3bc9b5.png)
+![dashboard](https://user-images.githubusercontent.com/41476809/272061832-74ba4146-f4b3-4c05-b759-3946f4deb9de.png)
 
 #### Data API
 
