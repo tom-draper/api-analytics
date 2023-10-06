@@ -141,9 +141,10 @@ type Request struct {
 
 func TryLogRequests() error {
 	apiKey := getTestAPIKey()
+	fmt.Println(apiKey)
 
 	postBody, err := json.Marshal(map[string]interface{}{
-		"apiKey":    apiKey,
+		"api_key":   apiKey,
 		"framework": "FastAPI",
 		"requests": []Request{
 			Request{

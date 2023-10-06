@@ -148,11 +148,11 @@ func printAPITest() {
 
 func printLoggerTest() {
 	fmt.Println("---- Logger --------------------------")
-	var err error
-	err = monitor.TryLogRequests()
+	err := monitor.TryLogRequests()
 	fmt.Printf("/log-request ")
 	if err != nil {
 		color.Red("offline")
+		fmt.Println(err)
 	} else {
 		color.Green("online")
 	}
