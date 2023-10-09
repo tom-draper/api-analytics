@@ -37,12 +37,12 @@ func genAPIKey(c *gin.Context) {
 	var apiKey string
 	err = rows.Scan(&apiKey)
 	if err != nil {
-		log.LogToFile("API key generation failed")
+		log.LogToFile("Failed to access generated key")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
 		return
 	}
 
-	log.LogToFile("key=" + apiKey + ": API key generated")
+	log.LogToFile("key=" + apiKey + ": API key generation successful")
 
 	// Return API key
 	c.JSON(http.StatusOK, apiKey)
@@ -594,7 +594,7 @@ func addUserMonitor(c *gin.Context) {
 		return
 	}
 
-	log.LogToFile("key=" + apiKey + ": Monitor successfully added for " + monitor.URL)
+	log.LogToFile("key=" + apiKey + ": Monitor '" + monitor.URL + "' creation successful")
 
 	// Return success response
 	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "New monitor added successfully."})
@@ -676,7 +676,7 @@ func deleteUserMonitor(c *gin.Context) {
 		return
 	}
 
-	log.LogToFile("key=" + apiKey + ": Monitor successfully deleted for " + body.URL)
+	log.LogToFile("key=" + apiKey + ": Monitor '" + body.URL + "' deletion successful")
 
 	// Return success response
 	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "Monitor deleted successfully."})
@@ -722,7 +722,7 @@ func getUserPings(c *gin.Context) {
 		}
 	}
 
-	log.LogToFile("id=" + userID + ": Monitor accessed successfully")
+	log.LogToFile("id=" + userID + ": Monitor access successful")
 
 	// Return API request data
 	c.JSON(http.StatusOK, pings)
