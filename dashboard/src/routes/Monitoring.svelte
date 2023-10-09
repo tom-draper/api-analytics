@@ -201,6 +201,9 @@
         padding: 3px 12px;
         cursor: pointer;
     }
+    .add-new-btn:hover {
+      background: radial-gradient(var(--light-background), #3fcf8e10);
+    }
     .add-new-btn {
         border: 1px solid #2e2e2e;
         border-radius: 4px;
@@ -214,7 +217,8 @@
         font-size: 2em;
         justify-content: center;
     }
-    .active {
+    .active,
+    .active:hover {
         background: var(--highlight);
         color: black !important;
     }

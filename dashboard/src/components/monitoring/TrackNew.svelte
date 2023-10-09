@@ -1,11 +1,13 @@
 <script lang="ts">
+  import Dropdown from "../dashboard/Dropdown.svelte";
+
   async function postMonitor() {
     if (monitorCount >= 3) {
       alert('Max 3 URL monitors allowed at one time.');
     }
 
     try {
-      let response = await fetch(
+      const response = await fetch(
         `https://www.apianalytics-server.com/api/monitor/add`,
         {
           method: 'POST',
@@ -17,7 +19,7 @@
           body: JSON.stringify({
             user_id: userID,
             url: url,
-            ping: pingType === 'simple-ping',
+            ping: true,
             secure: false,
           }),
         }
@@ -31,12 +33,9 @@
     }
   }
 
-  function setPingType(value: string) {
-    pingType = value;
-  }
-
   let url: string;
-  let pingType = 'simple-ping';
+  let options = ['https', 'http']
+  let urlPrefix = options[0]
 
   export let userID: string, showTrackNew: boolean, monitorCount: number;
 </script>
@@ -44,29 +43,9 @@
 <div class="card">
   <div class="card-text">
     <div class="url">
-      <!-- <div class="start">http://</div> -->
-      <select name="protocol" class="protocol">
-        <option value="http">http</option>
-        <option value="https">https</option>
-      </select>
-      <input type="text" placeholder="example.com/endpoint/" bind:value={url} />
+      <Dropdown {options} selected={urlPrefix}/>
+      <input type="text" placeholder="www.example.com/endpoint/" bind:value={url} />
       <button class="add" on:click={postMonitor}>Add</button>
-    </div>
-    <div class="ping-types">
-      <button
-        class="ping-type"
-        on:click={() => setPingType('simple-ping')}
-        class:active={pingType == 'simple-ping'}
-      >
-        Ping
-      </button>
-      <button
-        class="ping-type"
-        on:click={() => setPingType('get-request')}
-        class:active={pingType == 'get-request'}
-      >
-        GET
-      </button>
     </div>
     <div class="detail">
       Endpoints are pinged by our servers every 30 mins and response <b
@@ -90,23 +69,16 @@
     background: var(--background);
     border-radius: 4px;
     border: none;
-    margin: 0 10px;
+    margin: 1px 10px;
     width: 100%;
     text-align: left;
     height: auto;
-    padding: 6px 15px;
+    padding: 4px 15px;
     color: white;
+    font-size: 0.9em;
   }
   .url {
     display: flex;
-  }
-
-  .protocol {
-    cursor: pointer;
-    padding: 3px 4px 3px 8px;
-    background: transparent;
-    color: white;
-    border-radius: 4px;
   }
   .detail {
     margin-top: 30px;
@@ -122,19 +94,7 @@
   }
   .add {
     background: var(--highlight);
-    padding: 5px 20px;
-  }
-  .ping-types {
-    margin-top: 20px;
-  }
-  .ping-type {
-    color: var(--dim-text);
-    border: 1px solid #2e2e2e;
-    padding: 5px 20px;
-    width: 80px;
-  }
-  .active {
-    background: var(--highlight);
-    color: black;
+    padding: 4px 20px;
+    margin: 1px 0;
   }
 </style>
