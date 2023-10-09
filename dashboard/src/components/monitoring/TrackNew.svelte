@@ -100,10 +100,7 @@
   .url {
     display: flex;
   }
-  .start {
-    margin: auto;
-    color: var(--dim-text);
-  }
+
   .protocol {
     cursor: pointer;
     padding: 3px 4px 3px 8px;

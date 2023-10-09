@@ -12,7 +12,7 @@
   import UsageTime from '../components/dashboard/UsageTime.svelte';
   import Location from '../components/dashboard/Location.svelte';
   import Device from '../components/dashboard/device/Device.svelte';
-  import periodToDays from '../lib/period';
+  import { periodToDays } from '../lib/period';
   import genDemoData from '../lib/demo';
   import formatUUID from '../lib/uuid';
   import Settings from '../components/dashboard/Settings.svelte';
