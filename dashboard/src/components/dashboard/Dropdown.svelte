@@ -56,47 +56,36 @@
     color: var(--dim-text);
     border: 1px solid #2e2e2e;
     padding: 5px 12px;
+    cursor: pointer;
   }
   .options {
     display: flex;
     flex-direction: column;
-    /* position: absolute; */
     border-radius: 0px 4px 4px 0px;
     background: var(--background);
     color: var(--dim-text);
-    /* border: 1px solid #2e2e2e; */
-    /* padding: 5px 12px; */
-    /* margin-right: 10px; */
     top: 66px;
     z-index: 100;
   }
   .option {
-    /* border-radius: 4px; */
     background: var(--background);
     color: var(--dim-text);
     border: 1px solid #2e2e2e;
     padding: 5px 12px;
-    /* margin-right: 10px; */
   }
   .hidden {
     visibility: hidden;
   }
-
   .last-option {
     border-radius: 0 0 4px 4px;
   }
-
   .square-bottom {
     border-radius: 4px 4px 0 0;
   }
-
   .inner {
     position: absolute;
     z-index: 9;
     display: flex;
     flex-direction: column;
   }
-  /* .dropdown {
-        width: 120px;
-    } */
 </style>

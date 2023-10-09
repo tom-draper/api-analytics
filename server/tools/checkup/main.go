@@ -46,6 +46,7 @@ func emailCheckup() {
 func printCheckup() {
 	printServicesTest()
 	printAPITest()
+	printLoggerTest()
 
 	printDatabaseStats()
 	printLastHour()
@@ -61,7 +62,7 @@ func printUsersCheckup() {
 }
 
 func printServicesTest() {
-	fmt.Println("---- Services -----------------------")
+	fmt.Println("---- Services ------------------------")
 	apiDown := monitor.ServiceDown("api")
 	fmt.Printf("api: ")
 	if apiDown {
@@ -93,7 +94,7 @@ func printServicesTest() {
 }
 
 func printAPITest() {
-	fmt.Println("---- API Test -----------------------")
+	fmt.Println("---- API -----------------------------")
 	var err error
 	err = monitor.TryNewUser()
 	fmt.Printf("/generate-api-key ")
@@ -145,9 +146,21 @@ func printAPITest() {
 	// }
 }
 
+func printLoggerTest() {
+	fmt.Println("---- Logger --------------------------")
+	err := monitor.TryLogRequests()
+	fmt.Printf("/log-request ")
+	if err != nil {
+		color.Red("offline")
+		fmt.Println(err)
+	} else {
+		color.Green("online")
+	}
+}
+
 func printDatabaseStats() {
 	p := message.NewPrinter(language.English)
-	p.Println("---- Database -----------------------")
+	p.Println("---- Database ------------------------")
 	connections, err := usage.DatabaseConnections()
 	if err != nil {
 		panic(err)

@@ -28,6 +28,7 @@
     position: absolute;
     top: 30%;
     right: 40%;
+    border-radius: 10px;
   }
   img {
     filter: brightness(0.12);

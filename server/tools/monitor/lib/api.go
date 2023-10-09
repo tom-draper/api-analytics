@@ -13,7 +13,7 @@ import (
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
-var url string = "https://apianalytics-server.com/api/"
+const url string = "https://apianalytics-server.com/api/"
 
 func TryNewUser() error {
 	response, err := http.Get(url + "generate-api-key")
@@ -142,8 +142,8 @@ type Request struct {
 func TryLogRequests() error {
 	apiKey := getTestAPIKey()
 
-	postBody, _ := json.Marshal(map[string]interface{}{
-		"apiKey":    apiKey,
+	postBody, err := json.Marshal(map[string]interface{}{
+		"api_key":   apiKey,
 		"framework": "FastAPI",
 		"requests": []Request{
 			Request{
@@ -168,17 +168,22 @@ func TryLogRequests() error {
 			},
 		},
 	})
+	if err != nil {
+		return err
+	}
 
 	response, err := http.Post(url+"log-request", "application/json", bytes.NewBuffer(postBody))
 	if err != nil {
 		return err
-	} else if response.StatusCode != 200 {
-		return fmt.Errorf("status code: %d", response.StatusCode)
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return err
+	}
+
+	if response.StatusCode != 201 {
+		return fmt.Errorf("status code: %d\n%s", response.StatusCode, body)
 	}
 
 	var data interface{}
