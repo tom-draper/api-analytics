@@ -28,7 +28,7 @@
   import Dropdown from '../components/dashboard/Dropdown.svelte';
 
   function inPeriod(date: Date, days: number): boolean {
-    let periodAgo = new Date();
+    const periodAgo = new Date();
     periodAgo.setDate(periodAgo.getDate() - days);
     return date > periodAgo;
   }
@@ -38,7 +38,7 @@
   }
 
   function setPeriodData() {
-    let days = periodToDays(settings.period);
+    const days = periodToDays(settings.period);
 
     let counted = allTimePeriod;
     if (days != null) {
@@ -47,7 +47,7 @@
       };
     }
 
-    let dataSubset = [];
+    const dataSubset = [];
     for (let i = 1; i < data.length; i++) {
       if (
         (settings.disable404 && data[i][STATUS] === 404) ||
@@ -68,9 +68,9 @@
   }
 
   function inPrevPeriod(date: Date, days: number): boolean {
-    let startPeriodAgo = new Date();
+    const startPeriodAgo = new Date();
     startPeriodAgo.setDate(startPeriodAgo.getDate() - days * 2);
-    let endPeriodAgo = new Date();
+    const endPeriodAgo = new Date();
     endPeriodAgo.setDate(endPeriodAgo.getDate() - days);
     return startPeriodAgo < date && date < endPeriodAgo;
   }
@@ -112,7 +112,7 @@
   }
 
   function setPrevPeriodData() {
-    let days = periodToDays(settings.period);
+    const days = periodToDays(settings.period);
 
     let inPeriod = allTimePeriod;
     if (days != null) {
@@ -121,7 +121,7 @@
       };
     }
 
-    let dataSubset = [];
+    const dataSubset = [];
     for (let i = 1; i < data.length; i++) {
       if (
         (settings.disable404 && data[i][STATUS] === 404) ||
@@ -247,20 +247,12 @@
   $: if (settings.targetEndpoint === null || settings.targetEndpoint) {
     refreshData();
   }
-  // $: settings.hiddenEndpoints && refreshData();
   export let userID: string, demo: boolean;
 </script>
 
 {#if periodData != undefined}
   <div class="dashboard">
     <div class="button-nav">
-      <!-- <div class="nav-btn enable-404">
-        <button
-          class="enable-404-btn"
-          on:click={toggleEnable404}
-          class:time-period-btn-active={settings.disable404}>Disable 404</button
-        >
-      </div> -->
       <button
         class="settings"
         on:click={() => {
@@ -314,7 +306,6 @@
       <div class="right">
         <Activity data={periodData} period={settings.period} />
         <div class="grid-row">
-          <!-- <Growth data={periodData} prevData={prevPeriodData} /> -->
           <Location data={periodData} />
           <Device data={periodData} />
         </div>
@@ -373,33 +364,18 @@
     margin: 2.5em 2em 0;
     display: flex;
   }
-  .nav-btn {
-    margin-left: auto;
-  }
-  .enable-404 {
-    text-align: right;
-    flex-grow: 1;
-    margin-right: 1.5em;
-    width: fit-content;
-  }
   .time-period {
     display: flex;
     border: 1px solid #2e2e2e;
     border-radius: 4px;
     overflow: hidden;
   }
-  .enable-404-btn,
   .time-period-btn {
     background: var(--background);
     padding: 3px 12px;
     border: none;
     color: var(--dim-text);
     cursor: pointer;
-  }
-  .enable-404-btn {
-    border: 1px solid #2e2e2e;
-    padding: 3px 12px;
-    border-radius: 4px;
   }
   .time-period-btn-active {
     background: var(--highlight);
@@ -413,10 +389,6 @@
     cursor: pointer;
     margin-left: auto;
     text-align: right;
-    flex-grow: 1;
-    /* margin-right: 1.5em; */
-    width: fit-content;
-    /* display: none; */
   }
   .settings-icon {
     width: 20px;
@@ -453,9 +425,6 @@
   @media screen and (max-width: 750px) {
     .button-nav {
       flex-direction: column;
-    }
-    .enable-404 {
-      margin: 0 0 1em auto;
     }
   }
   @media screen and (max-width: 600px) {
