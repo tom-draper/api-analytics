@@ -56,7 +56,7 @@ func ping(client http.Client, domain string, secure bool, ping bool) (int, time.
 }
 
 func getMonitoredURLs(db *sql.DB) []database.MonitorRow {
-	query := fmt.Sprintf("SELECT * FROM monitor;")
+	query := "SELECT * FROM monitor;"
 	rows, err := db.Query(query)
 	if err != nil {
 		panic(err)
@@ -105,7 +105,9 @@ func shuffle(monitored []database.MonitorRow) {
 	rand.Shuffle(len(monitored), func(i, j int) { monitored[i], monitored[j] = monitored[j], monitored[i] })
 }
 
-func pingMonitored(monitored []database.MonitorRow, client http.Client, db *sql.DB) []database.PingsRow {
+func pingMonitored(monitored []database.MonitorRow) []database.PingsRow {
+	client := getClient()
+
 	var pings []database.PingsRow
 	for _, m := range monitored {
 		status, elapsed, err := ping(client, m.URL, m.Secure, m.Ping)
@@ -142,8 +144,7 @@ func main() {
 	// due to cold starts or caching
 	shuffle(monitored)
 
-	client := getClient()
-	pings := pingMonitored(monitored, client, db)
+	pings := pingMonitored(monitored)
 	uploadPings(pings, db)
 	deleteExpiredPings(db)
 }
