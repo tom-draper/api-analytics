@@ -72,6 +72,7 @@
     color: var(--dim-text);
     border: 1px solid #2e2e2e;
     padding: 5px 12px;
+    cursor: pointer;
   }
   .hidden {
     visibility: hidden;

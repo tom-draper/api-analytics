@@ -26,6 +26,7 @@
     HOSTNAME,
   } from '../lib/consts';
   import Dropdown from '../components/dashboard/Dropdown.svelte';
+  import Notification from '../components/dashboard/Notification.svelte';
 
   function inPeriod(date: Date, days: number): boolean {
     const periodAgo = new Date();
@@ -323,6 +324,7 @@
   </div>
 {/if}
 <Settings bind:show={showSettings} bind:settings />
+<Notification />
 <Footer />
 
 <style scoped>
