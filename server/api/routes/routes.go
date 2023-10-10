@@ -153,7 +153,7 @@ func getUserRequests(c *gin.Context) {
 		return
 	}
 
-	log.LogToFile(fmt.Sprintln("key=%s: Dashboard access successful (%d)", apiKey, len(requests)-1))
+	log.LogToFile(fmt.Sprintf("key=%s: Dashboard access successful (%d)", apiKey, len(requests)-1))
 
 	// Return API request data
 	c.Writer.Header().Set("Accept-Encoding", "gzip")
@@ -263,11 +263,11 @@ func getData(c *gin.Context) {
 	if queries.compact {
 		cols := []interface{}{"ip_address", "path", "hostname", "user_agent", "method", "response_time", "status", "location", "created_at"}
 		requests := buildRequestDataCompact(rows, cols)
-		log.LogToFile(fmt.Sprintln("key=%s: Data access successful (%d)", apiKey, len(requests)-1))
+		log.LogToFile(fmt.Sprintf("key=%s: Data access successful (%d)", apiKey, len(requests)-1))
 		c.JSON(http.StatusOK, requests)
 	} else {
 		requests := buildRequestData(rows)
-		log.LogToFile(fmt.Sprintln("key=%s: Data access successful (%d)", apiKey, len(requests)-1))
+		log.LogToFile(fmt.Sprintf("key=%s: Data access successful (%d)", apiKey, len(requests)-1))
 		c.JSON(http.StatusOK, requests)
 	}
 }
@@ -594,7 +594,7 @@ func addUserMonitor(c *gin.Context) {
 		return
 	}
 
-	log.LogToFile("key=" + apiKey + ": Monitor '" + monitor.URL + "' creation successful")
+	log.LogToFile(fmt.Sprintf("key=%s: Monitor '%s' creation successful", apiKey, monitor.URL))
 
 	// Return success response
 	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "New monitor added successfully."})
@@ -676,7 +676,7 @@ func deleteUserMonitor(c *gin.Context) {
 		return
 	}
 
-	log.LogToFile(fmt.Sprintln("key=%s: Monitor '%s' deletion successful", apiKey, body.URL))
+	log.LogToFile(fmt.Sprint("key=%s: Monitor '%s' deletion successful", apiKey, body.URL))
 
 	// Return success response
 	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "Monitor deleted successfully."})
@@ -722,7 +722,7 @@ func getUserPings(c *gin.Context) {
 		}
 	}
 
-	log.LogToFile(fmt.Sprintln("id=%s: Monitor access successful (%d)", userID, len(pings)))
+	log.LogToFile(fmt.Sprintf("id=%s: Monitor access successful (%d)", userID, len(pings)))
 
 	// Return API request data
 	c.JSON(http.StatusOK, pings)
