@@ -5,17 +5,17 @@
   import type { Period } from '../../../lib/settings';
 
   function daysAgo(date: Date): number {
-    let now = new Date();
+    const now = new Date();
     return Math.floor((now.getTime() - date.getTime()) / (24 * 60 * 60 * 1000));
   }
 
   function setSuccessRate() {
-    let success = {};
+    const success = {};
     let minDate = Number.POSITIVE_INFINITY;
     for (let i = 1; i < data.length; i++) {
-      let date = new Date(data[i][CREATED_AT]);
+      const date = new Date(data[i][CREATED_AT]);
       date.setHours(0, 0, 0, 0);
-      let dateStr = date.toDateString();
+      const dateStr = date.toDateString();
       if (!(dateStr in success)) {
         success[dateStr] = { total: 0, successful: 0 };
       }
@@ -34,8 +34,8 @@
     }
 
     let successArr = new Array(days).fill(-0.1); // -0.1 -> 0
-    for (let date in success) {
-      let idx = daysAgo(new Date(date));
+    for (const date in success) {
+      const idx = daysAgo(new Date(date));
       successArr[successArr.length - 1 - idx] =
         success[date].successful / success[date].total;
     }

@@ -32,7 +32,7 @@
   function markerPosition(x: number): number {
     // 170.125 ms -> 0
     // 1000 ms -> 100
-    let position = Math.log10(x) * 130 - 290;
+    const position = Math.log10(x) * 130 - 290;
     if (position < 0) {
       return 0;
     } else if (position > 100) {
@@ -43,12 +43,12 @@
   }
 
   function setMarkerPosition(median: number) {
-    let position = markerPosition(median);
+    const position = markerPosition(median);
     marker.style.left = `${position}%`;
   }
 
   function build() {
-    let responseTimes: number[] = [];
+    const responseTimes: number[] = [];
     for (let i = 1; i < data.length; i++) {
       responseTimes.push(data[i][RESPONSE_TIME]);
     }

@@ -28,9 +28,9 @@
   }
 
   function lines() {
-    let n = 5;
-    let x = [...Array(n).keys()];
-    let y = Array(n).fill(0);
+    const n = 5;
+    const x = [...Array(n).keys()];
+    const y = Array(n).fill(0);
 
     if (data.length > 0) {
       const start = new Date(data[0][CREATED_AT]).getTime();
@@ -70,7 +70,7 @@
   }
 
   function genPlot() {
-    let plotData = requestsPlotData();
+    const plotData = requestsPlotData();
     //@ts-ignore
     new Plotly.newPlot(
       plotDiv,
@@ -90,7 +90,7 @@
 
   function setRequestsPerHour() {
     if (data.length > 0) {
-      let days = periodToDays(period);
+      const days = periodToDays(period);
       if (days != null) {
         requestsPerHour = (data.length / (24 * days)).toFixed(2);
       }

@@ -1,7 +1,7 @@
 <script lang="ts">
   function removeItem(item: string) {
-    let newItems: Set<string> = new Set();
-    for (let value of items) {
+    const newItems: Set<string> = new Set();
+    for (const value of items) {
       if (value === item) {
         continue;
       }
@@ -11,7 +11,7 @@
   }
 
   function addItem(item: string) {
-    let newItems = new Set(items);
+    const newItems = new Set(items);
     if (item.charAt(0) !== '/') {
       item = '/' + item;
     }

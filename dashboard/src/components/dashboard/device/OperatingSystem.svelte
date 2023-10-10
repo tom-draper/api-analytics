@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { USER_AGENT } from '../../../lib/consts';
+  import { USER_AGENT, graphColors } from '../../../lib/consts';
 
   function getOS(userAgent: string): string {
     if (userAgent === null) {
@@ -83,17 +83,6 @@
     };
   }
 
-  let colors = [
-    '#3FCF8E', // Green
-    '#5784BA', // Blue
-    '#EBEB81', // Yellow
-    '#218B82', // Sea green
-    '#FFD6A5', // Orange
-    '#F9968B', // Salmon
-    '#B1A2CA', // Purple
-    '#E46161', // Red
-  ];
-
   function pieChart() {
     let osCount = {};
     for (let i = 1; i < data.length; i++) {
@@ -116,7 +105,7 @@
         labels: os,
         type: 'pie',
         marker: {
-          colors: colors,
+          colors: graphColors,
         },
       },
     ];

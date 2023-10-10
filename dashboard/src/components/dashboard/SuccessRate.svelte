@@ -26,9 +26,9 @@
   }
 
   function lines() {
-    let n = 5;
-    let x = [...Array(n).keys()];
-    let y = Array(n).fill(0);
+    const n = 5;
+    const x = [...Array(n).keys()];
+    const y = Array(n).fill(0);
 
     for (let i = 1; i < data.length; i++) {
       const idx = Math.floor(i / (data.length / n));
@@ -63,7 +63,7 @@
   }
 
   function genPlot() {
-    let plotData = successRatePlotData();
+    const plotData = successRatePlotData();
     //@ts-ignore
     new Plotly.newPlot(
       plotDiv,

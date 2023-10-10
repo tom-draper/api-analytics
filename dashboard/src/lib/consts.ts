@@ -12,3 +12,14 @@ export const RESPONSE_TIME = 5
 export const STATUS = 6
 export const LOCATION = 7
 export const CREATED_AT = 8
+
+export const graphColors = [
+    '#3FCF8E', // Green
+    '#5784BA', // Blue
+    '#EBEB81', // Yellow
+    '#218B82', // Sea green
+    '#FFD6A5', // Orange
+    '#F9968B', // Salmon
+    '#B1A2CA', // Purple
+    '#E46161', // Red
+];

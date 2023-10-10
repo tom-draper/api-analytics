@@ -3,6 +3,7 @@
     import Footer from '../components/Footer.svelte';
     import Card from '../components/monitoring/Card.svelte';
     import TrackNew from '../components/monitoring/TrackNew.svelte';
+    import Notification from '../components/dashboard/Notification.svelte';
     import formatUUID from '../lib/uuid';
     import { SERVER_URL } from '../lib/consts';
 
@@ -30,7 +31,7 @@
     }
 
     function groupByUrl() {
-        let group = {};
+        const group = {};
         for (let i = 0; i < data.length; i++) {
             if (!(data[i].url in group)) {
                 group[data[i].url] = [];
@@ -138,6 +139,7 @@
         {/if}
     </div>
 </div>
+<Notification />
 <Footer />
 
 <style scoped>

@@ -3,9 +3,9 @@
 
   function animate() {
     translation = -translation;
-    let el = document.getElementById('hover-1');
+    const el = document.getElementById('hover-1');
     el.style.transform = `translateY(${translation}%)`;
-    let el2 = document.getElementById('hover-2');
+    const el2 = document.getElementById('hover-2');
     el2.style.transform = `translateY(${-translation}%)`;
 
     setTimeout(animate, 9000);

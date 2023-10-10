@@ -18,16 +18,16 @@
   }
 
   function bars() {
-    let responseTimes = Array(24).fill(0);
+    const responseTimes = Array(24).fill(0);
 
     for (let i = 1; i < data.length; i++) {
-      let date = new Date(data[i][CREATED_AT]);
-      let time = date.getHours();
+      const date = new Date(data[i][CREATED_AT]);
+      const time = date.getHours();
       // @ts-ignore
       responseTimes[time]++;
     }
 
-    let requestFreqArr: { hour: number; responseTime: number }[] = [];
+    const requestFreqArr: { hour: number; responseTime: number }[] = [];
     for (let i = 0; i < 24; i++) {
       requestFreqArr.push({ hour: i, responseTime: responseTimes[i] });
     }
@@ -70,7 +70,7 @@
   }
 
   function genPlot() {
-    let plotData = buildPlotData();
+    const plotData = buildPlotData();
     //@ts-ignore
     new Plotly.newPlot(
       plotDiv,

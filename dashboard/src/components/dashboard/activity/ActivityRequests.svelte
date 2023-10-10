@@ -6,13 +6,13 @@
 
   function defaultLayout() {
     let periodAgo = new Date();
-    let days = periodToDays(period);
+    const days = periodToDays(period);
     if (days != null) {
       periodAgo.setDate(periodAgo.getDate() - days);
     } else {
       periodAgo = null;
     }
-    let tomorrow = new Date();
+    const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate());
 
     return {
@@ -40,26 +40,26 @@
 
   function initRequestFreq(): { [date: string]: number } {
     // Populate requestFreq with zeros across date period
-    let requestFreq = {};
-    let days = periodToDays(period);
+    const requestFreq = {};
+    const days = periodToDays(period);
     if (days) {
       if (days === 1) {
         // Freq count for every 5 minute
         for (let i = 0; i < 288; i++) {
-          let date = new Date();
+          const date = new Date();
           date.setSeconds(0, 0);
           // Round down to multiple of 5
           date.setMinutes(Math.floor(date.getMinutes() / 5) * 5 - i * 5);
-          let dateStr = date.toISOString();
+          const dateStr = date.toISOString();
           requestFreq[dateStr] = 0;
         }
       } else {
         // Freq count for every day
         for (let i = 0; i < days; i++) {
-          let date = new Date();
+          const date = new Date();
           date.setHours(0, 0, 0, 0);
           date.setDate(date.getDate() - i);
-          let dateStr = date.toISOString();
+          const dateStr = date.toISOString();
           requestFreq[dateStr] = 0;
         }
       }
@@ -68,18 +68,18 @@
   }
 
   function bars() {
-    let requestFreq = initRequestFreq();
+    const requestFreq = initRequestFreq();
 
-    let days = periodToDays(period);
+    const days = periodToDays(period);
     for (let i = 1; i < data.length; i++) {
-      let date = new Date(data[i][CREATED_AT]);
+      const date = new Date(data[i][CREATED_AT]);
       if (days === 1) {
         // Round down to multiple of 5
         date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
       } else {
         date.setHours(0, 0, 0, 0);
       }
-      let dateStr = date.toISOString();
+      const dateStr = date.toISOString();
       if (!(dateStr in requestFreq)) {
         requestFreq[dateStr] = 0;
       }
@@ -87,8 +87,8 @@
     }
 
     // Combine date and frequency count into (x, y) tuples for sorting
-    let requestFreqArr = [];
-    for (let date in requestFreq) {
+    const requestFreqArr = [];
+    for (const date in requestFreq) {
       requestFreqArr.push([new Date(date), requestFreq[date]]);
     }
     // Sort by date
@@ -96,8 +96,8 @@
       return a[0] - b[0];
     });
     // Split into two lists
-    let dates = [];
-    let requests = [];
+    const dates = [];
+    const requests = [];
     for (let i = 0; i < requestFreqArr.length; i++) {
       dates.push(requestFreqArr[i][0]);
       requests.push(requestFreqArr[i][1]);
@@ -129,7 +129,7 @@
 
   let plotDiv: HTMLDivElement;
   function genPlot() {
-    let plotData = buildPlotData();
+    const plotData = buildPlotData();
     //@ts-ignore
     new Plotly.newPlot(
       plotDiv,
