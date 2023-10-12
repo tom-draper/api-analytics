@@ -211,10 +211,10 @@
   let showSettings: boolean = false;
   let hostnames: string[];
   let notification: NotificationState = {
-    message: "",
-    style: "error",
-    show: false
-  }
+    message: '',
+    style: 'error',
+    show: false,
+  };
   let periodDataCache: PeriodDataCache = {};
   let periodData: RequestsData;
   let prevPeriodData: RequestsData;
@@ -330,7 +330,11 @@
   </div>
 {/if}
 <Settings bind:show={showSettings} bind:settings />
-<Notification message={notification.message} style={notification.style} show={notification.show}/>
+<Notification
+  message={notification.message}
+  style={notification.style}
+  show={notification.show}
+/>
 <Footer />
 
 <style scoped>

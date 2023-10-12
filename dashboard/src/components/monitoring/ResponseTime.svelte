@@ -31,23 +31,24 @@
     let markers = periodToMarkers(period);
 
     let dates: Date[] = Array(markers);
-    let x: number[] = Array(markers)
+    let x: number[] = Array(markers);
     let requests: number[] = Array(markers);
     for (let i = 0; i < markers; i++) {
       requests[markers - i - 1] = data[i].responseTime;
       dates[markers - i - 1] = data[i].createdAt;
-      x[markers-i-1] = i
+      x[markers - i - 1] = i;
     }
 
     for (let i = 0; i < dates.length; i++) {
-      if (dates[i] === null) {
-        if (i === 0) {
-          dates[i] = new Date();
-        } else {
-          // 30 mins from previous date
-          dates[i] = new Date(dates[i - 1]);
-          dates[i].setMinutes(dates[i].getMinutes() - 30);
-        }
+      if (dates[i] !== null) {
+        continue;
+      }
+      if (i === 0) {
+        dates[i] = new Date();
+      } else {
+        // 30 mins from previous date
+        dates[i] = new Date(dates[i - 1]);
+        dates[i].setMinutes(dates[i].getMinutes() - 30);
       }
     }
 

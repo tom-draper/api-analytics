@@ -68,8 +68,6 @@
     };
   }
 
-
-
   function pieChart() {
     let clientCount = {};
     for (let i = 1; i < data.length; i++) {

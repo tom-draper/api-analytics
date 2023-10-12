@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Dropdown from "../dashboard/Dropdown.svelte";
+  import Dropdown from '../dashboard/Dropdown.svelte';
 
   async function postMonitor() {
     if (monitorCount >= 3) {
@@ -24,7 +24,7 @@
           }),
         }
       );
-      console.log(response.body, response.status, response.statusText)
+      console.log(response.body, response.status, response.statusText);
       if (response.status !== 201) {
         console.log('Error', response.status);
       }
@@ -35,25 +35,33 @@
   }
 
   function showError(message: string) {
-    notificationMessage = message
+    notificationMessage = message;
     notificationShow = true;
     setTimeout(() => {
       notificationShow = false;
-    }, 6000)
+    }, 6000);
   }
 
   let url: string;
-  let options = ['https', 'http']
-  let urlPrefix = options[0]
+  let options = ['https', 'http'];
+  let urlPrefix = options[0];
 
-  export let userID: string, showTrackNew: boolean, monitorCount: number, notificationMessage: string, notificationShow: boolean;
+  export let userID: string,
+    showTrackNew: boolean,
+    monitorCount: number,
+    notificationMessage: string,
+    notificationShow: boolean;
 </script>
 
 <div class="card">
   <div class="card-text">
     <div class="url">
-      <Dropdown {options} selected={urlPrefix}/>
-      <input type="text" placeholder="www.example.com/endpoint/" bind:value={url} />
+      <Dropdown {options} selected={urlPrefix} />
+      <input
+        type="text"
+        placeholder="www.example.com/endpoint/"
+        bind:value={url}
+      />
       <button class="add" on:click={postMonitor}>Add</button>
     </div>
     <div class="detail">

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import  { periodToDays } from '../../../lib/period';
+  import { periodToDays } from '../../../lib/period';
   import { CREATED_AT } from '../../../lib/consts';
   import type { Period } from '../../../lib/settings';
 
