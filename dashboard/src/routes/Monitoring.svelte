@@ -125,8 +125,7 @@
           {userID}
           {showTrackNew}
           monitorCount={Object.keys(monitorData).length}
-          notificationMessage={notification.message}
-          notificationShow={notification.show}
+          bind:notification={notification}
         />
       {/if}
       {#each Object.keys(monitorData) as url}
@@ -145,7 +144,7 @@
     {/if}
   </div>
 </div>
-<Notification message={notification.message} style={notification.style} show={notification.show}/>
+<Notification bind:state={notification} />
 <Footer />
 
 <style scoped>

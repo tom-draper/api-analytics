@@ -330,11 +330,7 @@
   </div>
 {/if}
 <Settings bind:show={showSettings} bind:settings />
-<Notification
-  message={notification.message}
-  style={notification.style}
-  show={notification.show}
-/>
+<Notification state={notification} />
 <Footer />
 
 <style scoped>

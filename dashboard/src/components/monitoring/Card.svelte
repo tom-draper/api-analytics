@@ -167,7 +167,7 @@
       {#each samples as sample}
         <div
           class="measurement {sample.label}"
-          title="Status: {sample.status}"
+          title="{sample.createdAt === null ? '' : `Status: ${sample.status}\n${sample.createdAt.toLocaleString()}`}"
         />
       {/each}
     </div>

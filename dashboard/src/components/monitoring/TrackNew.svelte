@@ -1,9 +1,23 @@
 <script lang="ts">
+  import type {NotificationState} from '../../lib/notification';
   import Dropdown from '../dashboard/Dropdown.svelte';
 
+  function triggerErrorMessage(message: string) {
+    notification.message = message
+    notification.style = "error"
+    notification.show = true
+    setTimeout(() => {
+      notification.show = false;
+    }, 4000)
+  }
+
   async function postMonitor() {
-    if (monitorCount >= 3) {
-      alert('Max 3 URL monitors allowed at one time.');
+    if (url == null) {
+      triggerErrorMessage("URL is blank.")
+      return
+    } else if (monitorCount >= 3) {
+      triggerErrorMessage("Maximum 3 monitors allowed.")
+      return
     }
 
     try {
@@ -24,7 +38,6 @@
           }),
         }
       );
-      console.log(response.body, response.status, response.statusText);
       if (response.status !== 201) {
         console.log('Error', response.status);
       }
@@ -34,14 +47,6 @@
     }
   }
 
-  function showError(message: string) {
-    notificationMessage = message;
-    notificationShow = true;
-    setTimeout(() => {
-      notificationShow = false;
-    }, 6000);
-  }
-
   let url: string;
   let options = ['https', 'http'];
   let urlPrefix = options[0];
@@ -49,8 +54,7 @@
   export let userID: string,
     showTrackNew: boolean,
     monitorCount: number,
-    notificationMessage: string,
-    notificationShow: boolean;
+    notification: NotificationState;
 </script>
 
 <div class="card">
