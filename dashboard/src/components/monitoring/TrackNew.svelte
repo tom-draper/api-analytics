@@ -24,6 +24,7 @@
           }),
         }
       );
+      console.log(response.body, response.status, response.statusText)
       if (response.status !== 201) {
         console.log('Error', response.status);
       }
@@ -33,11 +34,19 @@
     }
   }
 
+  function showError(message: string) {
+    notificationMessage = message
+    notificationShow = true;
+    setTimeout(() => {
+      notificationShow = false;
+    }, 6000)
+  }
+
   let url: string;
   let options = ['https', 'http']
   let urlPrefix = options[0]
 
-  export let userID: string, showTrackNew: boolean, monitorCount: number;
+  export let userID: string, showTrackNew: boolean, monitorCount: number, notificationMessage: string, notificationShow: boolean;
 </script>
 
 <div class="card">

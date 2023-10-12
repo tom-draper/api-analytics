@@ -18,6 +18,7 @@
   import Settings from '../components/dashboard/Settings.svelte';
   import type { DashboardSettings, Period } from '../lib/settings';
   import { initSettings } from '../lib/settings';
+  import type { NotificationState } from '../lib/notification';
   import {
     CREATED_AT,
     PATH,
@@ -209,6 +210,11 @@
   let settings: DashboardSettings = initSettings();
   let showSettings: boolean = false;
   let hostnames: string[];
+  let notification: NotificationState = {
+    message: "",
+    style: "error",
+    show: false
+  }
   let periodDataCache: PeriodDataCache = {};
   let periodData: RequestsData;
   let prevPeriodData: RequestsData;
@@ -324,7 +330,7 @@
   </div>
 {/if}
 <Settings bind:show={showSettings} bind:settings />
-<Notification />
+<Notification message={notification.message} style={notification.style} show={notification.show}/>
 <Footer />
 
 <style scoped>
