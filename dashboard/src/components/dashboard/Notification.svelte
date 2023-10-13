@@ -37,7 +37,7 @@
     color: #cc3444;
   }
   .warn {
-    background: rgba(203, 203, 108, 0.95);
+    background: rgba(186, 186, 100, 0.95);
     color: yellow;
   }
   .success {

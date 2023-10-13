@@ -44,17 +44,17 @@
         }
       );
       if (response.status === 201) {
-        triggerNotificationMessage('Created successfully.', 'success')
+        triggerNotificationMessage('Created successfully', 'success')
         addEmptyMonitor(fullURL)
         showTrackNew = false;
       } else if (response.status === 409) {
-        triggerNotificationMessage('URL already monitored.', 'warn')
+        triggerNotificationMessage('URL already monitored', 'warn')
       } else {
-        triggerNotificationMessage('Failed to create monitor.')
+        triggerNotificationMessage('Failed to create monitor')
       }
     } catch (e) {
       console.log(e)
-      triggerNotificationMessage('Failed to create monitor.')
+      triggerNotificationMessage('Failed to create monitor')
     }
   }
 

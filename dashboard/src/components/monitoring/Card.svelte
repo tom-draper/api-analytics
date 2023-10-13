@@ -27,14 +27,14 @@
         }
       );
       if (response.status === 201) {
-        triggerNotificationMessage('Deleted successfully.', 'success')
+        triggerNotificationMessage('Deleted successfully', 'success')
         removeMonitor(url)
       } else {
-        triggerNotificationMessage('Failed to delete monitor.')
+        triggerNotificationMessage('Failed to delete monitor')
       }
     } catch (e) {
       console.log(e);
-      triggerNotificationMessage('Failed to delete monitor.')
+      triggerNotificationMessage('Failed to delete monitor')
     }
   }
 
