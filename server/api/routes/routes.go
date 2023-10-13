@@ -699,7 +699,7 @@ func deleteUserMonitor(c *gin.Context) {
 		return
 	}
 
-	log.LogToFile(fmt.Sprint("key=%s: Monitor '%s' deletion successful", apiKey, body.URL))
+	log.LogToFile(fmt.Sprintf("key=%s: Monitor '%s' deletion successful", apiKey, body.URL))
 
 	// Return success response
 	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "Monitor deleted successfully."})
