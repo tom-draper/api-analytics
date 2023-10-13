@@ -1,9 +1,11 @@
 <script lang="ts">
   import { SERVER_URL } from '../lib/consts';
 
-  let state: 'sign-in' | 'loading' = 'sign-in';
+  type State = 'sign-in' | 'loading'
+
+  let state: State = 'sign-in';
   let apiKey = '';
-  async function genAPIKey() {
+  async function submit() {
     setState('loading');
     try {
       const response = await fetch(`${SERVER_URL}/api/user-id/${apiKey}`);
@@ -20,7 +22,13 @@
     }
   }
 
-  function setState(value: typeof state) {
+  function enter(e) {
+    if (e.keyCode === 13) {
+      submit();
+    }
+  }
+
+  function setState(value: State) {
     state = value;
   }
 
@@ -34,11 +42,14 @@
     {:else if page == 'monitoring'}
       <h2>Monitoring</h2>
     {/if}
-    <input type="text" bind:value={apiKey} placeholder="Enter API key" />
-    <button
-      id="formBtn"
-      on:click={genAPIKey}
-      class:no-display={state != 'sign-in'}>Load</button
+    <input
+      type="text"
+      bind:value={apiKey}
+      placeholder="Enter API key"
+      on:keydown={enter}
+    />
+    <button id="formBtn" on:click={submit} class:no-display={state != 'sign-in'}
+      >Load</button
     >
     <button id="formBtn" class:no-display={state != 'loading'}>
       <div class="spinner">
