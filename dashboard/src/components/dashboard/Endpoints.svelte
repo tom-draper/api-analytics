@@ -3,7 +3,7 @@
   import { METHOD, PATH, STATUS } from '../../lib/consts';
 
   // Integer to method string mapping used by server
-  let methodMap = [
+  const methodMap = [
     'GET',
     'POST',
     'PUT',
@@ -18,10 +18,10 @@
   function endpointFreq(): {
     [endpointID: string]: { path: string; status: number; count: number };
   } {
-    let freq = {};
+    const freq = {};
     for (let i = 1; i < data.length; i++) {
       // Create groups of endpoints by path + status
-      let endpointID = `${data[i][PATH]}${data[i][STATUS]}`;
+      const endpointID = `${data[i][PATH]}${data[i][STATUS]}`;
       if (!(endpointID in freq)) {
         freq[endpointID] = {
           path: `${methodMap[data[i][METHOD]]}  ${data[i][PATH]}`,
@@ -52,12 +52,12 @@
   }
 
   function build() {
-    let freq = endpointFreq();
+    const freq = endpointFreq();
 
     // Convert object to list
-    let freqArr = [];
+    const freqArr = [];
     maxCount = 0;
-    for (let endpointID in freq) {
+    for (const endpointID in freq) {
       if (statusMatch(freq[endpointID].status)) {
         freqArr.push(freq[endpointID]);
         if (freq[endpointID].count > maxCount) {
@@ -74,10 +74,10 @@
   }
 
   function setEndpointLabelVisibility(idx: number) {
-    let endpoint = document.getElementById(`endpoint-label-${idx}`);
-    let endpointPath = document.getElementById(`endpoint-path-${idx}`);
-    let endpointCount = document.getElementById(`endpoint-count-${idx}`);
-    let externalLabel = document.getElementById(`external-label-${idx}`);
+    const endpoint = document.getElementById(`endpoint-label-${idx}`);
+    const endpointPath = document.getElementById(`endpoint-path-${idx}`);
+    const endpointCount = document.getElementById(`endpoint-count-${idx}`);
+    const externalLabel = document.getElementById(`external-label-${idx}`);
     if (
       endpoint.clientWidth <
       endpointPath.clientWidth + endpointCount.clientWidth

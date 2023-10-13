@@ -11,13 +11,13 @@
   }
 
   function countryCodeToName(countryCode: string) {
-    let regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+    const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
     return regionNames.of(countryCode);
   }
 
   function build() {
     let max = 0;
-    let locationsFreq = {};
+    const locationsFreq = {};
     for (let i = 0; i < data.length; i++) {
       if (!data[i][LOCATION]) {
         continue;
@@ -33,7 +33,7 @@
     }
 
     locations = [];
-    for (let location in locationsFreq) {
+    for (const location in locationsFreq) {
       locations.push({
         location: location,
         frequency: locationsFreq[location],

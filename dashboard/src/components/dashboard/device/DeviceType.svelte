@@ -39,24 +39,24 @@
     };
   }
 
-  let colors = [
+  const colors = [
     '#3FCF8E', // Green
     '#E46161', // Red
     '#EBEB81', // Yellow
   ];
 
   function pieChart() {
-    let deviceCount = {};
+    const deviceCount = {};
     for (let i = 1; i < data.length; i++) {
-      let device = getDevice(data[i][USER_AGENT]);
+      const device = getDevice(data[i][USER_AGENT]);
       if (!(device in deviceCount)) {
         deviceCount[device] = 0;
       }
       deviceCount[device]++;
     }
 
-    let devices = [];
-    let count = [];
+    const devices = [];
+    const count = [];
     for (let browser in deviceCount) {
       devices.push(browser);
       count.push(deviceCount[browser]);
@@ -86,7 +86,7 @@
   }
 
   function genPlot() {
-    let plotData = devicePlotData();
+    const plotData = devicePlotData();
     //@ts-ignore
     new Plotly.newPlot(
       plotDiv,

@@ -6,13 +6,13 @@
 
   function defaultLayout() {
     let periodAgo = new Date();
-    let days = periodToDays(period);
+    const days = periodToDays(period);
     if (days != null) {
       periodAgo.setDate(periodAgo.getDate() - days);
     } else {
       periodAgo = null;
     }
-    let tomorrow = new Date();
+    const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate());
     return {
       title: false,
@@ -42,26 +42,26 @@
   function initResponseTimes(): {
     [date: string]: { total: number; count: number };
   } {
-    let responseTimes = {};
-    let days = periodToDays(period);
+    const responseTimes = {};
+    const days = periodToDays(period);
     if (days) {
       if (days <= 7) {
         // Freq count for every minute
         for (let i = 0; i < 60 * 24 * days; i++) {
-          let date = new Date();
+          const date = new Date();
           date.setSeconds(0, 0);
           // Round down to multiple of 5
           date.setMinutes(Math.floor(date.getMinutes() / 5) * 5 - i * 5);
-          let dateStr = date.toISOString();
+          const dateStr = date.toISOString();
           responseTimes[dateStr] = { total: 0, count: 0 };
         }
       } else {
         // Freq count for every day
         for (let i = 0; i < days; i++) {
-          let date = new Date();
+          const date = new Date();
           date.setHours(0, 0, 0, 0);
           date.setDate(date.getDate() - i);
-          let dateStr = date.toISOString();
+          const dateStr = date.toISOString();
           responseTimes[dateStr] = { total: 0, count: 0 };
         }
       }
@@ -70,11 +70,11 @@
   }
 
   function bars() {
-    let responseTimes = initResponseTimes();
+    const responseTimes = initResponseTimes();
 
-    let days = periodToDays(period);
+    const days = periodToDays(period);
     for (let i = 1; i < data.length; i++) {
-      let date = new Date(data[i][CREATED_AT]);
+      const date = new Date(data[i][CREATED_AT]);
       if (days) {
         if (days <= 7) {
           // Round down to multiple of 5
@@ -83,7 +83,7 @@
           date.setHours(0, 0, 0, 0);
         }
       }
-      let dateStr = date.toISOString();
+      const dateStr = date.toISOString();
       if (!(dateStr in responseTimes)) {
         responseTimes[dateStr] = { total: 0, count: 0 };
       }
@@ -92,9 +92,9 @@
     }
 
     // Combine date and avg response time into (x, y) tuples for sorting
-    let responseTimeArr = [];
-    for (let date in responseTimes) {
-      let point = [new Date(date), 0];
+    const responseTimeArr = [];
+    for (const date in responseTimes) {
+      const point = [new Date(date), 0];
       if (responseTimes[date].count > 0) {
         point[1] = responseTimes[date].total / responseTimes[date].count;
       }
@@ -105,8 +105,8 @@
       return a[0] - b[0];
     });
     // Split into two lists
-    let dates = [];
-    let rt = [];
+    const dates = [];
+    const rt = [];
     let min_rt = Number.POSITIVE_INFINITY;
     for (let i = 0; i < responseTimeArr.length; i++) {
       dates.push(responseTimeArr[i][0]);
@@ -117,26 +117,6 @@
     }
 
     return [
-      // {
-      //   x: dates,
-      //   y: rt,
-      //   type: "lines",
-      //   marker: { color: "#707070" },
-      //   hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
-      //   showlegend: false,
-      //   line: { shape: "spline", smoothing: 1 },
-      // },
-      // // 'Hidden' horizontal line at min y to provide fill colour up to response time line
-      // {
-      //   x: dates,
-      //   y: Array(rt.length).fill(Math.max(min_rt - 5, 0)),
-      //   type: "lines",
-      //   marker: { color: "transparent" },
-      //   fill: "tonexty",
-      //   fillcolor: "#70707030",
-      //   hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
-      //   showlegend: false,
-      // },
       {
         x: dates,
         y: rt,
@@ -144,18 +124,7 @@
         marker: { color: '#707070' },
         hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
         showlegend: false,
-        // line: { shape: "spline", smoothing: 1 },
       },
-      // {
-      //   x: dates,
-      //   y: ,
-      //   type: "lines",
-      //   marker: { color: "transparent" },
-      //   fill: "tonexty",
-      //   fillcolor: "#70707030",
-      //   hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
-      //   showlegend: false,
-      // },
     ];
   }
 
@@ -172,7 +141,7 @@
   }
 
   function genPlot() {
-    let plotData = buildPlotData();
+    const plotData = buildPlotData();
     //@ts-ignore
     new Plotly.newPlot(
       plotDiv,

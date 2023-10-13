@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/tom-draper/api-analytics/server/api/routes"
 	"github.com/tom-draper/api-analytics/server/api/lib/log"
+	"github.com/tom-draper/api-analytics/server/api/routes"
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
 	"github.com/gin-contrib/cors"

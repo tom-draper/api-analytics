@@ -1,33 +1,40 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import ResponseTime from './ResponseTime.svelte';
   import { periodToMarkers } from '../../lib/period';
+  import type { NotificationState } from '../../lib/notification';
+
+  function triggerNotificationMessage(message: string, style: "error" | "warn" | "success" = "error") {
+    notification.message = message
+    notification.style = style
+    notification.show = true
+    setTimeout(() => {
+      notification.show = false;
+    }, 4000)
+  }
 
   async function deleteMonitor() {
-    delete data[url];
-    data = data; // Trigger reactivity to update display
-
     try {
-      let response = await fetch(
+      const response = await fetch(
         'https://www.apianalytics-server.com/api/monitor/delete',
         {
           method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
+          headers: {},
           body: JSON.stringify({
             user_id: userID,
             url: url,
+            status: 0,
           }),
         }
       );
-      if (response.status !== 201) {
-        console.log('Error', response.status);
+      if (response.status === 201) {
+        triggerNotificationMessage('Deleted successfully', 'success')
+        removeMonitor(url)
+      } else {
+        triggerNotificationMessage('Failed to delete monitor')
       }
     } catch (e) {
       console.log(e);
+      triggerNotificationMessage('Failed to delete monitor')
     }
   }
 
@@ -44,17 +51,18 @@
       total++;
     }
 
-    let per = (success / total) * 100;
-    if (per === 100) {
-      uptime = '100';
-    } else {
-      uptime = per.toFixed(2);
+    if (total === 0) {
+      uptime = '0'
+    } else  {
+      const per = (success / total) * 100;
+      // If 100% display without decimal
+      uptime = per === 100 ? '100': per.toFixed(2);
     }
   }
 
   function periodSample(): MonitorSample[] {
     /* Sample ping recordings at regular intervals if number of bars fewer than 
-    total recordings the current period length */
+		total recordings the current period length */
     let sample: MonitorSample[] = [];
     switch (period) {
       case '30d':
@@ -76,26 +84,28 @@
       default:
         sample = data[url];
     }
+    // Ensure final sample is the most recent sample in the data for system down visual highlight
+    sample[sample.length-1] = data[url][data[url].length-1]
     return sample;
   }
 
   function setSamples() {
-    let markers = periodToMarkers(period);
+    const markers = periodToMarkers(period);
     samples = Array(markers).fill({
       label: 'no-request',
       responseTime: 0,
       status: 0,
       createdAt: null,
     });
-    let sampledData = periodSample();
+    const sampledData = periodSample();
     const start = markers - sampledData.length;
 
     for (let i = 0; i < sampledData.length; i++) {
       samples[i + start] = {
         label: 'no-request',
         status: sampledData[i].status,
-        responseTime: sampledData[i].responseTime,
-        createdAt: new Date(sampledData[i].createdAt),
+        responseTime: sampledData[i]['response_time'],
+        createdAt: new Date(sampledData[i]['created_at']),
       };
       if (sampledData[i].status >= 200 && sampledData[i].status <= 299) {
         samples[i + start].label = 'success';
@@ -114,11 +124,23 @@
     anyError = anyError || error;
   }
 
+  function separateURL() {
+    if (url.startsWith('https://')) {
+      separatedURL.prefix = 'https://'
+      separatedURL.body = url.replace('https://', '')
+    } else if (url.startsWith('http://')) {
+      separatedURL.prefix = 'http://'
+      separatedURL.body = url.replace('http://', '')
+    }
+  }
+
   function build() {
+    separateURL();
     setSamples();
     setError();
     setUptime();
   }
+
 
   // Monitor sample with label for status colour CSS class
   type Sample = MonitorSample & { label: string };
@@ -126,17 +148,21 @@
   let uptime = '';
   let error = false;
   let samples: Sample[];
-  onMount(() => {
-    build();
-  });
+  let separatedURL = {
+    prefix: '',
+    body: '',
+  }
 
-  $: period && build();
+  // If card period or url changes at any time, rebuild
+  $: (period || url) && build();
 
   export let url: string,
     data: MonitorData,
     userID: string,
     period: string,
-    anyError: boolean;
+    anyError: boolean,
+    notification: NotificationState,
+    removeMonitor: (url: string) => void;
 </script>
 
 <div class="card" class:card-error={error}>
@@ -151,8 +177,8 @@
           <div class="indicator green-light" />
         {/if}
       </div>
-      <a href="http://{url}" class="endpoint"
-        ><span style="color: var(--dim-text)">http://</span>{url}</a
+      <a href="{separatedURL.prefix}{separatedURL.body}" class="endpoint"
+        ><span style="color: var(--dim-text)">{separatedURL.prefix}</span>{separatedURL.body}</a
       >
       <button class="delete" on:click={deleteMonitor}
         ><img class="bin-icon" src="../img/bin.png" alt="" /></button
@@ -167,12 +193,12 @@
       {#each samples as sample}
         <div
           class="measurement {sample.label}"
-          title="Status: {sample.status}"
+          title="{sample.createdAt === null ? '' : `Status: ${sample.status}\n${sample.createdAt.toLocaleString()}`}"
         />
       {/each}
     </div>
     <div class="response-time">
-      <ResponseTime data={samples} {period} />
+      <ResponseTime bind:data={samples} {period} />
     </div>
   {/if}
 </div>

@@ -18,6 +18,7 @@
   import Settings from '../components/dashboard/Settings.svelte';
   import type { DashboardSettings, Period } from '../lib/settings';
   import { initSettings } from '../lib/settings';
+  import type { NotificationState } from '../lib/notification';
   import {
     CREATED_AT,
     PATH,
@@ -26,6 +27,7 @@
     HOSTNAME,
   } from '../lib/consts';
   import Dropdown from '../components/dashboard/Dropdown.svelte';
+  import Notification from '../components/dashboard/Notification.svelte';
 
   function inPeriod(date: Date, days: number): boolean {
     const periodAgo = new Date();
@@ -208,6 +210,11 @@
   let settings: DashboardSettings = initSettings();
   let showSettings: boolean = false;
   let hostnames: string[];
+  let notification: NotificationState = {
+    message: '',
+    style: 'error',
+    show: false,
+  };
   let periodDataCache: PeriodDataCache = {};
   let periodData: RequestsData;
   let prevPeriodData: RequestsData;
@@ -323,6 +330,7 @@
   </div>
 {/if}
 <Settings bind:show={showSettings} bind:settings />
+<Notification state={notification} />
 <Footer />
 
 <style scoped>

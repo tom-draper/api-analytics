@@ -28,9 +28,9 @@
   }
 
   function lines() {
-    let n = 5;
-    let x = [...Array(n).keys()];
-    let y = Array(n).fill(0);
+    const n = 5;
+    const x = [...Array(n).keys()];
+    const y = Array(n).fill(0);
 
     if (data.length > 0) {
       const start = new Date(data[0][CREATED_AT]).getTime();
@@ -72,7 +72,7 @@
   }
 
   function genPlot() {
-    let plotData = usersPlotData();
+    const plotData = usersPlotData();
     //@ts-ignore
     new Plotly.newPlot(
       plotDiv,
@@ -95,7 +95,7 @@
   }
 
   function getUsers(data: RequestsData): Set<string> {
-    let users: Set<string> = new Set();
+    const users: Set<string> = new Set();
     for (let i = 1; i < data.length; i++) {
       if (data[i][IP_ADDRESS] != null && data[i][IP_ADDRESS] != '') {
         users.add(data[i][IP_ADDRESS]);
@@ -105,11 +105,11 @@
   }
 
   function build() {
-    let users = getUsers(data);
+    const users = getUsers(data);
     numUsers = users.size;
 
-    let prevUsers = getUsers(prevData);
-    let prevNumUsers = prevUsers.size;
+    const prevUsers = getUsers(prevData);
+    const prevNumUsers = prevUsers.size;
 
     setPercentageChange(numUsers, prevNumUsers);
 

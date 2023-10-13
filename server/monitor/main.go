@@ -13,16 +13,6 @@ import (
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
-func getURL(domain string, secure bool) string {
-	var url string
-	if secure {
-		url = "https://" + domain
-	} else {
-		url = "http://" + domain
-	}
-	return url
-}
-
 func getMethod(ping bool) string {
 	var method string
 	if ping {
@@ -33,8 +23,7 @@ func getMethod(ping bool) string {
 	return method
 }
 
-func ping(client http.Client, domain string, secure bool, ping bool) (int, time.Duration, error) {
-	url := getURL(domain, secure)
+func ping(client http.Client, url string, secure bool, ping bool) (int, time.Duration, error) {
 	method := getMethod(ping)
 
 	request, err := http.NewRequest(method, url, nil)

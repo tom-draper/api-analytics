@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { PATH } from '../../lib/consts';
+  import { PATH, graphColors } from '../../lib/consts';
 
   function setVersions() {
-    let v: Set<string> = new Set();
+    const v: Set<string> = new Set();
     for (let i = 1; i < data.length; i++) {
-      let match = data[i][PATH].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
+      const match = data[i][PATH].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
       if (match) {
         v.add(match[1]);
       }
@@ -39,23 +39,12 @@
     };
   }
 
-  let colors = [
-    '#3FCF8E', // Green
-    '#5784BA', // Blue
-    '#EBEB81', // Yellow
-    '#218B82', // Sea green
-    '#FFD6A5', // Orange
-    '#F9968B', // Salmon
-    '#B1A2CA', // Purple
-    '#E46161', // Red
-  ];
-
   function pieChart() {
-    let versionCount = {};
+    const versionCount = {};
     for (let i = 1; i < data.length; i++) {
-      let match = data[i][PATH].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
+      const match = data[i][PATH].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
       if (match) {
-        let version = match[1];
+        const version = match[1];
         if (!(version in versionCount)) {
           versionCount[version] = 0;
         }
@@ -63,9 +52,9 @@
       }
     }
 
-    let versions = [];
-    let count = [];
-    for (let version in versionCount) {
+    const versions = [];
+    const count = [];
+    for (const version in versionCount) {
       versions.push(version);
       count.push(versionCount[version]);
     }
@@ -76,7 +65,7 @@
         labels: versions,
         type: 'pie',
         marker: {
-          colors: colors,
+          colors: graphColors,
         },
       },
     ];
@@ -95,7 +84,7 @@
   }
 
   function genPlot() {
-    let plotData = versionPlotData();
+    const plotData = versionPlotData();
     //@ts-ignore
     new Plotly.newPlot(
       plotDiv,
