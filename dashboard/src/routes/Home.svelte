@@ -12,14 +12,12 @@
     description="An all-in-one analytics dashboard. Real-time insight into your API's usage."
     path="/dashboard"
     img="dashboard.png"
-    button="Open"
   />
   <Highlight
     title="Monitor"
     description="Active monitoring and error notifications. Peace of mind."
-    path="/"
+    path="/monitoring"
     img="monitoring.png"
-    button="Coming soon"
   />
   <GettingStarted />
 </div>
