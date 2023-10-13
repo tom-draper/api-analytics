@@ -27,7 +27,7 @@ func genAPIKey(c *gin.Context) {
 
 	rows, err := db.Query(query)
 	if err != nil {
-		log.LogToFile("API key generation failed")
+		log.LogToFile(fmt.Sprintf("API key generation failed - %w", err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
 		return
 	}
@@ -35,14 +35,13 @@ func genAPIKey(c *gin.Context) {
 	// Get API key auto generated from new row insertion
 	rows.Next()
 	var apiKey string
-	err = rows.Scan(&apiKey)
-	if err != nil {
-		log.LogToFile("Failed to access generated key")
+	if err = rows.Scan(&apiKey); err != nil {
+		log.LogToFile(fmt.Sprintf("Failed to access generated key - %w", err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
 		return
 	}
 
-	log.LogToFile("key=" + apiKey + ": API key generation successful")
+	log.LogToFile(fmt.Sprintf("key=%s: API key generation successful", apiKey))
 
 	// Return API key
 	c.JSON(http.StatusOK, apiKey)
@@ -51,7 +50,6 @@ func genAPIKey(c *gin.Context) {
 func getUserID(c *gin.Context) {
 	// Get user ID associated with API key
 	var apiKey string = c.Param("apiKey")
-
 	if apiKey == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
@@ -61,8 +59,8 @@ func getUserID(c *gin.Context) {
 	defer db.Close()
 
 	// Fetch user ID corresponding with API key
-	query := fmt.Sprintf("SELECT user_id FROM users WHERE api_key = '%s';", apiKey)
-	rows, err := db.Query(query)
+	query := "SELECT user_id FROM users WHERE api_key = $1;"
+	rows, err := db.Query(query, apiKey)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
@@ -71,8 +69,7 @@ func getUserID(c *gin.Context) {
 	// API key is primary key so assumed only one row returned
 	rows.Next()
 	var userID string
-	err = rows.Scan(&userID)
-	if err != nil {
+	if err = rows.Scan(&userID); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
@@ -95,42 +92,40 @@ type PublicRequestRow struct {
 
 func getUserRequests(c *gin.Context) {
 	var userID string = c.Param("userID")
-
 	if userID == "" {
 		log.LogToFile("User ID empty")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
 
-	log.LogToFile("id=" + userID + ": Dashboard access")
+	log.LogToFile(fmt.Sprintf("id=%s: Dashboard access", userID))
 
 	db := database.OpenDBConnection()
 	defer db.Close()
 
 	// Fetch API key corresponding with user_id
-	query := fmt.Sprintf("SELECT api_key FROM users WHERE user_id = '%s';", userID)
-	rows, err := db.Query(query)
+	query := "SELECT api_key FROM users WHERE user_id = $1;"
+	rows, err := db.Query(query, userID)
 	if err != nil {
-		log.LogToFile("id=" + userID + ": No API key associated with user ID")
+		log.LogToFile(fmt.Sprintf("id=%s: No API key associated with user ID - %w", userID, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
 
 	rows.Next()
 	var apiKey string
-	err = rows.Scan(&apiKey)
-	if err != nil {
-		log.LogToFile("id=" + userID + ": No API key associated with user ID")
+	if err = rows.Scan(&apiKey); err != nil {
+		log.LogToFile(fmt.Sprintf("id=%s: No API key associated with user ID - %w", userID, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
 
 	// Fetch user ID corresponding with API key
 	// Left table join was originally used but often exceeded postgresql working memory limit with large numbers of requests
-	query = fmt.Sprintf("SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s' LIMIT 700000;", apiKey)
-	rows, err = db.Query(query)
+	query = "SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = $1 LIMIT 700000;"
+	rows, err = db.Query(query, apiKey)
 	if err != nil {
-		log.LogToFile("key=" + apiKey + ": Invalid API key")
+		log.LogToFile(fmt.Sprintf("key=%s: Invalid API key - %w", apiKey, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
@@ -141,15 +136,14 @@ func getUserRequests(c *gin.Context) {
 
 	gzipOutput, err := compressJSON(requests)
 	if err != nil {
-		log.LogToFile("key=" + apiKey + ": Compression failed")
+		log.LogToFile(fmt.Sprintf("key=%s: Compression failed - %w", apiKey, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Compression failed."})
 		return
 	}
 
 	// Record access
-	err = updateLastAccessed(db, apiKey)
-	if err != nil {
-		log.LogToFile("key=" + apiKey + ": User last access update failed")
+	if err = updateLastAccessed(db, apiKey); err != nil {
+		log.LogToFile(fmt.Sprintf("key=%s: User last access update failed - %w", apiKey, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
@@ -173,40 +167,38 @@ func compressJSON(data any) ([]byte, error) {
 	// Compress using gzip
 	var buffer bytes.Buffer
 	gzw := gzip.NewWriter(&buffer)
-	_, err = gzw.Write(body)
-	if err != nil {
+	if _, err = gzw.Write(body); err != nil {
 		return nil, err
 	}
 
-	err = gzw.Close()
-	if err != nil {
+	if err = gzw.Close(); err != nil {
 		return nil, err
 	}
 	return buffer.Bytes(), nil
 }
 
 func updateLastAccessedByUserID(db *sql.DB, userID string) error {
-	query := fmt.Sprintf("UPDATE users SET last_accessed = NOW() WHERE user_id = '%s';", userID)
-	_, err := db.Query(query)
+	query := "UPDATE users SET last_accessed = NOW() WHERE user_id = $1;"
+	_, err := db.Query(query, userID)
 	return err
 }
 
 func updateLastAccessed(db *sql.DB, apiKey string) error {
-	query := fmt.Sprintf("UPDATE users SET last_accessed = NOW() WHERE api_key = '%s';", apiKey)
-	_, err := db.Query(query)
+	query := "UPDATE users SET last_accessed = NOW() WHERE api_key = $1;"
+	_, err := db.Query(query, apiKey)
 	return err
 }
 
 func buildRequestDataCompact(rows *sql.Rows, cols []any) [][]any {
 	// First value in list holds column names
 	requests := [][]any{cols}
-	request := new(PublicRequestRow) // Reused to avoid repeated memory allocation
+	// request := new(PublicRequestRow) // Reused to avoid repeated memory allocation
+	var request PublicRequestRow
 	for rows.Next() {
-		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
-		if request.Location.String == "  " {
-			request.Location.String = ""
-		}
-		if err == nil {
+		if err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt); err == nil {
+			if request.Location.String == "  " {
+				request.Location.String = ""
+			}
 			requests = append(requests, []any{request.IPAddress.String, request.Path, request.Hostname.String, request.UserAgent.String, request.Method, request.ResponseTime, request.Status, request.Location.String, request.CreatedAt})
 		}
 	}
@@ -236,7 +228,7 @@ func getData(c *gin.Context) {
 		}
 	}
 
-	log.LogToFile("key=" + apiKey + ": Data access")
+	log.LogToFile(fmt.Sprintf("key=%s: Data access", apiKey))
 
 	// Get any queries from url
 	queries := getQueriesFromRequest(c)
@@ -245,17 +237,16 @@ func getData(c *gin.Context) {
 	defer db.Close()
 
 	// Fetch all API request data associated with this account
-	query := buildDataFetchQuery(apiKey, queries)
-	rows, err := db.Query(query)
+	query, arguments := buildDataFetchQuery(apiKey, queries)
+	rows, err := db.Query(query, arguments...)
 	if err != nil {
-		log.LogToFile("key=" + apiKey + ": Queries failed")
+		log.LogToFile(fmt.Sprintf("key=%s: Queries failed - %w", apiKey, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
 
-	err = updateLastAccessed(db, apiKey)
-	if err != nil {
-		log.LogToFile("key=" + apiKey + ": User last access update failed")
+	if err := updateLastAccessed(db, apiKey); err != nil {
+		log.LogToFile(fmt.Sprintf("key=%s: User last access update failed - %w", apiKey, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
@@ -273,37 +264,46 @@ func getData(c *gin.Context) {
 	}
 }
 
-func buildDataFetchQuery(apiKey string, queries DataFetchQueries) string {
+func buildDataFetchQuery(apiKey string, queries DataFetchQueries) (string, []any) {
 	var query strings.Builder
-	query.WriteString(fmt.Sprintf("SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = '%s'", apiKey))
+	query.WriteString("SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = $1")
+
+	arguments := []any{apiKey}
 
 	// Providing a single date takes priority over range with dateFrom and dateTo
 	if database.SanitizeDate(queries.date) {
-		query.WriteString(fmt.Sprintf(" and created_at >= '%s' and created_at < date '%s' + interval '1 days'", queries.date.Format("2006-01-02"), queries.date.Format("2006-01-02")))
+		query.WriteString(fmt.Sprintf(" and created_at >= $%d and created_at < date $%d + interval '1 days'", len(arguments)+1, len(arguments)+2))
+		arguments = append(arguments, queries.date.Format("2006-01-02"), queries.date.Format("2006-01-02"))
 	} else {
 		if database.SanitizeDate(queries.dateFrom) {
-			query.WriteString(fmt.Sprintf(" and created_at >= '%s'", queries.dateFrom.Format("2006-01-02")))
+			query.WriteString(fmt.Sprintf(" and created_at >= $%d", len(arguments)+1))
+			arguments = append(arguments, queries.dateFrom.Format("2006-01-02"))
 		}
 		if database.SanitizeDate(queries.dateTo) {
-			query.WriteString(fmt.Sprintf(" and created_at <= '%s'", queries.dateTo.Format("2006-01-02")))
+			query.WriteString(fmt.Sprintf(" and created_at <= $%d", len(arguments)+1))
+			arguments = append(arguments, queries.dateTo.Format("2006-01-02"))
 		}
 	}
 
 	if database.SanitizeIPAddress(queries.ipAddress) {
-		query.WriteString(fmt.Sprintf(" and ip_address = '%s'", queries.ipAddress))
+		query.WriteString(fmt.Sprintf(" and ip_address = $%d", len(arguments)+1))
+		arguments = append(arguments, queries.ipAddress)
 	}
 	if database.SanitizeLocation(queries.location) {
-		query.WriteString(fmt.Sprintf(" and location = '%s'", queries.location))
+		query.WriteString(fmt.Sprintf(" and location = $%d", len(arguments)+1))
+		arguments = append(arguments, queries.location)
 	}
 	if database.SanitizeStatus(queries.status) {
-		query.WriteString(fmt.Sprintf(" and status = %d", queries.status))
+		query.WriteString(fmt.Sprintf(" and status = $%d", len(arguments)+1))
+		arguments = append(arguments, queries.status)
 	}
 	if database.SanitizeString(queries.hostname) {
-		query.WriteString(fmt.Sprintf(" and hostname = '%s'", queries.hostname))
+		query.WriteString(fmt.Sprintf(" and hostname = $%d", len(arguments)+1))
+		arguments = append(arguments, queries.hostname)
 	}
 
-	query.WriteString("LIMIT 700000;")
-	return query.String()
+	query.WriteString(" LIMIT 700000;")
+	return query.String(), arguments
 }
 
 func getQueriesFromRequest(c *gin.Context) DataFetchQueries {
@@ -343,8 +343,7 @@ func parseQueryDate(date string) time.Time {
 	}
 
 	// Try parse date
-	d, err := time.Parse("2006-01-02", date)
-	if err == nil {
+	if d, err := time.Parse("2006-01-02", date); err == nil {
 		return d
 	}
 	return time.Time{}
@@ -356,14 +355,12 @@ func parseQueryDateTime(date string) time.Time {
 	}
 
 	// Try parse date time
-	d, err := time.Parse("2006-01-02 15:04:05", date)
-	if err == nil {
+	if d, err := time.Parse("2006-01-02 15:04:05", date); err == nil {
 		return d
 	}
 
 	// Try parse date
-	d, err = time.Parse("2006-01-02", date)
-	if err == nil {
+	if d, err := time.Parse("2006-01-02", date); err == nil {
 		return d
 	}
 	return time.Time{}
@@ -384,9 +381,8 @@ type PublicRequestData struct {
 func buildRequestData(rows *sql.Rows) []PublicRequestData {
 	requests := make([]PublicRequestData, 0)
 	for rows.Next() {
-		request := new(PublicRequestRow)
-		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
-		if err == nil {
+		var request PublicRequestRow
+		if err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt); err == nil {
 			r := PublicRequestData{
 				IPAddress:    request.IPAddress.String,
 				Path:         request.Path,
@@ -406,9 +402,8 @@ func buildRequestData(rows *sql.Rows) []PublicRequestData {
 
 func deleteUserRequests(apiKey string, c *gin.Context, db *sql.DB) error {
 	// Delete all user's API request data
-	query := fmt.Sprintf("DELETE FROM requests WHERE api_key = '%s';", apiKey)
-	_, err := db.Query(query)
-	if err != nil {
+	query := "DELETE FROM requests WHERE api_key = $1;"
+	if _, err := db.Query(query, apiKey); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return err
 	}
@@ -417,9 +412,8 @@ func deleteUserRequests(apiKey string, c *gin.Context, db *sql.DB) error {
 
 func deleteUserAccount(apiKey string, c *gin.Context, db *sql.DB) error {
 	// Delete user account record
-	query := fmt.Sprintf("DELETE FROM users WHERE api_key = '%s';", apiKey)
-	_, err := db.Query(query)
-	if err != nil {
+	query := "DELETE FROM users WHERE api_key = $1;"
+	if _, err := db.Query(query, apiKey); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return err
 	}
@@ -428,9 +422,8 @@ func deleteUserAccount(apiKey string, c *gin.Context, db *sql.DB) error {
 
 func deleteUserMonitors(apiKey string, c *gin.Context, db *sql.DB) error {
 	// Delete all user's monitored urls
-	query := fmt.Sprintf("DELETE FROM monitor WHERE api_key = '%s';", apiKey)
-	_, err := db.Query(query)
-	if err != nil {
+	query := "DELETE FROM monitor WHERE api_key = $1;"
+	if _, err := db.Query(query, apiKey); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return err
 	}
@@ -439,9 +432,8 @@ func deleteUserMonitors(apiKey string, c *gin.Context, db *sql.DB) error {
 
 func deleteUserPings(apiKey string, c *gin.Context, db *sql.DB) error {
 	// Delete all user's recorded pings to all monitored urls
-	query := fmt.Sprintf("DELETE FROM pings WHERE api_key = '%s';", apiKey)
-	_, err := db.Query(query)
-	if err != nil {
+	query := "DELETE FROM pings WHERE api_key = $1;"
+	if _, err := db.Query(query, apiKey); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return err
 	}
@@ -458,21 +450,13 @@ func deleteData(c *gin.Context) {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
-	var err error
-	err = deleteUserRequests(apiKey, c, db)
-	if err != nil {
+	if err := deleteUserRequests(apiKey, c, db); err != nil {
 		return
-	}
-	err = deleteUserAccount(apiKey, c, db)
-	if err != nil {
+	} else if err := deleteUserAccount(apiKey, c, db); err != nil {
 		return
-	}
-	err = deleteUserMonitors(apiKey, c, db)
-	if err != nil {
+	} else if err := deleteUserMonitors(apiKey, c, db); err != nil {
 		return
-	}
-	err = deleteUserPings(apiKey, c, db)
-	if err != nil {
+	} else if err := deleteUserPings(apiKey, c, db); err != nil {
 		return
 	}
 
@@ -499,8 +483,8 @@ func getUserMonitor(c *gin.Context) {
 	defer db.Close()
 
 	// Fetch user ID corresponding with API key
-	query := fmt.Sprintf("SELECT url, secure, ping, monitor.created_at FROM monitor INNER JOIN users ON users.api_key = monitor.api_key WHERE users.user_id = '%s';", userID)
-	rows, err := db.Query(query)
+	query := "SELECT url, secure, ping, monitor.created_at FROM monitor INNER JOIN users ON users.api_key = monitor.api_key WHERE users.user_id = $1;"
+	rows, err := db.Query(query, userID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
@@ -509,10 +493,10 @@ func getUserMonitor(c *gin.Context) {
 	// Read monitors into list to return
 	monitors := make([]PublicMonitorRow, 0)
 	for rows.Next() {
-		monitor := new(PublicMonitorRow)
+		var monitor PublicMonitorRow
 		err := rows.Scan(&monitor.URL, &monitor.Secure, &monitor.Ping, &monitor.CreatedAt)
 		if err == nil {
-			monitors = append(monitors, *monitor)
+			monitors = append(monitors, monitor)
 		}
 	}
 
@@ -541,14 +525,14 @@ func addUserMonitor(c *gin.Context) {
 		return
 	}
 
-	log.LogToFile("id=" + monitor.UserID + ": Add monitor")
+	log.LogToFile(fmt.Sprintf("id=%s: Add monitor", monitor.UserID))
 
 	db := database.OpenDBConnection()
 	defer db.Close()
 
 	// Get API key from user ID
-	query := fmt.Sprintf("SELECT api_key FROM users WHERE user_id = '%s';", monitor.UserID)
-	rows, err := db.Query(query)
+	query := "SELECT api_key FROM users WHERE user_id = $1;"
+	rows, err := db.Query(query, monitor.UserID)
 	if err != nil {
 		log.LogToFile(fmt.Sprintf("id=%s: Invalid monitor user ID - %w", monitor.UserID, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
@@ -564,8 +548,8 @@ func addUserMonitor(c *gin.Context) {
 	}
 
 	// Check if monitor already exists
-	query = fmt.Sprintf("SELECT count(*) FROM monitor WHERE api_key = '%s' AND url = '%s';", apiKey, monitor.URL)
-	rows, err = db.Query(query)
+	query = "SELECT count(*) FROM monitor WHERE api_key = $1 AND url = $2;"
+	rows, err = db.Query(query, apiKey, monitor.URL)
 	if err != nil {
 		log.LogToFile(fmt.Sprintf("key=%s: Failed to get monitor count - %w", apiKey, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
@@ -580,7 +564,7 @@ func addUserMonitor(c *gin.Context) {
 		return
 	}
 	if count == 1 {
-		log.LogToFile("key=" + apiKey + ": Monitor already exists")
+		log.LogToFile(fmt.Sprintf("key=%s: Monitor already exists", apiKey))
 		c.JSON(http.StatusConflict, gin.H{"status": http.StatusConflict, "message": "Monitor already exists."})
 		return
 	}
@@ -595,23 +579,21 @@ func addUserMonitor(c *gin.Context) {
 	}
 	rows.Next()
 	var monitorCount int
-	err = rows.Scan(&monitorCount)
-	if err != nil {
+	if err := rows.Scan(&monitorCount); err != nil {
 		log.LogToFile(fmt.Sprintf("key=%s: Failed to read monitor count - %w", apiKey, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return
 	}
 	// Check if existing monitors already at max limit
 	if monitorCount >= 3 {
-		log.LogToFile("key=" + apiKey + ": Monitor limit reached")
+		log.LogToFile(fmt.Sprintf("key=%s: Monitor limit reached (%d)", apiKey, monitorCount))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Monitor limit reached."})
 		return
 	}
 
 	// Insert new monitor into database
-	query = fmt.Sprintf("INSERT INTO monitor (api_key, url, secure, ping, created_at) VALUES ('%s', '%s', %t, %t, NOW())", apiKey, monitor.URL, monitor.Secure, monitor.Ping)
-	_, err = db.Query(query)
-	if err != nil {
+	query = "INSERT INTO monitor (api_key, url, secure, ping, created_at) VALUES ($1, $2, $3, $4, NOW())"
+	if _, err := db.Query(query, apiKey, monitor.URL, monitor.Secure, monitor.Ping); err != nil {
 		log.LogToFile(fmt.Sprintf("key=%s: Failed to create new monitor - %w", apiKey, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return
@@ -625,8 +607,8 @@ func addUserMonitor(c *gin.Context) {
 
 func deleteMonitor(apiKey string, url string, c *gin.Context, db *sql.DB) error {
 	// Delete user's monitor to this specific url
-	query := fmt.Sprintf("DELETE FROM monitor WHERE api_key = '%s' AND url = '%s';", apiKey, url)
-	_, err := db.Query(query)
+	query := "DELETE FROM monitor WHERE api_key = $1 AND url = $2;"
+	_, err := db.Query(query, apiKey, url)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return err
@@ -636,8 +618,8 @@ func deleteMonitor(apiKey string, url string, c *gin.Context, db *sql.DB) error 
 
 func deletePings(apiKey string, url string, c *gin.Context, db *sql.DB) error {
 	// Delete user's recorded pings to monitored url
-	query := fmt.Sprintf("DELETE FROM pings WHERE api_key = '%s' AND url = '%s';", apiKey, url)
-	_, err := db.Query(query)
+	query := "DELETE FROM pings WHERE api_key = $1 AND url = $2;"
+	_, err := db.Query(query, apiKey, url)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return err
@@ -651,7 +633,7 @@ func deleteUserMonitor(c *gin.Context) {
 		URL    string `json:"url"`
 	}
 	if err := c.BindJSON(&body); err != nil {
-		log.LogToFile("Invalid monitor to delete")
+		log.LogToFile(fmt.Sprintf("Invalid monitor to delete - %w", err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request body."})
 		return
 	}
@@ -662,44 +644,41 @@ func deleteUserMonitor(c *gin.Context) {
 		return
 	}
 
-	log.LogToFile("id=" + body.UserID + ": Delete monitor")
+	log.LogToFile(fmt.Sprintf("id=%s: Delete monitor", body.UserID))
 
 	db := database.OpenDBConnection()
 	defer db.Close()
 
 	// Get API key from user ID
-	query := fmt.Sprintf("SELECT api_key FROM users WHERE user_id = '%s';", body.UserID)
-	rows, err := db.Query(query)
+	query := "SELECT api_key FROM users WHERE user_id = $1;"
+	rows, err := db.Query(query, body.UserID)
 	if err != nil {
-		log.LogToFile("id=" + body.UserID + ": Invalid monitor user ID")
+		log.LogToFile(fmt.Sprintf("id=%s: Invalid monitor user ID - %w", body.UserID, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return
 	}
 	rows.Next()
 	var apiKey string
-	err = rows.Scan(&apiKey)
-	if err != nil || apiKey == "" {
-		log.LogToFile("id=" + body.UserID + ": No API key associated with user ID")
+	if err := rows.Scan(&apiKey); err != nil || apiKey == "" {
+		log.LogToFile(fmt.Sprintf("id=%s: No API key associated with user ID - %w", body.UserID, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return
 	}
 
 	// Delete monitor from database
-	err = deleteMonitor(apiKey, body.URL, c, db)
-	if err != nil {
-		log.LogToFile("key=" + apiKey + ": Failed to delete monitor")
+	if err := deleteMonitor(apiKey, body.URL, c, db); err != nil {
+		log.LogToFile(fmt.Sprintf("key=%s: Failed to delete monitor - %w", apiKey, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return
 	}
 	// Delete recorded pings from database for this monitor
-	err = deletePings(apiKey, body.URL, c, db)
-	if err != nil {
-		log.LogToFile("key=" + apiKey + ": Failed to delete pings")
+	if err := deletePings(apiKey, body.URL, c, db); err != nil {
+		log.LogToFile(fmt.Sprintf("key=%s: Failed to delete pings - %w", apiKey, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return
 	}
 
-	log.LogToFile(fmt.Sprintf("key=%s: Monitor '%s' deletion successful", apiKey, body.URL))
+	log.LogToFile(fmt.Sprintf("key=%s: Monitor '%s' deleted successfully", apiKey, body.URL))
 
 	// Return success response
 	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "Monitor deleted successfully."})
@@ -720,40 +699,40 @@ type MonitorPing struct {
 
 func getUserPings(c *gin.Context) {
 	var userID string = c.Param("userID")
-
 	if userID == "" {
 		log.LogToFile("User ID empty")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
 
-	log.LogToFile("id=" + userID + ": Monitor access")
+	log.LogToFile(fmt.Sprintf("id=%s: Monitor access", userID))
 
 	db := database.OpenDBConnection()
 	defer db.Close()
 
 	// Fetch user ID corresponding with API key
-	query := fmt.Sprintf("SELECT url FROM monitor INNER JOIN users ON users.api_key = monitor.api_key WHERE users.user_id = '%s';", userID)
-	rows, err := db.Query(query)
+	query := "SELECT url FROM monitor INNER JOIN users ON users.api_key = monitor.api_key WHERE users.user_id = $1;"
+	rows, err := db.Query(query, userID)
 	if err != nil {
-		log.LogToFile("id=" + userID + ": Monitor access failed")
+		log.LogToFile(fmt.Sprintf("id=%s: Monitor access failed - %w", userID, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
 
+	// Initialise monitored URLs
 	monitors := make(map[string][]MonitorPing)
 	for rows.Next() {
 		var url string
-		if rows.Scan(&url) == nil {
+		if err := rows.Scan(&url); err == nil {
 			monitors[url] = make([]MonitorPing, 0)
 		}
 	}
 
 	// Fetch user ID corresponding with API key
-	query = fmt.Sprintf("SELECT url, response_time, status, pings.created_at FROM pings INNER JOIN users ON users.api_key = pings.api_key WHERE users.user_id = '%s';", userID)
-	rows, err = db.Query(query)
+	query = "SELECT url, response_time, status, pings.created_at FROM pings INNER JOIN users ON users.api_key = pings.api_key WHERE users.user_id = $1;"
+	rows, err = db.Query(query, userID)
 	if err != nil {
-		log.LogToFile("id=" + userID + ": Ping access failed")
+		log.LogToFile(fmt.Sprintf("id=%s: Ping access failed - %w", userID, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
@@ -762,7 +741,7 @@ func getUserPings(c *gin.Context) {
 	for rows.Next() {
 		var url string
 		var ping MonitorPing
-		if rows.Scan(&url, &ping.ResponseTime, &ping.Status, &ping.CreatedAt) == nil {
+		if err := rows.Scan(&url, &ping.ResponseTime, &ping.Status, &ping.CreatedAt); err == nil {
 			if val, ok := monitors[url]; ok {
 				monitors[url] = append(val, ping)
 			}
@@ -770,9 +749,8 @@ func getUserPings(c *gin.Context) {
 	}
 
 	// Record access
-	err = updateLastAccessedByUserID(db, userID)
-	if err != nil {
-		log.LogToFile("id=" + userID + ": User last access update failed")
+	if err := updateLastAccessedByUserID(db, userID); err != nil {
+		log.LogToFile(fmt.Sprintf("id=%s: User last access update failed - %w", userID, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}

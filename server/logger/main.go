@@ -48,72 +48,6 @@ type Payload struct {
 	Framework string        `json:"framework"`
 }
 
-func methodMap(method string) (int16, error) {
-	switch method {
-	case "GET":
-		return 0, nil
-	case "POST":
-		return 1, nil
-	case "PUT":
-		return 2, nil
-	case "PATCH":
-		return 3, nil
-	case "DELETE":
-		return 4, nil
-	case "OPTIONS":
-		return 5, nil
-	case "CONNECT":
-		return 6, nil
-	case "HEAD":
-		return 7, nil
-	case "TRACE":
-		return 8, nil
-	default:
-		return -1, fmt.Errorf("invalid method")
-	}
-}
-
-func frameworkMap(framework string) (int16, error) {
-	switch framework {
-	case "FastAPI":
-		return 0, nil
-	case "Flask":
-		return 1, nil
-	case "Gin":
-		return 2, nil
-	case "Echo":
-		return 3, nil
-	case "Express":
-		return 4, nil
-	case "Fastify":
-		return 5, nil
-	case "Koa":
-		return 6, nil
-	case "Chi":
-		return 7, nil
-	case "Fiber":
-		return 8, nil
-	case "Actix":
-		return 9, nil
-	case "Axum":
-		return 10, nil
-	case "Tornado":
-		return 11, nil
-	case "Django":
-		return 12, nil
-	case "Rails":
-		return 13, nil
-	case "Laravel":
-		return 14, nil
-	case "Sinatra":
-		return 15, nil
-	case "Rocket":
-		return 16, nil
-	default:
-		return -1, fmt.Errorf("invalid framework")
-	}
-}
-
 func getCountryCode(IPAddress string) string {
 	if IPAddress == "" {
 		return ""
@@ -138,6 +72,38 @@ func getCountryCode(IPAddress string) string {
 
 func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 	const maxInsert int = 1000
+
+	var methodID = map[string]int16{
+		"GET":     0,
+		"POST":    1,
+		"PUT":     2,
+		"PATCH":   3,
+		"DELETE":  4,
+		"OPTIONS": 5,
+		"CONNECT": 6,
+		"HEAD":    7,
+		"TRACE":   8,
+	}
+
+	var frameworkID = map[string]int16{
+		"FastAPI": 0,
+		"Flask":   1,
+		"Gin":     2,
+		"Echo":    3,
+		"Express": 4,
+		"Fastify": 5,
+		"Koa":     6,
+		"Chi":     7,
+		"Fiber":   8,
+		"Actix":   9,
+		"Axum":    10,
+		"Tornado": 11,
+		"Django":  12,
+		"Rails":   13,
+		"Laravel": 14,
+		"Sinatra": 15,
+		"Rocket":  16,
+	}
 
 	return func(c *gin.Context) {
 		// Collect API request data sent via POST request
@@ -177,13 +143,13 @@ func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 
 			location := getCountryCode(request.IPAddress)
 
-			method, err := methodMap(request.Method)
-			if err != nil {
+			method, ok := methodID[request.Method]
+			if !ok {
 				continue
 			}
 
-			framework, err := frameworkMap(payload.Framework)
-			if err != nil {
+			framework, ok := frameworkID[payload.Framework]
+			if !ok {
 				continue
 			}
 
@@ -236,7 +202,7 @@ func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 		}
 
 		// Record in log file for debugging
-		log.LogRequestsToFile(c.ClientIP(), payload.APIKey, inserted, len(payload.Requests))
+		log.LogRequestsToFile(payload.APIKey, inserted, len(payload.Requests))
 		// Log any bad user agents found
 		if len(badUserAgents) > 0 {
 			var msg bytes.Buffer

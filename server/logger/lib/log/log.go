@@ -6,21 +6,13 @@ import (
 	"os"
 )
 
-type RequestErrors struct {
-	Method    int
-	Framework int
-	UserAgent int
-	Hostname  int
-	Path      int
-}
-
 func LogErrorToFile(ipAddress string, apiKey string, msg string) {
 	text := fmt.Sprintf("%s %s :: %s", ipAddress, apiKey, msg)
 	LogToFile(text)
 }
 
-func LogRequestsToFile(ipAddress string, apiKey string, inserted int, totalRequests int) {
-	text := fmt.Sprintf("%s %s :: inserted=%d totalRequest=%d", ipAddress, apiKey, inserted, totalRequests)
+func LogRequestsToFile(apiKey string, inserted int, totalRequests int) {
+	text := fmt.Sprintf("key=%s: %d/%d", apiKey, inserted, totalRequests)
 	LogToFile(text)
 }
 

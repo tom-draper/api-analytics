@@ -2,8 +2,7 @@
   export let title: string,
     description: string,
     img: string,
-    path: string,
-    button: string;
+    path: string;
 </script>
 
 <div class="dashboard">
@@ -17,7 +16,7 @@
     </div>
     <div class="dashboard-btn-container">
       <a href={path} class="dashboard-btn secondary">
-        <div class="dashboard-btn-text">{button}</div>
+        <div class="dashboard-btn-text">Open</div>
       </a>
     </div>
   </div>
