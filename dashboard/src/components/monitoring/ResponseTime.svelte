@@ -28,11 +28,11 @@
   }
 
   function bars() {
-    let markers = periodToMarkers(period);
+    const markers = periodToMarkers(period);
 
-    let dates: Date[] = Array(markers);
-    let x: number[] = Array(markers);
-    let requests: number[] = Array(markers);
+    const dates: Date[] = Array(markers);
+    const x: number[] = Array(markers);
+    const requests: number[] = Array(markers);
     for (let i = 0; i < markers; i++) {
       requests[markers - i - 1] = data[i].responseTime;
       dates[markers - i - 1] = data[i].createdAt;
@@ -79,7 +79,7 @@
   }
 
   function genPlot() {
-    let plotData = buildPlotData();
+    const plotData = buildPlotData();
     //@ts-ignore
     new Plotly.newPlot(
       plotDiv,
@@ -96,7 +96,7 @@
     setup = true;
   });
 
-  $: period && setup && genPlot();
+  $: setup && (data || period) && genPlot();
 
   export let data: any[], period: string;
 </script>

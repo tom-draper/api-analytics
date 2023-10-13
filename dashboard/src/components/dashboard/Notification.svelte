@@ -33,15 +33,15 @@
 
   .error {
     background: #521e24c7;
-    background: #4c1b1fe6;
+    background: rgba(76, 27, 31, 0.95);
     color: #cc3444;
   }
   .warn {
-    background: rgba(203, 203, 108, 0.9);
+    background: rgba(203, 203, 108, 0.95);
     color: yellow;
   }
   .success {
-    background: #2f423af2;
+    background: rgba(47, 66, 58, 0.95);
     color: var(--highlight);
   }
 </style>

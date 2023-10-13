@@ -29,44 +29,29 @@
     showTrackNew = !showTrackNew;
   }
 
-  function groupByUrl() {
-    const group = {};
-    for (let i = 0; i < data.length; i++) {
-      if (!(data[i].url in group)) {
-        group[data[i].url] = [];
-      }
-      group[data[i].url].push({
-        status: data[i].status,
-        responseTime: data[i].response_time,
-        createdAt: new Date(data[i].created_at),
-      });
-    }
-    return group;
+  function addEmptyMonitor(url: string) {
+    data[url] = [];
   }
 
-  type PingsData = {
-    url: string;
-    response_time: number;
-    status: number;
-    created_at: Date;
-  };
+  function removeMonitor(url: string) {
+    delete data[url];
+    data = data; // Trigger reactivity to update display
+  }
 
   let error = false;
   let periods = ['24h', '7d', '30d', '60d'];
   let period = periods[1];
-  let data: PingsData[];
-  let monitorData: MonitorData;
+  let data: MonitorData;
   let notification: NotificationState = {
-    message: "",
-    style: "error",
-    show: false
-  }
+    message: '',
+    style: 'error',
+    show: false,
+  };
 
   let showTrackNew = false;
   onMount(async () => {
     await fetchData();
-    monitorData = groupByUrl();
-    console.log(monitorData);
+    console.log(data);
   });
 
   export let userID: string;
@@ -74,7 +59,7 @@
 
 <div class="monitoring">
   <div class="status">
-    {#if monitorData != undefined && Object.keys(monitorData).length == 0}
+    {#if data != undefined && Object.keys(data).length == 0}
       <div class="status-image">
         <img id="status-image" src="/img/logo.png" alt="" />
         <div class="status-text">Setup required</div>
@@ -105,36 +90,39 @@
       </div>
       <div class="period-controls-container">
         <div class="period-controls">
-          {#each periods as p}
+          {#each periods as _period}
             <button
               class="period-btn"
-              class:active={period === p}
+              class:active={period === _period}
               on:click={() => {
-                setPeriod(p);
+                setPeriod(_period);
               }}
             >
-              {p}
+              {_period}
             </button>
           {/each}
         </div>
       </div>
     </div>
-    {#if monitorData != undefined}
-      {#if showTrackNew || Object.keys(monitorData).length == 0}
+    {#if data != undefined}
+      {#if showTrackNew || Object.keys(data).length == 0}
         <TrackNew
           {userID}
-          {showTrackNew}
-          monitorCount={Object.keys(monitorData).length}
-          bind:notification={notification}
+          bind:showTrackNew
+          monitorCount={Object.keys(data).length}
+          bind:notification
+          {addEmptyMonitor}
         />
       {/if}
-      {#each Object.keys(monitorData) as url}
+      {#each Object.keys(data).sort() as url}
         <Card
-          {url}
-          bind:data={monitorData}
+          bind:url
+          {data}
           {userID}
           {period}
           bind:anyError={error}
+          bind:notification
+          {removeMonitor}
         />
       {/each}
     {:else}
@@ -233,7 +221,7 @@
     margin: 3em 0 10em;
   }
 
-  @media screen and (max-width: 1000px) {
+  @media screen and (max-width: 1100px) {
     .cards-container {
       width: 95%;
     }

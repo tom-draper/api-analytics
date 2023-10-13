@@ -2,48 +2,59 @@
   import type {NotificationState} from '../../lib/notification';
   import Dropdown from '../dashboard/Dropdown.svelte';
 
-  function triggerErrorMessage(message: string) {
+  function triggerNotificationMessage(message: string, style: "error" | "warn" | "success" = "error") {
     notification.message = message
-    notification.style = "error"
+    notification.style = style
     notification.show = true
     setTimeout(() => {
       notification.show = false;
     }, 4000)
   }
 
+  function getFullURL(url: string, secure: boolean): string {
+    url = url.replace(/^https?(:\/\/)?/, '')
+    const prefix = secure ? 'https://' : 'http://'
+    url = prefix + url
+    return url
+  }
+
   async function postMonitor() {
     if (url == null) {
-      triggerErrorMessage("URL is blank.")
+      triggerNotificationMessage("URL is blank.")
       return
-    } else if (monitorCount >= 3) {
-      triggerErrorMessage("Maximum 3 monitors allowed.")
+   } else if (monitorCount >= 3) {
+      triggerNotificationMessage("Maximum 3 monitors allowed.")
       return
     }
 
     try {
+      const secure = urlPrefix === 'https'
+      const fullURL = getFullURL(url, secure);
       const response = await fetch(
         `https://www.apianalytics-server.com/api/monitor/add`,
         {
           method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
+          headers: {},
           body: JSON.stringify({
             user_id: userID,
-            url: url,
+            url: getFullURL(url, secure),
             ping: true,
-            secure: false,
-          }),
+            secure: secure,
+          })
         }
       );
-      if (response.status !== 201) {
-        console.log('Error', response.status);
+      if (response.status === 201) {
+        triggerNotificationMessage('Created successfully.', 'success')
+        addEmptyMonitor(fullURL)
+        showTrackNew = false;
+      } else if (response.status === 409) {
+        triggerNotificationMessage('URL already monitored.', 'warn')
+      } else {
+        triggerNotificationMessage('Failed to create monitor.')
       }
-      showTrackNew = false;
     } catch (e) {
-      console.log(e);
+      console.log(e)
+      triggerNotificationMessage('Failed to create monitor.')
     }
   }
 
@@ -54,7 +65,8 @@
   export let userID: string,
     showTrackNew: boolean,
     monitorCount: number,
-    notification: NotificationState;
+    notification: NotificationState,
+    addEmptyMonitor: (url: string) => void;
 </script>
 
 <div class="card">
@@ -81,7 +93,7 @@
   .card {
     width: min(100%, 1000px);
     border: 1px solid #2e2e2e;
-    margin: 2.2em auto;
+    margin: 2.2em auto 4em;
   }
   .card-text {
     margin: 2em 2em 1.9em;
@@ -94,7 +106,7 @@
     width: 100%;
     text-align: left;
     height: auto;
-    padding: 4px 15px;
+    padding: 4px 12px;
     color: white;
     font-size: 0.9em;
   }
