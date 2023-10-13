@@ -59,7 +59,7 @@ func getUserID(c *gin.Context) {
 	defer db.Close()
 
 	// Fetch user ID corresponding with API key
-	query := "SELECT user_id FROM users WHERE api_key = %1;"
+	query := "SELECT user_id FROM users WHERE api_key = $1;"
 	rows, err := db.Query(query, apiKey)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
