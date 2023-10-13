@@ -72,7 +72,7 @@
 <div class="card">
   <div class="card-text">
     <div class="url">
-      <Dropdown {options} selected={urlPrefix} />
+      <Dropdown {options} bind:selected={urlPrefix} />
       <input
         type="text"
         placeholder="www.example.com/endpoint/"
