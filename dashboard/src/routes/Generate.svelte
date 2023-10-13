@@ -1,31 +1,41 @@
 <script lang="ts">
   import { SERVER_URL } from '../lib/consts';
 
-  let state: 'generate' | 'loading' | 'copy' | 'copied' | 'error' = 'generate';
+  type State = 'generate' | 'loading' | 'copy' | 'copied' | 'error';
+
+  let state: State = 'generate';
   let generatedKey = false;
   let apiKey = '';
-  async function genAPIKey() {
-    if (!generatedKey) {
-      setState('loading');
-      try {
-        const response = await fetch(`${SERVER_URL}/api/generate-api-key`);
-        if (response.status == 200) {
-          const data = await response.json();
-          generatedKey = true;
-          apiKey = data;
-          setState('copy');
-        } else {
-          setState('error');
-        }
-      } catch (e) {
-        console.log(e);
-        setState('generate');
+  async function submit() {
+    if (generatedKey) {
+      return;
+    }
+
+    setState('loading');
+    try {
+      const response = await fetch(`${SERVER_URL}/api/generate-api-key`);
+      if (response.status === 200) {
+        const data = await response.json();
+        generatedKey = true;
+        apiKey = data;
+        setState('copy');
+      } else {
+        setState('error');
       }
+    } catch (e) {
+      console.log(e);
+      setState('generate');
     }
   }
 
-  function setState(value: typeof state) {
+  function setState(value: State) {
     state = value;
+  }
+
+  function enter(e) {
+    if (e.keyCode === 13) {
+      submit();
+    }
   }
 
   function copyToClipboard() {
@@ -37,13 +47,13 @@
 <div class="generate">
   <div class="content">
     <h2>Generate API key</h2>
-    <input type="text" readonly bind:value={apiKey} />
+    <input type="text" readonly bind:value={apiKey} on:keydown={enter} />
     <button
       id="formBtn"
-      on:click={genAPIKey}
-      class:no-display={state != 'generate'}>Generate</button
+      on:click={submit}
+      class:no-display={state !== 'generate'}>Generate</button
     >
-    <button id="formBtn" class:no-display={state != 'loading'}>
+    <button id="formBtn" class:no-display={state !== 'loading'}>
       <div class="spinner">
         <div class="loader" />
       </div>
@@ -51,14 +61,14 @@
     <button
       id="formBtn"
       on:click={copyToClipboard}
-      class:no-display={state != 'copy'}
+      class:no-display={state !== 'copy'}
       ><img class="copy-icon" src="img/copy.png" alt="" /></button
     >
     <button
       id="formBtn"
       class="copied-btn"
       on:click={copyToClipboard}
-      class:no-display={state != 'copied'}>Copied</button
+      class:no-display={state !== 'copied'}>Copied</button
     >
     <button id="formBtn" class:no-display={state != 'error'}>Error</button>
   </div>

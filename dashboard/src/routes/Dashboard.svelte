@@ -215,7 +215,7 @@
     style: 'error',
     show: false,
   };
-  let periodDataCache: PeriodDataCache = {};
+  // let periodDataCache: PeriodDataCache = {};
   let periodData: RequestsData;
   let prevPeriodData: RequestsData;
   let timePeriods: Period[] = [

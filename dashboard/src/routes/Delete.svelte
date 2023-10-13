@@ -1,9 +1,10 @@
 <script lang="ts">
   import { SERVER_URL } from '../lib/consts';
 
-  let state: 'delete' | 'loading' | 'deleted' | 'error' = 'delete';
+  type State = 'delete' | 'loading' | 'deleted' | 'error'
+  let state: State = 'delete';
   let apiKey = '';
-  async function genAPIKey() {
+  async function submit() {
     setState('loading');
     const response = await fetch(`${SERVER_URL}/api/delete/${apiKey}`);
 
@@ -14,7 +15,13 @@
     }
   }
 
-  function setState(value: typeof state) {
+  function enter(e) {
+    if (e.keyCode === 13) {
+      submit();
+    }
+  }
+
+  function setState(value: State) {
     state = value;
   }
 </script>
@@ -22,10 +29,15 @@
 <div class="generate">
   <div class="content">
     <h2>Delete account</h2>
-    <input type="text" bind:value={apiKey} placeholder="Enter API key" />
+    <input
+      type="text"
+      bind:value={apiKey}
+      placeholder="Enter API key"
+      on:keydown={enter}
+    />
     <button
       id="formBtn"
-      on:click={genAPIKey}
+      on:click={submit}
       class:no-display={state != 'delete'}>Delete</button
     >
     <button id="formBtn" class:no-display={state != 'loading'}>
