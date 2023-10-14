@@ -114,7 +114,7 @@
     setPercentageChange(numUsers, prevNumUsers);
 
     if (numUsers > 0) {
-      let days = periodToDays(period);
+      const days = periodToDays(period);
       if (days != null) {
         usersPerHour = (numUsers / (24 * days)).toFixed(2);
       }

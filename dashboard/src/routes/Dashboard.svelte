@@ -147,7 +147,7 @@
   }
 
   function setHostnames() {
-    let hostnameFreq: { [hostname: string]: number } = {};
+    const hostnameFreq: { [hostname: string]: number } = {};
     for (let i = 0; i < data.length; i++) {
       if (!(data[i][HOSTNAME] in hostnameFreq)) {
         hostnameFreq[data[i][HOSTNAME]] = 0;
@@ -155,8 +155,8 @@
       hostnameFreq[data[i][HOSTNAME]] += 1;
     }
 
-    let sortedHostnames = [];
-    for (let hostname of Object.keys(hostnameFreq)) {
+    const sortedHostnames = [];
+    for (const hostname of Object.keys(hostnameFreq)) {
       sortedHostnames.push({
         hostname: hostname,
         count: hostnameFreq[hostname],
@@ -166,8 +166,8 @@
       return b.count - a.count;
     });
 
-    let _hostnames = [];
-    for (let value of sortedHostnames) {
+    const _hostnames = [];
+    for (const value of sortedHostnames) {
       _hostnames.push(value.hostname);
     }
     hostnames = _hostnames;
@@ -210,7 +210,7 @@
   let settings: DashboardSettings = initSettings();
   let showSettings: boolean = false;
   let hostnames: string[];
-  let notification: NotificationState = {
+  const notification: NotificationState = {
     message: '',
     style: 'error',
     show: false,
@@ -218,7 +218,7 @@
   // let periodDataCache: PeriodDataCache = {};
   let periodData: RequestsData;
   let prevPeriodData: RequestsData;
-  let timePeriods: Period[] = [
+  const timePeriods: Period[] = [
     '24 hours',
     'Week',
     'Month',
@@ -227,7 +227,7 @@
     'All time',
   ];
   let failed = false;
-  let setup = false;
+  const setup = false;
   onMount(() => {
     if (demo) {
       data = genDemoData() as RequestsData;

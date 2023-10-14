@@ -98,7 +98,7 @@
 
   $: setup && (data || period) && genPlot();
 
-  export let data: any[], period: string;
+  export let data, period: string;
 </script>
 
 <div id="plotly">

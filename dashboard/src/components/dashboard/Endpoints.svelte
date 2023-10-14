@@ -15,9 +15,11 @@
     'TRACE',
   ];
 
-  function endpointFreq(): {
+  type EndpointFreq = {
     [endpointID: string]: { path: string; status: number; count: number };
-  } {
+  }
+
+  function endpointFreq(): EndpointFreq {
     const freq = {};
     for (let i = 1; i < data.length; i++) {
       // Create groups of endpoints by path + status
@@ -55,7 +57,7 @@
     const freq = endpointFreq();
 
     // Convert object to list
-    const freqArr = [];
+    const freqArr: EndpointFreq[keyof EndpointFreq][] = [];
     maxCount = 0;
     for (const endpointID in freq) {
       if (statusMatch(freq[endpointID].status)) {
@@ -95,7 +97,7 @@
     build();
   }
 
-  let endpoints: any[];
+  let endpoints: EndpointFreq[keyof EndpointFreq][];
   let maxCount: number;
   let mounted = false;
   let activeBtn = 'all';
@@ -150,6 +152,7 @@
     <div class="endpoints">
       {#each endpoints as endpoint, i}
         <div class="endpoint-container">
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
             class="endpoint"
             id="endpoint-{i}"

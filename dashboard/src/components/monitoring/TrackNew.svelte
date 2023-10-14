@@ -59,7 +59,7 @@
   }
 
   let url: string;
-  let options = ['https', 'http'];
+  const options = ['https', 'http'];
   let urlPrefix = options[0];
 
   export let userID: string,

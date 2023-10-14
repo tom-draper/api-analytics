@@ -57,7 +57,7 @@
 
     const devices = [];
     const count = [];
-    for (let browser in deviceCount) {
+    for (const browser in deviceCount) {
       devices.push(browser);
       count.push(deviceCount[browser]);
     }

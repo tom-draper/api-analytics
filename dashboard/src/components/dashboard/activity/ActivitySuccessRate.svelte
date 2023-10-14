@@ -11,7 +11,7 @@
 
   function setSuccessRate() {
     const success = {};
-    let minDate = Number.POSITIVE_INFINITY;
+    let minDate = new Date(8640000000000000);;
     for (let i = 1; i < data.length; i++) {
       const date = new Date(data[i][CREATED_AT]);
       date.setHours(0, 0, 0, 0);
@@ -23,17 +23,17 @@
         success[dateStr].successful++;
       }
       success[dateStr].total++;
-      if ((date as any) < minDate) {
-        minDate = date as any;
+      if (date < minDate) {
+        minDate = date;
       }
     }
 
     let days = periodToDays(period);
     if (days == null) {
-      days = daysAgo(minDate as any);
+      days = daysAgo(minDate);
     }
 
-    let successArr = new Array(days).fill(-0.1); // -0.1 -> 0
+    const successArr = new Array(days).fill(-0.1); // -0.1 -> 0
     for (const date in success) {
       const idx = daysAgo(new Date(date));
       successArr[successArr.length - 1 - idx] =
@@ -47,7 +47,7 @@
     setSuccessRate();
   }
 
-  let successRate: any[];
+  let successRate;
   let mounted = false;
   onMount(() => {
     mounted = true;
