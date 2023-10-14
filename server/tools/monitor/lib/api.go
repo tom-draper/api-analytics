@@ -147,7 +147,7 @@ func TryLogRequests() error {
 		"framework": "FastAPI",
 		"requests": []Request{
 			Request{
-				Path:         "\\test",
+				Path:         "/v1/test",
 				Hostname:     "api-analytics.com",
 				IPAddress:    "192.168.0.1",
 				UserAgent:    "test",
@@ -157,7 +157,7 @@ func TryLogRequests() error {
 				CreatedAt:    time.Now().Format(time.RFC3339),
 			},
 			Request{
-				Path:         "\\test",
+				Path:         "/v1/test",
 				Hostname:     "api-analytics.com",
 				IPAddress:    "192.168.0.1",
 				UserAgent:    "test",
