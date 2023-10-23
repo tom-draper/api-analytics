@@ -123,14 +123,14 @@ func getUserRequests(c *gin.Context) {
 	cols := []any{"ip_address", "path", "hostname", "user_agent", "method", "response_time", "status", "location", "created_at"}
 	requests := [][]any{cols}
 	pageSize := 500000
-	minTimestamp := time.Time{}
+	pageMarker := time.Time{} // Start with min time to capture first page
 
 	// Read paginated requests data
 	for {
 		// Fetch user ID corresponding with API key
 		// Left table join was originally used but often exceeded postgresql working memory limit with large numbers of requests
 		query = fmt.Sprintf("SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = $1 AND created_at >= $2 ORDER BY created_at LIMIT %d;", pageSize)
-		rows, err = db.Query(query, apiKey, minTimestamp)
+		rows, err = db.Query(query, apiKey, pageMarker)
 		if err != nil {
 			log.LogToFile(fmt.Sprintf("key=%s: Invalid API key - %w", apiKey, err))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
@@ -157,7 +157,7 @@ func getUserRequests(c *gin.Context) {
 		// Save the final row's timestamp to know where next page begins
 		lastIdx := len(requests) - 1
 		lastTimestamp := requests[lastIdx][len(requests[lastIdx])-1].(time.Time)
-		minTimestamp = lastTimestamp
+		pageMarker = lastTimestamp
 	}
 
 	gzipOutput, err := compressJSON(requests)
