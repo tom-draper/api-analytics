@@ -13,6 +13,15 @@ class Analytics(BaseHTTPMiddleware):
     def __init__(self, app: ASGIApp, api_key: str):
         super().__init__(app)
         self.api_key = api_key
+    
+    @staticmethod
+    def _get_user_agent(request: Request) -> str:
+        user_agent = ''
+        if 'user-agent' in request.headers:
+            user_agent = request.headers['user-agent']
+        elif 'User-Agent' in request.headers:
+            user_agent = request.headers['User-Agent']
+        return user_agent
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         start = time()
@@ -22,7 +31,7 @@ class Analytics(BaseHTTPMiddleware):
             'hostname': request.url.hostname,
             'ip_address': request.client.host,
             'path': request.url.path,
-            'user_agent': request.headers['user-agent'],
+            'user_agent': self._get_user_agent(request),
             'method': request.method,
             'status': response.status_code,
             'response_time': int((time() - start) * 1000),
@@ -31,3 +40,4 @@ class Analytics(BaseHTTPMiddleware):
 
         log_request(self.api_key, request_data, 'FastAPI')
         return response
+

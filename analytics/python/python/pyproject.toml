@@ -19,7 +19,7 @@ license = {file = "LICENSE"}
 name = "api-analytics"
 readme = "README.md"
 requires-python = ">=3.7"
-version = "1.1.5"
+version = "1.1.6"
 
 [project.optional-dependencies]
 build = ["build", "twine"]
