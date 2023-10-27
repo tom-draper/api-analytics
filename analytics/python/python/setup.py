@@ -4,7 +4,7 @@ long_description = open("README.md").read()
 
 setup(
     name="api-analytics",
-    version="1.1.6",
+    version="1.1.7",
     author="Tom Draper",
     author_email="tomjdraper1@gmail.com",
     license="MIT",
