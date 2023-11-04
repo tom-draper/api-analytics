@@ -9,16 +9,16 @@ import (
 	"github.com/tom-draper/api-analytics/server/tools/usage"
 )
 
-var requestsLimit int = 10_000_000
-var userExpiry time.Duration = time.Hour * 24 * 30 * 6
+const requestsLimit int = 5_000_000
+const userExpiry time.Duration = time.Hour * 24 * 30 * 6
 
 func deleteOldestRequests(apiKey string, count int) error {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
-	query := fmt.Sprintf("DELETE FROM requests WHERE request_id = any (array(SELECT api_key, request_id from requests WHERE api_key = '%s' ORDER BY created_at LIMIT %d));", apiKey, count)
+	query := "DELETE FROM requests WHERE request_id = any(array(SELECT request_id from requests WHERE api_key = $1 ORDER BY created_at LIMIT $2));"
 
-	_, err := db.Query(query)
+	_, err := db.Query(query, apiKey, count)
 	if err != nil {
 		return err
 	}
@@ -31,11 +31,11 @@ func deleteExpiredRequests() {
 		panic(err)
 	}
 	for _, user := range users {
-		err = deleteOldestRequests(user.APIKey, requestsLimit-user.Count)
+		err = deleteOldestRequests(user.APIKey, user.Count-requestsLimit)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("%s: %d requests deleted", user.APIKey, requestsLimit-user.Count)
+		fmt.Printf("%s: %d requests deleted\n", user.APIKey, user.Count-requestsLimit)
 	}
 }
 
@@ -45,7 +45,10 @@ func deleteExpiredUsers() {
 }
 
 func deleteExpiredUnusedUsers() {
-	users := usage.UnusedUsers()
+	users, err := usage.UnusedUsers()
+	if err != nil {
+		panic(err)
+	}
 	for _, user := range users {
 		if time.Since(user.CreatedAt) > userExpiry {
 			err := database.DeleteUser(user.APIKey)
@@ -58,7 +61,10 @@ func deleteExpiredUnusedUsers() {
 }
 
 func deleteExpiredRetiredUsers() {
-	users := usage.SinceLastRequestUsers()
+	users, err := usage.SinceLastRequestUsers()
+	if err != nil {
+		panic(err)
+	}
 	for _, user := range users {
 		if time.Since(user.CreatedAt) > userExpiry {
 			err := database.DeleteUser(user.APIKey)
