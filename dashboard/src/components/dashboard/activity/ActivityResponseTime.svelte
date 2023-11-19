@@ -5,7 +5,7 @@
   import type { Period } from '../../../lib/settings';
   import { initFreqMap } from '../../../lib/activity';
 
-  function defaultLayout() {
+  function defaultLayout(period: Period) {
     const days = periodToDays(period);
     let periodAgo = new Date();
     if (days != null) {
@@ -13,7 +13,7 @@
     } else {
       periodAgo = null;
     }
-    const tomorrow = new Date();
+    const now = new Date();
 
     return {
       title: false,
@@ -33,22 +33,19 @@
         title: { text: 'Date' },
         showgrid: false,
         fixedrange: true,
-        range: [periodAgo, tomorrow],
+        range: [periodAgo, now],
         visible: false,
       },
       dragmode: false,
     };
   }
 
-  function bars() {
+  function bars(data: RequestsData, period: Period) {
     const responseTimesFreq = initFreqMap(period, () => {
       return { totalResponseTime: 0, count: 0 };
     });
 
     const days = periodToDays(period);
-    if (days === null) {
-      return;
-    }
 
     for (let i = 1; i < data.length; i++) {
       const date = new Date(data[i][CREATED_AT]);
@@ -58,19 +55,18 @@
       } else {
         date.setHours(0, 0, 0, 0);
       }
-      const dateStr = date.toISOString();
-      if (!(dateStr in responseTimesFreq)) {
-        responseTimesFreq.set(dateStr, { totalResponseTime: 0, count: 0 });
+      const time = date.getTime();
+      if (!responseTimesFreq.has(time)) {
+        responseTimesFreq.set(time, { totalResponseTime: 0, count: 0 });
       }
-      responseTimesFreq.get(dateStr).totalResponseTime +=
-        data[i][RESPONSE_TIME];
-      responseTimesFreq.get(dateStr).count++;
+      responseTimesFreq.get(time).totalResponseTime += data[i][RESPONSE_TIME];
+      responseTimesFreq.get(time).count++;
     }
 
     // Combine date and avg response time into (x, y) tuples for sorting
     const responseTimeArr: { date: Date; avgResponseTime: number }[] = [];
-    for (const [date, obj] of responseTimesFreq.entries()) {
-      const point = { date: new Date(date), avgResponseTime: 0 };
+    for (const [time, obj] of responseTimesFreq.entries()) {
+      const point = { date: time, avgResponseTime: 0 };
       if (obj.count > 0) {
         point.avgResponseTime = obj.totalResponseTime / obj.count;
       }
@@ -88,7 +84,7 @@
     const responseTimes: number[] = [];
     let minAvgResponseTime = Number.POSITIVE_INFINITY;
     for (let i = 0; i < responseTimeArr.length; i++) {
-      dates.push(responseTimeArr[i].date);
+      dates.push(new Date(responseTimeArr[i].date));
       responseTimes.push(responseTimeArr[i].avgResponseTime);
       if (responseTimeArr[i].avgResponseTime < minAvgResponseTime) {
         minAvgResponseTime = responseTimeArr[i].avgResponseTime;
@@ -107,10 +103,10 @@
     ];
   }
 
-  function buildPlotData() {
+  function buildPlotData(data: RequestsData, period: Period) {
     return {
-      data: bars(),
-      layout: defaultLayout(),
+      data: bars(data, period),
+      layout: defaultLayout(period),
       config: {
         responsive: true,
         showSendToCloud: false,
@@ -119,8 +115,8 @@
     };
   }
 
-  function genPlot() {
-    const plotData = buildPlotData();
+  function genPlot(data: RequestsData, period: Period) {
+    const plotData = buildPlotData(data, period);
     //@ts-ignore
     new Plotly.newPlot(
       plotDiv,
@@ -136,7 +132,7 @@
     mounted = true;
   });
 
-  $: data && mounted && genPlot();
+  $: data && mounted && genPlot(data, period);
 
   export let data: RequestsData, period: Period;
 </script>

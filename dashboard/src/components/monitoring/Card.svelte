@@ -105,7 +105,7 @@
         label: 'no-request',
         status: sampledData[i].status,
         responseTime: sampledData[i]['response_time'],
-        createdAt: new Date(sampledData[i]['created_at']),
+        createdAt: sampledData[i]['created_at'],
       };
       if (sampledData[i].status >= 200 && sampledData[i].status <= 299) {
         samples[i + start].label = 'success';

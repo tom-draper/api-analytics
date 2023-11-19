@@ -52,25 +52,25 @@
       } else {
         date.setHours(0, 0, 0, 0);
       }
-      const dateStr = date.toISOString();
-      if (!requestFreq.has(dateStr)) {
-        requestFreq.set(dateStr, 0);
-      }
-      requestFreq.set(dateStr, requestFreq.get(dateStr) + 1);
-
       const ipAddress = data[i][IP_ADDRESS];
-      if (!userFreq.has(dateStr)) {
-        userFreq.set(dateStr, new Set());
+      const time = date.getTime();
+      if (!userFreq.has(time)) {
+        userFreq.set(time, new Set());
       }
-      userFreq.get(dateStr).add(ipAddress);
+      userFreq.get(time).add(ipAddress);
+
+      if (!requestFreq.has(time)) {
+        requestFreq.set(time, 0);
+      }
+      requestFreq.set(time, requestFreq.get(time) + 1);
     }
 
     // Combine date and frequency count into (x, y) tuples for sorting
     const requestFreqArr = [];
-    for (const [date, requestsCount] of requestFreq.entries()) {
-      const userCount = userFreq.get(date).size;
+    for (const [time, requestsCount] of requestFreq.entries()) {
+      const userCount = userFreq.has(time) ? userFreq.get(time).size : 0;
       requestFreqArr.push({
-        date: new Date(date),
+        date: time,
         requestCount: requestsCount,
         userCount: userCount,
       });
@@ -87,8 +87,8 @@
     const users = [];
     const usersText = [];
     for (let i = 0; i < requestFreqArr.length; i++) {
-      dates.push(requestFreqArr[i].date);
-      // Subtract
+      dates.push(new Date(requestFreqArr[i].date));
+      // Subtract users due to bar stacking
       requests.push(
         requestFreqArr[i].requestCount - requestFreqArr[i].userCount
       );
