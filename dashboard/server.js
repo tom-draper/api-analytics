@@ -22,6 +22,7 @@ server.get('*', function (req, res) {
       <meta name="description" content="Lightweight monitoring and analytics for API frameworks."/>
       <meta name="keywords" content="API Analytics, FastAPI, Express, Analytics, Dashboard, API, server"/>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="google-site-verification" content="vW5m_ij7wc85Td5Syr9N81a1efg_TTwcN8kOiXBc5c0" />
       <link rel='stylesheet' href='/global.css'>
       <link rel='stylesheet' href='/bundle.css'>
       <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
