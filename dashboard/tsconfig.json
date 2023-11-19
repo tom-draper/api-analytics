@@ -1,6 +1,5 @@
 {
   "extends": "@tsconfig/svelte/tsconfig.json",
-
   "include": [
     "src/**/*",
     "svelte.config.js",

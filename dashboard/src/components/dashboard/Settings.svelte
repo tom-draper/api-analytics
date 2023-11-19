@@ -12,6 +12,7 @@
   export let show: boolean, settings: DashboardSettings;
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="background"
   class:hidden={!show}

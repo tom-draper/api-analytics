@@ -1,5 +1,5 @@
 function initSVG() {
-  let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
   svg.setAttribute('width', 1000)
   svg.setAttribute('height', 1000)
   svg.id = 'mySVG'
@@ -50,8 +50,8 @@ function gaussian(mean, stdev) {
 }
 
 function setCirclePosition(circle, mean, std) {
-  let x = gaussian(mean, std)
-  let y = gaussian(mean, std)
+  const x = gaussian(mean, std)
+  const y = gaussian(mean, std)
   circle.setAttributeNS(null, 'cx', x)
   circle.setAttributeNS(null, 'cy', y)
 }
@@ -61,7 +61,7 @@ function randomInt(low, high) {
 }
 
 function setCircleSize(circle) {
-  let r = randomInt(1, 5)
+  const r = randomInt(1, 5)
   circle.setAttributeNS(null, 'r', r)
 }
 
@@ -78,7 +78,7 @@ function randomChoices(p, count) {
   return Array.from(Array(count), randomChoice.bind(null, p))
 }
 
-let color = [
+const color = [
   '#1c1c1c',
   '#05140d',
   '#0f3d28',
@@ -102,8 +102,8 @@ let color = [
 ]
 
 function setCircleColor(circle) {
-  let d = distance(circle.cx.baseVal.value, circle.cy.baseVal.value, 500, 500)
-  let p = Array(color.length).fill(0)
+  const d = distance(circle.cx.baseVal.value, circle.cy.baseVal.value, 500, 500)
+  const p = Array(color.length).fill(0)
   if (d < 80) {
     p[0] = 6
     p[1] = 2
@@ -123,10 +123,6 @@ function setCircleColor(circle) {
     p[3] = 1
     p[4] = 6
     p[5] = 1
-  } else if (d < 240) {
-    p[4] = 1
-    p[5] = 6
-    p[6] = 1
   } else if (d < 280) {
     p[5] = 1
     p[6] = 6
@@ -147,13 +143,13 @@ function setCircleColor(circle) {
     p[9] = 2
     p[10] = 6
   }
-  let idx = randomChoices(p, 1)
+  const idx = randomChoices(p, 1)
   circle.setAttribute('fill', color[idx])
 }
 
 function addCenterCircle(svg) {
-  let svgNS = svg.namespaceURI
-  let circle = document.createElementNS(svgNS, 'circle')
+  const svgNS = svg.namespaceURI
+  const circle = document.createElementNS(svgNS, 'circle')
   circle.setAttributeNS(null, 'cx', 500)
   circle.setAttributeNS(null, 'cy', 500)
   circle.setAttributeNS(null, 'r', 50)
@@ -163,9 +159,9 @@ function addCenterCircle(svg) {
 }
 
 function addRedCircles(svg) {
-  let svgNS = svg.namespaceURI
+  const svgNS = svg.namespaceURI
   for (let i = 0; i < 50; i++) {
-    let circle = document.createElementNS(svgNS, 'circle')
+    const circle = document.createElementNS(svgNS, 'circle')
 
     setCirclePosition(circle, 500, 200)
     setCircleSize(circle)
@@ -176,9 +172,9 @@ function addRedCircles(svg) {
 }
 
 function addCircles(svg) {
-  let svgNS = svg.namespaceURI
+  const svgNS = svg.namespaceURI
   for (let i = 0; i < 700; i++) {
-    let circle = document.createElementNS(svgNS, 'circle')
+    const circle = document.createElementNS(svgNS, 'circle')
     setCirclePosition(circle, 500, 140)
     setCircleSize(circle)
     setCircleColor(circle)

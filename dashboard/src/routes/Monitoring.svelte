@@ -39,7 +39,7 @@
   }
 
   let error = false;
-  let periods = ['24h', '7d', '30d', '60d'];
+  const periods = ['24h', '7d', '30d', '60d'];
   let period = periods[1];
   let data: MonitorData;
   let notification: NotificationState = {

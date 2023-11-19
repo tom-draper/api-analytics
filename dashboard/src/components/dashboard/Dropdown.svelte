@@ -17,6 +17,8 @@
 </script>
 
 <div class="dropdown" bind:this={dropdown} id="dropdown">
+  
+
   <div class="inner">
     <button
       class="current"
@@ -26,6 +28,9 @@
         hideOptions = !hideOptions;
       }}
     >
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+  </svg>
       {selected}
     </button>
     <div class="options" class:hidden={hideOptions}>
@@ -55,8 +60,9 @@
     background: var(--background);
     color: var(--dim-text);
     border: 1px solid #2e2e2e;
-    padding: 5px 12px;
+    padding: 5px 12px 5px 9px;
     cursor: pointer;
+    display: flex;
   }
   .options {
     display: flex;
@@ -88,5 +94,10 @@
     z-index: 9;
     display: flex;
     flex-direction: column;
+  }
+  svg {
+    width: 16px;
+    margin-right: 5px;
+    opacity: 0.6;
   }
 </style>

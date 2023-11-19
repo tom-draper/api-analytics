@@ -57,9 +57,9 @@
   }
 
   function osPlotLayout() {
-    let monthAgo = new Date();
+    const monthAgo = new Date();
     monthAgo.setDate(monthAgo.getDate() - 30);
-    let tomorrow = new Date();
+    const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     return {
       title: false,
@@ -84,18 +84,18 @@
   }
 
   function pieChart() {
-    let osCount = {};
+    const osCount = {};
     for (let i = 1; i < data.length; i++) {
-      let os = getOS(data[i][USER_AGENT]);
+      const os = getOS(data[i][USER_AGENT]);
       if (!(os in osCount)) {
         osCount[os] = 0;
       }
       osCount[os]++;
     }
 
-    let os = [];
-    let count = [];
-    for (let browser in osCount) {
+    const os = [];
+    const count = [];
+    for (const browser in osCount) {
       os.push(browser);
       count.push(osCount[browser]);
     }
@@ -124,7 +124,7 @@
   }
 
   function genPlot() {
-    let plotData = osPlotData();
+    const plotData = osPlotData();
     //@ts-ignore
     new Plotly.newPlot(
       plotDiv,

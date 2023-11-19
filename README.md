@@ -571,7 +571,7 @@ curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 
 ## Monitoring
 
-Active API monitoring can be set up by heading to https://apianalytics.dev/generate and entering you API key. Our servers will regularly ping chosen API endpoints to monitor uptime and response time. 
+Active API monitoring can be set up by heading to https://apianalytics.dev/monitoring to enter you API key. Our servers will regularly ping chosen API endpoints to monitor uptime and response time. 
 <!-- Optional email alerts when your endpoints are down can be subscribed to. -->
 
 ![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)

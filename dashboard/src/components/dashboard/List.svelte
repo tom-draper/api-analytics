@@ -27,7 +27,7 @@
   }
 
   let input: HTMLInputElement;
-  let hideOptions: boolean = true;
+  const hideOptions: boolean = true;
   export let items: Set<string>;
 </script>
 

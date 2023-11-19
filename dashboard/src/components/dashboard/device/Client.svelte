@@ -42,9 +42,9 @@
   }
 
   function clientPlotLayout() {
-    let monthAgo = new Date();
+    const monthAgo = new Date();
     monthAgo.setDate(monthAgo.getDate() - 30);
-    let tomorrow = new Date();
+    const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     return {
       title: false,
@@ -69,18 +69,18 @@
   }
 
   function pieChart() {
-    let clientCount = {};
+    const clientCount = {};
     for (let i = 1; i < data.length; i++) {
-      let client = getBrowser(data[i][USER_AGENT]);
+      const client = getBrowser(data[i][USER_AGENT]);
       if (!(client in clientCount)) {
         clientCount[client] = 0;
       }
       clientCount[client]++;
     }
 
-    let clients = [];
-    let count = [];
-    for (let browser in clientCount) {
+    const clients = [];
+    const count = [];
+    for (const browser in clientCount) {
       clients.push(browser);
       count.push(clientCount[browser]);
     }

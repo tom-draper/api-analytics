@@ -148,7 +148,7 @@
   let uptime = '';
   let error = false;
   let samples: Sample[];
-  let separatedURL = {
+  const separatedURL = {
     prefix: '',
     body: '',
   }

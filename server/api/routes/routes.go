@@ -120,19 +120,49 @@ func getUserRequests(c *gin.Context) {
 		return
 	}
 
-	// Fetch user ID corresponding with API key
-	// Left table join was originally used but often exceeded postgresql working memory limit with large numbers of requests
-	query = "SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = $1 LIMIT 700000;"
-	rows, err = db.Query(query, apiKey)
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("key=%s: Invalid API key - %w", apiKey, err))
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
-		return
-	}
-
-	// Read data into compact list of lists to return
 	cols := []any{"ip_address", "path", "hostname", "user_agent", "method", "response_time", "status", "location", "created_at"}
-	requests := buildRequestDataCompact(rows, cols)
+	requests := [][]any{cols}
+	pageSize := 400_000
+	maxRequests := 400_000
+	pageMarker := time.Time{} // Start with min time to capture first page
+
+	// Read paginated requests data
+	for {
+		// Fetch user ID corresponding with API key
+		// Left table join was originally used but often exceeded postgresql working memory limit with large numbers of requests
+		query = "SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = $1 AND created_at >= $2 ORDER BY created_at LIMIT $3;"
+		rows, err = db.Query(query, apiKey, pageMarker, pageSize)
+		if err != nil {
+			log.LogToFile(fmt.Sprintf("key=%s: Invalid API key - %w", apiKey, err))
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
+			return
+		}
+
+		// First value in list holds column names
+		var request PublicRequestRow
+		var count int
+		for rows.Next() {
+			err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
+			if err == nil {
+				if request.Location.String == "  " {
+					request.Location.String = ""
+				}
+				requests = append(requests, []any{request.IPAddress.String, request.Path, request.Hostname.String, request.UserAgent.String, request.Method, request.ResponseTime, request.Status, request.Location.String, request.CreatedAt})
+			}
+			count++
+			if count >= maxRequests {
+				break
+			}
+		}
+		// If haven't reached page size, there are no more rows to read
+		if count <= pageSize || count >= maxRequests {
+			break
+		}
+		// Save the final row's timestamp to know where next page begins
+		lastIdx := len(requests) - 1
+		lastTimestamp := requests[lastIdx][len(requests[lastIdx])-1].(time.Time)
+		pageMarker = lastTimestamp
+	}
 
 	gzipOutput, err := compressJSON(requests)
 	if err != nil {
