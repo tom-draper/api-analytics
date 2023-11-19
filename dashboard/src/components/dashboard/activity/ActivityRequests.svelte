@@ -53,13 +53,16 @@
         date.setHours(0, 0, 0, 0);
       }
       const dateStr = date.toISOString();
-      requestFreq.set(dateStr, requestFreq.get(dateStr)+1);
+      if (!requestFreq.has(dateStr)) {
+        requestFreq.set(dateStr, 0);
+      }
+      requestFreq.set(dateStr, requestFreq.get(dateStr) + 1);
 
       const ipAddress = data[i][IP_ADDRESS];
       if (!userFreq.has(dateStr)) {
-        userFreq.set(dateStr, new Set())
+        userFreq.set(dateStr, new Set());
       }
-      userFreq.get(dateStr).add(ipAddress)
+      userFreq.get(dateStr).add(ipAddress);
     }
 
     // Combine date and frequency count into (x, y) tuples for sorting
@@ -86,11 +89,15 @@
     for (let i = 0; i < requestFreqArr.length; i++) {
       dates.push(requestFreqArr[i].date);
       // Subtract
-      requests.push(requestFreqArr[i].requestCount - requestFreqArr[i].userCount);
+      requests.push(
+        requestFreqArr[i].requestCount - requestFreqArr[i].userCount
+      );
       // Keep actual requests count for hover text
       requestsText.push(`${requestFreqArr[i].requestCount} requests`);
       users.push(requestFreqArr[i].userCount);
-      usersText.push(`${requestFreqArr[i].userCount} users from ${requestFreqArr[i].requestCount} requests`)
+      usersText.push(
+        `${requestFreqArr[i].userCount} users from ${requestFreqArr[i].requestCount} requests`
+      );
     }
 
     return [
