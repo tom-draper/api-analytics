@@ -33,11 +33,11 @@
     const y = Array(n).fill(0);
 
     if (data.length > 0) {
-      const start = new Date(data[0][CREATED_AT]).getTime();
-      const end = new Date(data[data.length - 1][CREATED_AT]).getTime();
+      const start = data[0][CREATED_AT].getTime();
+      const end = data[data.length - 1][CREATED_AT].getTime();
       const range = end - start;
       for (let i = 1; i < data.length; i++) {
-        const time = new Date(data[i][CREATED_AT]).getTime();
+        const time = data[i][CREATED_AT].getTime();
         const diff = time - start;
         const idx = Math.floor(diff / (range / n));
         if (data[i][IP_ADDRESS] != null && data[i][IP_ADDRESS] != '') {

@@ -60,7 +60,7 @@
       ) {
         continue;
       }
-      const date = new Date(data[i][CREATED_AT]);
+      const date = data[i][CREATED_AT];
       if (counted(date)) {
         dataSubset.push(data[i]);
       }
@@ -134,7 +134,7 @@
       ) {
         continue;
       }
-      const date = new Date(data[i][CREATED_AT]);
+      const date = data[i][CREATED_AT];
       if (inPeriod(date)) {
         dataSubset.push(data[i]);
       }
@@ -199,6 +199,12 @@
     }
   }
 
+  function parseDates(data: RequestsData) {
+    for (let i = 0; i < data.length; i++) {
+      data[i][CREATED_AT] = new Date(data[i][CREATED_AT])
+    }
+  }
+
   type PeriodDataCache = {
     [period: string]: {
       periodData: RequestsData;
@@ -235,9 +241,10 @@
     } else {
       fetchData();
     }
+    parseDates(data);
     data?.sort((a, b) => {
       //@ts-ignore
-      return new Date(a[CREATED_AT]) - new Date(b[CREATED_AT]);
+      return a[CREATED_AT] - b[CREATED_AT];
     });
   });
 
