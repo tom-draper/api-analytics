@@ -1,19 +1,19 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { periodToDays } from '../../../lib/period';
-  import { CREATED_AT } from '../../../lib/consts';
+  import { CREATED_AT, IP_ADDRESS } from '../../../lib/consts';
   import type { Period } from '../../../lib/settings';
+  import { initFreqMap } from '../../../lib/activity';
 
   function defaultLayout() {
-    let periodAgo = new Date();
     const days = periodToDays(period);
-    if (days != null) {
-      periodAgo.setDate(periodAgo.getDate() - days);
-    } else {
+    let periodAgo = new Date();
+    if (days === null) {
       periodAgo = null;
+    } else {
+      periodAgo.setDate(periodAgo.getDate() - days);
     }
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate());
+    const now = new Date();
 
     return {
       title: false,
@@ -23,6 +23,7 @@
       plot_bgcolor: 'transparent',
       paper_bgcolor: 'transparent',
       height: 169,
+      barmode: 'stack',
       yaxis: {
         title: { text: 'Requests' },
         gridcolor: 'gray',
@@ -31,93 +32,92 @@
       xaxis: {
         title: { text: 'Date' },
         fixedrange: true,
-        range: [periodAgo, tomorrow],
+        range: [periodAgo, now],
         visible: false,
       },
       dragmode: false,
     };
   }
 
-  function initRequestFreq(): { [date: string]: number } {
-    // Populate requestFreq with zeros across date period
-    const requestFreq = {};
-    const days = periodToDays(period);
-    if (days) {
-      if (days === 1) {
-        // Freq count for every 5 minute
-        for (let i = 0; i < 288; i++) {
-          const date = new Date();
-          date.setSeconds(0, 0);
-          // Round down to multiple of 5
-          date.setMinutes(Math.floor(date.getMinutes() / 5) * 5 - i * 5);
-          const dateStr = date.toISOString();
-          requestFreq[dateStr] = 0;
-        }
-      } else {
-        // Freq count for every day
-        for (let i = 0; i < days; i++) {
-          const date = new Date();
-          date.setHours(0, 0, 0, 0);
-          date.setDate(date.getDate() - i);
-          const dateStr = date.toISOString();
-          requestFreq[dateStr] = 0;
-        }
-      }
-    }
-    return requestFreq;
-  }
-
-  function bars() {
-    const requestFreq = initRequestFreq();
+  function bars(data: RequestsData, period: Period) {
+    const requestFreq = initFreqMap(period, () => 0);
+    const userFreq = initFreqMap(period, () => new Set());
 
     const days = periodToDays(period);
     for (let i = 1; i < data.length; i++) {
       const date = new Date(data[i][CREATED_AT]);
-      if (days === 1) {
+      if (days <= 7) {
         // Round down to multiple of 5
         date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
       } else {
         date.setHours(0, 0, 0, 0);
       }
       const dateStr = date.toISOString();
-      if (!(dateStr in requestFreq)) {
-        requestFreq[dateStr] = 0;
+      requestFreq.set(dateStr, requestFreq.get(dateStr)+1);
+
+      const ipAddress = data[i][IP_ADDRESS];
+      if (!userFreq.has(dateStr)) {
+        userFreq.set(dateStr, new Set())
       }
-      requestFreq[dateStr]++;
+      userFreq.get(dateStr).add(ipAddress)
     }
 
     // Combine date and frequency count into (x, y) tuples for sorting
     const requestFreqArr = [];
-    for (const date in requestFreq) {
-      requestFreqArr.push([new Date(date), requestFreq[date]]);
+    for (const [date, requestsCount] of requestFreq.entries()) {
+      const userCount = userFreq.get(date).size;
+      requestFreqArr.push({
+        date: new Date(date),
+        requestCount: requestsCount,
+        userCount: userCount,
+      });
     }
     // Sort by date
     requestFreqArr.sort((a, b) => {
-      return a[0] - b[0];
+      return a.date - b.date;
     });
+
     // Split into two lists
     const dates = [];
     const requests = [];
+    const requestsText = [];
+    const users = [];
+    const usersText = [];
     for (let i = 0; i < requestFreqArr.length; i++) {
-      dates.push(requestFreqArr[i][0]);
-      requests.push(requestFreqArr[i][1]);
+      dates.push(requestFreqArr[i].date);
+      // Subtract
+      requests.push(requestFreqArr[i].requestCount - requestFreqArr[i].userCount);
+      // Keep actual requests count for hover text
+      requestsText.push(`${requestFreqArr[i].requestCount} requests`);
+      users.push(requestFreqArr[i].userCount);
+      usersText.push(`${requestFreqArr[i].userCount} users from ${requestFreqArr[i].requestCount} requests`)
     }
 
     return [
       {
         x: dates,
+        y: users,
+        text: usersText,
+        type: 'bar',
+        marker: { color: '#228458' },
+        hovertemplate: `<b>%{text}</b><br>%{x|%d %b %Y %H:%M}</b><extra></extra>`,
+        showlegend: false,
+      },
+      {
+        x: dates,
         y: requests,
+        text: requestsText,
         type: 'bar',
         marker: { color: '#3fcf8e' },
-        hovertemplate: `<b>%{y} requests</b><br>%{x|%d %b %Y}</b><extra></extra>`,
+        hovertemplate: `<b>%{text}</b><br>%{x|%d %b %Y %H:%M}</b><extra></extra>`,
         showlegend: false,
       },
     ];
   }
 
-  function buildPlotData() {
+  function buildPlotData(data: RequestsData, period: Period) {
     return {
-      data: bars(),
+      data: bars(data, period),
       layout: defaultLayout(),
       config: {
         responsive: true,
@@ -128,8 +128,8 @@
   }
 
   let plotDiv: HTMLDivElement;
-  function genPlot() {
-    const plotData = buildPlotData();
+  function genPlot(data: RequestsData, period: Period) {
+    const plotData = buildPlotData(data, period);
     //@ts-ignore
     new Plotly.newPlot(
       plotDiv,
@@ -144,7 +144,7 @@
     mounted = true;
   });
 
-  $: data && mounted && genPlot();
+  $: data && mounted && genPlot(data, period);
 
   export let data: RequestsData, period: Period;
 </script>

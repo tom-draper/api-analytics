@@ -1,6 +1,6 @@
 import type { Period } from './settings'
 
-export function periodToDays(period: Period) {
+export function periodToDays(period: Period): number | null {
     switch (period) {
         case '24 hours':
             return 1
@@ -19,7 +19,7 @@ export function periodToDays(period: Period) {
     }
 }
 
-export function periodToMarkers(period: string) {
+export function periodToMarkers(period: string): number | null {
     switch (period) {
         case '24h':
             return 38;

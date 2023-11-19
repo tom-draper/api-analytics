@@ -42,9 +42,9 @@
   function setPeriodData() {
     const days = periodToDays(settings.period);
 
-    let counted = allTimePeriod;
+    let counted: (date: Date) => boolean = allTimePeriod;
     if (days != null) {
-      counted = (date) => {
+      counted = (date: Date) => {
         return inPeriod(date, days);
       };
     }
@@ -227,7 +227,6 @@
     'All time',
   ];
   let failed = false;
-  const setup = false;
   onMount(() => {
     if (demo) {
       data = genDemoData() as RequestsData;

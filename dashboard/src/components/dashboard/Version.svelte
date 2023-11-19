@@ -6,9 +6,10 @@
     const v: Set<string> = new Set();
     for (let i = 1; i < data.length; i++) {
       const match = data[i][PATH].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
-      if (match) {
-        v.add(match[1]);
+      if (!match) {
+        continue;
       }
+      v.add(match[1]);
     }
     versions = v;
 
@@ -43,13 +44,14 @@
     const versionCount = {};
     for (let i = 1; i < data.length; i++) {
       const match = data[i][PATH].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
-      if (match) {
-        const version = match[1];
-        if (!(version in versionCount)) {
-          versionCount[version] = 0;
-        }
-        versionCount[version]++;
+      if (!match) {
+        continue;
       }
+      const version = match[1];
+      if (!(version in versionCount)) {
+        versionCount[version] = 0;
+      }
+      versionCount[version]++;
     }
 
     const versions = [];
@@ -98,6 +100,7 @@
   let plotDiv: HTMLDivElement;
   let mounted = false;
   onMount(() => {
+    // Wait until endpoints have been rendered to check whether we need to render
     setTimeout(() => {
       mounted = true;
     }, 500);
@@ -108,7 +111,7 @@
   export let data: RequestsData;
 </script>
 
-{#if versions != undefined && versions.size > 1}
+{#if versions !== undefined && versions.size > 1}
   <div class="card">
     <div class="card-title">Version</div>
     <div id="plotly">

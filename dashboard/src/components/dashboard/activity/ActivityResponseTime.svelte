@@ -3,17 +3,18 @@
   import { periodToDays } from '../../../lib/period';
   import { CREATED_AT, RESPONSE_TIME } from '../../../lib/consts';
   import type { Period } from '../../../lib/settings';
+  import { initFreqMap } from '../../../lib/activity';
 
   function defaultLayout() {
-    let periodAgo = new Date();
     const days = periodToDays(period);
+    let periodAgo = new Date();
     if (days != null) {
       periodAgo.setDate(periodAgo.getDate() - days);
     } else {
       periodAgo = null;
     }
     const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate());
+
     return {
       title: false,
       autosize: true,
@@ -39,90 +40,68 @@
     };
   }
 
-  function initResponseTimes(): {
-    [date: string]: { total: number; count: number };
-  } {
-    const responseTimes = {};
-    const days = periodToDays(period);
-    if (days) {
-      if (days <= 7) {
-        // Freq count for every minute
-        for (let i = 0; i < 60 * 24 * days; i++) {
-          const date = new Date();
-          date.setSeconds(0, 0);
-          // Round down to multiple of 5
-          date.setMinutes(Math.floor(date.getMinutes() / 5) * 5 - i * 5);
-          const dateStr = date.toISOString();
-          responseTimes[dateStr] = { total: 0, count: 0 };
-        }
-      } else {
-        // Freq count for every day
-        for (let i = 0; i < days; i++) {
-          const date = new Date();
-          date.setHours(0, 0, 0, 0);
-          date.setDate(date.getDate() - i);
-          const dateStr = date.toISOString();
-          responseTimes[dateStr] = { total: 0, count: 0 };
-        }
-      }
-    }
-    return responseTimes;
-  }
-
   function bars() {
-    const responseTimes = initResponseTimes();
+    const responseTimesFreq = initFreqMap(period, () => {
+      return { totalResponseTime: 0, count: 0 };
+    });
 
     const days = periodToDays(period);
+    if (days === null) {
+      return;
+    }
+
     for (let i = 1; i < data.length; i++) {
       const date = new Date(data[i][CREATED_AT]);
-      if (days) {
-        if (days <= 7) {
-          // Round down to multiple of 5
-          date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
-        } else {
-          date.setHours(0, 0, 0, 0);
-        }
+      if (days <= 7) {
+        // Round down to multiple of 5
+        date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
+      } else {
+        date.setHours(0, 0, 0, 0);
       }
       const dateStr = date.toISOString();
-      if (!(dateStr in responseTimes)) {
-        responseTimes[dateStr] = { total: 0, count: 0 };
+      if (!(dateStr in responseTimesFreq)) {
+        responseTimesFreq.set(dateStr, { totalResponseTime: 0, count: 0 });
       }
-      responseTimes[dateStr].total += data[i][RESPONSE_TIME];
-      responseTimes[dateStr].count++;
+      responseTimesFreq.get(dateStr).totalResponseTime +=
+        data[i][RESPONSE_TIME];
+      responseTimesFreq.get(dateStr).count++;
     }
 
     // Combine date and avg response time into (x, y) tuples for sorting
-    const responseTimeArr = [];
-    for (const date in responseTimes) {
-      const point = [new Date(date), 0];
-      if (responseTimes[date].count > 0) {
-        point[1] = responseTimes[date].total / responseTimes[date].count;
+    const responseTimeArr: { date: Date; avgResponseTime: number }[] = [];
+    for (const [date, obj] of responseTimesFreq.entries()) {
+      const point = { date: new Date(date), avgResponseTime: 0 };
+      if (obj.count > 0) {
+        point.avgResponseTime = obj.totalResponseTime / obj.count;
       }
       responseTimeArr.push(point);
     }
+
     // Sort by date
     responseTimeArr.sort((a, b) => {
-      return a[0] - b[0];
+      //@ts-ignore
+      return a.date - b.date;
     });
+
     // Split into two lists
-    const dates = [];
-    const rt = [];
-    let min_rt = Number.POSITIVE_INFINITY;
+    const dates: Date[] = [];
+    const responseTimes: number[] = [];
+    let minAvgResponseTime = Number.POSITIVE_INFINITY;
     for (let i = 0; i < responseTimeArr.length; i++) {
-      dates.push(responseTimeArr[i][0]);
-      rt.push(responseTimeArr[i][1]);
-      if (responseTimeArr[i][1] < min_rt) {
-        min_rt = responseTimeArr[i][1];
+      dates.push(responseTimeArr[i].date);
+      responseTimes.push(responseTimeArr[i].avgResponseTime);
+      if (responseTimeArr[i].avgResponseTime < minAvgResponseTime) {
+        minAvgResponseTime = responseTimeArr[i].avgResponseTime;
       }
     }
 
     return [
       {
         x: dates,
-        y: rt,
+        y: responseTimes,
         type: 'bar',
         marker: { color: '#707070' },
-        hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y}</b><extra></extra>`,
+        hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y %H:%M}</b><extra></extra>`,
         showlegend: false,
       },
     ];
