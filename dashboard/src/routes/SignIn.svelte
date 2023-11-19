@@ -1,7 +1,7 @@
 <script lang="ts">
   import { SERVER_URL } from '../lib/consts';
 
-  type State = 'sign-in' | 'loading'
+  type State = 'sign-in' | 'loading';
 
   let state: State = 'sign-in';
   let apiKey = '';

@@ -10,19 +10,20 @@
   }
 
   function setSuccessRate() {
-    const success = {};
-    let minDate = new Date(8640000000000000);;
+    const success: Map<number, { total: number; successful: number }> =
+      new Map();
+    let minDate = new Date(8640000000000000);
     for (let i = 1; i < data.length; i++) {
       const date = new Date(data[i][CREATED_AT]);
       date.setHours(0, 0, 0, 0);
-      const dateStr = date.toDateString();
-      if (!(dateStr in success)) {
-        success[dateStr] = { total: 0, successful: 0 };
+      const time = date.getTime();
+      if (!success.has(time)) {
+        success.set(time, { total: 0, successful: 0 });
       }
       if (data[i][STATUS] >= 200 && data[i][STATUS] <= 299) {
-        success[dateStr].successful++;
+        success.get(time).successful++;
       }
-      success[dateStr].total++;
+      success.get(time).total++;
       if (date < minDate) {
         minDate = date;
       }
@@ -34,10 +35,10 @@
     }
 
     const successArr = new Array(days).fill(-0.1); // -0.1 -> 0
-    for (const date in success) {
-      const idx = daysAgo(new Date(date));
+    for (const time of success.keys()) {
+      const idx = daysAgo(new Date(time));
       successArr[successArr.length - 1 - idx] =
-        success[date].successful / success[date].total;
+        success.get(time).successful / success.get(time).total;
     }
 
     successRate = successArr;
@@ -52,8 +53,6 @@
   onMount(() => {
     mounted = true;
   });
-
-  $: successRate;
 
   $: data && mounted && build();
 

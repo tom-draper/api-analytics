@@ -3,13 +3,16 @@
   import { periodToMarkers } from '../../lib/period';
   import type { NotificationState } from '../../lib/notification';
 
-  function triggerNotificationMessage(message: string, style: "error" | "warn" | "success" = "error") {
-    notification.message = message
-    notification.style = style
-    notification.show = true
+  function triggerNotificationMessage(
+    message: string,
+    style: 'error' | 'warn' | 'success' = 'error'
+  ) {
+    notification.message = message;
+    notification.style = style;
+    notification.show = true;
     setTimeout(() => {
       notification.show = false;
-    }, 4000)
+    }, 4000);
   }
 
   async function deleteMonitor() {
@@ -27,14 +30,14 @@
         }
       );
       if (response.status === 201) {
-        triggerNotificationMessage('Deleted successfully', 'success')
-        removeMonitor(url)
+        triggerNotificationMessage('Deleted successfully', 'success');
+        removeMonitor(url);
       } else {
-        triggerNotificationMessage('Failed to delete monitor')
+        triggerNotificationMessage('Failed to delete monitor');
       }
     } catch (e) {
       console.log(e);
-      triggerNotificationMessage('Failed to delete monitor')
+      triggerNotificationMessage('Failed to delete monitor');
     }
   }
 
@@ -52,11 +55,11 @@
     }
 
     if (total === 0) {
-      uptime = '0'
-    } else  {
+      uptime = '0';
+    } else {
       const per = (success / total) * 100;
       // If 100% display without decimal
-      uptime = per === 100 ? '100': per.toFixed(2);
+      uptime = per === 100 ? '100' : per.toFixed(2);
     }
   }
 
@@ -85,7 +88,7 @@
         sample = data[url];
     }
     // Ensure final sample is the most recent sample in the data for system down visual highlight
-    sample[sample.length-1] = data[url][data[url].length-1]
+    sample[sample.length - 1] = data[url][data[url].length - 1];
     return sample;
   }
 
@@ -126,11 +129,11 @@
 
   function separateURL() {
     if (url.startsWith('https://')) {
-      separatedURL.prefix = 'https://'
-      separatedURL.body = url.replace('https://', '')
+      separatedURL.prefix = 'https://';
+      separatedURL.body = url.replace('https://', '');
     } else if (url.startsWith('http://')) {
-      separatedURL.prefix = 'http://'
-      separatedURL.body = url.replace('http://', '')
+      separatedURL.prefix = 'http://';
+      separatedURL.body = url.replace('http://', '');
     }
   }
 
@@ -141,7 +144,6 @@
     setUptime();
   }
 
-
   // Monitor sample with label for status colour CSS class
   type Sample = MonitorSample & { label: string };
 
@@ -151,7 +153,7 @@
   const separatedURL = {
     prefix: '',
     body: '',
-  }
+  };
 
   // If card period or url changes at any time, rebuild
   $: (period || url) && build();
@@ -178,7 +180,8 @@
         {/if}
       </div>
       <a href="{separatedURL.prefix}{separatedURL.body}" class="endpoint"
-        ><span style="color: var(--dim-text)">{separatedURL.prefix}</span>{separatedURL.body}</a
+        ><span style="color: var(--dim-text)">{separatedURL.prefix}</span
+        >{separatedURL.body}</a
       >
       <button class="delete" on:click={deleteMonitor}
         ><img class="bin-icon" src="../img/bin.png" alt="" /></button
@@ -193,7 +196,9 @@
       {#each samples as sample}
         <div
           class="measurement {sample.label}"
-          title="{sample.createdAt === null ? '' : `Status: ${sample.status}\n${sample.createdAt.toLocaleString()}`}"
+          title={sample.createdAt === null
+            ? ''
+            : `Status: ${sample.status}\n${sample.createdAt.toLocaleString()}`}
         />
       {/each}
     </div>
