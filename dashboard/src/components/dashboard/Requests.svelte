@@ -128,11 +128,11 @@
     <div class="card-title">
       Requests <span class="per-hour">/ hour</span>
     </div>
-    {#if requestsPerHour != undefined}
+    {#if requestsPerHour}
       <div class="value">{requestsPerHour}</div>
     {/if}
   {:else}
-    {#if percentageChange != null}
+    {#if percentageChange}
       <div
         class="percentage-change"
         class:positive={percentageChange > 0}

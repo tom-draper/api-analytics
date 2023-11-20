@@ -37,12 +37,13 @@
       const end = data[data.length - 1][CREATED_AT].getTime();
       const range = end - start;
       for (let i = 1; i < data.length; i++) {
+        if (!data[i][IP_ADDRESS]) {
+          continue
+        }
         const time = data[i][CREATED_AT].getTime();
         const diff = time - start;
         const idx = Math.floor(diff / (range / n));
-        if (data[i][IP_ADDRESS] != null && data[i][IP_ADDRESS] != '') {
-          y[idx] += 1;
-        }
+        y[idx] += 1;
       }
     }
     return [
@@ -87,7 +88,7 @@
   }
 
   function setPercentageChange(now: number, prev: number) {
-    if (prev == 0) {
+    if (prev === 0) {
       percentageChange = null;
     } else {
       percentageChange = (now / prev) * 100 - 100;
@@ -97,7 +98,7 @@
   function getUsers(data: RequestsData): Set<string> {
     const users: Set<string> = new Set();
     for (let i = 1; i < data.length; i++) {
-      if (data[i][IP_ADDRESS] != null && data[i][IP_ADDRESS] != '') {
+      if (data[i][IP_ADDRESS]) {
         users.add(data[i][IP_ADDRESS]);
       }
     }
@@ -115,7 +116,7 @@
 
     if (numUsers > 0) {
       const days = periodToDays(period);
-      if (days != null) {
+      if (days !== null) {
         usersPerHour = (numUsers / (24 * days)).toFixed(2);
       }
     } else {
@@ -144,11 +145,11 @@
     <div class="card-title">
       Users <span class="per-hour">/ hour</span>
     </div>
-    {#if usersPerHour != undefined}
+    {#if usersPerHour}
       <div class="value">{usersPerHour}</div>
     {/if}
   {:else}
-    {#if percentageChange != null && percentageChange != 0}
+    {#if percentageChange}
       <div
         class="percentage-change"
         class:positive={percentageChange > 0}

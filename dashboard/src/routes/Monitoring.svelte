@@ -59,7 +59,7 @@
 
 <div class="monitoring">
   <div class="status">
-    {#if data != undefined && Object.keys(data).length == 0}
+    {#if data !== undefined && Object.keys(data).length === 0}
       <div class="status-image">
         <img id="status-image" src="/img/logo.png" alt="" />
         <div class="status-text">Setup required</div>
@@ -104,7 +104,7 @@
         </div>
       </div>
     </div>
-    {#if data != undefined}
+    {#if data}
       {#if showTrackNew || Object.keys(data).length == 0}
         <TrackNew
           {userID}

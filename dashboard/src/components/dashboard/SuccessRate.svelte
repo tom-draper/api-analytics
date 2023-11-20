@@ -104,7 +104,7 @@
 
 <div class="card">
   <div class="card-title">Success rate</div>
-  {#if successRate != undefined}
+  {#if successRate}
     <div
       class="value"
       class:red={successRate <= 75}
