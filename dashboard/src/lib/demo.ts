@@ -1,4 +1,4 @@
-function getDemoStatus(date: Date, status: number): number {
+function getDemoStatus(date: Date, status: number) {
     // Add down period
     const start = new Date()
     start.setDate(start.getDate() - 100)
@@ -13,7 +13,7 @@ function getDemoStatus(date: Date, status: number): number {
     }
 }
 
-function getDemoResponseTime(date: Date, responseTime: number): number {
+function getDemoResponseTime(date: Date, responseTime: number) {
     // Add down period
     const start = new Date()
     start.setDate(start.getDate() - 100)
@@ -28,7 +28,7 @@ function getDemoResponseTime(date: Date, responseTime: number): number {
     }
 }
 
-function getDemoUserAgent(): string {
+function getDemoUserAgent() {
     const p = Math.random()
     if (p < 0.19) {
         return 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Mobile/15E148 Safari/604.1'
@@ -51,7 +51,7 @@ function getDemoUserAgent(): string {
     }
 }
 
-function randomChoice(p: any[]): number {
+function randomChoice(p: any[]) {
     let rnd = p.reduce((a, b) => a + b) * Math.random()
     return p.findIndex((a) => (rnd -= a) < 0)
 }
@@ -60,7 +60,7 @@ function randomChoices(p: number[], count: number): number[] {
     return Array.from(Array(count), randomChoice.bind(null, p))
 }
 
-function getDemoHour(): number {
+function getDemoHour() {
     const p = Array(24).fill(1)
     // Create daytime peak
     for (let i = 0; i < 3; i++) {
@@ -121,20 +121,20 @@ const demoLocationsDist = [
     0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01,
 ]
 
-function getDemoLocation(): string {
+function getDemoLocation() {
     const idx = randomChoice(demoLocationsDist)
-    return demoLocations[idx] as string
+    return demoLocations[idx]
 }
 
 const demoHostnames = ['example.com', 'example2.com', 'example3.com']
 const demoHostnamesDist = [0.5, 0.35, 0.15]
 
-function getDemoHostname(): string {
+function getDemoHostname() {
     const idx = randomChoice(demoHostnamesDist)
-    return demoHostnames[idx] as string
+    return demoHostnames[idx]
 }
 
-function getDemoDate(daysAgo: [number, number]): Date {
+function getDemoDate(daysAgo: [number, number]) {
     const date = new Date()
     date.setDate(
         date.getDate() - Math.floor(Math.random() * daysAgo[1] + daysAgo[0]),
@@ -166,7 +166,7 @@ function addDemoSamples(
             ),
             getDemoStatus(date, status),
             getDemoLocation(),
-            date.toISOString(),
+            date,
         ])
     }
 }
