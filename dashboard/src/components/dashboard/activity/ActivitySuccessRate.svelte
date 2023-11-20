@@ -30,7 +30,7 @@
     }
 
     let days = periodToDays(period);
-    if (days == null) {
+    if (days === null) {
       days = daysAgo(minDate);
     }
 

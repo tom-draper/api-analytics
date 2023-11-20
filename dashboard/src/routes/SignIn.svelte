@@ -22,7 +22,7 @@
     }
   }
 
-  function enter(e) {
+  function enter(e: KeyboardEvent) {
     if (e.keyCode === 13) {
       submit();
     }
@@ -37,9 +37,9 @@
 
 <div class="generate">
   <div class="content">
-    {#if page == 'dashboard'}
+    {#if page === 'dashboard'}
       <h2>Dashboard</h2>
-    {:else if page == 'monitoring'}
+    {:else if page === 'monitoring'}
       <h2>Monitoring</h2>
     {/if}
     <input
@@ -48,10 +48,10 @@
       placeholder="Enter API key"
       on:keydown={enter}
     />
-    <button id="formBtn" on:click={submit} class:no-display={state != 'sign-in'}
+    <button id="formBtn" on:click={submit} class:no-display={state !== 'sign-in'}
       >Load</button
     >
-    <button id="formBtn" class:no-display={state != 'loading'}>
+    <button id="formBtn" class:no-display={state !== 'loading'}>
       <div class="spinner">
         <div class="loader" />
       </div>

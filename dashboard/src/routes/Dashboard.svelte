@@ -127,10 +127,10 @@
     for (let i = 1; i < data.length; i++) {
       if (
         (settings.disable404 && data[i][STATUS] === 404) ||
-        (settings.targetEndpoint != null &&
+        (settings.targetEndpoint !== null &&
           settings.targetEndpoint !== data[i][PATH]) ||
         isHiddenEndpoint(data[i][PATH]) ||
-        (settings.hostname != null && settings.hostname !== data[i][HOSTNAME])
+        (settings.hostname !== null && settings.hostname !== data[i][HOSTNAME])
       ) {
         continue;
       }
@@ -263,7 +263,7 @@
   export let userID: string, demo: boolean;
 </script>
 
-{#if periodData != undefined}
+{#if periodData}
   <div class="dashboard">
     <div class="button-nav">
       <button
@@ -274,7 +274,7 @@
       >
         <img class="settings-icon" src="../img/cog.png" alt="" />
       </button>
-      {#if hostnames != undefined && hostnames.length > 0}
+      {#if hostnames}
         <Dropdown options={hostnames} bind:selected={settings.hostname} />
       {/if}
       <div class="nav-btn time-period">

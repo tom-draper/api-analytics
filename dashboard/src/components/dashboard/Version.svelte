@@ -96,7 +96,7 @@
     );
   }
 
-  let versions: Set<string>;
+  let versions: Set<string> = new Set();
   let plotDiv: HTMLDivElement;
   let mounted = false;
   onMount(() => {
@@ -111,7 +111,7 @@
   export let data: RequestsData;
 </script>
 
-{#if versions !== undefined && versions.size > 1}
+{#if versions.size > 1}
   <div class="card">
     <div class="card-title">Version</div>
     <div id="plotly">
