@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { CREATED_AT, STATUS } from '../../lib/consts';
+  import { STATUS } from '../../lib/consts';
 
   function successRatePlotLayout() {
     return {

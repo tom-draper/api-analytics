@@ -5,8 +5,7 @@
   function getBrowser(userAgent: string): string {
     if (userAgent == null) {
       return 'Unknown';
-    }
-    if (userAgent.match(/curl\//)) {
+    } else if (userAgent.match(/curl\//)) {
       return 'Curl';
     } else if (userAgent.match(/PostmanRuntime\//)) {
       return 'Postman';
