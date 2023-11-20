@@ -1,7 +1,7 @@
 <script lang="ts">
   import { SERVER_URL } from '../lib/consts';
 
-  type State = 'delete' | 'loading' | 'deleted' | 'error'
+  type State = 'delete' | 'loading' | 'deleted' | 'error';
   let state: State = 'delete';
   let apiKey = '';
   async function submit() {
@@ -35,10 +35,8 @@
       placeholder="Enter API key"
       on:keydown={enter}
     />
-    <button
-      id="formBtn"
-      on:click={submit}
-      class:no-display={state != 'delete'}>Delete</button
+    <button id="formBtn" on:click={submit} class:no-display={state != 'delete'}
+      >Delete</button
     >
     <button id="formBtn" class:no-display={state != 'loading'}>
       <div class="spinner">

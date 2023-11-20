@@ -17,7 +17,7 @@
 
   type EndpointFreq = {
     [endpointID: string]: { path: string; status: number; count: number };
-  }
+  };
 
   function endpointFreq(): EndpointFreq {
     const freq = {};

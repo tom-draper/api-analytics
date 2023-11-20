@@ -1,8 +1,5 @@
 <script lang="ts">
-  export let title: string,
-    description: string,
-    img: string,
-    path: string;
+  export let title: string, description: string, img: string, path: string;
 </script>
 
 <div class="dashboard">

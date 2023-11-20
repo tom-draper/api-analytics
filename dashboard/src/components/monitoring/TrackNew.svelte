@@ -1,34 +1,37 @@
 <script lang="ts">
-  import type {NotificationState} from '../../lib/notification';
+  import type { NotificationState } from '../../lib/notification';
   import Dropdown from '../dashboard/Dropdown.svelte';
 
-  function triggerNotificationMessage(message: string, style: "error" | "warn" | "success" = "error") {
-    notification.message = message
-    notification.style = style
-    notification.show = true
+  function triggerNotificationMessage(
+    message: string,
+    style: 'error' | 'warn' | 'success' = 'error'
+  ) {
+    notification.message = message;
+    notification.style = style;
+    notification.show = true;
     setTimeout(() => {
       notification.show = false;
-    }, 4000)
+    }, 4000);
   }
 
   function getFullURL(url: string, secure: boolean): string {
-    url = url.replace(/^https?(:\/\/)?/, '')
-    const prefix = secure ? 'https://' : 'http://'
-    url = prefix + url
-    return url
+    url = url.replace(/^https?(:\/\/)?/, '');
+    const prefix = secure ? 'https://' : 'http://';
+    url = prefix + url;
+    return url;
   }
 
   async function postMonitor() {
     if (url == null) {
-      triggerNotificationMessage("URL is blank.")
-      return
-   } else if (monitorCount >= 3) {
-      triggerNotificationMessage("Maximum 3 monitors allowed.")
-      return
+      triggerNotificationMessage('URL is blank.');
+      return;
+    } else if (monitorCount >= 3) {
+      triggerNotificationMessage('Maximum 3 monitors allowed.');
+      return;
     }
 
     try {
-      const secure = urlPrefix === 'https'
+      const secure = urlPrefix === 'https';
       const fullURL = getFullURL(url, secure);
       const response = await fetch(
         `https://www.apianalytics-server.com/api/monitor/add`,
@@ -40,21 +43,21 @@
             url: getFullURL(url, secure),
             ping: true,
             secure: secure,
-          })
+          }),
         }
       );
       if (response.status === 201) {
-        triggerNotificationMessage('Created successfully', 'success')
-        addEmptyMonitor(fullURL)
+        triggerNotificationMessage('Created successfully', 'success');
+        addEmptyMonitor(fullURL);
         showTrackNew = false;
       } else if (response.status === 409) {
-        triggerNotificationMessage('URL already monitored', 'warn')
+        triggerNotificationMessage('URL already monitored', 'warn');
       } else {
-        triggerNotificationMessage('Failed to create monitor')
+        triggerNotificationMessage('Failed to create monitor');
       }
     } catch (e) {
-      console.log(e)
-      triggerNotificationMessage('Failed to create monitor')
+      console.log(e);
+      triggerNotificationMessage('Failed to create monitor');
     }
   }
 

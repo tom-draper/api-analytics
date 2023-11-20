@@ -15,7 +15,7 @@
     return regionNames.of(countryCode);
   }
 
-  type LocationBar = { location: string; frequency: number; height: number }
+  type LocationBar = { location: string; frequency: number; height: number };
 
   function build() {
     let max = 0;
@@ -48,10 +48,10 @@
       return b.frequency - a.frequency;
     });
 
-    locations = locs
+    locations = locs;
   }
 
-  let locations: LocationBar[]  = [];
+  let locations: LocationBar[] = [];
   let mounted = false;
   onMount(() => {
     mounted = true;

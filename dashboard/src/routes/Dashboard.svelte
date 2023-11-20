@@ -201,7 +201,7 @@
 
   function parseDates(data: RequestsData) {
     for (let i = 0; i < data.length; i++) {
-      data[i][CREATED_AT] = new Date(data[i][CREATED_AT])
+      data[i][CREATED_AT] = new Date(data[i][CREATED_AT]);
     }
   }
 
