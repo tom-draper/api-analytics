@@ -1,428 +1,867 @@
-function getDemoStatus(date: Date, status: number) {
-    // Add down period
-    const start = new Date()
-    start.setDate(start.getDate() - 100)
-    const end = new Date()
-    end.setDate(end.getDate() - 96)
-
-    if (date > start && date < end) {
-        // Create status code anomaly in down period
-        return 400
-    } else {
-        return status
-    }
-}
-
-function getDemoResponseTime(date: Date, responseTime: number) {
-    // Add down period
-    const start = new Date()
-    start.setDate(start.getDate() - 100)
-    const end = new Date()
-    end.setDate(end.getDate() - 96)
-
-    if (date > start && date < end) {
-        // Create response time anomaly in down period
-        return Math.floor(Math.random() * 400 + 200)
-    } else {
-        return responseTime
-    }
-}
-
-function getDemoUserAgent() {
-    const p = Math.random()
-    if (p < 0.19) {
-        return 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Mobile/15E148 Safari/604.1'
-    } else if (p < 0.3) {
-        return 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0'
-    } else if (p < 0.34) {
-        return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59'
-    } else if (p < 0.36) {
-        return 'curl/7.64.1'
-    } else if (p < 0.39) {
-        return 'PostmanRuntime/7.26.5'
-    } else if (p < 0.4) {
-        return 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36 OPR/38.0.2220.41'
-    } else if (p < 0.42) {
-        return 'Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0'
-    } else if (p < 0.58) {
-        return 'python-requests/2.26.0'
-    } else {
-        return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
-    }
-}
-
 function randomChoice(p: any[]) {
-    let rnd = p.reduce((a, b) => a + b) * Math.random()
-    return p.findIndex((a) => (rnd -= a) < 0)
+    let rnd = p.reduce((a, b) => a + b) * Math.random();
+    return p.findIndex((a) => (rnd -= a) < 0);
+}
+
+function randomChoiceOld(p: any[]) {
+    let rnd = p.reduce((a, b) => a + b) * Math.random();
+    return p.findIndex((a) => (rnd -= a) < 0);
 }
 
 function randomChoices(p: number[], count: number): number[] {
-    return Array.from(Array(count), randomChoice.bind(null, p))
+    return Array.from(Array(count), randomChoice.bind(null, p));
 }
 
-function getDemoHour() {
-    const p = Array(24).fill(1)
+const userAgents = [
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59",
+    "curl/7.64.1",
+    "PostmanRuntime/7.26.5",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36 OPR/38.0.2220.41",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0",
+    "python-requests/2.26.0",
+];
+const userAgentDist = [0.19, 0.11, 0.04, 0.01, 0.01, 0.01, 0.01, 0.01];
+
+function getUserAgent() {
+    const idx = randInt(0, userAgentDist.length);
+    return userAgents[idx];
+}
+
+const hoursDist = (() => {
+    const p = Array(24).fill(1);
     // Create daytime peak
     for (let i = 0; i < 3; i++) {
         for (let j = 5 + i; j < 11 - i; j++) {
-            p[j] += 0.15
+            p[j] += 0.15;
         }
     }
     // Create evening peak
     for (let i = 0; i < 4; i++) {
         for (let j = 11 + i; j < 21 - i; j++) {
-            p[j] += 0.15
+            p[j] += 0.15;
         }
     }
-    return randomChoices(p, 1)[0]
+    return p;
+})();
+
+function getDemoHour() {
+    return randomChoices(hoursDist, 1)[0];
 }
 
 const demoLocations = [
-    'GB',
-    'US',
-    'MX',
-    'CA',
-    'FR',
-    'AU',
-    'ID',
-    'IE',
-    'DE',
-    'PL',
-    'AF',
-    'AL',
-    'DZ',
-    'AS',
-    'AD',
-    'AO',
-    'AI',
-    'AQ',
-    'AG',
-    'AR',
-    'AM',
-    'AW',
-    'AT',
-    'AZ',
-    'BS',
-    'BH',
-    'BD',
-    'BB',
-    'BY',
-    'BE',
-    'BZ',
-    'BJ',
-    'BM',
-    'BT',
-    'BO',
-    'BQ',
-]
+    "GB",
+    "US",
+    "MX",
+    "CA",
+    "FR",
+    "AU",
+    "ID",
+    "IE",
+    "DE",
+    "PL",
+    "AF",
+    "AL",
+    "DZ",
+    "AS",
+    "AD",
+    "AO",
+    "AI",
+    "AQ",
+    "AG",
+    "AR",
+    "AM",
+    "AW",
+    "AT",
+    "AZ",
+    "BS",
+    "BH",
+    "BD",
+    "BB",
+    "BY",
+    "BE",
+    "BZ",
+    "BJ",
+    "BM",
+    "BT",
+    "BO",
+    "BQ",
+];
 const demoLocationsDist = [
     0.56, 1, 0.18, 0.2, 0.4, 0.3, 0.1, 0.05, 0.2, 0.06, 0.01, 0.01, 0.01, 0.01,
     0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01,
     0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01,
-]
+];
 
-function getDemoLocation() {
-    const idx = randomChoice(demoLocationsDist)
-    return demoLocations[idx]
+function getLocation() {
+    const idx = randomChoice(demoLocationsDist);
+    return demoLocations[idx];
 }
 
-const demoHostnames = ['example.com', 'example2.com', 'example3.com']
-const demoHostnamesDist = [0.5, 0.35, 0.15]
+const demoHostnames = ["example.com", "example2.com", "example3.com"];
+const demoHostnamesDist = [0.5, 0.35, 0.15];
 
-function getDemoHostname() {
-    const idx = randomChoice(demoHostnamesDist)
-    return demoHostnames[idx]
+function getHostname() {
+    const idx = randomChoice(demoHostnamesDist);
+    return demoHostnames[idx];
 }
 
-function getDemoDate(daysAgo: [number, number]) {
-    const date = new Date()
-    date.setDate(
-        date.getDate() - Math.floor(Math.random() * daysAgo[1] + daysAgo[0]),
-    )
+function daysToSeconds(days: number) {
+    return days * 24 * 60 * 60;
+}
+
+function getDate(daysAgo: Range, distribution: Distribution, outages: Range[]) {
+    let secondsAgo: number;
+    switch (distribution) {
+        case Distribution.Uniform:
+            secondsAgo = randInt(
+                daysToSeconds(daysAgo.min),
+                daysToSeconds(daysAgo.max)
+            );
+            break;
+        case Distribution.Poisson:
+            secondsAgo = samplePoisson(3, daysToSeconds(daysAgo.max));
+            break;
+        case Distribution.Normal:
+            secondsAgo = randn_bm(
+                daysToSeconds(daysAgo.min),
+                daysToSeconds(daysAgo.max),
+                0.75
+            );
+            break;
+    }
+
+    // Check if chosen date falls inside of an outage
+    for (let outage of outages) {
+        if (secondsAgo > daysToSeconds(outage.min) && secondsAgo < daysToSeconds(outage.max)) {
+            return null
+        }
+    }
+
+    const now = new Date();
+    const date = new Date(now.getTime() - secondsAgo * 1000);
     date.setHours(getDemoHour(), Math.floor(Math.random() * 60))
-    return date
+    return date;
 }
 
-function addDemoSamples(
-    demoData: RequestsData,
-    endpoint: string,
-    status: number,
-    count: number,
-    daysAgo: [number, number],
-    responseTime: [number, number],
-    user: [number, number],
-) {
-    for (let i = 0; i < count; i++) {
-        const date = getDemoDate(daysAgo)
+function randInt(min: number, max: number) {
+    return Math.floor(Math.random() * max + min);
+}
+
+type Sample = {
+    count: number;
+    endpoint: string;
+    status: number;
+    daysAgo: Range;
+    responseTime: Range;
+    user: Range;
+    distribution: Distribution;
+};
+
+type Range = {
+    min: number;
+    max: number;
+};
+
+function addDemoSamples(demoData: RequestsData, config: Sample, outages: Range[] = []) {
+    for (let i = 0; i < config.count; i++) {
+        const date = getDate(config.daysAgo, config.distribution, outages);
+        if (date === null) {
+            continue
+        }
         demoData.push([
-            Math.floor(Math.random() * user[1] + user[0]).toString(),
-            endpoint,
-            getDemoHostname(),
-            getDemoUserAgent(),
+            randInt(config.user.min, config.user.max).toString(),
+            config.endpoint,
+            getHostname(),
+            getUserAgent(),
             0,
-            getDemoResponseTime(
-                date,
-                Math.floor(Math.random() * responseTime[1] + responseTime[0]),
-            ),
-            getDemoStatus(date, status),
-            getDemoLocation(),
-            date,
-        ])
+            randInt(config.responseTime.min, config.responseTime.max),
+            config.status,
+            getLocation(),
+            date
+        ]);
     }
 }
 
-export default function genDemoData(): RequestsData {
-    const demoData: RequestsData = []
+const enum Distribution {
+    Uniform,
+    Normal,
+    Poisson,
+}
 
-    addDemoSamples(demoData, '/v1/', 200, 18000, [0, 650], [55, 240], [0, 3956])
-    addDemoSamples(demoData, '/v1/', 400, 1000, [0, 650], [55, 240], [0, 2041])
-    addDemoSamples(
-        demoData,
-        '/v1/account',
-        200,
-        8000,
-        [0, 650],
-        [55, 240],
-        [0, 1854],
-    )
-    addDemoSamples(
-        demoData,
-        '/v1/account',
-        400,
-        1200,
-        [0, 650],
-        [55, 240],
-        [0, 1654],
-    )
-    addDemoSamples(demoData, '/v1/help', 200, 700, [0, 650], [55, 240], [0, 1654])
-    addDemoSamples(demoData, '/v1/help', 400, 70, [0, 650], [55, 240], [0, 1654])
-    addDemoSamples(demoData, '/v2/', 200, 35000, [0, 650], [55, 240], [0, 1654])
-    addDemoSamples(demoData, '/v2/', 400, 200, [0, 650], [55, 240], [0, 1654])
-    addDemoSamples(
-        demoData,
-        '/v2/account',
-        200,
-        14000,
-        [0, 650],
-        [55, 240],
-        [0, 1654],
-    )
-    addDemoSamples(
-        demoData,
-        '/v2/account',
-        400,
-        3000,
-        [0, 650],
-        [55, 240],
-        [0, 1654],
-    )
-    addDemoSamples(
-        demoData,
-        '/v2/account/update',
-        200,
-        6000,
-        [0, 650],
-        [55, 240],
-        [0, 1654],
-    )
-    addDemoSamples(
-        demoData,
-        '/v2/account/update',
-        400,
-        400,
-        [0, 650],
-        [55, 240],
-        [0, 1654],
-    )
-    addDemoSamples(
-        demoData,
-        '/v2/help',
-        200,
-        6000,
-        [0, 650],
-        [55, 240],
-        [0, 1654],
-    )
-    addDemoSamples(demoData, '/v2/help', 400, 400, [0, 650], [55, 240], [0, 1654])
+function samplePoisson(lambda: number, T: number) {
+    const sampleNextEventTime = () => {
+        return -Math.log(Math.random()) / lambda;
+    };
 
-    addDemoSamples(
-        demoData,
-        '/v2/account',
-        200,
-        16000,
-        [0, 450],
-        [30, 100],
-        [0, 1654],
-    )
-    addDemoSamples(
-        demoData,
-        '/v2/account',
-        400,
-        2000,
-        [0, 450],
-        [300, 1000],
-        [0, 1654],
-    )
+    let time = 0;
+    let nEvents = 0;
+    while (time < T) {
+        time += sampleNextEventTime();
+        nEvents++;
+    }
+    return nEvents - 1;
+}
 
-    addDemoSamples(
-        demoData,
-        '/v2/help',
-        200,
-        8000,
-        [0, 300],
-        [30, 100],
-        [0, 1654],
-    )
-    addDemoSamples(demoData, '/v2/help', 400, 800, [0, 300], [30, 100], [0, 1654])
+function gaussianRand() {
+    let rand = 0;
+    for (let i = 0; i < 6; i += 1) {
+        rand += Math.random();
+    }
+    return rand / 6;
+}
 
-    addDemoSamples(demoData, '/v2/', 200, 4000, [0, 200], [30, 100], [0, 1654])
-    addDemoSamples(demoData, '/v2/', 400, 800, [0, 200], [30, 100], [0, 1654])
+function randn_bm(min, max, skew) {
+    let u = 0, v = 0;
+    while (u === 0) u = Math.random() //Converting [0,1) to (0,1)
+    while (v === 0) v = Math.random()
+    let num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v)
 
-    addDemoSamples(demoData, '/v2/', 200, 3000, [0, 100], [30, 100], [0, 1654])
-    addDemoSamples(demoData, '/v2/', 400, 500, [0, 100], [30, 100], [0, 1654])
+    num = num / 10.0 + 0.5 // Translate to 0 -> 1
+    if (num > 1 || num < 0)
+        num = randn_bm(min, max, skew) // resample between 0 and 1 if out of range
 
-    addDemoSamples(demoData, '/v2/', 200, 1000, [0, 60], [30, 100], [0, 1654])
-    addDemoSamples(demoData, '/v2/', 400, 50, [0, 60], [30, 100], [0, 1654])
+    else {
+        num = Math.pow(num, skew) // Skew
+        num *= max - min // Stretch to fill range
+        num += min // offset to min
+    }
+    return num
+}
 
-    addDemoSamples(demoData, '/v2/', 200, 500, [0, 40], [30, 100], [0, 1654])
-    addDemoSamples(demoData, '/v2/', 400, 25, [0, 40], [30, 100], [0, 1654])
+function gaussianRandom(start: number, end: number) {
+    return Math.floor(start + gaussianRand() * (end - start + 1));
+}
 
-    addDemoSamples(demoData, '/v2/', 200, 250, [0, 10], [30, 100], [0, 1654])
-    addDemoSamples(demoData, '/v2/', 400, 20, [0, 10], [30, 100], [0, 1654])
+function scaleRange(range: Range, scale: number): Range {
+    return {
+        min: range.min * scale,
+        max: range.max * scale,
+    };
+}
 
-    addDemoSamples(demoData, '/v2/', 200, 125, [0, 5], [30, 100], [0, 1654])
-    addDemoSamples(demoData, '/v2/', 400, 10, [0, 5], [30, 100], [0, 1654])
+function createUniformBaselineSamples(
+    demoData: RequestsData,
+    maxDaysAgo: number,
+    scale: number,
+    outages: Range[]
+) {
+    const count = 8000 * scale;
 
-    addDemoSamples(demoData, '/v2/', 200, 7000, [0, 70], [100, 200], [0, 2054])
-    addDemoSamples(demoData, '/v2/help', 400, 800, [0, 70], [100, 400], [0, 2054])
+    const maxRange = { min: 0, max: maxDaysAgo }
+    const v1ResponseTime = { min: 55, max: 450 };
+    const v2ResponseTime = { min: 40, max: 396 };
+    const v3ResponseTime = { min: 20, max: 290 };
+    const notFoundResponseTime = { min: 10, max: 40 };
+    const user = { min: 0, max: count * 0.005 }
 
-    addDemoSamples(demoData, '/v3/', 404, 300, [0, 40], [100, 200], [0, 2054])
-    addDemoSamples(demoData, '/v3/help', 404, 53, [0, 40], [100, 400], [0, 2054])
+    addDemoSamples(demoData, {
+        count: count,
+        endpoint: "/api/v1/",
+        status: 200,
+        daysAgo: maxRange,
+        responseTime: v1ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.45,
+        endpoint: "/api/v1/account",
+        status: 200,
+        daysAgo: maxRange,
+        responseTime: v1ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.011,
+        endpoint: "/api/v1/account",
+        status: 400,
+        daysAgo: maxRange,
+        responseTime: scaleRange(v1ResponseTime, 4),
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.0053,
+        endpoint: "/api/v1/accounts",
+        status: 404,
+        daysAgo: maxRange,
+        responseTime: notFoundResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
 
-    addDemoSamples(
-        demoData,
-        '/v2/account',
-        200,
-        1000,
-        [0, 24],
-        [100, 200],
-        [0, 2054],
-    )
-    addDemoSamples(demoData, '/v1/', 400, 80, [0, 24], [100, 400], [0, 2054])
+    addDemoSamples(demoData, {
+        count: count * 1.42,
+        endpoint: "/api/v2/",
+        status: 200,
+        daysAgo: maxRange,
+        responseTime: v2ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.33,
+        endpoint: "/api/v2/account",
+        status: 200,
+        daysAgo: maxRange,
+        responseTime: v2ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.33,
+        endpoint: "/api/v2/help",
+        status: 200,
+        daysAgo: maxRange,
+        responseTime: v2ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.2,
+        endpoint: "/api/v2/info",
+        status: 200,
+        daysAgo: maxRange,
+        responseTime: v2ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.00051,
+        endpoint: "/api/v2/account",
+        status: 400,
+        daysAgo: maxRange,
+        responseTime: v2ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.0092,
+        endpoint: "/api/v2/accounts",
+        status: 404,
+        daysAgo: maxRange,
+        responseTime: notFoundResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
 
-    addDemoSamples(
-        demoData,
-        '/v2/account',
-        200,
-        300,
-        [122, 14],
-        [100, 300],
-        [0, 1654],
-    )
-    addDemoSamples(
-        demoData,
-        '/v2/account',
-        500,
-        800,
-        [122, 14],
-        [100, 300],
-        [0, 1654],
-    )
+    addDemoSamples(demoData, {
+        count: count * 0.412,
+        endpoint: "/api/v3/",
+        status: 200,
+        daysAgo: maxRange,
+        responseTime: v3ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.052,
+        endpoint: "/api/v3/account",
+        status: 200,
+        daysAgo: maxRange,
+        responseTime: v3ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.0022,
+        endpoint: "/api/v3/account",
+        status: 400,
+        daysAgo: maxRange,
+        responseTime: scaleRange(v3ResponseTime, 6),
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.00011,
+        endpoint: "/api/v3/accounts",
+        status: 404,
+        daysAgo: maxRange,
+        responseTime: notFoundResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+}
 
-    addDemoSamples(
-        demoData,
-        '/v2/account',
-        200,
-        300,
-        [130, 8],
-        [100, 300],
-        [0, 1654],
-    )
-    addDemoSamples(
-        demoData,
-        '/v2/account',
-        400,
-        800,
-        [130, 8],
-        [100, 300],
-        [0, 1654],
-    )
+function createVariableBaselineSamples(
+    demoData: RequestsData,
+    maxDaysAgo: number,
+    scale: number,
+    outages: Range[]
+) {
+    const count = 2000 * scale;
+    addDemoSamples(demoData, {
+        count: count,
+        endpoint: "/api/v1/",
+        status: 200,
+        daysAgo: {
+            min: 0,
+            max: maxDaysAgo,
+        },
+        responseTime: {
+            min: 25,
+            max: 600,
+        },
+        user: {
+            min: 115,
+            max: 390,
+        },
+        distribution: Distribution.Normal,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count,
+        endpoint: "/api/v3/",
+        status: 200,
+        daysAgo: {
+            min: 0,
+            max: maxDaysAgo / 2,
+        },
+        responseTime: {
+            min: 25,
+            max: 600,
+        },
+        user: {
+            min: 115,
+            max: 390,
+        },
+        distribution: Distribution.Normal,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count,
+        endpoint: "/api/v2/",
+        status: 200,
+        daysAgo: {
+            min: 0,
+            max: maxDaysAgo / 3,
+        },
+        responseTime: {
+            min: 25,
+            max: 600,
+        },
+        user: {
+            min: 115,
+            max: 390,
+        },
+        distribution: Distribution.Normal,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count,
+        endpoint: "/api/v1/account",
+        status: 200,
+        daysAgo: {
+            min: 0,
+            max: maxDaysAgo / 4,
+        },
+        responseTime: {
+            min: 25,
+            max: 600,
+        },
+        user: {
+            min: 115,
+            max: 390,
+        },
+        distribution: Distribution.Normal,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 2,
+        endpoint: "/api/v2/account",
+        status: 200,
+        daysAgo: {
+            min: 0,
+            max: maxDaysAgo / 5,
+        },
+        responseTime: {
+            min: 25,
+            max: 600,
+        },
+        user: {
+            min: 115,
+            max: 390,
+        },
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 2,
+        endpoint: "/api/v3/account",
+        status: 200,
+        daysAgo: {
+            min: 0,
+            max: maxDaysAgo / 5,
+        },
+        responseTime: {
+            min: 25,
+            max: 600,
+        },
+        user: {
+            min: 115,
+            max: 390,
+        },
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.5,
+        endpoint: "/api/v1/account",
+        status: 200,
+        daysAgo: {
+            min: 0,
+            max: maxDaysAgo / 4,
+        },
+        responseTime: {
+            min: 25,
+            max: 600,
+        },
+        user: {
+            min: 115,
+            max: 390,
+        },
+        distribution: Distribution.Uniform,
+    }, outages);
+}
 
-    addDemoSamples(
-        demoData,
-        '/v2/account',
-        200,
-        200,
-        [135, 5],
-        [100, 300],
-        [0, 1654],
-    )
-    addDemoSamples(
-        demoData,
-        '/v2/account',
-        500,
-        700,
-        [135, 5],
-        [100, 300],
-        [0, 1654],
-    )
+function createVariableUsageSamples(
+    demoData: RequestsData,
+    maxDaysAgo: number,
+    scale: number,
+    outages: Range[]
+) {
+    const count = 1000 * scale;
+    addDemoSamples(demoData, {
+        count: count,
+        endpoint: "/api/v1/",
+        status: 200,
+        daysAgo: {
+            min: maxDaysAgo * 0.7,
+            max: maxDaysAgo * 0.75,
+        },
+        responseTime: {
+            min: 60,
+            max: 600,
+        },
+        user: {
+            min: 115,
+            max: 116,
+        },
+        distribution: Distribution.Normal,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.3,
+        endpoint: "/api/v1/",
+        status: 200,
+        daysAgo: {
+            min: maxDaysAgo * 0.79,
+            max: maxDaysAgo * 0.83,
+        },
+        responseTime: {
+            min: 60,
+            max: 600,
+        },
+        user: {
+            min: 116,
+            max: 120,
+        },
+        distribution: Distribution.Normal,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count,
+        endpoint: "/api/v3/",
+        status: 200,
+        daysAgo: {
+            min: maxDaysAgo * 0.7,
+            max: maxDaysAgo * 0.9,
+        },
+        responseTime: {
+            min: 60,
+            max: 600,
+        },
+        user: {
+            min: 116,
+            max: 120,
+        },
+        distribution: Distribution.Normal,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 2,
+        endpoint: "/api/v2/",
+        status: 200,
+        daysAgo: {
+            min: maxDaysAgo * 0.3,
+            max: maxDaysAgo * 0.6,
+        },
+        responseTime: {
+            min: 60,
+            max: 600,
+        },
+        user: {
+            min: 116,
+            max: 120,
+        },
+        distribution: Distribution.Normal,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 2,
+        endpoint: "/api/v2/",
+        status: 200,
+        daysAgo: {
+            min: maxDaysAgo * 0.3,
+            max: maxDaysAgo * 0.6,
+        },
+        responseTime: {
+            min: 60,
+            max: 600,
+        },
+        user: {
+            min: 116,
+            max: 120,
+        },
+        distribution: Distribution.Normal,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 2,
+        endpoint: "/api/v2/",
+        status: 200,
+        daysAgo: {
+            min: maxDaysAgo * 0.1,
+            max: maxDaysAgo * 0.55,
+        },
+        responseTime: {
+            min: 60,
+            max: 600,
+        },
+        user: {
+            min: 116,
+            max: 120,
+        },
+        distribution: Distribution.Normal,
+    }, outages);
 
-    addDemoSamples(
-        demoData,
-        '/v2/account',
-        200,
-        200,
-        [138, 2],
-        [100, 300],
-        [0, 1654],
-    )
-    addDemoSamples(
-        demoData,
-        '/v2/account',
-        500,
-        700,
-        [138, 2],
-        [100, 300],
-        [0, 1654],
-    )
+    addDemoSamples(demoData, {
+        count: count * 2,
+        endpoint: "/api/v2/account",
+        status: 200,
+        daysAgo: {
+            min: maxDaysAgo * 0.1,
+            max: maxDaysAgo * 0.55,
+        },
+        responseTime: {
+            min: 60,
+            max: 600,
+        },
+        user: {
+            min: 116,
+            max: 120,
+        },
+        distribution: Distribution.Normal,
+    }, outages);
+}
 
-    addDemoSamples(
-        demoData,
-        '/v2/account',
-        200,
-        150,
-        [139, 1],
-        [200, 1000],
-        [0, 1654],
-    )
-    addDemoSamples(
-        demoData,
-        '/v2/account',
-        500,
-        150,
-        [139, 1],
-        [200, 1000],
-        [0, 1654],
-    )
+function createErrorSamples(
+    demoData: RequestsData,
+    maxDaysAgo: number,
+    scale: number,
+    outages: Range[]
+) {
+    const count = 300 * scale;
+    addDemoSamples(demoData, {
+        count: count,
+        endpoint: "/api/v1/",
+        status: 500,
+        daysAgo: {
+            min: 200,
+            max: 210
+        },
+        responseTime: {
+            min: 100,
+            max: 600,
+        },
+        user: {
+            min: 116,
+            max: 120,
+        },
+        distribution: Distribution.Normal,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.6,
+        endpoint: "/api/v1/account",
+        status: 500,
+        daysAgo: {
+            min: 250,
+            max: 260
+        },
+        responseTime: {
+            min: 100,
+            max: 600,
+        },
+        user: {
+            min: 116,
+            max: 120,
+        },
+        distribution: Distribution.Normal,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.6,
+        endpoint: "/api/v2/account",
+        status: 500,
+        daysAgo: {
+            min: 250,
+            max: 260
+        },
+        responseTime: {
+            min: 100,
+            max: 600,
+        },
+        user: {
+            min: 116,
+            max: 120,
+        },
+        distribution: Distribution.Normal,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.6,
+        endpoint: "/api/v4/account",
+        status: 404,
+        daysAgo: {
+            min: 24,
+            max: 27
+        },
+        responseTime: {
+            min: 100,
+            max: 600,
+        },
+        user: {
+            min: 116,
+            max: 120,
+        },
+        distribution: Distribution.Normal,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.6,
+        endpoint: "/api/v3/account/test",
+        status: 404,
+        daysAgo: {
+            min: 20,
+            max: 40
+        },
+        responseTime: {
+            min: 100,
+            max: 600,
+        },
+        user: {
+            min: 116,
+            max: 120,
+        },
+        distribution: Distribution.Normal,
+    }, outages);
 
-    addDemoSamples(
-        demoData,
-        '/v2/account',
-        200,
-        8000,
-        [0, 140],
-        [200, 300],
-        [0, 1654],
-    )
-    addDemoSamples(
-        demoData,
-        '/v2/account',
-        500,
-        800,
-        [0, 140],
-        [200, 300],
-        [0, 1654],
-    )
+    addDemoSamples(demoData, {
+        count: count,
+        endpoint: "/api/robots.txt",
+        status: 404,
+        daysAgo: {
+            min: 0,
+            max: maxDaysAgo
+        },
+        responseTime: {
+            min: 10,
+            max: 200,
+        },
+        user: {
+            min: 100,
+            max: 120,
+        },
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 3,
+        endpoint: "/robots.txt",
+        status: 404,
+        daysAgo: {
+            min: 0,
+            max: maxDaysAgo
+        },
+        responseTime: {
+            min: 10,
+            max: 20,
+        },
+        user: {
+            min: 100,
+            max: 120,
+        },
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count,
+        endpoint: "/api/.env",
+        status: 404,
+        daysAgo: {
+            min: 0,
+            max: maxDaysAgo
+        },
+        responseTime: {
+            min: 10,
+            max: 20,
+        },
+        user: {
+            min: 100,
+            max: 120,
+        },
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count,
+        endpoint: "/.env",
+        status: 404,
+        daysAgo: {
+            min: 0,
+            max: maxDaysAgo
+        },
+        responseTime: {
+            min: 10,
+            max: 20,
+        },
+        user: {
+            min: 100,
+            max: 120,
+        },
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.05,
+        endpoint: "/test",
+        status: 404,
+        daysAgo: {
+            min: 0,
+            max: maxDaysAgo
+        },
+        responseTime: {
+            min: 10,
+            max: 20,
+        },
+        user: {
+            min: 96,
+            max: 100,
+        },
+        distribution: Distribution.Normal,
+    }, outages);
+}
 
-    return demoData
+export default function genDemoData() {
+    const demoData: RequestsData = [];
+
+    const maxDaysAgo = 460;
+    const scale = 1;
+
+    const outages = [{ min: 300, max: 305 }, { min: 310, max: 313 }]
+
+    // Baseline
+    createUniformBaselineSamples(demoData, maxDaysAgo, scale, outages);
+    createVariableBaselineSamples(demoData, maxDaysAgo, scale, outages);
+    // Usage
+    createVariableUsageSamples(demoData, maxDaysAgo, scale, outages);
+    // Anomalies
+    createErrorSamples(demoData, maxDaysAgo, scale, outages);
+
+    return demoData;
 }

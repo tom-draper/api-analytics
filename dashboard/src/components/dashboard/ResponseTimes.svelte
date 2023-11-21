@@ -76,11 +76,13 @@
   <div class="card-title">
     Response times <span class="milliseconds">(ms)</span>
   </div>
-  <div class="values">
-    <div class="value lower-quartile">{LQ}</div>
-    <div class="value median">{median}</div>
-    <div class="value upper-quartile">{UQ}</div>
-  </div>
+  {#if LQ !== undefined && median !== undefined && UQ !== undefined}
+    <div class="values">
+      <div class="value lower-quartile">{LQ.toFixed(1)}</div>
+      <div class="value median">{median.toFixed(1)}</div>
+      <div class="value upper-quartile">{UQ.toFixed(1)}</div>
+    </div>
+  {/if}
   <div class="labels">
     <div class="label">LQ</div>
     <div class="label">Median</div>
