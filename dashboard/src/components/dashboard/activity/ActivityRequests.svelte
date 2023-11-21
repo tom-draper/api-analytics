@@ -46,7 +46,7 @@
     const days = periodToDays(period);
     for (let i = 1; i < data.length; i++) {
       const date = new Date(data[i][CREATED_AT]);
-      if (days <= 7) {
+      if (days !== null && days <= 7) {
         // Round down to multiple of 5
         date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
       } else {
