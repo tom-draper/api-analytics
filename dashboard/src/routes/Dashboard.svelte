@@ -408,7 +408,7 @@
   .donate {
     margin-left: auto;
     font-weight: 300;
-    font-size: 0.9em;
+    font-size: 0.85em;
     display: grid;
     place-items:center; 
     margin-right: 1em;
@@ -416,6 +416,8 @@
   
   .donate-link {
     color: rgb(73, 73, 73);
+    color: rgb(80, 80, 80);
+    /* font-family: Arial, 'Noto Sans', */
     /* text-decoration: underline; */
   }
   .settings-icon {

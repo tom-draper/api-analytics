@@ -235,7 +235,7 @@
     color: var(--highlight);
     color: var(--background);
     font-size: 2.5em;
-    font-weight: 700;
+    font-weight: 800;
     margin-bottom: 1.5em;
   }
   .add-middleware {
