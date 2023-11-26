@@ -87,6 +87,7 @@
 </div>
 
 <style scoped>
+  
   .gradient-container {
     position: relative;
     display: flex;
@@ -308,6 +309,8 @@
     color: #dcdfe4;
     white-space: pre-wrap;
     overflow: auto;
+    font-family: 'Fira Code' !important;
+    font-size: 0.9em !important;
   }
   .code {
     display: none;

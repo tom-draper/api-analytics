@@ -88,4 +88,17 @@
     width: 15px;
     cursor: pointer;
   }
+
+  @media screen and (max-width: 1400px) {
+    .container {
+      width: 60vw;
+    }
+  }
+
+  @media screen and (max-width: 800px) {
+    .container {
+      width: 70vw;
+      padding: 1.5em 2em;
+    }
+  }
 </style>

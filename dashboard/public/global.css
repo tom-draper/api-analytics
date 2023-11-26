@@ -1,5 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700&display=swap");
 
+@font-face { 
+  font-family: 'Fira Code';
+  src: url('fonts/Fira_Code/FiraCode-VariableFont_wght.ttf') format('tff');
+}
+
 :root {
   --highlight: #3fcf8e;
   --red: rgb(228, 97, 97);
