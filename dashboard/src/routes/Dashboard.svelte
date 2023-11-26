@@ -266,6 +266,8 @@
 {#if periodData}
   <div class="dashboard">
     <div class="button-nav">
+      <div class="donate">
+        <a target="_blank" href="https://www.buymeacoffee.com/tomdraper" class="donate-link">Donate</a></div>
       <button
         class="settings"
         on:click={() => {
@@ -401,8 +403,20 @@
     border: none;
     margin-right: 10px;
     cursor: pointer;
-    margin-left: auto;
     text-align: right;
+  }
+  .donate {
+    margin-left: auto;
+    font-weight: 300;
+    font-size: 0.9em;
+    display: grid;
+    place-items:center; 
+    margin-right: 1em;
+  }
+  
+  .donate-link {
+    color: rgb(73, 73, 73);
+    /* text-decoration: underline; */
   }
   .settings-icon {
     width: 20px;
@@ -410,6 +424,13 @@
     filter: contrast(0.5);
     margin-top: 2px;
   }
+
+  @media screen and (max-width: 800px) {
+    .donate {
+      display: none;
+    }
+  }
+
   @media screen and (max-width: 1600px) {
     .grid-row {
       flex-direction: column;

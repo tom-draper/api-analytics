@@ -3,11 +3,6 @@ function randomChoice(p: any[]) {
     return p.findIndex((a) => (rnd -= a) < 0);
 }
 
-function randomChoiceOld(p: any[]) {
-    let rnd = p.reduce((a, b) => a + b) * Math.random();
-    return p.findIndex((a) => (rnd -= a) < 0);
-}
-
 function randomChoices(p: number[], count: number): number[] {
     return Array.from(Array(count), randomChoice.bind(null, p));
 }
@@ -250,9 +245,9 @@ function createUniformBaselineSamples(
     const count = 8000 * scale;
 
     const maxRange = { min: 0, max: maxDaysAgo }
-    const v1ResponseTime = { min: 55, max: 450 };
-    const v2ResponseTime = { min: 40, max: 396 };
-    const v3ResponseTime = { min: 20, max: 290 };
+    const v1ResponseTime = { min: 55, max: 350 };
+    const v2ResponseTime = { min: 40, max: 296 };
+    const v3ResponseTime = { min: 20, max: 190 };
     const notFoundResponseTime = { min: 10, max: 40 };
     const user = { min: 0, max: count * 0.005 }
 

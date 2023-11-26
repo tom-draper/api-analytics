@@ -35,7 +35,7 @@
   }
 
   .lightning-top {
-    height: 65px;
+    height: 60px;
   }
 
   .dashboard-title-container {
@@ -63,7 +63,7 @@
   .dashboard-title {
     font-size: 2.5em;
     text-align: left;
-    margin: 0.2em 1em auto 1em;
+    margin: 0.05em 0.6em auto 0.6em;
   }
   .dashboard-title-container {
     place-content: center;

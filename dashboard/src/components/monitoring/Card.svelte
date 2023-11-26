@@ -5,7 +5,7 @@
 
   function triggerNotificationMessage(
     message: string,
-    style: 'error' | 'warn' | 'success' = 'error'
+    style: 'error' | 'warn' | 'success' = 'error',
   ) {
     notification.message = message;
     notification.style = style;
@@ -27,7 +27,7 @@
             url: url,
             status: 0,
           }),
-        }
+        },
       );
       if (response.status === 201) {
         triggerNotificationMessage('Deleted successfully', 'success');
@@ -71,7 +71,7 @@
       case '30d':
         // Sample 1 in 4
         for (let i = 0; i < data[url].length; i++) {
-          if (i % 4 == 0) {
+          if (i % 4 === 0) {
             sample.push(data[url][i]);
           }
         }
@@ -79,7 +79,7 @@
       case '60d':
         // Sample 1 in 8
         for (let i = 0; i < data[url].length; i++) {
-          if (i % 8 == 0) {
+          if (i % 8 === 0) {
             sample.push(data[url][i]);
           }
         }
@@ -108,23 +108,27 @@
         label: 'no-request',
         status: sampledData[i].status,
         responseTime: sampledData[i]['response_time'],
-        createdAt: sampledData[i]['created_at'],
+        createdAt: new Date(sampledData[i]['created_at']),
       };
       if (sampledData[i].status >= 200 && sampledData[i].status <= 299) {
         samples[i + start].label = 'success';
-      } else if (sampledData[i].status != null) {
+      } else if (sampledData[i].status !== null) {
         samples[i + start].label = 'error';
       }
     }
   }
 
-  function setError() {
-    if (samples[samples.length - 1].label == null) {
-      error = null; // Website not live
-    } else {
-      error = samples[samples.length - 1].label === 'error';
+  function setCurrentStatus() {
+    const latest = samples[samples.length - 1];
+    if (latest.label === null || latest.label === 'no-request') {
+      currentStatus = 'no-request';
+    } else if (latest.label === 'error') {
+      currentStatus = 'error';
+    } else if (latest.label == 'success') {
+      currentStatus = 'success';
     }
-    anyError = anyError || error;
+    console.log(currentStatus)
+    anyError = anyError || currentStatus === 'error';
   }
 
   function separateURL() {
@@ -140,7 +144,7 @@
   function build() {
     separateURL();
     setSamples();
-    setError();
+    setCurrentStatus();
     setUptime();
   }
 
@@ -148,7 +152,7 @@
   type Sample = MonitorSample & { label: string };
 
   let uptime = '';
-  let error = false;
+  let currentStatus: 'success' | 'error' | 'no-request' = 'no-request';
   let samples: Sample[];
   const separatedURL = {
     prefix: '',
@@ -167,13 +171,13 @@
     removeMonitor: (url: string) => void;
 </script>
 
-<div class="card" class:card-error={error}>
+<div class="card" class:card-error={currentStatus === 'error'}>
   <div class="card-text">
     <div class="card-text-left">
       <div class="card-status">
-        {#if error == null}
+        {#if currentStatus === 'no-request'}
           <div class="indicator grey-light" />
-        {:else if error}
+        {:else if currentStatus === 'error'}
           <div class="indicator red-light" />
         {:else}
           <div class="indicator green-light" />
@@ -188,17 +192,19 @@
       >
     </div>
     <div class="card-text-right">
-      <div class="uptime">Uptime: {uptime}%</div>
+      <div class="uptime">Uptime: {currentStatus === 'no-request' ? 'N/A' : `${uptime}%`}</div>
     </div>
   </div>
-  {#if samples != undefined}
+  {#if samples !== undefined}
     <div class="measurements">
       {#each samples as sample}
         <div
           class="measurement {sample.label}"
           title={sample.createdAt === null
             ? ''
-            : `Status: ${sample.status}\n${sample.createdAt.toLocaleString()}`}
+            : sample.status === 0
+            ? `No response\n${sample.createdAt.toLocaleDateString()}`
+            : `Status: ${sample.status}\n${sample.createdAt.toLocaleDateString()}`}
         />
       {/each}
     </div>
@@ -215,7 +221,8 @@
     margin: 2.2em auto;
   }
   .card-error {
-    box-shadow: rgba(228, 98, 98, 0.5) 0px 15px 110px 0px,
+    box-shadow:
+      rgba(228, 98, 98, 0.5) 0px 15px 110px 0px,
       rgba(0, 0, 0, 0.4) 0px 30px 60px -30px;
     border: 2px solid rgba(228, 98, 98, 1);
   }
@@ -273,11 +280,15 @@
   }
   .green-light {
     background: var(--highlight);
-    box-shadow: 0 1px 1px #fff, 0 0 6px 3px var(--highlight);
+    box-shadow:
+      0 1px 1px #fff,
+      0 0 6px 3px var(--highlight);
   }
   .red-light {
     background: var(--red);
-    box-shadow: 0 1px 1px #fff, 0 0 6px 3px var(--red);
+    box-shadow:
+      0 1px 1px #fff,
+      0 0 6px 3px var(--red);
   }
   .grey-light {
     background: grey;
