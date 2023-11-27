@@ -149,14 +149,18 @@
   function setHostnames() {
     const hostnameFreq: { [hostname: string]: number } = {};
     for (let i = 0; i < data.length; i++) {
-      if (!(data[i][HOSTNAME] in hostnameFreq)) {
-        hostnameFreq[data[i][HOSTNAME]] = 0;
+      const hostname = data[i][HOSTNAME];
+      if (hostname === null || hostname === "" || hostname === "null") {
+        continue;
       }
-      hostnameFreq[data[i][HOSTNAME]] += 1;
+      if (!(hostname in hostnameFreq)) {
+        hostnameFreq[hostname] = 0;
+      }
+      hostnameFreq[hostname] += 1;
     }
 
     const sortedHostnames = [];
-    for (const hostname of Object.keys(hostnameFreq)) {
+    for (const hostname in hostnameFreq) {
       sortedHostnames.push({
         hostname: hostname,
         count: hostnameFreq[hostname],
@@ -190,9 +194,7 @@
       const response = await fetch(`${SERVER_URL}/api/requests/${userID}`);
       if (response.status === 200) {
         const json = await response.json();
-        data = json;
-        console.log(data);
-        setPeriod(settings.period);
+        return json
       }
     } catch (e) {
       failed = true;
@@ -233,15 +235,17 @@
     'All time',
   ];
   let failed = false;
-  onMount(() => {
+  onMount(async () => {
     if (demo) {
-      data = genDemoData() as RequestsData;
-      setPeriod(settings.period);
-      setHostnames();
+      data = genDemoData();
     } else {
-      fetchData();
+      data = await fetchData();
     }
+    
+    setPeriod(settings.period);
+    setHostnames();
     parseDates(data);
+
     data?.sort((a, b) => {
       //@ts-ignore
       return a[CREATED_AT] - b[CREATED_AT];
@@ -408,7 +412,7 @@
   .donate {
     margin-left: auto;
     font-weight: 300;
-    font-size: 0.9em;
+    font-size: 0.85em;
     display: grid;
     place-items:center; 
     margin-right: 1em;
@@ -416,6 +420,8 @@
   
   .donate-link {
     color: rgb(73, 73, 73);
+    color: rgb(80, 80, 80);
+    /* font-family: Arial, 'Noto Sans', */
     /* text-decoration: underline; */
   }
   .settings-icon {
