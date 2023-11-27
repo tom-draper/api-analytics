@@ -47,13 +47,17 @@
 
   function setTargetEndpoint(endpoint: string, status: number) {
     if (endpoint === null || status === null) {
+      // Trigger reset if input is null
       targetPath = null;
       targetStatus = null;
     } else if (targetPath === null) {
+      // At starting state, set the path first
       targetPath = endpoint
     } else if (endpoints.length > 1 && targetStatus === null) {
+      // Path already set, now narrow down status (if multiple endpoints still exist)
       targetStatus = status;
     } else {
+      // Path and status already set, reset
       targetPath = null;
       targetStatus = null;
     }
@@ -107,7 +111,7 @@
     <div class="toggle">
       <button
         class="cancel"
-        class:visible={targetPath != null}
+        class:visible={targetPath !== null}
         on:click={() => {
           setTargetEndpoint(null, null);
         }}>Cancel</button

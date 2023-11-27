@@ -152,10 +152,10 @@
 
   type ValueCount = {
     [value: string]: number;
-  }
+  };
 
   function sortedFrequencies(freq: ValueCount): string[] {
-    const sortedFreq: {value: string, count: number}[] = [];
+    const sortedFreq: { value: string; count: number }[] = [];
     for (const value in freq) {
       sortedFreq.push({
         value: value,
@@ -178,7 +178,7 @@
     const hostnameFreq: ValueCount = {};
     for (let i = 0; i < data.length; i++) {
       const hostname = data[i][HOSTNAME];
-      if (hostname === null || hostname === "" || hostname === "null") {
+      if (hostname === null || hostname === '' || hostname === 'null') {
         continue;
       }
       if (!(hostname in hostnameFreq)) {
@@ -208,7 +208,7 @@
       const response = await fetch(`${SERVER_URL}/api/requests/${userID}`);
       if (response.status === 200) {
         const json = await response.json();
-        return json
+        return json;
       }
     } catch (e) {
       failed = true;
@@ -256,7 +256,7 @@
     } else {
       data = await fetchData();
     }
-    
+
     setPeriod(settings.period);
     setHostnames();
     parseDates(data);
@@ -287,7 +287,12 @@
   <div class="dashboard">
     <div class="button-nav">
       <div class="donate">
-        <a target="_blank" href="https://www.buymeacoffee.com/tomdraper" class="donate-link">Donate</a></div>
+        <a
+          target="_blank"
+          href="https://www.buymeacoffee.com/tomdraper"
+          class="donate-link">Donate</a
+        >
+      </div>
       <button
         class="settings"
         on:click={() => {
@@ -336,9 +341,9 @@
           data={periodData}
           bind:targetPath={settings.targetEndpoint.path}
           bind:targetStatus={settings.targetEndpoint.status}
-          bind:endpointsRendered={endpointsRendered}
+          bind:endpointsRendered
         />
-        <Version data={periodData} bind:endpointsRendered={endpointsRendered} />
+        <Version data={periodData} bind:endpointsRendered />
       </div>
       <div class="right">
         <Activity data={periodData} period={settings.period} />
@@ -432,10 +437,10 @@
     font-weight: 300;
     font-size: 0.85em;
     display: grid;
-    place-items:center; 
+    place-items: center;
     margin-right: 1em;
   }
-  
+
   .donate-link {
     color: rgb(73, 73, 73);
     color: rgb(82, 82, 82);
