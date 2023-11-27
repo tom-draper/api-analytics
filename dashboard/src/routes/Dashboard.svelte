@@ -43,7 +43,7 @@
     const days = periodToDays(settings.period);
 
     let counted: (date: Date) => boolean = allTimePeriod;
-    if (days != null) {
+    if (days !== null) {
       counted = (date: Date) => {
         return inPeriod(date, days);
       };
@@ -53,10 +53,10 @@
     for (let i = 1; i < data.length; i++) {
       if (
         (settings.disable404 && data[i][STATUS] === 404) ||
-        (settings.targetEndpoint != null &&
+        (settings.targetEndpoint !== null &&
           settings.targetEndpoint !== data[i][PATH]) ||
         isHiddenEndpoint(data[i][PATH]) ||
-        (settings.hostname != null && settings.hostname !== data[i][HOSTNAME])
+        (settings.hostname !== null && settings.hostname !== data[i][HOSTNAME])
       ) {
         continue;
       }
@@ -117,7 +117,7 @@
     const days = periodToDays(settings.period);
 
     let inPeriod = allTimePeriod;
-    if (days != null) {
+    if (days !== null) {
       inPeriod = (date) => {
         return inPrevPeriod(date, days);
       };
@@ -146,8 +146,32 @@
     settings.period = value;
   }
 
+  type ValueCount = {
+    [value: string]: number;
+  }
+
+  function sortedFrequencies(freq: ValueCount): string[] {
+    const sortedFreq: {value: string, count: number}[] = [];
+    for (const value in freq) {
+      sortedFreq.push({
+        value: value,
+        count: freq[value],
+      });
+    }
+    sortedFreq.sort((a, b) => {
+      return b.count - a.count;
+    });
+
+    const values = [];
+    for (const value of sortedFreq) {
+      values.push(value.value);
+    }
+
+    return values;
+  }
+
   function setHostnames() {
-    const hostnameFreq: { [hostname: string]: number } = {};
+    const hostnameFreq: ValueCount = {};
     for (let i = 0; i < data.length; i++) {
       const hostname = data[i][HOSTNAME];
       if (hostname === null || hostname === "" || hostname === "null") {
@@ -159,22 +183,8 @@
       hostnameFreq[hostname] += 1;
     }
 
-    const sortedHostnames = [];
-    for (const hostname in hostnameFreq) {
-      sortedHostnames.push({
-        hostname: hostname,
-        count: hostnameFreq[hostname],
-      });
-    }
-    sortedHostnames.sort((a, b) => {
-      return b.count - a.count;
-    });
+    const hostnames = sortedFrequencies(hostnameFreq);
 
-    const _hostnames = [];
-    for (const value of sortedHostnames) {
-      _hostnames.push(value.hostname);
-    }
-    hostnames = _hostnames;
     if (hostnames.length > 0) {
       settings.hostname = hostnames[0];
     }
