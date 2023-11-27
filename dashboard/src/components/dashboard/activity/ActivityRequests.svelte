@@ -44,7 +44,7 @@
     const userFreq = initFreqMap(period, () => new Set());
 
     const days = periodToDays(period);
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       const date = new Date(data[i][CREATED_AT]);
       if (days !== null && days <= 7) {
         // Round down to multiple of 5

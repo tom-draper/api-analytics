@@ -47,7 +47,7 @@
 
   function pieChart() {
     const deviceCount = {};
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       const device = getDevice(data[i][USER_AGENT]);
       if (!(device in deviceCount)) {
         deviceCount[device] = 0;

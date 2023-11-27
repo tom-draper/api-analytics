@@ -49,7 +49,7 @@
 
   function build() {
     const responseTimes: number[] = [];
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       responseTimes.push(data[i][RESPONSE_TIME]);
     }
     LQ = quantile(responseTimes, 0.25);

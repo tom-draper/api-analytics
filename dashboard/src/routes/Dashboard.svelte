@@ -50,11 +50,13 @@
     }
 
     const dataSubset = [];
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       if (
         (settings.disable404 && data[i][STATUS] === 404) ||
-        (settings.targetEndpoint !== null &&
-          settings.targetEndpoint !== data[i][PATH]) ||
+        (settings.targetEndpoint.path !== null &&
+          settings.targetEndpoint.path !== data[i][PATH]) ||
+        (settings.targetEndpoint.status !== null &&
+          settings.targetEndpoint.status !== data[i][STATUS]) ||
         isHiddenEndpoint(data[i][PATH]) ||
         (settings.hostname !== null && settings.hostname !== data[i][HOSTNAME])
       ) {
@@ -124,11 +126,13 @@
     }
 
     const dataSubset = [];
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       if (
         (settings.disable404 && data[i][STATUS] === 404) ||
-        (settings.targetEndpoint !== null &&
-          settings.targetEndpoint !== data[i][PATH]) ||
+        (settings.targetEndpoint.path !== null &&
+          settings.targetEndpoint.path !== data[i][PATH]) ||
+        (settings.targetEndpoint.status !== null &&
+          settings.targetEndpoint.status !== data[i][STATUS]) ||
         isHiddenEndpoint(data[i][PATH]) ||
         (settings.hostname !== null && settings.hostname !== data[i][HOSTNAME])
       ) {
@@ -245,6 +249,7 @@
     'All time',
   ];
   let failed = false;
+  let endpointsRendered = false;
   onMount(async () => {
     if (demo) {
       data = genDemoData();
@@ -271,9 +276,10 @@
     setPrevPeriodData();
   }
 
-  $: if (settings.targetEndpoint === null || settings.targetEndpoint) {
+  $: if (settings.targetEndpoint.path == null || settings.targetEndpoint.path) {
     refreshData();
   }
+
   export let userID: string, demo: boolean;
 </script>
 
@@ -328,9 +334,11 @@
         <ResponseTimes data={periodData} />
         <Endpoints
           data={periodData}
-          bind:targetEndpoint={settings.targetEndpoint}
+          bind:targetPath={settings.targetEndpoint.path}
+          bind:targetStatus={settings.targetEndpoint.status}
+          bind:endpointsRendered={endpointsRendered}
         />
-        <Version data={periodData} />
+        <Version data={periodData} bind:endpointsRendered={endpointsRendered} />
       </div>
       <div class="right">
         <Activity data={periodData} period={settings.period} />
@@ -430,7 +438,7 @@
   
   .donate-link {
     color: rgb(73, 73, 73);
-    color: rgb(80, 80, 80);
+    color: rgb(82, 82, 82);
     /* font-family: Arial, 'Noto Sans', */
     /* text-decoration: underline; */
   }

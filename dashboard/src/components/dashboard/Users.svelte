@@ -36,7 +36,7 @@
       const start = data[0][CREATED_AT].getTime();
       const end = data[data.length - 1][CREATED_AT].getTime();
       const range = end - start;
-      for (let i = 1; i < data.length; i++) {
+      for (let i = 0; i < data.length; i++) {
         if (!data[i][IP_ADDRESS]) {
           continue
         }
@@ -97,7 +97,7 @@
 
   function getUsers(data: RequestsData): Set<string> {
     const users: Set<string> = new Set();
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       if (data[i][IP_ADDRESS]) {
         users.add(data[i][IP_ADDRESS]);
       }
