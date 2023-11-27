@@ -25,6 +25,7 @@
     STATUS,
     SERVER_URL,
     HOSTNAME,
+    LOCATION,
   } from '../lib/consts';
   import Dropdown from '../components/dashboard/Dropdown.svelte';
   import Notification from '../components/dashboard/Notification.svelte';
@@ -57,6 +58,8 @@
           settings.targetEndpoint.path !== data[i][PATH]) ||
         (settings.targetEndpoint.status !== null &&
           settings.targetEndpoint.status !== data[i][STATUS]) ||
+        (settings.targetLocation !== null &&
+          settings.targetLocation !== data[i][LOCATION]) ||
         isHiddenEndpoint(data[i][PATH]) ||
         (settings.hostname !== null && settings.hostname !== data[i][HOSTNAME])
       ) {
@@ -86,7 +89,8 @@
         settings.hiddenEndpoints.has(endpoint.slice(1))) ||
       (endpoint.charAt(endpoint.length - 1) === '/' &&
         settings.hiddenEndpoints.has(endpoint.slice(0, -1))) ||
-      //  (endpoint.charAt(0) !== '/' && settings.hiddenEndpoints.has('/' + endpoint)) ||
+      (endpoint.charAt(0) !== '/' &&
+        settings.hiddenEndpoints.has('/' + endpoint)) ||
       (endpoint.charAt(endpoint.length - 1) !== '/' &&
         settings.hiddenEndpoints.has(endpoint + '/')) ||
       wildCardMatch(endpoint)
@@ -133,6 +137,8 @@
           settings.targetEndpoint.path !== data[i][PATH]) ||
         (settings.targetEndpoint.status !== null &&
           settings.targetEndpoint.status !== data[i][STATUS]) ||
+        (settings.targetLocation !== null &&
+          settings.targetLocation !== data[i][LOCATION]) ||
         isHiddenEndpoint(data[i][PATH]) ||
         (settings.hostname !== null && settings.hostname !== data[i][HOSTNAME])
       ) {
@@ -187,7 +193,7 @@
       hostnameFreq[hostname] += 1;
     }
 
-    const hostnames = sortedFrequencies(hostnameFreq);
+    hostnames = sortedFrequencies(hostnameFreq);
 
     if (hostnames.length > 0) {
       settings.hostname = hostnames[0];
@@ -264,6 +270,8 @@
       //@ts-ignore
       return a[CREATED_AT] - b[CREATED_AT];
     });
+
+    console.log(data);
   });
 
   function refreshData() {
@@ -275,7 +283,11 @@
     setPrevPeriodData();
   }
 
-  $: if (settings.targetEndpoint.path == null || settings.targetEndpoint.path) {
+  $: if (settings.targetEndpoint.path === null || settings.targetEndpoint.path) {
+    refreshData();
+  }
+
+  $: if (settings.targetLocation === null || settings.targetLocation) {
     refreshData();
   }
 
@@ -347,7 +359,7 @@
       <div class="right">
         <Activity data={periodData} period={settings.period} />
         <div class="grid-row">
-          <Location data={periodData} />
+          <Location data={periodData} bind:targetLocation={settings.targetLocation}/>
           <Device data={periodData} />
         </div>
         <UsageTime data={periodData} />

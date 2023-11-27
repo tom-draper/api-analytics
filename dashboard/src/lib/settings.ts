@@ -15,6 +15,7 @@ export type DashboardSettings = {
         path: string,
         status: number,
     }
+    targetLocation: string,
     hiddenEndpoints: Set<string>
 }
 
@@ -27,6 +28,7 @@ export function initSettings(): DashboardSettings {
             path: null, 
             status: null
         },
+        targetLocation: null,
         hiddenEndpoints: new Set(),
     }
 }

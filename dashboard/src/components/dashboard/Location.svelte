@@ -59,7 +59,7 @@
 
   $: data && mounted && build();
 
-  export let data: RequestsData;
+  export let data: RequestsData, targetLocation: string;
 </script>
 
 <div class="card">
@@ -69,11 +69,19 @@
     <div class="bars">
       {#each locations.slice(0, 12) as location}
         <div class="bar-container">
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
             class="bar"
             title="{countryCodeToName(
               location.location
             )}: {location.frequency.toLocaleString()} requests"
+            on:click={() => {
+              if (targetLocation === location.location) {
+                targetLocation = null;
+              } else {
+                targetLocation = location.location;
+              }
+            }}
           >
             <div class="bar-inner" style="height: {location.height * 100}%" />
           </div>
@@ -120,6 +128,7 @@
   .bar {
     position: relative;
     flex-grow: 1;
+    cursor: pointer;
   }
 
   .bar-inner {
