@@ -43,20 +43,22 @@
     const days = periodToDays(settings.period);
 
     let counted: (date: Date) => boolean = allTimePeriod;
-    if (days != null) {
+    if (days !== null) {
       counted = (date: Date) => {
         return inPeriod(date, days);
       };
     }
 
     const dataSubset = [];
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       if (
         (settings.disable404 && data[i][STATUS] === 404) ||
-        (settings.targetEndpoint != null &&
-          settings.targetEndpoint !== data[i][PATH]) ||
+        (settings.targetEndpoint.path !== null &&
+          settings.targetEndpoint.path !== data[i][PATH]) ||
+        (settings.targetEndpoint.status !== null &&
+          settings.targetEndpoint.status !== data[i][STATUS]) ||
         isHiddenEndpoint(data[i][PATH]) ||
-        (settings.hostname != null && settings.hostname !== data[i][HOSTNAME])
+        (settings.hostname !== null && settings.hostname !== data[i][HOSTNAME])
       ) {
         continue;
       }
@@ -117,18 +119,20 @@
     const days = periodToDays(settings.period);
 
     let inPeriod = allTimePeriod;
-    if (days != null) {
+    if (days !== null) {
       inPeriod = (date) => {
         return inPrevPeriod(date, days);
       };
     }
 
     const dataSubset = [];
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       if (
         (settings.disable404 && data[i][STATUS] === 404) ||
-        (settings.targetEndpoint !== null &&
-          settings.targetEndpoint !== data[i][PATH]) ||
+        (settings.targetEndpoint.path !== null &&
+          settings.targetEndpoint.path !== data[i][PATH]) ||
+        (settings.targetEndpoint.status !== null &&
+          settings.targetEndpoint.status !== data[i][STATUS]) ||
         isHiddenEndpoint(data[i][PATH]) ||
         (settings.hostname !== null && settings.hostname !== data[i][HOSTNAME])
       ) {
@@ -146,11 +150,35 @@
     settings.period = value;
   }
 
+  type ValueCount = {
+    [value: string]: number;
+  };
+
+  function sortedFrequencies(freq: ValueCount): string[] {
+    const sortedFreq: { value: string; count: number }[] = [];
+    for (const value in freq) {
+      sortedFreq.push({
+        value: value,
+        count: freq[value],
+      });
+    }
+    sortedFreq.sort((a, b) => {
+      return b.count - a.count;
+    });
+
+    const values = [];
+    for (const value of sortedFreq) {
+      values.push(value.value);
+    }
+
+    return values;
+  }
+
   function setHostnames() {
-    const hostnameFreq: { [hostname: string]: number } = {};
+    const hostnameFreq: ValueCount = {};
     for (let i = 0; i < data.length; i++) {
       const hostname = data[i][HOSTNAME];
-      if (hostname === null || hostname === "" || hostname === "null") {
+      if (hostname === null || hostname === '' || hostname === 'null') {
         continue;
       }
       if (!(hostname in hostnameFreq)) {
@@ -159,22 +187,8 @@
       hostnameFreq[hostname] += 1;
     }
 
-    const sortedHostnames = [];
-    for (const hostname in hostnameFreq) {
-      sortedHostnames.push({
-        hostname: hostname,
-        count: hostnameFreq[hostname],
-      });
-    }
-    sortedHostnames.sort((a, b) => {
-      return b.count - a.count;
-    });
+    const hostnames = sortedFrequencies(hostnameFreq);
 
-    const _hostnames = [];
-    for (const value of sortedHostnames) {
-      _hostnames.push(value.hostname);
-    }
-    hostnames = _hostnames;
     if (hostnames.length > 0) {
       settings.hostname = hostnames[0];
     }
@@ -194,7 +208,7 @@
       const response = await fetch(`${SERVER_URL}/api/requests/${userID}`);
       if (response.status === 200) {
         const json = await response.json();
-        return json
+        return json;
       }
     } catch (e) {
       failed = true;
@@ -235,13 +249,13 @@
     'All time',
   ];
   let failed = false;
+  let endpointsRendered = false;
   onMount(async () => {
     if (demo) {
       data = genDemoData();
     } else {
       data = await fetchData();
     }
-    
     setPeriod(settings.period);
     setHostnames();
     parseDates(data);
@@ -261,9 +275,10 @@
     setPrevPeriodData();
   }
 
-  $: if (settings.targetEndpoint === null || settings.targetEndpoint) {
+  $: if (settings.targetEndpoint.path == null || settings.targetEndpoint.path) {
     refreshData();
   }
+
   export let userID: string, demo: boolean;
 </script>
 
@@ -271,7 +286,12 @@
   <div class="dashboard">
     <div class="button-nav">
       <div class="donate">
-        <a target="_blank" href="https://www.buymeacoffee.com/tomdraper" class="donate-link">Donate</a></div>
+        <a
+          target="_blank"
+          href="https://www.buymeacoffee.com/tomdraper"
+          class="donate-link">Donate</a
+        >
+      </div>
       <button
         class="settings"
         on:click={() => {
@@ -318,9 +338,11 @@
         <ResponseTimes data={periodData} />
         <Endpoints
           data={periodData}
-          bind:targetEndpoint={settings.targetEndpoint}
+          bind:targetPath={settings.targetEndpoint.path}
+          bind:targetStatus={settings.targetEndpoint.status}
+          bind:endpointsRendered
         />
-        <Version data={periodData} />
+        <Version data={periodData} bind:endpointsRendered />
       </div>
       <div class="right">
         <Activity data={periodData} period={settings.period} />
@@ -414,13 +436,13 @@
     font-weight: 300;
     font-size: 0.85em;
     display: grid;
-    place-items:center; 
+    place-items: center;
     margin-right: 1em;
   }
-  
+
   .donate-link {
     color: rgb(73, 73, 73);
-    color: rgb(80, 80, 80);
+    color: rgb(82, 82, 82);
     /* font-family: Arial, 'Noto Sans', */
     /* text-decoration: underline; */
   }

@@ -85,7 +85,7 @@
 
   function pieChart() {
     const osCount = {};
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       const os = getOS(data[i][USER_AGENT]);
       if (!(os in osCount)) {
         osCount[os] = 0;

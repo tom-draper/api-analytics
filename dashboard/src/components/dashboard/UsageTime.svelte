@@ -20,7 +20,7 @@
   function bars() {
     const responseTimes = Array(24).fill(0);
 
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       const date = data[i][CREATED_AT];
       const time = date.getHours();
       // @ts-ignore

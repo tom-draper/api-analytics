@@ -148,6 +148,7 @@ type Sample = {
     count: number;
     endpoint: string;
     status: number;
+    method?: number;
     daysAgo: Range;
     responseTime: Range;
     user: Range;
@@ -170,7 +171,7 @@ function addDemoSamples(demoData: RequestsData, config: Sample, outages: Range[]
             config.endpoint,
             getHostname(),
             getUserAgent(),
-            0,
+            config.method || 0,
             randInt(config.responseTime.min, config.responseTime.max),
             config.status,
             getLocation(),
@@ -242,19 +243,37 @@ function createUniformBaselineSamples(
     scale: number,
     outages: Range[]
 ) {
-    const count = 8000 * scale;
+    const count = 12000 * scale;
 
     const maxRange = { min: 0, max: maxDaysAgo }
-    const v1ResponseTime = { min: 55, max: 350 };
-    const v2ResponseTime = { min: 40, max: 296 };
-    const v3ResponseTime = { min: 20, max: 190 };
-    const notFoundResponseTime = { min: 10, max: 40 };
-    const user = { min: 0, max: count * 0.005 }
+    const v1ResponseTime = { min: 35, max: 163 };
+    const v2ResponseTime = { min: 19, max: 137 };
+    const v3ResponseTime = { min: 10, max: 80 };
+    const notFoundResponseTime = { min: 6, max: 30 };
+    const user = { min: 0, max: count * 0.006 }
 
     addDemoSamples(demoData, {
         count: count,
         endpoint: "/api/v1/",
         status: 200,
+        daysAgo: maxRange,
+        responseTime: v1ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.001,
+        endpoint: "/api/v1/",
+        status: 400,
+        daysAgo: maxRange,
+        responseTime: v1ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.01,
+        endpoint: "/api/v1/",
+        status: 500,
         daysAgo: maxRange,
         responseTime: v1ResponseTime,
         user: user,
@@ -279,6 +298,24 @@ function createUniformBaselineSamples(
         distribution: Distribution.Uniform,
     }, outages);
     addDemoSamples(demoData, {
+        count: count * 0.21,
+        endpoint: "/api/v1/account",
+        status: 500,
+        daysAgo: maxRange,
+        responseTime: scaleRange(v1ResponseTime, 4),
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.07,
+        endpoint: "/api/v1/account",
+        status: 504,
+        daysAgo: maxRange,
+        responseTime: scaleRange(v1ResponseTime, 4),
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
         count: count * 0.0053,
         endpoint: "/api/v1/accounts",
         status: 404,
@@ -287,6 +324,7 @@ function createUniformBaselineSamples(
         user: user,
         distribution: Distribution.Uniform,
     }, outages);
+
 
     addDemoSamples(demoData, {
         count: count * 1.42,
@@ -298,9 +336,45 @@ function createUniformBaselineSamples(
         distribution: Distribution.Uniform,
     }, outages);
     addDemoSamples(demoData, {
+        count: count * 0.0009,
+        endpoint: "/api/v2/",
+        status: 400,
+        daysAgo: maxRange,
+        responseTime: v2ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
         count: count * 0.33,
         endpoint: "/api/v2/account",
         status: 200,
+        daysAgo: maxRange,
+        responseTime: v2ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.023,
+        endpoint: "/api/v2/account",
+        status: 400,
+        daysAgo: maxRange,
+        responseTime: v2ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.0051,
+        endpoint: "/api/v2/account",
+        status: 500,
+        daysAgo: maxRange,
+        responseTime: v2ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.007,
+        endpoint: "/api/v2/account",
+        status: 504,
         daysAgo: maxRange,
         responseTime: v2ResponseTime,
         user: user,
@@ -321,6 +395,46 @@ function createUniformBaselineSamples(
         status: 200,
         daysAgo: maxRange,
         responseTime: v2ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.62,
+        endpoint: "/api/v2/account",
+        method: 1,
+        status: 201,
+        daysAgo: maxRange,
+        responseTime: scaleRange(v3ResponseTime, 6),
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.32,
+        endpoint: "/api/v2/account/delete",
+        method: 1,
+        status: 200,
+        daysAgo: maxRange,
+        responseTime: scaleRange(v3ResponseTime, 6),
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.012,
+        endpoint: "/api/v2/account/delete",
+        method: 1,
+        status: 409,
+        daysAgo: maxRange,
+        responseTime: scaleRange(v3ResponseTime, 6),
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.019,
+        endpoint: "/api/v2/account/delete",
+        method: 1,
+        status: 400,
+        daysAgo: maxRange,
+        responseTime: scaleRange(v3ResponseTime, 6),
         user: user,
         distribution: Distribution.Uniform,
     }, outages);
@@ -353,6 +467,15 @@ function createUniformBaselineSamples(
         distribution: Distribution.Uniform,
     }, outages);
     addDemoSamples(demoData, {
+        count: count * 0.0081,
+        endpoint: "/api/v3/",
+        status: 400,
+        daysAgo: maxRange,
+        responseTime: v3ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
         count: count * 0.052,
         endpoint: "/api/v3/account",
         status: 200,
@@ -371,12 +494,68 @@ function createUniformBaselineSamples(
         distribution: Distribution.Uniform,
     }, outages);
     addDemoSamples(demoData, {
+        count: count * 0.22,
+        endpoint: "/api/v3/account",
+        method: 1,
+        status: 201,
+        daysAgo: maxRange,
+        responseTime: scaleRange(v3ResponseTime, 6),
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.12,
+        endpoint: "/api/v3/account/delete",
+        method: 1,
+        status: 200,
+        daysAgo: maxRange,
+        responseTime: v3ResponseTime,
+        user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
         count: count * 0.00011,
         endpoint: "/api/v3/accounts",
         status: 404,
         daysAgo: maxRange,
         responseTime: notFoundResponseTime,
         user: user,
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.0016,
+        endpoint: "/api/v3/admin",
+        status: 403,
+        daysAgo: {
+            min: 0,
+            max: maxDaysAgo / 5,
+        },
+        responseTime: {
+            min: 25,
+            max: 600,
+        },
+        user: {
+            min: 115,
+            max: 130,
+        },
+        distribution: Distribution.Uniform,
+    }, outages);
+    addDemoSamples(demoData, {
+        count: count * 0.0026,
+        endpoint: "/api/v3/admin",
+        status: 200,
+        daysAgo: {
+            min: 0,
+            max: maxDaysAgo / 5,
+        },
+        responseTime: {
+            min: 25,
+            max: 600,
+        },
+        user: {
+            min: 115,
+            max: 120,
+        },
         distribution: Distribution.Uniform,
     }, outages);
 }
@@ -514,6 +693,7 @@ function createVariableBaselineSamples(
         },
         distribution: Distribution.Uniform,
     }, outages);
+
 }
 
 function createVariableUsageSamples(
@@ -846,7 +1026,7 @@ export default function genDemoData() {
     const demoData: RequestsData = [];
 
     const maxDaysAgo = 460;
-    const scale = 1;
+    const scale = 1.5;
 
     const outages = [{ min: 300, max: 305 }, { min: 310, max: 313 }]
 

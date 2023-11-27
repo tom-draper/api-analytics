@@ -21,7 +21,7 @@
 
   function endpointFreq(): EndpointFreq {
     const freq = {};
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       // Create groups of endpoints by path + status
       const endpointID = `${data[i][PATH]}${data[i][STATUS]}`;
       if (!(endpointID in freq)) {
@@ -40,20 +40,31 @@
     return (
       activeBtn === 'all' ||
       (activeBtn === 'success' && status >= 200 && status <= 299) ||
-      (activeBtn === 'bad' && status >= 300 && status <= 399) ||
-      (activeBtn === 'error' && status >= 400)
+      (activeBtn === 'client' && status >= 400 && status <= 499) ||
+      (activeBtn === 'server' && status >= 500)
     );
   }
 
-  function setTargetEndpoint(endpoint: string) {
-    if (endpoint === targetEndpoint) {
-      targetEndpoint = null;
+  function setTargetEndpoint(endpoint: string, status: number) {
+    if (endpoint === null || status === null) {
+      // Trigger reset if input is null
+      targetPath = null;
+      targetStatus = null;
+    } else if (targetPath === null) {
+      // At starting state, set the path first
+      targetPath = endpoint
+    } else if (endpoints.length > 1 && targetStatus === null) {
+      // Path already set, now narrow down status (if multiple endpoints still exist)
+      targetStatus = status;
     } else {
-      targetEndpoint = endpoint;
+      // Path and status already set, reset
+      targetPath = null;
+      targetStatus = null;
     }
   }
 
   function build() {
+    endpointsRendered = false;
     const freq = endpointFreq();
 
     // Convert object to list
@@ -73,26 +84,10 @@
       return b.count - a.count;
     });
     endpoints = freqArr.slice(0, 50);
+    endpointsRendered = true;
   }
 
-  function setEndpointLabelVisibility(idx: number) {
-    const endpoint = document.getElementById(`endpoint-label-${idx}`);
-    const endpointPath = document.getElementById(`endpoint-path-${idx}`);
-    const endpointCount = document.getElementById(`endpoint-count-${idx}`);
-    const externalLabel = document.getElementById(`external-label-${idx}`);
-    if (
-      endpoint.clientWidth <
-      endpointPath.clientWidth + endpointCount.clientWidth
-    ) {
-      externalLabel.style.display = 'flex';
-      endpointPath.style.display = 'none';
-    }
-    if (endpoint.clientWidth < endpointCount.clientWidth) {
-      endpointCount.style.display = 'none';
-    }
-  }
-
-  function setBtn(value: string) {
+  function setBtn(value: typeof activeBtn) {
     activeBtn = value;
     build();
   }
@@ -100,14 +95,14 @@
   let endpoints: EndpointFreq[keyof EndpointFreq][];
   let maxCount: number;
   let mounted = false;
-  let activeBtn = 'all';
+  let activeBtn: 'all' | 'success' | 'client' | 'server' = 'all';
   onMount(() => {
     mounted = true;
   });
 
   $: data && mounted && build();
 
-  export let data: RequestsData, targetEndpoint: string;
+  export let data: RequestsData, targetPath: string, targetStatus: number, endpointsRendered: boolean;
 </script>
 
 <div class="card">
@@ -116,9 +111,9 @@
     <div class="toggle">
       <button
         class="cancel"
-        class:visible={targetEndpoint != null}
+        class:visible={targetPath !== null}
         on:click={() => {
-          setTargetEndpoint(null);
+          setTargetEndpoint(null, null);
         }}>Cancel</button
       >
       <button
@@ -134,16 +129,16 @@
         }}>Success</button
       >
       <button
-        class:bad-active={activeBtn === 'bad'}
+        class:bad-active={activeBtn === 'client'}
         on:click={() => {
-          setBtn('bad');
-        }}>Bad</button
+          setBtn('client');
+        }}>Client</button
       >
       <button
-        class:error-active={activeBtn === 'error'}
+        class:error-active={activeBtn === 'server'}
         on:click={() => {
-          setBtn('error');
-        }}>Error</button
+          setBtn('server');
+        }}>Server</button
       >
     </div>
   </div>
@@ -157,7 +152,7 @@
             class="endpoint"
             id="endpoint-{i}"
             title="Status: {endpoint.status}"
-            on:click={() => setTargetEndpoint(endpoint.path.split(' ')[2])}
+            on:click={() => setTargetEndpoint(endpoint.path.split(' ')[2], endpoint.status)}
           >
             <div class="path">
               <b>{endpoint.count.toLocaleString()}</b>
@@ -169,8 +164,8 @@
               class:success={(endpoint.status >= 200 &&
                 endpoint.status <= 299) ||
                 endpoint.status === 0}
-              class:bad={endpoint.status >= 300 && endpoint.status <= 399}
-              class:error={endpoint.status >= 400}
+              class:bad={endpoint.status >= 400 && endpoint.status <= 499}
+              class:error={endpoint.status >= 500}
             />
           </div>
         </div>

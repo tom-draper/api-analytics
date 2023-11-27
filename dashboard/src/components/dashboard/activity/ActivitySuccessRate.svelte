@@ -13,7 +13,7 @@
     const success: Map<number, { total: number; successful: number }> =
       new Map();
     let minDate = new Date(8640000000000000);
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       const date = new Date(data[i][CREATED_AT]);
       date.setHours(0, 0, 0, 0);
       const time = date.getTime();

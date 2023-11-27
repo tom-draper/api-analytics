@@ -30,7 +30,7 @@
     const x = [...Array(n).keys()];
     const y = Array(n).fill(0);
 
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       const idx = Math.floor(i / (data.length / n));
       if (data[i][STATUS] >= 200 && data[i][STATUS] <= 299) {
         y[idx] += 1;
@@ -76,7 +76,7 @@
   function build() {
     let totalRequests = 0;
     let successfulRequests = 0;
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       if (data[i][STATUS] >= 200 && data[i][STATUS] <= 299) {
         successfulRequests++;
       }
@@ -104,7 +104,7 @@
 
 <div class="card">
   <div class="card-title">Success rate</div>
-  {#if successRate}
+  {#if successRate !== undefined}
     <div
       class="value"
       class:red={successRate <= 75}

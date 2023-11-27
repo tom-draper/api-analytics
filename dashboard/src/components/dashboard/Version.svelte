@@ -1,15 +1,13 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { PATH, graphColors } from '../../lib/consts';
 
   function setVersions() {
     const v: Set<string> = new Set();
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       const match = data[i][PATH].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
-      if (!match) {
-        continue;
+      if (match) {
+        v.add(match[1]);
       }
-      v.add(match[1]);
     }
     versions = v;
 
@@ -42,7 +40,7 @@
 
   function pieChart() {
     const versionCount = {};
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       const match = data[i][PATH].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
       if (!match) {
         continue;
@@ -98,17 +96,11 @@
 
   let versions: Set<string> = new Set();
   let plotDiv: HTMLDivElement;
-  let mounted = false;
-  onMount(() => {
-    // Wait until endpoints have been rendered to check whether we need to render
-    setTimeout(() => {
-      mounted = true;
-    }, 500);
-  });
 
-  $: data && mounted && setVersions();
+  $: data && endpointsRendered && setVersions();
 
-  export let data: RequestsData;
+
+  export let data: RequestsData, endpointsRendered: boolean;
 </script>
 
 {#if versions.size > 1}
