@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { periodToDays } from '../../../lib/period';
-  import { CREATED_AT, RESPONSE_TIME } from '../../../lib/consts';
   import type { Period } from '../../../lib/settings';
   import { initFreqMap } from '../../../lib/activity';
+  import { ColumnIndex } from '../../../lib/consts';
 
   function defaultLayout(period: Period) {
     const days = periodToDays(period);
@@ -48,7 +48,7 @@
     const days = periodToDays(period);
 
     for (let i = 0; i < data.length; i++) {
-      const date = new Date(data[i][CREATED_AT]);
+      const date = new Date(data[i][ColumnIndex.CreatedAt]);
       if (days !== null && days <= 7) {
         // Round down to multiple of 5
         date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
@@ -59,7 +59,7 @@
       if (!responseTimesFreq.has(time)) {
         responseTimesFreq.set(time, { totalResponseTime: 0, count: 0 });
       }
-      responseTimesFreq.get(time).totalResponseTime += data[i][RESPONSE_TIME];
+      responseTimesFreq.get(time).totalResponseTime += data[i][ColumnIndex.ResponseTime];
       responseTimesFreq.get(time).count++;
     }
 

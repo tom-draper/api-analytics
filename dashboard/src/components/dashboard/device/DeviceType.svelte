@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { USER_AGENT } from '../../../lib/consts';
+  import { ColumnIndex } from '../../../lib/consts';
 
   function getDevice(userAgent: string): string {
     if (userAgent === null) {
@@ -48,7 +48,7 @@
   function pieChart() {
     const deviceCount = {};
     for (let i = 0; i < data.length; i++) {
-      const device = getDevice(data[i][USER_AGENT]);
+      const device = getDevice(data[i][ColumnIndex.UserAgent]);
       if (!(device in deviceCount)) {
         deviceCount[device] = 0;
       }

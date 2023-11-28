@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { CREATED_AT } from '../../lib/consts';
+  import { ColumnIndex } from '../../lib/consts';
 
   function defaultLayout() {
     return {
@@ -21,7 +21,7 @@
     const responseTimes = Array(24).fill(0);
 
     for (let i = 0; i < data.length; i++) {
-      const date = data[i][CREATED_AT];
+      const date = data[i][ColumnIndex.CreatedAt];
       const time = date.getHours();
       // @ts-ignore
       responseTimes[time]++;

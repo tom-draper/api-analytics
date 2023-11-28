@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { USER_AGENT, graphColors } from '../../../lib/consts';
+  import { graphColors } from '../../../lib/consts';
+  import { ColumnIndex } from '../../../lib/consts';
 
   function getBrowser(userAgent: string): string {
     if (userAgent == null) {
@@ -70,7 +71,7 @@
   function pieChart() {
     const clientCount = {};
     for (let i = 0; i < data.length; i++) {
-      const client = getBrowser(data[i][USER_AGENT]);
+      const client = getBrowser(data[i][ColumnIndex.UserAgent]);
       if (!(client in clientCount)) {
         clientCount[client] = 0;
       }

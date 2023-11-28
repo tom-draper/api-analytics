@@ -13,6 +13,8 @@ type RequestsData = [
     Date
 ][];
 
+
+
 type MonitorSample = {
     status: number;
     responseTime: number;

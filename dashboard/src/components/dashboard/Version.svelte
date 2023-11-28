@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { PATH, graphColors } from '../../lib/consts';
+  import { ColumnIndex, graphColors } from '../../lib/consts';
 
   function setVersions() {
     const v: Set<string> = new Set();
     for (let i = 0; i < data.length; i++) {
-      const match = data[i][PATH].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
+      const match = data[i][ColumnIndex.Path].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
       if (match) {
         v.add(match[1]);
       }
@@ -41,7 +41,7 @@
   function pieChart() {
     const versionCount = {};
     for (let i = 0; i < data.length; i++) {
-      const match = data[i][PATH].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
+      const match = data[i][ColumnIndex.Path].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
       if (!match) {
         continue;
       }

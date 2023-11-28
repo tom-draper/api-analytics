@@ -19,16 +19,10 @@
   import type { DashboardSettings, Period } from '../lib/settings';
   import { initSettings } from '../lib/settings';
   import type { NotificationState } from '../lib/notification';
-  import {
-    CREATED_AT,
-    PATH,
-    STATUS,
-    SERVER_URL,
-    HOSTNAME,
-    LOCATION,
-  } from '../lib/consts';
   import Dropdown from '../components/dashboard/Dropdown.svelte';
   import Notification from '../components/dashboard/Notification.svelte';
+  import exportCSV from '../lib/exportData';
+  import { ColumnIndex, columns, serverURL } from '../lib/consts';
 
   function inPeriod(date: Date, days: number): boolean {
     const periodAgo = new Date();
@@ -53,19 +47,19 @@
     const dataSubset = [];
     for (let i = 0; i < data.length; i++) {
       if (
-        (settings.disable404 && data[i][STATUS] === 404) ||
+        (settings.disable404 && data[i][ColumnIndex.Status] === 404) ||
         (settings.targetEndpoint.path !== null &&
-          settings.targetEndpoint.path !== data[i][PATH]) ||
+          settings.targetEndpoint.path !== data[i][ColumnIndex.Path]) ||
         (settings.targetEndpoint.status !== null &&
-          settings.targetEndpoint.status !== data[i][STATUS]) ||
+          settings.targetEndpoint.status !== data[i][ColumnIndex.Status]) ||
         (settings.targetLocation !== null &&
-          settings.targetLocation !== data[i][LOCATION]) ||
-        isHiddenEndpoint(data[i][PATH]) ||
-        (settings.hostname !== null && settings.hostname !== data[i][HOSTNAME])
+          settings.targetLocation !== data[i][ColumnIndex.Location]) ||
+        isHiddenEndpoint(data[i][ColumnIndex.Path]) ||
+        (settings.hostname !== null && settings.hostname !== data[i][ColumnIndex.Hostname])
       ) {
         continue;
       }
-      const date = data[i][CREATED_AT];
+      const date = data[i][ColumnIndex.CreatedAt];
       if (counted(date)) {
         dataSubset.push(data[i]);
       }
@@ -132,19 +126,19 @@
     const dataSubset = [];
     for (let i = 0; i < data.length; i++) {
       if (
-        (settings.disable404 && data[i][STATUS] === 404) ||
+        (settings.disable404 && data[i][ColumnIndex.Status] === 404) ||
         (settings.targetEndpoint.path !== null &&
-          settings.targetEndpoint.path !== data[i][PATH]) ||
+          settings.targetEndpoint.path !== data[i][ColumnIndex.Path]) ||
         (settings.targetEndpoint.status !== null &&
-          settings.targetEndpoint.status !== data[i][STATUS]) ||
+          settings.targetEndpoint.status !== data[i][ColumnIndex.Status]) ||
         (settings.targetLocation !== null &&
-          settings.targetLocation !== data[i][LOCATION]) ||
-        isHiddenEndpoint(data[i][PATH]) ||
-        (settings.hostname !== null && settings.hostname !== data[i][HOSTNAME])
+          settings.targetLocation !== data[i][ColumnIndex.Location]) ||
+        isHiddenEndpoint(data[i][ColumnIndex.Path]) ||
+        (settings.hostname !== null && settings.hostname !== data[i][ColumnIndex.Hostname])
       ) {
         continue;
       }
-      const date = data[i][CREATED_AT];
+      const date = data[i][ColumnIndex.CreatedAt];
       if (inPeriod(date)) {
         dataSubset.push(data[i]);
       }
@@ -183,7 +177,7 @@
   function setHostnames() {
     const hostnameFreq: ValueCount = {};
     for (let i = 0; i < data.length; i++) {
-      const hostname = data[i][HOSTNAME];
+      const hostname = data[i][ColumnIndex.Hostname];
       if (hostname === null || hostname === '' || hostname === 'null') {
         continue;
       }
@@ -211,7 +205,7 @@
   async function fetchData() {
     userID = formatUUID(userID);
     try {
-      const response = await fetch(`${SERVER_URL}/api/requests/${userID}`);
+      const response = await fetch(`${serverURL}/api/requests/${userID}`);
       if (response.status === 200) {
         const json = await response.json();
         return json;
@@ -223,7 +217,7 @@
 
   function parseDates(data: RequestsData) {
     for (let i = 0; i < data.length; i++) {
-      data[i][CREATED_AT] = new Date(data[i][CREATED_AT]);
+      data[i][ColumnIndex.CreatedAt] = new Date(data[i][ColumnIndex.CreatedAt]);
     }
   }
 
@@ -269,7 +263,7 @@
 
     data?.sort((a, b) => {
       //@ts-ignore
-      return a[CREATED_AT] - b[CREATED_AT];
+      return a[ColumnIndex.CreatedAt] - b[ColumnIndex.CreatedAt];
     });
 
     console.log(data);
@@ -284,10 +278,12 @@
     setPrevPeriodData();
   }
 
+  // If target path changes or is reset, refresh data with this filter change
   $: if (settings.targetEndpoint.path === null || settings.targetEndpoint.path) {
     refreshData();
   }
 
+  // If target location changes or is reset, refresh data with this filter change
   $: if (settings.targetLocation === null || settings.targetLocation) {
     refreshData();
   }
@@ -376,7 +372,7 @@
     </div>
   </div>
 {/if}
-<Settings bind:show={showSettings} bind:settings />
+<Settings bind:show={showSettings} bind:settings exportCSV={() => {exportCSV(periodData, columns)}} />
 <Notification state={notification} />
 <Footer />
 
@@ -424,6 +420,7 @@
     border: 1px solid #2e2e2e;
     border-radius: 4px;
     overflow: hidden;
+    height: 27px;
   }
   .time-period-btn {
     background: var(--background);
@@ -469,6 +466,9 @@
   @media screen and (max-width: 800px) {
     .donate {
       display: none;
+    }
+    .settings {
+      margin-left: auto;
     }
   }
 

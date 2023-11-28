@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { LOCATION } from '../../lib/consts';
+  import { ColumnIndex } from '../../lib/consts';
 
   function getFlagEmoji(countryCode: string) {
     const codePoints = countryCode
@@ -21,16 +21,16 @@
     let max = 0;
     const locationsFreq = {};
     for (let i = 0; i < data.length; i++) {
-      if (!data[i][LOCATION]) {
+      if (!data[i][ColumnIndex.Location]) {
         continue;
       }
-      if (!(data[i][LOCATION] in locationsFreq)) {
-        locationsFreq[data[i][LOCATION]] = 1;
+      if (!(data[i][ColumnIndex.Location] in locationsFreq)) {
+        locationsFreq[data[i][ColumnIndex.Location]] = 1;
       } else {
-        locationsFreq[data[i][LOCATION]] += 1;
+        locationsFreq[data[i][ColumnIndex.Location]] += 1;
       }
-      if (locationsFreq[data[i][LOCATION]] > max) {
-        max = locationsFreq[data[i][LOCATION]];
+      if (locationsFreq[data[i][ColumnIndex.Location]] > max) {
+        max = locationsFreq[data[i][ColumnIndex.Location]];
       }
     }
 
@@ -110,7 +110,7 @@
 
   .bar-container {
     flex: 1;
-    margin: 0 4px;
+    margin: 0 5px;
     display: flex;
     flex-direction: column;
   }
@@ -129,6 +129,10 @@
     position: relative;
     flex-grow: 1;
     cursor: pointer;
+    border-radius: 3px 3px 0 0;
+  }
+  .bar:hover {
+    background: linear-gradient(transparent, #444);
   }
 
   .bar-inner {

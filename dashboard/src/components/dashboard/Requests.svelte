@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { periodToDays } from '../../lib/period';
   import type { Period } from '../../lib/settings';
-  import { CREATED_AT } from '../../lib/consts';
+  import { ColumnIndex } from '../../lib/consts';
 
   function requestsPlotLayout() {
     return {
@@ -33,11 +33,11 @@
     const y = Array(n).fill(0);
 
     if (data.length > 0) {
-      const start = data[0][CREATED_AT].getTime();
-      const end = data[data.length - 1][CREATED_AT].getTime();
+      const start = data[0][ColumnIndex.CreatedAt].getTime();
+      const end = data[data.length - 1][ColumnIndex.CreatedAt].getTime();
       const range = end - start;
       for (let i = 0; i < data.length; i++) {
-        const time = data[i][CREATED_AT].getTime();
+        const time = data[i][ColumnIndex.CreatedAt].getTime();
         const diff = time - start;
         const idx = Math.floor(diff / (range / n));
         y[idx] += 1;

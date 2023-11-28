@@ -9,7 +9,7 @@
       e.stopImmediatePropagation();
     });
   });
-  export let show: boolean, settings: DashboardSettings;
+  export let show: boolean, settings: DashboardSettings, exportCSV: () => void;
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -36,6 +36,11 @@
     <div class="setting-title">Hidden endpoints:</div>
     <div class="setting">
       <List bind:items={settings.hiddenEndpoints} />
+    </div>
+    <div class="export-csv">
+      <button class="button" on:click={exportCSV}>
+        Export CSV
+      </button>
     </div>
   </div>
 </div>
