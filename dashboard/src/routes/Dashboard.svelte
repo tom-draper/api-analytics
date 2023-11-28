@@ -34,38 +34,58 @@
     return true;
   }
 
-  function setPeriodData() {
+  function setData() {
     const days = periodToDays(settings.period);
 
-    let counted: (date: Date) => boolean = allTimePeriod;
+    let inRange: (date: Date) => boolean;
     if (days !== null) {
-      counted = (date: Date) => {
+      inRange = (date: Date) => {
         return inPeriod(date, days);
       };
+    } else {
+      // If period is null, set to all time
+      inRange = allTimePeriod;
+    }
+
+    let inPrevRange: (date: Date) => boolean;
+    if (days !== null) {
+      inPrevRange = (date) => {
+        return inPrevPeriod(date, days);
+      };
+    } else {
+      // If period is null, set to all time
+      inPrevRange = allTimePeriod;
     }
 
     const dataSubset = [];
+    const prevDataSubset = [];
     for (let i = 0; i < data.length; i++) {
+      // Created inverted version of the if statement to reduce nesting
+      const request = data[i];
       if (
-        (settings.disable404 && data[i][ColumnIndex.Status] === 404) ||
+        (settings.disable404 && request[ColumnIndex.Status] === 404) ||
         (settings.targetEndpoint.path !== null &&
-          settings.targetEndpoint.path !== data[i][ColumnIndex.Path]) ||
+          settings.targetEndpoint.path !== request[ColumnIndex.Path]) ||
         (settings.targetEndpoint.status !== null &&
-          settings.targetEndpoint.status !== data[i][ColumnIndex.Status]) ||
+          settings.targetEndpoint.status !== request[ColumnIndex.Status]) ||
         (settings.targetLocation !== null &&
-          settings.targetLocation !== data[i][ColumnIndex.Location]) ||
-        isHiddenEndpoint(data[i][ColumnIndex.Path]) ||
-        (settings.hostname !== null && settings.hostname !== data[i][ColumnIndex.Hostname])
+          settings.targetLocation !== request[ColumnIndex.Location]) ||
+        isHiddenEndpoint(request[ColumnIndex.Path]) ||
+        (settings.hostname !== null &&
+          settings.hostname !== request[ColumnIndex.Hostname])
       ) {
         continue;
       }
-      const date = data[i][ColumnIndex.CreatedAt];
-      if (counted(date)) {
-        dataSubset.push(data[i]);
+      const date = request[ColumnIndex.CreatedAt];
+      if (inRange(date)) {
+        dataSubset.push(request);
+      } else if (inPrevRange(date)) {
+        prevDataSubset.push(request);
       }
     }
 
     periodData = dataSubset;
+    prevPeriodData = prevDataSubset;
   }
 
   function inPrevPeriod(date: Date, days: number): boolean {
@@ -111,39 +131,6 @@
       }
     }
     return false;
-  }
-
-  function setPrevPeriodData() {
-    const days = periodToDays(settings.period);
-
-    let inPeriod = allTimePeriod;
-    if (days !== null) {
-      inPeriod = (date) => {
-        return inPrevPeriod(date, days);
-      };
-    }
-
-    const dataSubset = [];
-    for (let i = 0; i < data.length; i++) {
-      if (
-        (settings.disable404 && data[i][ColumnIndex.Status] === 404) ||
-        (settings.targetEndpoint.path !== null &&
-          settings.targetEndpoint.path !== data[i][ColumnIndex.Path]) ||
-        (settings.targetEndpoint.status !== null &&
-          settings.targetEndpoint.status !== data[i][ColumnIndex.Status]) ||
-        (settings.targetLocation !== null &&
-          settings.targetLocation !== data[i][ColumnIndex.Location]) ||
-        isHiddenEndpoint(data[i][ColumnIndex.Path]) ||
-        (settings.hostname !== null && settings.hostname !== data[i][ColumnIndex.Hostname])
-      ) {
-        continue;
-      }
-      const date = data[i][ColumnIndex.CreatedAt];
-      if (inPeriod(date)) {
-        dataSubset.push(data[i]);
-      }
-    }
-    prevPeriodData = dataSubset;
   }
 
   function setPeriod(value: Period) {
@@ -194,14 +181,6 @@
     }
   }
 
-  function toggleEnable404() {
-    settings.disable404 = !settings.disable404;
-    // Allow button to toggle colour responsively
-    setTimeout(() => {
-      refreshData;
-    }, 10);
-  }
-
   async function fetchData() {
     userID = formatUUID(userID);
     try {
@@ -220,13 +199,6 @@
       data[i][ColumnIndex.CreatedAt] = new Date(data[i][ColumnIndex.CreatedAt]);
     }
   }
-
-  type PeriodDataCache = {
-    [period: string]: {
-      periodData: RequestsData;
-      prevPeriodData: RequestsData;
-    };
-  };
 
   let data: RequestsData;
   let settings: DashboardSettings = initSettings();
@@ -274,17 +246,17 @@
       return;
     }
 
-    setPeriodData();
-    setPrevPeriodData();
+    console.log('refresh');
+    setData();
   }
 
-  // If target path changes or is reset, refresh data with this filter change
-  $: if (settings.targetEndpoint.path === null || settings.targetEndpoint.path) {
-    refreshData();
-  }
-
-  // If target location changes or is reset, refresh data with this filter change
-  $: if (settings.targetLocation === null || settings.targetLocation) {
+  // If target path/location changes or is reset, refresh data with this filter change
+  $: if (
+    settings.targetEndpoint.path === null ||
+    settings.targetEndpoint.path ||
+    settings.targetLocation === null ||
+    settings.targetLocation
+  ) {
     refreshData();
   }
 
@@ -356,7 +328,10 @@
       <div class="right">
         <Activity data={periodData} period={settings.period} />
         <div class="grid-row">
-          <Location data={periodData} bind:targetLocation={settings.targetLocation}/>
+          <Location
+            data={periodData}
+            bind:targetLocation={settings.targetLocation}
+          />
           <Device data={periodData} />
         </div>
         <UsageTime data={periodData} />
@@ -372,7 +347,13 @@
     </div>
   </div>
 {/if}
-<Settings bind:show={showSettings} bind:settings exportCSV={() => {exportCSV(periodData, columns)}} />
+<Settings
+  bind:show={showSettings}
+  bind:settings
+  exportCSV={() => {
+    exportCSV(periodData, columns);
+  }}
+/>
 <Notification state={notification} />
 <Footer />
 
@@ -455,6 +436,10 @@
     color: rgb(82, 82, 82);
     /* font-family: Arial, 'Noto Sans', */
     /* text-decoration: underline; */
+    transition: 0.1s;
+  }
+  .donate-link:hover {
+    color: var(--highlight);
   }
   .settings-icon {
     width: 20px;

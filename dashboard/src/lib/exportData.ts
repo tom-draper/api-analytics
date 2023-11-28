@@ -1,3 +1,5 @@
+import { ColumnIndex } from './consts'
+
 function convertLineToCSV(line: RequestsData[number]) {
     let str = '';
     for (let i = 0; i < line.length; i++) {

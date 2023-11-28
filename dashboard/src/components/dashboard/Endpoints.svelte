@@ -214,6 +214,10 @@
     width: 100%;
     cursor: pointer;
   }
+  .endpoint:hover {
+    background: linear-gradient(270deg, transparent, var(--background));
+    background: linear-gradient(270deg, transparent, #444);
+  }
   .path {
     position: relative;
     flex-grow: 1;
