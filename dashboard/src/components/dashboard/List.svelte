@@ -79,6 +79,7 @@
     color: var(--dim-text);
     border: 1px solid #2e2e2e;
     display: flex;
+    border-radius: 3px;
   }
   .item-text {
     flex-grow: 1;

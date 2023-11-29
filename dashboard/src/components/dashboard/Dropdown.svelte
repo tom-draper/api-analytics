@@ -62,7 +62,7 @@
   .dropdown {
     display: flex;
     flex-direction: column;
-    margin-right: 10px;
+    height: 28px;
   }
   .current {
     border-radius: 4px;
@@ -90,7 +90,7 @@
     cursor: pointer;
   }
   .hidden {
-    visibility: hidden;
+    display: none;
   }
   .last-option {
     border-radius: 0 0 4px 4px;

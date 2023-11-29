@@ -62,25 +62,27 @@
     for (let i = 0; i < data.length; i++) {
       // Created inverted version of the if statement to reduce nesting
       const request = data[i];
+      const status = request[ColumnIndex.Status];
+      const path = request[ColumnIndex.Path];
+      const hostname = request[ColumnIndex.Hostname];
+      const location = request[ColumnIndex.Location];
       if (
-        (settings.disable404 && request[ColumnIndex.Status] === 404) ||
-        (settings.targetEndpoint.path !== null &&
-          settings.targetEndpoint.path !== request[ColumnIndex.Path]) ||
-        (settings.targetEndpoint.status !== null &&
-          settings.targetEndpoint.status !== request[ColumnIndex.Status]) ||
-        (settings.targetLocation !== null &&
-          settings.targetLocation !== request[ColumnIndex.Location]) ||
-        isHiddenEndpoint(request[ColumnIndex.Path]) ||
-        (settings.hostname !== null &&
-          settings.hostname !== request[ColumnIndex.Hostname])
+        (!settings.disable404 || status !== 404) &&
+        (settings.targetEndpoint.path === null ||
+          settings.targetEndpoint.path === path) &&
+        (settings.targetEndpoint.status === null ||
+          settings.targetEndpoint.status === status) &&
+        (settings.targetLocation === null ||
+          settings.targetLocation === location) &&
+        !isHiddenEndpoint(path) &&
+        (settings.hostname === null || settings.hostname === hostname)
       ) {
-        continue;
-      }
-      const date = request[ColumnIndex.CreatedAt];
-      if (inRange(date)) {
-        dataSubset.push(request);
-      } else if (inPrevRange(date)) {
-        prevDataSubset.push(request);
+        const date = request[ColumnIndex.CreatedAt];
+        if (inRange(date)) {
+          dataSubset.push(request);
+        } else if (inPrevRange(date)) {
+          prevDataSubset.push(request);
+        }
       }
     }
 
@@ -234,8 +236,9 @@
     parseDates(data);
 
     data?.sort((a, b) => {
-      //@ts-ignore
-      return a[ColumnIndex.CreatedAt] - b[ColumnIndex.CreatedAt];
+      return (
+        a[ColumnIndex.CreatedAt].getTime() - b[ColumnIndex.CreatedAt].getTime()
+      );
     });
 
     console.log(data);
@@ -246,7 +249,6 @@
       return;
     }
 
-    console.log('refresh');
     setData();
   }
 
@@ -282,7 +284,9 @@
         <img class="settings-icon" src="../img/cog.png" alt="" />
       </button>
       {#if hostnames}
-        <Dropdown options={hostnames} bind:selected={settings.hostname} />
+        <div class="dropdown-container">
+          <Dropdown options={hostnames} bind:selected={settings.hostname} />
+        </div>
       {/if}
       <div class="nav-btn time-period">
         {#each timePeriods as period}
@@ -431,9 +435,14 @@
     margin-right: 1em;
   }
 
+  .dropdown-container {
+    margin-right: 10px;
+  }
+
   .donate-link {
     color: rgb(73, 73, 73);
     color: rgb(82, 82, 82);
+    color: #464646;
     /* font-family: Arial, 'Noto Sans', */
     /* text-decoration: underline; */
     transition: 0.1s;
@@ -444,8 +453,12 @@
   .settings-icon {
     width: 20px;
     height: 20px;
-    filter: contrast(0.5);
+    filter: contrast(0.45);
     margin-top: 2px;
+    transition: 0.1s;
+  }
+  .settings-icon:hover {
+    filter: contrast(0.35);
   }
 
   @media screen and (max-width: 800px) {
@@ -486,6 +499,21 @@
     .button-nav {
       flex-direction: column;
     }
+    .dropdown-container {
+      margin-left: auto;
+      margin-right: 0;
+      margin: -30px 0 0 auto;
+    }
+    .time-period {
+      margin-top: 15px;
+    }
+    .time-period-btn {
+      flex: 1;
+    }
+    .settings {
+      margin-left: 0;
+      margin-right: auto;
+    }
   }
   @media screen and (max-width: 600px) {
     .right,
@@ -494,6 +522,26 @@
     }
     .time-period {
       right: 1em;
+    }
+    .button-nav {
+      margin: 2.5em 2em 0;
+    }
+    .time-period-btn {
+      padding: 3px 0;
+    }
+  }
+  @media screen and (max-width: 500px) {
+    .time-period-btn {
+      flex-grow: 1;
+      flex: auto;
+    }
+  }
+  @media screen and (max-width: 450px) {
+    .dashboard-content {
+      margin: 1.4em 0em 3.5em;
+    }
+    .button-nav {
+      margin: 2.5em 1em 0;
     }
   }
 </style>
