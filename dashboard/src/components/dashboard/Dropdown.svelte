@@ -7,7 +7,9 @@
   }
 
   function setWidth() {
-    dropdown.style.width = `${current.clientWidth}px`;
+    // Set dropdown width considering width of hidden options within
+    // Width of text div + dropdown icon
+    dropdown.style.width = `${current.clientWidth + 21}px`;
   }
 
   let dropdown: HTMLDivElement;
@@ -74,14 +76,14 @@
     background: var(--background);
     color: var(--dim-text);
     border: 1px solid #2e2e2e;
-    padding: 5px 12px 5px 9px;
+    padding: 5px 8px 5px 9px;
     cursor: pointer;
     display: flex;
   }
   .options {
     display: flex;
     flex-direction: column;
-    border-radius: 0px 4px 4px 0px;
+    border-radius: 0px 0 4px 0px;
     background: var(--background);
     color: var(--dim-text);
     top: 66px;
@@ -91,7 +93,7 @@
     background: var(--background);
     color: var(--dim-text);
     border: 1px solid #2e2e2e;
-    padding: 5px 12px;
+    padding: 5px 12px 5px 20px;
     cursor: pointer;
   }
   .hidden {
