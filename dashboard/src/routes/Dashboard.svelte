@@ -345,7 +345,7 @@
 {:else if failed}
   <img class="no-requests" src="../img/no-requests-logged.png" alt="" />
 {:else}
-  <div class="placeholder" style="min-height: 85vh;">
+  <div class="placeholder">
     <div class="spinner">
       <div class="loader" />
     </div>
