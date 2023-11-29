@@ -48,7 +48,7 @@
     setSuccessRate();
   }
 
-  let successRate;
+  let successRate: number[];
   let mounted = false;
   onMount(() => {
     mounted = true;
@@ -78,8 +78,7 @@
 <style>
   .errors {
     display: flex;
-    margin-top: 8px;
-    margin: 0 10px 0 35px;
+    margin-left: 35px;
   }
   .error {
     background: var(--highlight);

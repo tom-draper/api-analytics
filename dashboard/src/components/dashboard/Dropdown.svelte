@@ -6,10 +6,15 @@
     hideOptions = true;
   }
 
+  function setWidth() {
+    dropdown.style.width = `${current.clientWidth}px`;
+  }
+
   let dropdown: HTMLDivElement;
   let current: HTMLButtonElement;
   onMount(() => {
-    dropdown.style.width = `${current.clientWidth}px`;
+    setWidth();
+    setWidth();  // Sometimes needs to be called twice when first loaded in mobile view (maybe due to image render?)
   });
 
   let hideOptions: boolean = true;
