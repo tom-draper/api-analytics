@@ -15,6 +15,22 @@ export class Config {
   }
 }
 
+/**
+ *
+ * @param {string} apiKey
+ * @param {{
+ * hostname: string;
+ * ip_address: string;
+ * user_agent: string;
+ * path: string;
+ * status: number;
+ * method: string;
+ * response_time: number;
+ * created_at: string;
+ * }} requestData
+ * @param {string} framework
+ * @returns {Promise<void>}
+ */
 async function logRequest(apiKey, requestData, framework) {
   if (apiKey === "" || apiKey === null) {
     return;
