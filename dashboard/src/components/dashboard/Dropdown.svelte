@@ -107,6 +107,7 @@
     position: absolute;
     z-index: 9;
     display: flex;
+    width: inherit;
     flex-direction: column;
   }
   svg {
