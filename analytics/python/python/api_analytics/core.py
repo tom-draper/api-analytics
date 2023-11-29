@@ -14,7 +14,7 @@ def _post_requests(api_key: str, requests_data: List[Dict], framework: str):
                       'api_key': api_key,
                       'requests': requests_data,
                       'framework': framework
-                  }, timeout=5)
+                  }, timeout=10)
 
 
 def log_request(api_key: str, request_data: Dict, framework: str):
