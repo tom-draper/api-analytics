@@ -9,7 +9,7 @@
   function setWidth() {
     // Set dropdown width considering width of hidden options within
     // Width of text div + dropdown icon
-    dropdown.style.width = `${current.clientWidth + 21}px`;
+    dropdown.style.width = `${current.clientWidth + 22}px`;
   }
 
   let dropdown: HTMLDivElement;
@@ -93,7 +93,8 @@
     background: var(--background);
     color: var(--dim-text);
     border: 1px solid #2e2e2e;
-    padding: 5px 12px 5px 20px;
+    padding: 5px 6px 5px 31px;
+    text-align: left;
     cursor: pointer;
   }
   .hidden {
@@ -114,7 +115,7 @@
   }
   svg {
     width: 16px;
-    margin-right: 5px;
+    margin-right: 6px;
     opacity: 0.6;
   }
 </style>

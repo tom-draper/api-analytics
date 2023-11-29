@@ -494,7 +494,7 @@
       margin: 0 2em;
     }
   }
-  @media screen and (max-width: 750px) {
+  @media screen and (max-width: 800px) {
     .button-nav {
       flex-direction: column;
     }
