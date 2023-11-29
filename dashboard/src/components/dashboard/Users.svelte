@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { periodToDays } from '../../lib/period';
-  import { CREATED_AT, IP_ADDRESS } from '../../lib/consts';
   import type { Period } from '../../lib/settings';
+  import { ColumnIndex } from '../../lib/consts';
 
   function usersPlotLayout() {
     return {
@@ -33,14 +33,14 @@
     const y = Array(n).fill(0);
 
     if (data.length > 0) {
-      const start = data[0][CREATED_AT].getTime();
-      const end = data[data.length - 1][CREATED_AT].getTime();
+      const start = data[0][ColumnIndex.CreatedAt].getTime();
+      const end = data[data.length - 1][ColumnIndex.CreatedAt].getTime();
       const range = end - start;
       for (let i = 0; i < data.length; i++) {
-        if (!data[i][IP_ADDRESS]) {
+        if (!data[i][ColumnIndex.IPAddress]) {
           continue
         }
-        const time = data[i][CREATED_AT].getTime();
+        const time = data[i][ColumnIndex.CreatedAt].getTime();
         const diff = time - start;
         const idx = Math.floor(diff / (range / n));
         y[idx] += 1;
@@ -98,8 +98,8 @@
   function getUsers(data: RequestsData): Set<string> {
     const users: Set<string> = new Set();
     for (let i = 0; i < data.length; i++) {
-      if (data[i][IP_ADDRESS]) {
-        users.add(data[i][IP_ADDRESS]);
+      if (data[i][ColumnIndex.IPAddress]) {
+        users.add(data[i][ColumnIndex.IPAddress]);
       }
     }
     return users;

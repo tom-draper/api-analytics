@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { STATUS } from '../../lib/consts';
+  import { ColumnIndex } from '../../lib/consts';
 
   function successRatePlotLayout() {
     return {
@@ -32,7 +32,7 @@
 
     for (let i = 0; i < data.length; i++) {
       const idx = Math.floor(i / (data.length / n));
-      if (data[i][STATUS] >= 200 && data[i][STATUS] <= 299) {
+      if (data[i][ColumnIndex.Status] >= 200 && data[i][ColumnIndex.Status] <= 299) {
         y[idx] += 1;
       }
     }
@@ -77,7 +77,7 @@
     let totalRequests = 0;
     let successfulRequests = 0;
     for (let i = 0; i < data.length; i++) {
-      if (data[i][STATUS] >= 200 && data[i][STATUS] <= 299) {
+      if (data[i][ColumnIndex.Status] >= 200 && data[i][ColumnIndex.Status] <= 299) {
         successfulRequests++;
       }
       totalRequests++;

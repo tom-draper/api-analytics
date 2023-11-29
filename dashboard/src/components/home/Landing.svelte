@@ -1,18 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import animate from '../../lib/animate';
 
-  function animate() {
-    translation = -translation;
-    const el = document.getElementById('hover-1');
-    el.style.transform = `translateY(${translation}%)`;
-    const el2 = document.getElementById('hover-2');
-    el2.style.transform = `translateY(${-translation}%)`;
-
-    setTimeout(animate, 9000);
-  }
-
-  let translation = 3.7;
   onMount(() => {
+    // Wait until images are rendered
     setTimeout(animate, 10);
   });
 </script>

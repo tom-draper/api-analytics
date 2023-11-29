@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SERVER_URL } from '../lib/consts';
+  import { serverURL } from '../lib/consts';
 
   type State = 'generate' | 'loading' | 'copy' | 'copied' | 'error';
 
@@ -13,7 +13,7 @@
 
     setState('loading');
     try {
-      const response = await fetch(`${SERVER_URL}/api/generate-api-key`);
+      const response = await fetch(`${serverURL}/api/generate-api-key`);
       if (response.status === 200) {
         const data = await response.json();
         generatedKey = true;

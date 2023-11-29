@@ -19,16 +19,10 @@
   import type { DashboardSettings, Period } from '../lib/settings';
   import { initSettings } from '../lib/settings';
   import type { NotificationState } from '../lib/notification';
-  import {
-    CREATED_AT,
-    PATH,
-    STATUS,
-    SERVER_URL,
-    HOSTNAME,
-    LOCATION,
-  } from '../lib/consts';
   import Dropdown from '../components/dashboard/Dropdown.svelte';
   import Notification from '../components/dashboard/Notification.svelte';
+  import exportCSV from '../lib/exportData';
+  import { ColumnIndex, columns, serverURL } from '../lib/consts';
 
   function inPeriod(date: Date, days: number): boolean {
     const periodAgo = new Date();
@@ -40,38 +34,60 @@
     return true;
   }
 
-  function setPeriodData() {
+  function setData() {
     const days = periodToDays(settings.period);
 
-    let counted: (date: Date) => boolean = allTimePeriod;
+    let inRange: (date: Date) => boolean;
     if (days !== null) {
-      counted = (date: Date) => {
+      inRange = (date: Date) => {
         return inPeriod(date, days);
       };
+    } else {
+      // If period is null, set to all time
+      inRange = allTimePeriod;
+    }
+
+    let inPrevRange: (date: Date) => boolean;
+    if (days !== null) {
+      inPrevRange = (date) => {
+        return inPrevPeriod(date, days);
+      };
+    } else {
+      // If period is null, set to all time
+      inPrevRange = allTimePeriod;
     }
 
     const dataSubset = [];
+    const prevDataSubset = [];
     for (let i = 0; i < data.length; i++) {
+      // Created inverted version of the if statement to reduce nesting
+      const request = data[i];
+      const status = request[ColumnIndex.Status];
+      const path = request[ColumnIndex.Path];
+      const hostname = request[ColumnIndex.Hostname];
+      const location = request[ColumnIndex.Location];
       if (
-        (settings.disable404 && data[i][STATUS] === 404) ||
-        (settings.targetEndpoint.path !== null &&
-          settings.targetEndpoint.path !== data[i][PATH]) ||
-        (settings.targetEndpoint.status !== null &&
-          settings.targetEndpoint.status !== data[i][STATUS]) ||
-        (settings.targetLocation !== null &&
-          settings.targetLocation !== data[i][LOCATION]) ||
-        isHiddenEndpoint(data[i][PATH]) ||
-        (settings.hostname !== null && settings.hostname !== data[i][HOSTNAME])
+        (!settings.disable404 || status !== 404) &&
+        (settings.targetEndpoint.path === null ||
+          settings.targetEndpoint.path === path) &&
+        (settings.targetEndpoint.status === null ||
+          settings.targetEndpoint.status === status) &&
+        (settings.targetLocation === null ||
+          settings.targetLocation === location) &&
+        !isHiddenEndpoint(path) &&
+        (settings.hostname === null || settings.hostname === hostname)
       ) {
-        continue;
-      }
-      const date = data[i][CREATED_AT];
-      if (counted(date)) {
-        dataSubset.push(data[i]);
+        const date = request[ColumnIndex.CreatedAt];
+        if (inRange(date)) {
+          dataSubset.push(request);
+        } else if (inPrevRange(date)) {
+          prevDataSubset.push(request);
+        }
       }
     }
 
     periodData = dataSubset;
+    prevPeriodData = prevDataSubset;
   }
 
   function inPrevPeriod(date: Date, days: number): boolean {
@@ -119,39 +135,6 @@
     return false;
   }
 
-  function setPrevPeriodData() {
-    const days = periodToDays(settings.period);
-
-    let inPeriod = allTimePeriod;
-    if (days !== null) {
-      inPeriod = (date) => {
-        return inPrevPeriod(date, days);
-      };
-    }
-
-    const dataSubset = [];
-    for (let i = 0; i < data.length; i++) {
-      if (
-        (settings.disable404 && data[i][STATUS] === 404) ||
-        (settings.targetEndpoint.path !== null &&
-          settings.targetEndpoint.path !== data[i][PATH]) ||
-        (settings.targetEndpoint.status !== null &&
-          settings.targetEndpoint.status !== data[i][STATUS]) ||
-        (settings.targetLocation !== null &&
-          settings.targetLocation !== data[i][LOCATION]) ||
-        isHiddenEndpoint(data[i][PATH]) ||
-        (settings.hostname !== null && settings.hostname !== data[i][HOSTNAME])
-      ) {
-        continue;
-      }
-      const date = data[i][CREATED_AT];
-      if (inPeriod(date)) {
-        dataSubset.push(data[i]);
-      }
-    }
-    prevPeriodData = dataSubset;
-  }
-
   function setPeriod(value: Period) {
     settings.period = value;
   }
@@ -183,7 +166,7 @@
   function setHostnames() {
     const hostnameFreq: ValueCount = {};
     for (let i = 0; i < data.length; i++) {
-      const hostname = data[i][HOSTNAME];
+      const hostname = data[i][ColumnIndex.Hostname];
       if (hostname === null || hostname === '' || hostname === 'null') {
         continue;
       }
@@ -200,18 +183,10 @@
     }
   }
 
-  function toggleEnable404() {
-    settings.disable404 = !settings.disable404;
-    // Allow button to toggle colour responsively
-    setTimeout(() => {
-      refreshData;
-    }, 10);
-  }
-
   async function fetchData() {
     userID = formatUUID(userID);
     try {
-      const response = await fetch(`${SERVER_URL}/api/requests/${userID}`);
+      const response = await fetch(`${serverURL}/api/requests/${userID}`);
       if (response.status === 200) {
         const json = await response.json();
         return json;
@@ -223,16 +198,9 @@
 
   function parseDates(data: RequestsData) {
     for (let i = 0; i < data.length; i++) {
-      data[i][CREATED_AT] = new Date(data[i][CREATED_AT]);
+      data[i][ColumnIndex.CreatedAt] = new Date(data[i][ColumnIndex.CreatedAt]);
     }
   }
-
-  type PeriodDataCache = {
-    [period: string]: {
-      periodData: RequestsData;
-      prevPeriodData: RequestsData;
-    };
-  };
 
   let data: RequestsData;
   let settings: DashboardSettings = initSettings();
@@ -267,8 +235,9 @@
     parseDates(data);
 
     data?.sort((a, b) => {
-      //@ts-ignore
-      return a[CREATED_AT] - b[CREATED_AT];
+      return (
+        a[ColumnIndex.CreatedAt].getTime() - b[ColumnIndex.CreatedAt].getTime()
+      );
     });
 
     console.log(data);
@@ -279,15 +248,16 @@
       return;
     }
 
-    setPeriodData();
-    setPrevPeriodData();
+    setData();
   }
 
-  $: if (settings.targetEndpoint.path === null || settings.targetEndpoint.path) {
-    refreshData();
-  }
-
-  $: if (settings.targetLocation === null || settings.targetLocation) {
+  // If target path/location changes or is reset, refresh data with this filter change
+  $: if (
+    settings.targetEndpoint.path === null ||
+    settings.targetEndpoint.path ||
+    settings.targetLocation === null ||
+    settings.targetLocation
+  ) {
     refreshData();
   }
 
@@ -313,7 +283,9 @@
         <img class="settings-icon" src="../img/cog.png" alt="" />
       </button>
       {#if hostnames}
-        <Dropdown options={hostnames} bind:selected={settings.hostname} />
+        <div class="dropdown-container">
+          <Dropdown options={hostnames} bind:selected={settings.hostname} />
+        </div>
       {/if}
       <div class="nav-btn time-period">
         {#each timePeriods as period}
@@ -359,7 +331,10 @@
       <div class="right">
         <Activity data={periodData} period={settings.period} />
         <div class="grid-row">
-          <Location data={periodData} bind:targetLocation={settings.targetLocation}/>
+          <Location
+            data={periodData}
+            bind:targetLocation={settings.targetLocation}
+          />
           <Device data={periodData} />
         </div>
         <UsageTime data={periodData} />
@@ -375,7 +350,13 @@
     </div>
   </div>
 {/if}
-<Settings bind:show={showSettings} bind:settings />
+<Settings
+  bind:show={showSettings}
+  bind:settings
+  exportCSV={() => {
+    exportCSV(periodData, columns);
+  }}
+/>
 <Notification state={notification} />
 <Footer />
 
@@ -423,6 +404,7 @@
     border: 1px solid #2e2e2e;
     border-radius: 4px;
     overflow: hidden;
+    height: 27px;
   }
   .time-period-btn {
     background: var(--background);
@@ -452,22 +434,38 @@
     margin-right: 1em;
   }
 
+  .dropdown-container {
+    margin-right: 10px;
+  }
+
   .donate-link {
     color: rgb(73, 73, 73);
     color: rgb(82, 82, 82);
+    color: #464646;
     /* font-family: Arial, 'Noto Sans', */
     /* text-decoration: underline; */
+    transition: 0.1s;
+  }
+  .donate-link:hover {
+    color: var(--highlight);
   }
   .settings-icon {
     width: 20px;
     height: 20px;
-    filter: contrast(0.5);
+    filter: contrast(0.45);
     margin-top: 2px;
+    transition: 0.1s;
+  }
+  .settings-icon:hover {
+    filter: contrast(0.35);
   }
 
   @media screen and (max-width: 800px) {
     .donate {
       display: none;
+    }
+    .settings {
+      margin-left: auto;
     }
   }
 
@@ -500,6 +498,21 @@
     .button-nav {
       flex-direction: column;
     }
+    .dropdown-container {
+      margin-left: auto;
+      margin-right: 0;
+      margin: -30px 0 0 auto;
+    }
+    .time-period {
+      margin-top: 15px;
+    }
+    .time-period-btn {
+      flex: 1;
+    }
+    .settings {
+      margin-left: 0;
+      margin-right: auto;
+    }
   }
   @media screen and (max-width: 600px) {
     .right,
@@ -508,6 +521,26 @@
     }
     .time-period {
       right: 1em;
+    }
+    .button-nav {
+      margin: 2.5em 2em 0;
+    }
+    .time-period-btn {
+      padding: 3px 0;
+    }
+  }
+  @media screen and (max-width: 500px) {
+    .time-period-btn {
+      flex-grow: 1;
+      flex: auto;
+    }
+  }
+  @media screen and (max-width: 450px) {
+    .dashboard-content {
+      margin: 1.4em 0em 3.5em;
+    }
+    .button-nav {
+      margin: 2.5em 1em 0;
     }
   }
 </style>

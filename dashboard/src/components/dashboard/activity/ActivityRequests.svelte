@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { periodToDays } from '../../../lib/period';
-  import { CREATED_AT, IP_ADDRESS } from '../../../lib/consts';
   import type { Period } from '../../../lib/settings';
   import { initFreqMap } from '../../../lib/activity';
+  import { ColumnIndex } from '../../../lib/consts';
 
   function defaultLayout() {
     const days = periodToDays(period);
@@ -45,14 +45,14 @@
 
     const days = periodToDays(period);
     for (let i = 0; i < data.length; i++) {
-      const date = new Date(data[i][CREATED_AT]);
+      const date = new Date(data[i][ColumnIndex.CreatedAt]);
       if (days !== null && days <= 7) {
         // Round down to multiple of 5
         date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
       } else {
         date.setHours(0, 0, 0, 0);
       }
-      const ipAddress = data[i][IP_ADDRESS];
+      const ipAddress = data[i][ColumnIndex.IPAddress];
       const time = date.getTime();
       if (!userFreq.has(time)) {
         userFreq.set(time, new Set());
