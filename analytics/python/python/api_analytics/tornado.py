@@ -10,6 +10,27 @@ from tornado.web import Application, RequestHandler
 
 @dataclass
 class Config:
+    """
+    Configuration for the Tornado API Analytics middleware.
+    
+    :param get_path: Optional custom mapping function that takes a request and 
+        returns the path stored within the request. if set, it overwrites the 
+        default behaviour of API Analytics.
+    :param get_ip_address: Optional custom mapping function that takes a request 
+        and returns the IP address stored within the request. If set, it 
+        overwrites the default behaviour of API Analytics.
+    :param get_hostname: Optional custom mapping function that takes a request and
+        returns the hostname stored within the request. If set, it overwrites 
+        the default behaviour of API Analytics.
+    :param get_user_agent: Optional custom mapping function that takes a request 
+        and returns the user agent stored within the request. If set, it 
+        overwrites the default behaviour of API Analytics.
+    :param get_user_id: Optional custom mapping function that takes a request and 
+        returns a custom user ID stored within the request. If set, this can be 
+        used to track a custom user ID specific to your API such as an API key 
+        or client ID. If left as `None`, no custom user ID will be used, and user 
+        identification will rely on client IP address only.
+    """
     get_path: Callable[[HTTPServerRequest], str] | None = None
     get_ip_address: Callable[[HTTPServerRequest], str] | None = None
     get_hostname: Callable[[HTTPServerRequest], str] | None = None
@@ -18,6 +39,7 @@ class Config:
 
 
 class Analytics(RequestHandler):
+    """API Analytics middleware for Tornado."""
     def __init__(self, app: Application, res: HTTPServerRequest, api_key: str, config: Config = Config()):
         super().__init__(app, res)
         self.api_key = api_key
