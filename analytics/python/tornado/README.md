@@ -1,16 +1,18 @@
 # Tornado Analytics
 
-A lightweight API analytics solution, complete with a dashboard.
+A free lightweight API analytics solution, complete with a dashboard.
 
 ## Getting Started
 
 ### 1. Generate an API key
 
-Head to https://apianalytics.dev/generate to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It's also required in order to view your API analytics dashboard.
+Head to https://apianalytics.dev/generate to generate your unique API key with a single click. This key is used to monitor your API server and should be stored privately. It's also required in order to view your API analytics dashboard and data.
 
 ### 2. Add middleware to your API
 
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on the performance of your API.
+
+[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
 ```bash
 pip install tornado-analytics
@@ -21,15 +23,13 @@ Modify your handler to inherit from `Analytics`. Create a `__init__()` method, p
 ```py
 import asyncio
 from tornado.web import Application
-
 from api_analytics.tornado import Analytics
 
 # Inherit from the Analytics middleware class
 class MainHandler(Analytics):
     def __init__(self, app, res):
-        api_key = os.environ.get("API_KEY")
-        super().__init__(app, res, api_key)
-
+        super().__init__(app, res, <API-KEY>)  # Provide api key
+    
     def get(self):
         self.write({'message': 'Hello World!'})
 
@@ -42,6 +42,19 @@ if __name__ == "__main__":
     app = make_app()
     app.listen(8080)
     IOLoop.instance().start()
+```
+
+Custom mapping functions can be provided to overwrite the default behaviour and tailor the retrival of information from each incoming request to your API environment and usage.
+
+```py
+from api_analytics.tornado import Analytics, Config
+
+class MainHandler(Analytics):
+    def __init__(self, app, res):
+        config = Config()
+        config.get_ip_address = lambda request: request.headers['X-Forwarded-For']
+        config.get_user_agent = lambda request: request.headers['User-Agent']
+        super().__init__(app, res, <API-KEY>, config)  # Provide api key
 ```
 
 ### 3. View your analytics
@@ -59,7 +72,7 @@ Head to https://apianalytics.dev/dashboard and paste in your API key to access y
 
 Demo: https://apianalytics.dev/dashboard/demo
 
-![Dashboard](https://user-images.githubusercontent.com/41476809/211800529-a84a0aa3-70c9-47d4-aa0d-7f9bbd3bc9b5.png)
+![dashboard](https://user-images.githubusercontent.com/41476809/272061832-74ba4146-f4b3-4c05-b759-3946f4deb9de.png)
 
 #### Data API
 
@@ -98,9 +111,27 @@ fetch("https://apianalytics-server.com/api/data", {
 curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 ```
 
-## Monitoring (coming soon)
+##### Parameters
 
-Opt-in active API monitoring is coming soon. Our servers will regularly ping your API endpoints to monitor uptime and response time. Optional email alerts to notify you when your endpoints are down can be subscribed to.
+You can filter your data by providing URL parameters in your request.
+
+- `date` - specifies a particular day the requests occurred on (`YYYY-MM-DD`)
+- `dateFrom` - specifies the lower bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `dateTo` - specifies the upper bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `ipAddress` - an IP address string of the client
+- `status` - an integer status code of the response
+- `location` - a two-character location code of the client
+
+Example:
+
+```bash
+curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?dateFrom=2022-01-01&dateTo=2022-06-01&status=200
+```
+
+## Monitoring
+
+Active API monitoring can be set up by heading to https://apianalytics.dev/monitoring to enter you API key. Our servers will regularly ping chosen API endpoints to monitor uptime and response time. 
+<!-- Optional email alerts when your endpoints are down can be subscribed to. -->
 
 ![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)
 
@@ -120,17 +151,13 @@ For any given request to your API, data recorded is limited to:
  - API hostname
  - API framework (FastAPI, Flask, Express etc.)
 
-Data collected is only ever used to populate your analytics dashboard. All data stored is anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
+Data collected is only ever used to populate your analytics dashboard. All stored data is anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
 
-### Delete Data
+### Data Deletion
 
-At any time, you can delete all stored data associated with your API key by going to https://apianalytics.dev/delete and entering your API key.
+At any time you can delete all stored data associated with your API key by going to https://apianalytics.dev/delete and entering your API key.
 
-API keys and their associated API request data are scheduled be deleted after 1 year of inactivity.
-
-## Development
-
-This project is still in the early stages of development and bugs are to be expected.
+API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity.
 
 ## Contributions
 
@@ -141,4 +168,3 @@ Contributions, issues and feature requests are welcome.
 - Commit your changes (`git commit -am 'Add some feature'`)
 - Push to the branch (`git push origin my-new-feature`)
 - Create a new Pull Request
-
