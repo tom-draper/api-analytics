@@ -34,7 +34,7 @@ if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
 ```
 
-Custom mapping functions can be provided to overwrite the default behaviour and tailor the retrival of information from each incoming request to your API environment and usage.
+Custom mapping functions can be provided to override the default behaviour and tailor the retrival of information about each incoming request to your API environment and usage.
 
 ```py
 from fastapi import FastAPI

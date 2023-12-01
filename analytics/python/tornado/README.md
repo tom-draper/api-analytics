@@ -44,7 +44,7 @@ if __name__ == "__main__":
     IOLoop.instance().start()
 ```
 
-Custom mapping functions can be provided to overwrite the default behaviour and tailor the retrival of information from each incoming request to your API environment and usage.
+Custom mapping functions can be provided to override the default behaviour and tailor the retrival of information about each incoming request to your API environment and usage.
 
 ```py
 from api_analytics.tornado import Analytics, Config

@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
 ##### Configuration
 
-Custom mapping functions can be provided to overwrite the default behaviour and tailor the retrival of information from each incoming request to your API environment and usage.
+Custom mapping functions can be provided to override the default behaviour and tailor the retrival of information about each incoming request to your API environment and usage.
 
 ```py
 from fastapi import FastAPI
@@ -112,6 +112,8 @@ MIDDLEWARE = [
 Assign your config to `ANALYTICS_CONFIG` in `settings.py`.
 
 ```py
+from api_analytics.django import Config
+
 config = Config()
 config.get_ip_address = lambda request: request.headers['X-Forwarded-For']
 config.get_user_agent = lambda request: request.headers['User-Agent']
