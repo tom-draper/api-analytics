@@ -13,17 +13,17 @@ class Config:
     Configuration for the Flask API Analytics middleware.
     
     :param get_path: Optional custom mapping function that takes a request and 
-        returns the path stored within the request. if set, it overwrites the 
+        returns the path stored within the request. if set, it overrides the 
         default behaviour of API Analytics.
     :param get_ip_address: Optional custom mapping function that takes a request 
         and returns the IP address stored within the request. If set, it 
-        overwrites the default behaviour of API Analytics.
+        overrides the default behaviour of API Analytics.
     :param get_hostname: Optional custom mapping function that takes a request and
-        returns the hostname stored within the request. If set, it overwrites 
+        returns the hostname stored within the request. If set, it overrides 
         the default behaviour of API Analytics.
     :param get_user_agent: Optional custom mapping function that takes a request 
         and returns the user agent stored within the request. If set, it 
-        overwrites the default behaviour of API Analytics.
+        overrides the default behaviour of API Analytics.
     :param get_user_id: Optional custom mapping function that takes a request and 
         returns a custom user ID stored within the request. If set, this can be 
         used to track a custom user ID specific to your API such as an API key 
