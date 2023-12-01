@@ -35,7 +35,8 @@ func genAPIKey(c *gin.Context) {
 	// Get API key auto generated from new row insertion
 	rows.Next()
 	var apiKey string
-	if err = rows.Scan(&apiKey); err != nil {
+	err = rows.Scan(&apiKey)
+	if err != nil {
 		log.LogToFile(fmt.Sprintf("Failed to access generated key - %w", err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
 		return
@@ -69,7 +70,8 @@ func getUserID(c *gin.Context) {
 	// API key is primary key so assumed only one row returned
 	rows.Next()
 	var userID string
-	if err = rows.Scan(&userID); err != nil {
+	err = rows.Scan(&userID)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
@@ -87,6 +89,7 @@ type PublicRequestRow struct {
 	Status       int16          `json:"status"`
 	ResponseTime int16          `json:"response_time"`
 	Location     sql.NullString `json:"location"`
+	UserID       sql.NullString `json:"user_id"` // Custom user identifier field specific to each API service
 	CreatedAt    time.Time      `json:"created_at"`
 }
 
@@ -114,23 +117,24 @@ func getUserRequests(c *gin.Context) {
 
 	rows.Next()
 	var apiKey string
-	if err = rows.Scan(&apiKey); err != nil {
+	err = rows.Scan(&apiKey)
+	if err != nil {
 		log.LogToFile(fmt.Sprintf("id=%s: No API key associated with user ID - %w", userID, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
 
-	cols := []any{"ip_address", "path", "hostname", "user_agent", "method", "response_time", "status", "location", "created_at"}
+	cols := []any{"ip_address", "path", "hostname", "user_agent", "method", "response_time", "status", "location", "user_id", "created_at"}
 	requests := [][]any{cols}
 	pageSize := 400_000
-	maxRequests := 400_000
+	maxRequests := pageSize   // Temporary limit to prevent memory issues
 	pageMarker := time.Time{} // Start with min time to capture first page
 
 	// Read paginated requests data
 	for {
 		// Fetch user ID corresponding with API key
 		// Left table join was originally used but often exceeded postgresql working memory limit with large numbers of requests
-		query = "SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = $1 AND created_at >= $2 ORDER BY created_at LIMIT $3;"
+		query = "SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 AND created_at >= $2 ORDER BY created_at LIMIT $3;"
 		rows, err = db.Query(query, apiKey, pageMarker, pageSize)
 		if err != nil {
 			log.LogToFile(fmt.Sprintf("key=%s: Invalid API key - %w", apiKey, err))
@@ -142,12 +146,12 @@ func getUserRequests(c *gin.Context) {
 		var request PublicRequestRow
 		var count int
 		for rows.Next() {
-			err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt)
+			err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
 			if err == nil {
 				if request.Location.String == "  " {
 					request.Location.String = ""
 				}
-				requests = append(requests, []any{request.IPAddress.String, request.Path, request.Hostname.String, request.UserAgent.String, request.Method, request.ResponseTime, request.Status, request.Location.String, request.CreatedAt})
+				requests = append(requests, []any{request.IPAddress.String, request.Path, request.Hostname.String, request.UserAgent.String, request.Method, request.ResponseTime, request.Status, request.Location.String, request.UserID.String, request.CreatedAt})
 			}
 			count++
 			if count >= maxRequests {
@@ -172,7 +176,8 @@ func getUserRequests(c *gin.Context) {
 	}
 
 	// Record access
-	if err = updateLastAccessed(db, apiKey); err != nil {
+	err = updateLastAccessed(db, apiKey)
+	if err != nil {
 		log.LogToFile(fmt.Sprintf("key=%s: User last access update failed - %w", apiKey, err))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
@@ -225,11 +230,11 @@ func buildRequestDataCompact(rows *sql.Rows, cols []any) [][]any {
 	// request := new(PublicRequestRow) // Reused to avoid repeated memory allocation
 	var request PublicRequestRow
 	for rows.Next() {
-		if err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt); err == nil {
+		if err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt); err == nil {
 			if request.Location.String == "  " {
 				request.Location.String = ""
 			}
-			requests = append(requests, []any{request.IPAddress.String, request.Path, request.Hostname.String, request.UserAgent.String, request.Method, request.ResponseTime, request.Status, request.Location.String, request.CreatedAt})
+			requests = append(requests, []any{request.IPAddress.String, request.Path, request.Hostname.String, request.UserAgent.String, request.Method, request.ResponseTime, request.Status, request.Location.String, request.UserID.String, request.CreatedAt})
 		}
 	}
 	return requests
@@ -244,6 +249,7 @@ type DataFetchQueries struct {
 	ipAddress string
 	location  string
 	status    int
+	userID    string
 }
 
 func getData(c *gin.Context) {
@@ -283,7 +289,7 @@ func getData(c *gin.Context) {
 
 	// Read data into list of objects to return
 	if queries.compact {
-		cols := []interface{}{"ip_address", "path", "hostname", "user_agent", "method", "response_time", "status", "location", "created_at"}
+		cols := []interface{}{"ip_address", "path", "hostname", "user_agent", "method", "response_time", "status", "location", "user_id", "created_at"}
 		requests := buildRequestDataCompact(rows, cols)
 		log.LogToFile(fmt.Sprintf("key=%s: Data access successful (%d)", apiKey, len(requests)-1))
 		c.JSON(http.StatusOK, requests)
@@ -296,7 +302,7 @@ func getData(c *gin.Context) {
 
 func buildDataFetchQuery(apiKey string, queries DataFetchQueries) (string, []any) {
 	var query strings.Builder
-	query.WriteString("SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, created_at FROM requests WHERE api_key = $1")
+	query.WriteString("SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1")
 
 	arguments := []any{apiKey}
 
@@ -332,7 +338,7 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) (string, []any
 		arguments = append(arguments, queries.hostname)
 	}
 
-	query.WriteString(" LIMIT 700000;")
+	query.WriteString(" LIMIT 400000;")
 	return query.String(), arguments
 }
 
@@ -345,6 +351,7 @@ func getQueriesFromRequest(c *gin.Context) DataFetchQueries {
 	ipAddressQuery := c.Query("ip")
 	locationQuery := c.Query("location")
 	statusQuery := c.Query("status")
+	userIDQuery := c.Query("userID")
 
 	date := parseQueryDate(dateQuery)
 	dateFrom := parseQueryDate(dateFromQuery)
@@ -363,6 +370,7 @@ func getQueriesFromRequest(c *gin.Context) DataFetchQueries {
 		ipAddressQuery,
 		locationQuery,
 		status,
+		userIDQuery,
 	}
 	return queries
 }
@@ -405,6 +413,7 @@ type PublicRequestData struct {
 	Status       int16     `json:"status"`
 	ResponseTime int16     `json:"response_time"`
 	Location     string    `json:"location"`
+	UserID       string    `json:"user_id"`
 	CreatedAt    time.Time `json:"created_at"`
 }
 
@@ -412,7 +421,7 @@ func buildRequestData(rows *sql.Rows) []PublicRequestData {
 	requests := make([]PublicRequestData, 0)
 	for rows.Next() {
 		var request PublicRequestRow
-		if err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.CreatedAt); err == nil {
+		if err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt); err == nil {
 			r := PublicRequestData{
 				IPAddress:    request.IPAddress.String,
 				Path:         request.Path,
@@ -422,6 +431,7 @@ func buildRequestData(rows *sql.Rows) []PublicRequestData {
 				Status:       request.Status,
 				ResponseTime: request.ResponseTime,
 				Location:     request.Location.String,
+				UserID:       request.UserID.String,
 				CreatedAt:    request.CreatedAt,
 			}
 			requests = append(requests, r)
