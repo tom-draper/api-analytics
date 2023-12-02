@@ -1,12 +1,12 @@
 # API Analytics
 
-A lightweight API analytics solution, complete with a dashboard.
+A free lightweight API analytics solution, complete with a dashboard.
 
 ## Getting Started
 
 ### 1. Generate an API key
 
-Head to https://apianalytics.dev/generate to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It's also required in order to view your API analytics dashboard.
+Head to https://apianalytics.dev/generate to generate your unique API key with a single click. This key is used to monitor your API server and should be stored privately. It's also required in order to view your API analytics dashboard and data.
 
 ### 2. Add middleware to your API
 
@@ -35,15 +35,33 @@ app.listen(8080, () => {
 })
 ```
 
+##### Configuration
+
+Custom mapping functions can be provided to override the default behaviour and tailor the retrival of information about each incoming request to your API's environment and usage.
+
+```py
+import express from 'express';
+import { expressAnalytics, Config } from 'node-api-analytics';
+
+const app = express();
+
+const config = new Config();
+config.getIPAddress = (req) => {
+  return req.headers["X-Forwarded-For"];
+}
+config.getUserAgent = (req) => {
+  return req.headers["User-Agent"];
+}
+app.use(expressAnalytics(<API-KEY>, config));  // Add middleware
+```
+
 #### Fastify
 
 ```js
 import Fastify from 'fastify';
 import { fastifyAnalytics } from 'node-api-analytics;
 
-const fastify = Fastify({
-  logger: true,
-})
+const fastify = Fastify();
 
 fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>));  // Add middleware
 
@@ -58,6 +76,24 @@ fastify.listen({ port: 8080 }, function (err, address) {
     process.exit(1);
   }
 })
+```
+
+##### Configuration
+
+```js
+import Fastify from 'fastify';
+import { fastifyAnalytics, Config } from 'node-api-analytics;
+
+const fastify = Fastify();
+
+const config = new Config();
+config.getIPAddress = (req) => {
+  return req.headers["X-Forwarded-For"];
+}
+config.getUserAgent = (req) => {
+  return req.headers["User-Agent"];
+}
+fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>, config));  // Add middleware
 ```
 
 #### Koa
@@ -77,6 +113,24 @@ app.use((ctx) => {
 app.listen(8080, () =>
   console.log('Server listening at https://localhost:8080')
 );
+```
+
+##### Configuration
+
+```js
+import Koa from "koa";
+import { koaAnalytics, Config } from "node-api-analytics";
+
+const app = new Koa();
+
+const config = new Config();
+config.getIPAddress = (req) => {
+  return req.headers["X-Forwarded-For"];
+}
+config.getUserAgent = (req) => {
+  return req.headers["User-Agent"];
+}
+app.use(koaAnalytics(<API-KEY>, config));  // Add middleware
 ```
 
 ### 3. View your analytics

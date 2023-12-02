@@ -8,7 +8,7 @@ export class Config {
      * A custom mapping function that takes a request and returns the path 
      * stored within the request.
      * If set, it overrides the default behaviour of API Analytics.
-     * @type {((request: Request) => string) | null}
+     * @type {((req: Request) => string) | null}
      * @public
      */
     this.getPath = null;
@@ -17,7 +17,7 @@ export class Config {
      * A custom mapping function that takes a request and returns the hostname 
      * stored within the request.
      * If set, it overrides the default behaviour of API Analytics.
-     * @type {((request: Request) => string) | null}
+     * @type {((req: Request) => string) | null}
      * @public
      */
     this.getHostname = null;
@@ -26,7 +26,7 @@ export class Config {
      * A custom mapping function that takes a request and returns the IP address
      * stored within the request.
      * If set, it overrides the default behaviour of API Analytics.
-     * @type {((request: Request) => string) | null}
+     * @type {((req: Request) => string) | null}
      * @public
      */
     this.getIPAddress = null;
@@ -35,7 +35,7 @@ export class Config {
      * A custom mapping function that takes a request and returns the user agent
      * stored within the request.
      * If set, it overrides the default behaviour of API Analytics.
-     * @type {((request: Request) => string) | null}
+     * @type {((req: Request) => string) | null}
      * @public
      */
     this.getUserAgent = null;
@@ -46,7 +46,7 @@ export class Config {
      * If set, this can be used to track a custom user ID specific to your API 
      * such as an API key or client ID. If left null, no custom user ID will be 
      * used, and user identification will rely on client IP address only.
-     * @type {((request: Request) => string) | null}
+     * @type {((req: Request) => string) | null}
      * @public
      */
     this.getUserID = null;
