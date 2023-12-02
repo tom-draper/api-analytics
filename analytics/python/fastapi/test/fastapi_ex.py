@@ -2,7 +2,7 @@ import os
 import sys
 # Import ../api_analytics rather than api_analyics pip package
 sys.path.insert(0, os.path.abspath('../'))
-from api_analytics.fastapi import Analytics
+from api_analytics.fastapi import Analytics, Config
 
 import uvicorn
 from fastapi import FastAPI
@@ -15,7 +15,9 @@ load_dotenv()
 api_key = os.environ.get("API_KEY")
 
 app = FastAPI()
-app.add_middleware(Analytics, api_key=api_key)
+config = Config()
+config.get_ip_address = lambda request: request.headers.get('X-Forwarded-For', request.client.host)
+app.add_middleware(Analytics, api_key=api_key, config=config)
 
 
 @app.get("/")

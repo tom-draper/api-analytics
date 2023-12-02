@@ -24,10 +24,9 @@ func main() {
 
 	app.Use(cors.Default())
 
-	rateLimiter := ratelimit.RateLimiter{}
-	app.POST("/api/log-request", logRequestHandler(&rateLimiter))
-	rateLimiter2 := ratelimit.RateLimiter{}
-	app.POST("/api/requests", logRequestHandler(&rateLimiter2))
+	handler := logRequestHandler()
+	app.POST("/api/log-request", handler)
+	app.POST("/api/requests", handler)
 
 	app.Run(":8000")
 }
@@ -72,10 +71,12 @@ func getCountryCode(IPAddress string) string {
 	return location
 }
 
-func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
-	const maxInsert int = 1000
+func logRequestHandler() gin.HandlerFunc {
+	var rateLimiter = ratelimit.RateLimiter{}
 
-	methodID := map[string]int16{
+	const maxInsert int = 2000
+
+	var methodID = map[string]int16{
 		"GET":     0,
 		"POST":    1,
 		"PUT":     2,
@@ -87,7 +88,7 @@ func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 		"TRACE":   8,
 	}
 
-	frameworkID := map[string]int16{
+	var frameworkID = map[string]int16{
 		"FastAPI":      0,
 		"Flask":        1,
 		"Gin":          2,

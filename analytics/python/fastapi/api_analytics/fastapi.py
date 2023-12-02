@@ -17,7 +17,7 @@ class Config:
     Configuration for the FastAPI API Analytics middleware.
     
     :param get_path: Optional custom mapping function that takes a request and 
-        returns the path stored within the request. if set, it overrides the 
+        returns the path stored within the request. If set, it overrides the 
         default behaviour of API Analytics.
     :param get_ip_address: Optional custom mapping function that takes a request 
         and returns the IP address stored within the request. If set, it 
