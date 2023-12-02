@@ -42,6 +42,30 @@ func main() {
 }
 ```
 
+Custom mapping functions can be provided to override the default behaviour and tailor the retrival of information about each incoming request to your API's environment and usage.
+
+```go
+package main
+
+import (
+    analytics "github.com/tom-draper/api-analytics/analytics/go/fiber"
+	"github.com/gofiber/fiber/v2"
+)
+
+func main() {
+	app := fiber.New()
+
+    config := analytics.Config{}
+    config.GetIPAddress = func(c *fiber.Ctx) string {
+        return c.IP()
+    }
+    config.GetUserAgent = func(c *fiber.Ctx) string {
+        return string(c.Request().Header.UserAgent())
+    }
+	app.Use(analytics.AnalyticsWithConfig(<API-KEY>, config)) // Add middleware
+}
+```
+
 ### 3. View your analytics
 
 Your API will now log and store incoming request data on all valid routes. Your logged data can be viewed using two methods:

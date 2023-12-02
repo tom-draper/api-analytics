@@ -29,7 +29,19 @@ func (rw *responseWriter) WriteHeader(code int) {
 	rw.wroteHeader = true
 }
 
+type Config struct {
+	GetPath      func(r *http.Request) string
+	GetHostname  func(r *http.Request) string
+	GetUserAgent func(r *http.Request) string
+	GetIPAddress func(r *http.Request) string
+	GetUserID    func(r *http.Request) string
+}
+
 func Analytics(apiKey string) func(next http.Handler) http.Handler {
+	return AnalyticsWithConfig(apiKey, &Config{})
+}
+
+func AnalyticsWithConfig(apiKey string, config *Config) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			defer func() {
@@ -44,12 +56,11 @@ func Analytics(apiKey string) func(next http.Handler) http.Handler {
 			start := time.Now()
 			next.ServeHTTP(rw, r.WithContext(ctx))
 
-			ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 			data := core.RequestData{
-				Hostname:     r.Host,
-				IPAddress:    ip,
-				Path:         r.URL.Path,
-				UserAgent:    r.UserAgent(),
+				Hostname:     getHostname(r, config),
+				IPAddress:    getIPAddress(r, config),
+				Path:         getPath(r, config),
+				UserAgent:    getUserAgent(r, config),
 				Method:       r.Method,
 				Status:       rw.status,
 				ResponseTime: time.Since(start).Milliseconds(),
@@ -59,4 +70,40 @@ func Analytics(apiKey string) func(next http.Handler) http.Handler {
 			core.LogRequest(apiKey, data, "Chi")
 		})
 	}
+}
+
+func getHostname(r *http.Request, config *Config) string {
+	if config.GetHostname != nil {
+		return config.GetHostname(r)
+	}
+	return r.Host
+}
+
+func getPath(r *http.Request, config *Config) string {
+	if config.GetPath != nil {
+		return config.GetPath(r)
+	}
+	return r.URL.Path
+}
+
+func getUserAgent(r *http.Request, config *Config) string {
+	if config.GetUserAgent != nil {
+		return config.GetUserAgent(r)
+	}
+	return r.UserAgent()
+}
+
+func getIPAddress(r *http.Request, config *Config) string {
+	if config.GetIPAddress != nil {
+		return config.GetIPAddress(r)
+	}
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	return ip
+}
+
+func getUserID(r *http.Request, config *Config) string {
+	if config.GetUserID != nil {
+		return config.GetUserID(r)
+	}
+	return ""
 }

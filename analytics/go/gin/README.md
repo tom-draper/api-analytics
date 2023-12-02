@@ -1,6 +1,13 @@
 # Gin Analytics
 
-A lightweight API analytics solution, complete with a dashboard.
+A free lightweight API analytics solution, complete with a dashboard.
+
+Currently compatible with:
+ - Python: <b>FastAPI</b>, <b>Flask</b>, <b>Django</b> and <b>Tornado</b>
+ - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
+ - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
+ - Rust: <b>Actix</b>, <b>Axum</b> and <b>Rocket</b>
+ - Ruby: <b>Rails</b> and <b>Sinatra</b>
 
 ## Getting Started
 
@@ -12,6 +19,8 @@ Head to https://apianalytics.dev/generate to generate your unique API key with a
 
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on the performance of your API.
 
+[![Gin](https://img.shields.io/badge/go.mod-Gin-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/gin)
+
 ```bash
 go get -u github.com/tom-draper/api-analytics/analytics/go/gin
 ```
@@ -20,24 +29,50 @@ go get -u github.com/tom-draper/api-analytics/analytics/go/gin
 package main
 
 import (
-	analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
-	"net/http"
-
-	"github.com/gin-gonic/gin"
+    "net/http"
+    "github.com/gin-gonic/gin"
+    analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
 )
 
 func root(c *gin.Context) {
-	jsonData := []byte(`{"message": "Hello World!"}`)
-	c.Data(http.StatusOK, "application/json", jsonData)
+    jsonData := []byte(`{"message": "Hello World!"}`)
+    c.Data(http.StatusOK, "application/json", jsonData)
 }
 
 func main() {
-	router := gin.Default()
-	
-	router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
+    router := gin.Default()
+    
+    router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
-	router.GET("/", root)
-	router.Run(":8080")
+    router.GET("/", root)
+    router.Run(":8080")
+}
+```
+
+Custom mapping functions can be provided to override the default behaviour and tailor the retrival of information about each incoming request to your API's environment and usage.
+
+```go
+package main
+
+import (
+    "github.com/gin-gonic/gin"
+    analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
+)
+
+func main() {
+    router := gin.Default()
+    
+    config := analytics.Config{}
+    config.GetIPAddress = func(c *gin.Context) string {
+        return c.Request.Header.Get("X-Forwarded-For")
+    }
+    config.GetUserAgent = func(c *gin.Context) string {
+        return c.Request.Header.Get("User-Agent")
+    }
+    router.Use(analytics.AnalyticsWithConfig(<API-KEY>, &config)) // Add middleware
+
+    router.GET("/", root)
+    router.Run(":8080")
 }
 ```
 
@@ -56,7 +91,7 @@ Head to https://apianalytics.dev/dashboard and paste in your API key to access y
 
 Demo: https://apianalytics.dev/dashboard/demo
 
-![Dashboard](https://user-images.githubusercontent.com/41476809/211800529-a84a0aa3-70c9-47d4-aa0d-7f9bbd3bc9b5.png)
+![dashboard](https://user-images.githubusercontent.com/41476809/272061832-74ba4146-f4b3-4c05-b759-3946f4deb9de.png)
 
 #### Data API
 
@@ -95,9 +130,27 @@ fetch("https://apianalytics-server.com/api/data", {
 curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 ```
 
-## Monitoring (coming soon)
+##### Parameters
 
-Opt-in active API monitoring is coming soon. Our servers will regularly ping your API endpoints to monitor uptime and response time. Optional email alerts to notify you when your endpoints are down can be subscribed to.
+You can filter your data by providing URL parameters in your request.
+
+- `date` - specifies a particular day the requests occurred on (`YYYY-MM-DD`)
+- `dateFrom` - specifies the lower bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `dateTo` - specifies the upper bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `ipAddress` - an IP address string of the client
+- `status` - an integer status code of the response
+- `location` - a two-character location code of the client
+
+Example:
+
+```bash
+curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?dateFrom=2022-01-01&dateTo=2022-06-01&status=200
+```
+
+## Monitoring
+
+Active API monitoring can be set up by heading to https://apianalytics.dev/monitoring to enter you API key. Our servers will regularly ping chosen API endpoints to monitor uptime and response time. 
+<!-- Optional email alerts when your endpoints are down can be subscribed to. -->
 
 ![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)
 
@@ -117,13 +170,13 @@ For any given request to your API, data recorded is limited to:
  - API hostname
  - API framework (FastAPI, Flask, Express etc.)
 
-Data collected is only ever used to populate your analytics dashboard. All data stored is anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
+Data collected is only ever used to populate your analytics dashboard. All stored data is anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
 
-### Delete Data
+### Data Deletion
 
-At any time, you can delete all stored data associated with your API key by going to https://apianalytics.dev/delete and entering your API key.
+At any time you can delete all stored data associated with your API key by going to https://apianalytics.dev/delete and entering your API key.
 
-API keys and their associated API request data are scheduled be deleted after 1 year of inactivity.
+API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity.
 
 ## Contributions
 
