@@ -43,21 +43,21 @@ func getHostname(c *gin.Context, config *Config) string {
 	if config.GetHostname != nil {
 		return config.GetHostname(c)
 	}
-	return c.request.Host
+	return c.Request.Host
 }
 
 func getPath(c *gin.Context, config *Config) string {
 	if config.GetPath != nil {
 		return config.GetPath(c)
 	}
-	return c.request.URL.Path
+	return c.Request.URL.Path
 }
 
 func getUserAgent(c *gin.Context, config *Config) string {
 	if config.GetUserAgent != nil {
 		return config.GetUserAgent(c)
 	}
-	return c.request.UserAgent()
+	return c.Request.UserAgent()
 }
 
 func getIPAddress(c *gin.Context, config *Config) string {

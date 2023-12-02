@@ -33,11 +33,36 @@ func root(c echo.Context) error {
 }
 
 func main() {
-	apiKey := getAPIKey()
-
 	router := echo.New()
 
-	router.Use(analytics.Analytics(apiKey))
+	router.Use(analytics.Analytics(<API-KEY>))
+
+	router.GET("/", root)
+	router.Start(":8080")
+}
+```
+
+Custom mapping functions can be provided to override the default behaviour and tailor the retrival of information about each incoming request to your API's environment and usage.
+
+```go
+package main
+
+import (
+	echo "github.com/labstack/echo/v4"
+	analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
+)
+
+func main() {
+	router := echo.New()
+
+    config := analytics.Config{}
+    config.GetIPAddress = func(c echo.Context) string {
+        return c.Request().Header.Get("X-Forwarded-For")
+    }
+    config.GetUserAgent = func(c echo.Context) string {
+        return c.Request().Header.Get("User-Agent")
+    }
+	router.Use(analytics.AnalyticsWithConfig(<API-KEY>, config))
 
 	router.GET("/", root)
 	router.Start(":8080")
