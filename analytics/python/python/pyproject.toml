@@ -18,8 +18,8 @@ keywords = ["analytics", "api", "dashboard", "django", "fastapi", "flask", "torn
 license = {file = "LICENSE"}
 name = "api-analytics"
 readme = "README.md"
-requires-python = ">=3.7"
-version = "1.2.0"
+requires-python = ">=3.6"
+version = "1.2.1"
 
 [project.optional-dependencies]
 build = ["build", "twine"]
