@@ -44,10 +44,19 @@ type RequestData struct {
 }
 
 type Payload struct {
-	APIKey    string        `json:"api_key"`
-	Requests  []RequestData `json:"requests"`
-	Framework string        `json:"framework"`
+	APIKey       string        `json:"api_key"`
+	Requests     []RequestData `json:"requests"`
+	Framework    string        `json:"framework"`
+	PrivacyLevel PrivacyLevel  `json:"privacy_level"`
 }
+
+type PrivacyLevel int
+
+const (
+	P1 PrivacyLevel = iota // Client IP address stored, location inferred from IP and stored
+	P2                     // Location inferred from IP and stored, client IP address discarded
+	P3                     // Client IP address never be sent to server, optional custom user ID field is the only user identification
+)
 
 func getCountryCode(IPAddress string) string {
 	if IPAddress == "" {
@@ -151,34 +160,47 @@ func logRequestHandler() gin.HandlerFunc {
 				break
 			}
 
-			location := getCountryCode(request.IPAddress)
+			var location string
+			if payload.PrivacyLevel < P3 {
+				// Location inferred from IP and stored for privacy level P1 and P2
+				location = getCountryCode(request.IPAddress)
+			}
+
+			if payload.PrivacyLevel > P1 {
+				// Client IP address discarded for privacy level P2 and P3
+				request.IPAddress = ""
+			}
 
 			method, ok := methodID[request.Method]
 			if !ok {
 				continue
 			}
 
-			userAgent := request.UserAgent
-			if len(userAgent) > 255 {
-				userAgent = userAgent[:255]
+			if len(request.UserAgent) > 255 {
+				request.UserAgent = request.UserAgent[:255]
 			}
-			if !database.ValidUserAgent(userAgent) {
-				badUserAgents = append(badUserAgents, userAgent)
+			if !database.ValidUserAgent(request.UserAgent) {
+				badUserAgents = append(badUserAgents, request.UserAgent)
 				continue
 			}
 
-			userID := request.UserID
-			if len(userID) > 255 {
-				userID = userID[:255]
+			if len(request.UserID) > 255 {
+				request.UserID = request.UserID[:255]
 			}
-			if !database.ValidUserID(userID) {
+			if !database.ValidUserID(request.UserID) {
 				continue
 			}
 
+			if len(request.Hostname) > 255 {
+				request.Hostname = request.Hostname[:255]
+			}
 			if !database.ValidHostname(request.Hostname) {
 				continue
 			}
 
+			if len(request.Path) > 255 {
+				request.Path = request.Path[:255]
+			}
 			if !database.ValidPath(request.Path) {
 				continue
 			}
@@ -209,13 +231,13 @@ func logRequestHandler() gin.HandlerFunc {
 				request.Path,
 				request.Hostname,
 				request.IPAddress,
-				userAgent,
+				request.UserAgent,
 				request.Status,
 				request.ResponseTime,
 				method,
 				framework,
 				location,
-				userID,
+				request.UserID,
 				request.CreatedAt)
 			inserted += 1
 		}
