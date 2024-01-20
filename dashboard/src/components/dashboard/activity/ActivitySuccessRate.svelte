@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { periodToDays } from '../../../lib/period';
-  import { CREATED_AT, STATUS } from '../../../lib/consts';
   import type { Period } from '../../../lib/settings';
+  import { ColumnIndex } from '../../../lib/consts';
 
   function daysAgo(date: Date): number {
     const now = new Date();
@@ -14,13 +14,13 @@
       new Map();
     let minDate = new Date(8640000000000000);
     for (let i = 0; i < data.length; i++) {
-      const date = new Date(data[i][CREATED_AT]);
+      const date = new Date(data[i][ColumnIndex.CreatedAt]);
       date.setHours(0, 0, 0, 0);
       const time = date.getTime();
       if (!success.has(time)) {
         success.set(time, { total: 0, successful: 0 });
       }
-      if (data[i][STATUS] >= 200 && data[i][STATUS] <= 299) {
+      if (data[i][ColumnIndex.Status] >= 200 && data[i][ColumnIndex.Status] <= 299) {
         success.get(time).successful++;
       }
       success.get(time).total++;
@@ -48,7 +48,7 @@
     setSuccessRate();
   }
 
-  let successRate;
+  let successRate: number[];
   let mounted = false;
   onMount(() => {
     mounted = true;
@@ -78,8 +78,7 @@
 <style>
   .errors {
     display: flex;
-    margin-top: 8px;
-    margin: 0 10px 0 35px;
+    margin-left: 35px;
   }
   .error {
     background: var(--highlight);

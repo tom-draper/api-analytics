@@ -9,7 +9,7 @@
       e.stopImmediatePropagation();
     });
   });
-  export let show: boolean, settings: DashboardSettings;
+  export let show: boolean, settings: DashboardSettings, exportCSV: () => void;
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -36,6 +36,11 @@
     <div class="setting-title">Hidden endpoints:</div>
     <div class="setting">
       <List bind:items={settings.hiddenEndpoints} />
+    </div>
+    <div class="export-csv">
+      <button class="export-csv-btn" on:click={exportCSV}>
+        Export CSV
+      </button>
     </div>
   </div>
 </div>
@@ -87,6 +92,19 @@
     height: 15px;
     width: 15px;
     cursor: pointer;
+  }
+
+  .export-csv {
+    text-align: left;
+    margin-top: 30px;
+  }
+  .export-csv-btn {
+    background: var(--background);
+    color: var(--dim-text);
+    border: 1px solid #2e2e2e;
+    padding: 5px 12px;
+    cursor: pointer;
+    border-radius: 3px;
   }
 
   @media screen and (max-width: 1400px) {

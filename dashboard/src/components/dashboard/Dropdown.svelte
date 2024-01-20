@@ -6,10 +6,17 @@
     hideOptions = true;
   }
 
+  function setWidth() {
+    // Set dropdown width considering width of hidden options within
+    // Width of text div + dropdown icon
+    dropdown.style.width = `${current.clientWidth + 22}px`;
+  }
+
   let dropdown: HTMLDivElement;
   let current: HTMLButtonElement;
   onMount(() => {
-    dropdown.style.width = `${current.clientWidth}px`;
+    setWidth();
+    setWidth();  // Sometimes needs to be called twice when first loaded in mobile view (maybe due to image render?)
   });
 
   let hideOptions: boolean = true;
@@ -62,21 +69,21 @@
   .dropdown {
     display: flex;
     flex-direction: column;
-    margin-right: 10px;
+    height: 28px;
   }
   .current {
     border-radius: 4px;
     background: var(--background);
     color: var(--dim-text);
     border: 1px solid #2e2e2e;
-    padding: 5px 12px 5px 9px;
+    padding: 5px 8px 5px 9px;
     cursor: pointer;
     display: flex;
   }
   .options {
     display: flex;
     flex-direction: column;
-    border-radius: 0px 4px 4px 0px;
+    border-radius: 0px 0 4px 0px;
     background: var(--background);
     color: var(--dim-text);
     top: 66px;
@@ -86,11 +93,12 @@
     background: var(--background);
     color: var(--dim-text);
     border: 1px solid #2e2e2e;
-    padding: 5px 12px;
+    padding: 5px 6px 5px 31px;
+    text-align: left;
     cursor: pointer;
   }
   .hidden {
-    visibility: hidden;
+    display: none;
   }
   .last-option {
     border-radius: 0 0 4px 4px;
@@ -102,11 +110,12 @@
     position: absolute;
     z-index: 9;
     display: flex;
+    width: inherit;
     flex-direction: column;
   }
   svg {
     width: 16px;
-    margin-right: 5px;
+    margin-right: 6px;
     opacity: 0.6;
   }
 </style>

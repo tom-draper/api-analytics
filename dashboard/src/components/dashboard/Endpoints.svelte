@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { METHOD, PATH, STATUS } from '../../lib/consts';
+  import { ColumnIndex } from '../../lib/consts';
 
   // Integer to method string mapping used by server
   const methodMap = [
@@ -23,11 +23,11 @@
     const freq = {};
     for (let i = 0; i < data.length; i++) {
       // Create groups of endpoints by path + status
-      const endpointID = `${data[i][PATH]}${data[i][STATUS]}`;
+      const endpointID = `${data[i][ColumnIndex.Path]}${data[i][ColumnIndex.Status]}`;
       if (!(endpointID in freq)) {
         freq[endpointID] = {
-          path: `${methodMap[data[i][METHOD]]}  ${data[i][PATH]}`,
-          status: data[i][STATUS],
+          path: `${methodMap[data[i][ColumnIndex.Method]]}  ${data[i][ColumnIndex.Path]}`,
+          status: data[i][ColumnIndex.Status],
           count: 0,
         };
       }
@@ -213,6 +213,10 @@
     font-size: 0.85em;
     width: 100%;
     cursor: pointer;
+  }
+  .endpoint:hover {
+    background: linear-gradient(270deg, transparent, var(--background));
+    background: linear-gradient(270deg, transparent, #444);
   }
   .path {
     position: relative;

@@ -4,7 +4,7 @@
 
   function triggerNotificationMessage(
     message: string,
-    style: 'error' | 'warn' | 'success' = 'error'
+    style: 'error' | 'warn' | 'success' = 'error',
   ) {
     notification.message = message;
     notification.style = style;
@@ -44,7 +44,7 @@
             ping: true,
             secure: secure,
           }),
-        }
+        },
       );
       if (response.status === 201) {
         triggerNotificationMessage('Created successfully', 'success');
@@ -75,7 +75,9 @@
 <div class="card">
   <div class="card-text">
     <div class="url">
-      <Dropdown {options} bind:selected={urlPrefix} />
+      <div class="dropdown-container">
+        <Dropdown {options} bind:selected={urlPrefix} />
+      </div>
       <input
         type="text"
         placeholder="www.example.com/endpoint/"
@@ -105,11 +107,11 @@
     background: var(--background);
     border-radius: 4px;
     border: none;
-    margin: 1px 10px;
+    margin: 0 10px 0 8px;
     width: 100%;
     text-align: left;
     height: auto;
-    padding: 4px 12px;
+    padding: 5px 12px;
     color: white;
     font-size: 0.9em;
   }
@@ -131,6 +133,6 @@
   .add {
     background: var(--highlight);
     padding: 4px 20px;
-    margin: 1px 0;
+    margin: 0;
   }
 </style>

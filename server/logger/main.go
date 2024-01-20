@@ -24,9 +24,9 @@ func main() {
 
 	app.Use(cors.Default())
 
-	rateLimiter := ratelimit.RateLimiter{}
-
-	app.POST("/api/log-request", logRequestHandler(&rateLimiter))
+	handler := logRequestHandler()
+	app.POST("/api/log-request", handler)
+	app.POST("/api/requests", handler)
 
 	app.Run(":8000")
 }
@@ -39,6 +39,7 @@ type RequestData struct {
 	Method       string `json:"method"`
 	Status       int16  `json:"status"`
 	ResponseTime int16  `json:"response_time"`
+	UserID       string `json:"user_id"`
 	CreatedAt    string `json:"created_at"`
 }
 
@@ -70,8 +71,10 @@ func getCountryCode(IPAddress string) string {
 	return location
 }
 
-func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
-	const maxInsert int = 1000
+func logRequestHandler() gin.HandlerFunc {
+	var rateLimiter = ratelimit.RateLimiter{}
+
+	const maxInsert int = 2000
 
 	var methodID = map[string]int16{
 		"GET":     0,
@@ -86,29 +89,31 @@ func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 	}
 
 	var frameworkID = map[string]int16{
-		"FastAPI": 0,
-		"Flask":   1,
-		"Gin":     2,
-		"Echo":    3,
-		"Express": 4,
-		"Fastify": 5,
-		"Koa":     6,
-		"Chi":     7,
-		"Fiber":   8,
-		"Actix":   9,
-		"Axum":    10,
-		"Tornado": 11,
-		"Django":  12,
-		"Rails":   13,
-		"Laravel": 14,
-		"Sinatra": 15,
-		"Rocket":  16,
+		"FastAPI":      0,
+		"Flask":        1,
+		"Gin":          2,
+		"Echo":         3,
+		"Express":      4,
+		"Fastify":      5,
+		"Koa":          6,
+		"Chi":          7,
+		"Fiber":        8,
+		"Actix":        9,
+		"Axum":         10,
+		"Tornado":      11,
+		"Django":       12,
+		"Rails":        13,
+		"Laravel":      14,
+		"Sinatra":      15,
+		"Rocket":       16,
+		"ASP.NET Core": 17,
 	}
 
 	return func(c *gin.Context) {
 		// Collect API request data sent via POST request
 		var payload Payload
-		if err := c.BindJSON(&payload); err != nil {
+		err := c.BindJSON(&payload)
+		if err != nil {
 			msg := "Invalid request data."
 			log.LogErrorToFile(c.ClientIP(), "", msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
@@ -130,8 +135,13 @@ func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 			return
 		}
 
+		framework, ok := frameworkID[payload.Framework]
+		if !ok {
+			return
+		}
+
 		var query strings.Builder
-		query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, created_at) VALUES ")
+		query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, user_id, created_at) VALUES ")
 		arguments := make([]any, 0)
 		inserted := 0
 		badUserAgents := []string{}
@@ -148,21 +158,28 @@ func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 				continue
 			}
 
-			framework, ok := frameworkID[payload.Framework]
-			if !ok {
-				continue
-			}
-
 			userAgent := request.UserAgent
 			if len(userAgent) > 255 {
 				userAgent = userAgent[:255]
 			}
-			if !database.SanitizeUserAgent(userAgent) && userAgent != "" {
+			if !database.ValidUserAgent(userAgent) {
 				badUserAgents = append(badUserAgents, userAgent)
 				continue
-			} else if !database.SanitizeHostname(request.Hostname) {
+			}
+
+			userID := request.UserID
+			if len(userID) > 255 {
+				userID = userID[:255]
+			}
+			if !database.ValidUserID(userID) {
 				continue
-			} else if !database.SanitizePath(request.Path) {
+			}
+
+			if !database.ValidHostname(request.Hostname) {
+				continue
+			}
+
+			if !database.ValidPath(request.Path) {
 				continue
 			}
 
@@ -172,7 +189,7 @@ func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 			}
 			numArgs := len(arguments)
 			query.WriteString(
-				fmt.Sprintf("($%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d)",
+				fmt.Sprintf("($%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d)",
 					numArgs+1,
 					numArgs+2,
 					numArgs+3,
@@ -183,7 +200,8 @@ func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 					numArgs+8,
 					numArgs+9,
 					numArgs+10,
-					numArgs+11),
+					numArgs+11,
+					numArgs+12),
 			)
 			arguments = append(
 				arguments,
@@ -197,6 +215,7 @@ func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 				method,
 				framework,
 				location,
+				userID,
 				request.CreatedAt)
 			inserted += 1
 		}
@@ -223,7 +242,7 @@ func logRequestHandler(rateLimiter *ratelimit.RateLimiter) gin.HandlerFunc {
 
 		// Insert logged requests into database
 		db := database.OpenDBConnection()
-		_, err := db.Query(query.String(), arguments...)
+		_, err = db.Query(query.String(), arguments...)
 		db.Close()
 		if err != nil {
 			log.LogToFile(err.Error())

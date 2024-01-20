@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { RESPONSE_TIME } from '../../lib/consts';
+  import { ColumnIndex } from '../../lib/consts';
 
   // Median and quartiles from StackOverflow answer
   // https://stackoverflow.com/a/55297611/8851732
@@ -24,9 +24,8 @@
       return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
     } else if (sorted[base] != undefined) {
       return sorted[base];
-    } else {
-      return 0;
     }
+    return 0;
   }
 
   function markerPosition(x: number): number {
@@ -37,9 +36,8 @@
       return 0;
     } else if (position > 100) {
       return 100;
-    } else {
-      return position;
     }
+    return position;
   }
 
   function setMarkerPosition(median: number) {
@@ -50,7 +48,7 @@
   function build() {
     const responseTimes: number[] = [];
     for (let i = 0; i < data.length; i++) {
-      responseTimes.push(data[i][RESPONSE_TIME]);
+      responseTimes.push(data[i][ColumnIndex.ResponseTime]);
     }
     LQ = quantile(responseTimes, 0.25);
     median = quantile(responseTimes, 0.5);
