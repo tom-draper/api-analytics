@@ -21,7 +21,8 @@ export const enum ColumnIndex {
     ResponseTime = 5,
     Status = 6,
     Location = 7,
-    CreatedAt = 8,
+    UserID = 8,
+    CreatedAt = 9,
 }
 
 export const graphColors = [
