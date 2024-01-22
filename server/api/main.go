@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/tom-draper/api-analytics/server/api/lib/log"
-	"github.com/tom-draper/api-analytics/server/api/routes"
+	"github.com/tom-draper/api-analytics/server/api/lib/routes"
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
 	"github.com/gin-contrib/cors"
@@ -30,10 +30,10 @@ func main() {
 
 	r.Use(cors.Default())
 
-	// Limit a single IP's request logs to 50 per second
+	// Limit a single IP's request logs to 100 per second
 	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
 		Rate:  time.Second,
-		Limit: 50,
+		Limit: 100,
 	})
 	rateLimiter := ratelimit.RateLimiter(store, &ratelimit.Options{
 		ErrorHandler: errorHandler,
