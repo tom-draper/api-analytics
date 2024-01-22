@@ -9,7 +9,7 @@ require (
 	github.com/jackc/pgtype v1.14.1
 	github.com/jackc/pgx/v5 v5.5.2
 	github.com/joho/godotenv v1.5.1
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20240122183900-4bad0587bf70
+	github.com/tom-draper/api-analytics/server/database v0.0.0-20240122185418-e277711d6840
 )
 
 require (
