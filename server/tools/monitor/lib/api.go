@@ -139,7 +139,7 @@ type Request struct {
 	CreatedAt    string `json:"created_at"`
 }
 
-func TryLogRequests() error {
+func TryLogRequests(legacy bool) error {
 	apiKey := getTestAPIKey()
 
 	postBody, err := json.Marshal(map[string]interface{}{
@@ -172,7 +172,14 @@ func TryLogRequests() error {
 		return err
 	}
 
-	response, err := http.Post(url+"log-request", "application/json", bytes.NewBuffer(postBody))
+	var endpoint string
+	if legacy {
+		endpoint = "log-request"
+	} else {
+		endpoint = "requests"
+	}
+
+	response, err := http.Post(url+endpoint, "application/json", bytes.NewBuffer(postBody))
 	if err != nil {
 		return err
 	}
