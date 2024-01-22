@@ -189,6 +189,7 @@
       const response = await fetch(`${serverURL}/api/requests/${userID}`);
       if (response.status === 200) {
         const json = await response.json();
+        console.log(json)
         return json;
       }
     } catch (e) {

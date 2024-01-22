@@ -9,6 +9,7 @@ export const columns = [
     'response_time',
     'status',
     'location',
+    'user_id',
     'time',
 ];
 
