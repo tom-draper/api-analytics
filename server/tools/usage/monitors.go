@@ -25,22 +25,16 @@ func TotalMonitorsCount() (int, error) {
 }
 
 func MonitorsCount(interval string) (int, error) {
-	db := database.OpenDBConnection()
-	defer db.Close()
+	conn := database.NewConnection()
+	defer conn.Close()
 
+	var count int
 	query := "SELECT COUNT(*) FROM monitor"
 	if interval != "" {
 		query += " WHERE created_at >= NOW() - interval $1"
-	} 
-	query += ";"
-	rows, err := db.Query(query, interval)
-	if err != nil {
-		return 0, err
 	}
-
-	var count int
-	rows.Next()
-	err = rows.Scan(&count)
+	query += ";"
+	err := conn.QueryRow(query, interval).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -115,15 +109,15 @@ func TotalUserMonitors() ([]UserCount, error) {
 }
 
 func UserMonitors(interval string) ([]UserCount, error) {
-	db := database.OpenDBConnection()
-	defer db.Close()
+	conn := database.NewConnection()
+	defer conn.Close()
 
 	query := "SELECT api_key, COUNT(*) AS count FROM monitor"
 	if interval != "" {
 		query += " WHERE created_at >= NOW() - interval $1"
 	}
 	query += " GROUP BY api_key ORDER BY count DESC;"
-	rows, err := db.Query(query)
+	rows, err := conn.Query(query)
 	if err != nil {
 		return nil, err
 	}

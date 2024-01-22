@@ -18,7 +18,7 @@ func getDatabaseUrl() string {
 	return url
 }
 
-func NewConnection(database string, username string, password string) *pgx.Conn {
+func NewConnection() *pgx.Conn {
 	url := getDatabaseUrl()
 	conn, err := pgx.Connect(context.Background(), url)
 	if err != nil {

@@ -159,6 +159,12 @@ func getUserRequests(c *gin.Context) {
 		return
 	}
 
+	// Return API request data
+	c.Writer.Header().Set("Accept-Encoding", "gzip")
+	c.Writer.Header().Set("Content-Encoding", "gzip")
+	c.Writer.Header().Set("Content-Type", "application/json")
+	c.Data(http.StatusOK, "gzip", gzipOutput)
+
 	log.LogToFile(fmt.Sprintf("key=%s: Dashboard access successful (%d)", apiKey, len(requests)-1))
 
 	// Record access
@@ -168,12 +174,6 @@ func getUserRequests(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
-
-	// Return API request data
-	c.Writer.Header().Set("Accept-Encoding", "gzip")
-	c.Writer.Header().Set("Content-Encoding", "gzip")
-	c.Writer.Header().Set("Content-Type", "application/json")
-	c.Data(http.StatusOK, "gzip", gzipOutput)
 }
 
 func getNullableString(value *string) string {
@@ -270,14 +270,6 @@ func getData(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
-	defer rows.Close()
-
-	err = updateLastAccessed(conn, apiKey)
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
-		return
-	}
 
 	// Read data into list of objects to return
 	if queries.compact {
@@ -289,6 +281,15 @@ func getData(c *gin.Context) {
 		requests := buildRequestData(rows)
 		log.LogToFile(fmt.Sprintf("key=%s: Data access successful (%d)", apiKey, len(requests)-1))
 		c.JSON(http.StatusOK, requests)
+	}
+
+	rows.Close()
+
+	err = updateLastAccessed(conn, apiKey)
+	if err != nil {
+		log.LogToFile(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
+		return
 	}
 }
 
