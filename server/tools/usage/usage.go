@@ -1,6 +1,7 @@
 package usage
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/tom-draper/api-analytics/server/database"
@@ -27,11 +28,11 @@ func DisplayUserCounts(counts []UserCount) {
 
 func TableSize(table string) (string, error) {
 	conn := database.NewConnection()
-	defer conn.Close()
+	defer conn.Close(context.Background())
 
 	var size string
 	query := fmt.Sprintf("SELECT pg_size_pretty(pg_total_relation_size('%s'));", table)
-	err := conn.QueryRow(query).Scan(&size)
+	err := conn.QueryRow(context.Background(), query).Scan(&size)
 	if err != nil {
 		return "", err
 	}
@@ -41,7 +42,7 @@ func TableSize(table string) (string, error) {
 
 func TableColumnSize(table string, column string) (string, error) {
 	conn := database.NewConnection()
-	defer conn.Close()
+	defer conn.Close(context.Background())
 
 	var size struct {
 		totalSize   string
@@ -49,7 +50,7 @@ func TableColumnSize(table string, column string) (string, error) {
 		percentage  float64
 	}
 	query := fmt.Sprintf("SELECT pg_size_pretty(sum(pg_column_size(%s))) AS total_size, pg_size_pretty(avg(pg_column_size(%s))) AS average_size, sum(pg_column_size(%s)) * 100.0 / pg_total_relation_size('%s') AS percentage FROM %s;", column, column, column, table, table)
-	err := conn.QueryRow(query).Scan(&size.totalSize, &size.averageSize, &size.percentage)
+	err := conn.QueryRow(context.Background(), query).Scan(&size.totalSize, &size.averageSize, &size.percentage)
 	if err != nil {
 		return "", err
 	}
@@ -59,11 +60,11 @@ func TableColumnSize(table string, column string) (string, error) {
 
 func DatabaseConnections() (int, error) {
 	conn := database.NewConnection()
-	defer conn.Close()
+	defer conn.Close(context.Background())
 
 	var connections int
 	query := "SELECT count(*) from pg_stat_activity;"
-	err := conn.Query(query).Scan(&connections)
+	err := conn.QueryRow(context.Background(), query).Scan(&connections)
 	if err != nil {
 		return 0, err
 	}

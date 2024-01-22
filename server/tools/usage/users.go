@@ -1,6 +1,7 @@
 package usage
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -30,7 +31,7 @@ func TotalUsersCount() (int, error) {
 
 func UsersCount(interval string) (int, error) {
 	conn := database.NewConnection()
-	defer conn.Close()
+	defer conn.Close(context.Background())
 
 	var count int
 	query := "SELECT COUNT(*) FROM users"
@@ -38,7 +39,7 @@ func UsersCount(interval string) (int, error) {
 		query += " WHERE created_at >= NOW() - interval $1"
 	}
 	query += ";"
-	err := conn.QueryRow(query, interval).Scan(&count)
+	err := conn.QueryRow(context.Background(), query, interval).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -68,14 +69,14 @@ func TotalUsers() ([]database.UserRow, error) {
 
 func Users(interval string) ([]database.UserRow, error) {
 	conn := database.NewConnection()
-	defer conn.Close()
+	defer conn.Close(context.Background())
 
 	query := "SELECT api_key, user_id, created_at FROM users"
 	if interval != "" {
 		query += " WHERE created_at >= NOW() - interval $1"
 	}
 	query += ";"
-	rows, err := conn.Query(query, interval)
+	rows, err := conn.Query(context.Background(), query, interval)
 	if err != nil {
 		return nil, err
 	}
@@ -123,12 +124,12 @@ func TopUsers(n int) ([]User, error) {
 	conn := database.NewConnection()
 
 	query := "SELECT requests.api_key, users.created_at, COUNT(*) AS total_requests FROM requests left join users on users.api_key = requests.api_key GROUP BY requests.api_key, users.created_at ORDER BY total_requests DESC LIMIT $1"
-	rows, err := conn.Query(query, n)
+	rows, err := conn.Query(context.Background(), query, n)
 	if err != nil {
-		conn.Close()
+		conn.Close(context.Background())
 		return nil, err
 	}
-	conn.Close()
+	conn.Close(context.Background())
 
 	var users []User
 	for rows.Next() {
@@ -194,10 +195,10 @@ func DisplayUserTimes(users []UserTime) {
 
 func UnusedUsers() ([]UserTime, error) {
 	conn := database.NewConnection()
-	defer conn.Close()
+	defer conn.Close(context.Background())
 
 	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM users u WHERE NOT EXISTS (SELECT FROM requests WHERE api_key = u.api_key) ORDER BY created_at;"
-	rows, err := conn.Query(query)
+	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}
@@ -217,10 +218,10 @@ func UnusedUsers() ([]UserTime, error) {
 
 func SinceLastRequestUsers() ([]UserTime, error) {
 	conn := database.NewConnection()
-	defer conn.Close()
+	defer conn.Close(context.Background())
 
 	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM (SELECT DISTINCT ON (api_key) api_key, created_at FROM requests ORDER BY api_key, created_at DESC) AS derived_table ORDER BY created_at;"
-	rows, err := conn.Query(query)
+	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,8 @@
 package usage
 
 import (
+	"context"
+
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
@@ -26,7 +28,7 @@ func TotalMonitorsCount() (int, error) {
 
 func MonitorsCount(interval string) (int, error) {
 	conn := database.NewConnection()
-	defer conn.Close()
+	defer conn.Close(context.Background())
 
 	var count int
 	query := "SELECT COUNT(*) FROM monitor"
@@ -34,7 +36,7 @@ func MonitorsCount(interval string) (int, error) {
 		query += " WHERE created_at >= NOW() - interval $1"
 	}
 	query += ";"
-	err := conn.QueryRow(query, interval).Scan(&count)
+	err := conn.QueryRow(context.Background(), query, interval).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -63,15 +65,15 @@ func TotalMonitors() ([]database.MonitorRow, error) {
 }
 
 func Monitors(interval string) ([]database.MonitorRow, error) {
-	db := database.OpenDBConnection()
-	defer db.Close()
+	conn := database.NewConnection()
+	defer conn.Close(context.Background())
 
 	query := "SELECT api_key, url, secure, ping, created_at FROM monitor"
 	if interval != "" {
 		query += " WHERE created_at >= NOW() - interval $1"
 	}
 	query += "ORDER BY created_at;"
-	rows, err := db.Query(query, interval)
+	rows, err := conn.Query(context.Background(), query, interval)
 	if err != nil {
 		return nil, err
 	}
@@ -110,14 +112,14 @@ func TotalUserMonitors() ([]UserCount, error) {
 
 func UserMonitors(interval string) ([]UserCount, error) {
 	conn := database.NewConnection()
-	defer conn.Close()
+	defer conn.Close(context.Background())
 
 	query := "SELECT api_key, COUNT(*) AS count FROM monitor"
 	if interval != "" {
 		query += " WHERE created_at >= NOW() - interval $1"
 	}
 	query += " GROUP BY api_key ORDER BY count DESC;"
-	rows, err := conn.Query(query)
+	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}
