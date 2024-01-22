@@ -34,10 +34,10 @@ func UsersCount(interval string) (int, error) {
 
 	query := "SELECT COUNT(*) FROM users"
 	if interval != "" {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
+		query += " WHERE created_at >= NOW() - interval $1"
 	}
 	query += ";"
-	rows, err := db.Query(query)
+	rows, err := db.Query(query, interval)
 	if err != nil {
 		return 0, err
 	}
@@ -78,10 +78,10 @@ func Users(interval string) ([]database.UserRow, error) {
 
 	query := "SELECT api_key, user_id, created_at FROM users"
 	if interval != "" {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
+		query += " WHERE created_at >= NOW() - interval $1"
 	}
 	query += ";"
-	rows, err := db.Query(query)
+	rows, err := db.Query(query, interval)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func (user User) Display(rank int) {
 	} else {
 		colorPrintf = color.Green
 	}
-	colorPrintf("[%d] %s %d (+%d / +%d) %s\n", rank, user.APIKey, user.TotalRequests, user.DailyRequests, user.WeeklyRequests, user.CreatedAt.Format("2006-01-02"))
+	colorPrintf("[%d] %s %d (+%d / +%d) %s\n", rank, user.APIKey, user.TotalRequests, user.DailyRequests, user.WeeklyRequests, user.CreatedAt.Format("2006-01-02 15:04:05"))
 }
 
 func DisplayUsers(users []User) {
@@ -127,8 +127,8 @@ func DisplayUsers(users []User) {
 func TopUsers(n int) ([]User, error) {
 	db := database.OpenDBConnection()
 
-	query := fmt.Sprintf("SELECT requests.api_key, users.created_at, COUNT(*) AS total_requests FROM requests left join users on users.api_key = requests.api_key GROUP BY requests.api_key, users.created_at ORDER BY total_requests DESC LIMIT %d", n)
-	rows, err := db.Query(query)
+	query := "SELECT requests.api_key, users.created_at, COUNT(*) AS total_requests FROM requests left join users on users.api_key = requests.api_key GROUP BY requests.api_key, users.created_at ORDER BY total_requests DESC LIMIT $1"
+	rows, err := db.Query(query, n)
 	if err != nil {
 		db.Close()
 		return nil, err
@@ -181,12 +181,13 @@ type UserTime struct {
 
 func (user UserTime) Display(rank int) {
 	format := "[%d] %s %s (%s)\n"
+	timeFormat := "2006-01-02 15:04:05"
 	if time.Since(user.CreatedAt) > time.Hour*24*30*6 {
-		color.Red(format, rank, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
+		color.Red(format, rank, user.APIKey, user.CreatedAt.Format(timeFormat), user.Days)
 	} else if time.Since(user.CreatedAt) > time.Hour*24*30*3 {
-		color.Yellow(format, rank, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
+		color.Yellow(format, rank, user.APIKey, user.CreatedAt.Format(timeFormat), user.Days)
 	} else {
-		fmt.Printf(format, rank, user.APIKey, user.CreatedAt.Format("2006-01-02"), user.Days)
+		fmt.Printf(format, rank, user.APIKey, user.CreatedAt.Format(timeFormat), user.Days)
 	}
 }
 

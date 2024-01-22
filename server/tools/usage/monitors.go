@@ -1,7 +1,6 @@
 package usage
 
 import (
-	"fmt"
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
@@ -31,10 +30,10 @@ func MonitorsCount(interval string) (int, error) {
 
 	query := "SELECT COUNT(*) FROM monitor"
 	if interval != "" {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
+		query += " WHERE created_at >= NOW() - interval $1"
 	} 
 	query += ";"
-	rows, err := db.Query(query)
+	rows, err := db.Query(query, interval)
 	if err != nil {
 		return 0, err
 	}
@@ -75,10 +74,10 @@ func Monitors(interval string) ([]database.MonitorRow, error) {
 
 	query := "SELECT api_key, url, secure, ping, created_at FROM monitor"
 	if interval != "" {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
+		query += " WHERE created_at >= NOW() - interval $1"
 	}
-	query += ";"
-	rows, err := db.Query(query)
+	query += "ORDER BY created_at;"
+	rows, err := db.Query(query, interval)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +120,7 @@ func UserMonitors(interval string) ([]UserCount, error) {
 
 	query := "SELECT api_key, COUNT(*) AS count FROM monitor"
 	if interval != "" {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
+		query += " WHERE created_at >= NOW() - interval $1"
 	}
 	query += " GROUP BY api_key ORDER BY count DESC;"
 	rows, err := db.Query(query)

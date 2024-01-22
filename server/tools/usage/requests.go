@@ -32,10 +32,10 @@ func RequestsCount(interval string) (int, error) {
 
 	query := "SELECT COUNT(*) FROM requests"
 	if interval != "" {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
+		query += " WHERE created_at >= NOW() - interval $1"
 	}
 	query += ";"
-	rows, err := db.Query(query)
+	rows, err := db.Query(query, interval)
 	if err != nil {
 		return 0, err
 	}
@@ -76,7 +76,7 @@ func Requests(interval string) ([]database.RequestRow, error) {
 
 	query := "SELECT request_id, api_key, path, hostname, ip_address, location, user_agent, method, status, response_time, framework, created_at FROM requests"
 	if interval != "" {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
+		query += " WHERE created_at >= NOW() - interval $1"
 	}
 	query += ";"
 
@@ -123,7 +123,7 @@ func UserRequests(interval string) ([]UserCount, error) {
 
 	query := "SELECT api_key, COUNT(*) as count FROM requests"
 	if interval != "" {
-		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
+		query += " WHERE created_at >= NOW() - interval $1"
 	}
 	query += " GROUP BY api_key ORDER BY count;"
 	rows, err := db.Query(query)
@@ -147,8 +147,8 @@ func UserRequestsOverLimit(limit int) ([]UserCount, error) {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
-	query := fmt.Sprintf("SELECT * FROM (SELECT api_key, COUNT(*) as count FROM requests GROUP BY api_key) as derived_table WHERE count > %d ORDER BY count;", limit)
-	rows, err := db.Query(query)
+	query := "SELECT * FROM (SELECT api_key, COUNT(*) as count FROM requests GROUP BY api_key) as derived_table WHERE count > $1 ORDER BY count;"
+	rows, err := db.Query(query, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -207,7 +207,7 @@ func columnValuesCount[T string | int](column string) ([]struct {
 	db := database.OpenDBConnection()
 	defer db.Close()
 
-	query := fmt.Sprintf("SELECT %s, COUNT(*) AS count FROM requests GROUP BY %s ORDER BY count DESC;", column, column)
+	query := fmt.Sprintf("SELECT '%s', COUNT(*) AS count FROM requests GROUP BY '%s' ORDER BY count DESC;", column, column)
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
