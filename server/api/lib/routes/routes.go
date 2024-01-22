@@ -20,27 +20,8 @@ import (
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
-func getDatabaseUrl() string {
-	err := godotenv.Load(".env")
-	if err != nil {
-		panic(err)
-	}
-
-	url := os.Getenv("POSTGRES_URL")
-	return url
-}
-
-func NewConnection() *pgx.Conn {
-	url := getDatabaseUrl()
-	conn, err := pgx.Connect(context.Background(), url)
-	if err != nil {
-		panic(err)
-	}
-	return conn
-}
-
 func genAPIKey(c *gin.Context) {
-	conn := NewConnection()
+	conn := database.NewConnection()
 	defer conn.Close(context.Background())
 
 	// Fetch all API request data associated with this account
@@ -68,7 +49,7 @@ func getUserID(c *gin.Context) {
 		return
 	}
 
-	conn := NewConnection()
+	conn := database.NewConnection()
 	defer conn.Close(context.Background())
 
 	// Fetch user ID corresponding with API key
@@ -107,7 +88,7 @@ func getUserRequests(c *gin.Context) {
 
 	log.LogToFile(fmt.Sprintf("id=%s: Dashboard access", userID))
 
-	conn := NewConnection()
+	conn := database.NewConnection()
 	defer conn.Close(context.Background())
 
 	// Fetch API key corresponding with user_id
@@ -278,7 +259,7 @@ func getData(c *gin.Context) {
 	// Get any queries from url
 	queries := getQueriesFromRequest(c)
 
-	conn := NewConnection()
+	conn := database.NewConnection()
 	defer conn.Close(context.Background())
 
 	// Fetch all API request data associated with this account
@@ -291,9 +272,7 @@ func getData(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	conn2 := NewConnection()
-	defer conn2.Close(context.Background())
-	err = updateLastAccessed(conn2, apiKey)
+	err = updateLastAccessed(conn, apiKey)
 	if err != nil {
 		log.LogToFile(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
@@ -520,7 +499,7 @@ func deleteData(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 	}
 
-	conn := NewConnection()
+	conn := database.NewConnection()
 	defer conn.Close(context.Background())
 
 	if err := deleteUserRequests(apiKey, c, conn); err != nil {
@@ -552,7 +531,7 @@ func getUserMonitor(c *gin.Context) {
 		return
 	}
 
-	conn := NewConnection()
+	conn := database.NewConnection()
 	defer conn.Close(context.Background())
 
 	// Retreive monitors created by this user
@@ -602,7 +581,7 @@ func addUserMonitor(c *gin.Context) {
 
 	log.LogToFile(fmt.Sprintf("id=%s: Add monitor", monitor.UserID))
 
-	conn := NewConnection()
+	conn := database.NewConnection()
 	defer conn.Close(context.Background())
 
 	// Get API key from user ID
@@ -703,7 +682,7 @@ func deleteUserMonitor(c *gin.Context) {
 
 	log.LogToFile(fmt.Sprintf("id=%s: Delete monitor", body.UserID))
 
-	conn := NewConnection()
+	conn := database.NewConnection()
 	defer conn.Close(context.Background())
 
 	// Get API key from user ID
@@ -760,7 +739,7 @@ func getUserPings(c *gin.Context) {
 
 	log.LogToFile(fmt.Sprintf("id=%s: Monitor access", userID))
 
-	conn := NewConnection()
+	conn := database.NewConnection()
 	defer conn.Close(context.Background())
 
 	// Fetch user ID corresponding with API key
