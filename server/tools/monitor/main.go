@@ -13,27 +13,27 @@ func buildEmailBody(serviceStatus lib.ServiceStatus, apiTestStatus lib.APITestSt
 	var body strings.Builder
 	body.WriteString(fmt.Sprintf("Failure detected at %v\n", time.Now()))
 
-	if !serviceStatus.api {
+	if !serviceStatus.API {
 		body.WriteString("Service api down\n")
 	}
-	if !serviceStatus.logger {
+	if !serviceStatus.Logger {
 		body.WriteString("Service logger down\n")
 	}
-	if !serviceStatus.nginx {
+	if !serviceStatus.Nginx {
 		body.WriteString("Service nginx down\n")
 	}
-	if !serviceStatus.postgresql {
+	if !serviceStatus.PostgresSQL {
 		body.WriteString("Service postgresql down\n")
 	}
 
-	if apiTestStatus.newUser != nil {
-		body.WriteString(fmt.Sprintf("Error when creating new user: %s\n", apiTestStatus.newUser.Error()))
+	if apiTestStatus.NewUser != nil {
+		body.WriteString(fmt.Sprintf("Error when creating new user: %s\n", apiTestStatus.NewUser.Error()))
 	}
-	if apiTestStatus.fetchDashboardData != nil {
-		body.WriteString(fmt.Sprintf("Error when fetching dashboard data: %s\n", apiTestStatus.fetchDashboardData.Error()))
+	if apiTestStatus.FetchDashboardData != nil {
+		body.WriteString(fmt.Sprintf("Error when fetching dashboard data: %s\n", apiTestStatus.FetchDashboardData.Error()))
 	}
-	if apiTestStatus.fetchData != nil {
-		body.WriteString(fmt.Sprintf("Error when fetching API data: %s\n", apiTestStatus.fetchData.Error()))
+	if apiTestStatus.FetchData != nil {
+		body.WriteString(fmt.Sprintf("Error when fetching API data: %s\n", apiTestStatus.FetchData.Error()))
 	}
 
 	return body.String()
@@ -41,15 +41,15 @@ func buildEmailBody(serviceStatus lib.ServiceStatus, apiTestStatus lib.APITestSt
 
 func main() {
 	serviceStatus := lib.ServiceStatus{
-		api:        !lib.ServiceDown("api"),
-		logger:     !lib.ServiceDown("logger"),
-		nginx:      !lib.ServiceDown("nginx"),
-		postgresql: !lib.ServiceDown("postgreql"),
+		API:         !lib.ServiceDown("api"),
+		Logger:      !lib.ServiceDown("logger"),
+		Nginx:       !lib.ServiceDown("nginx"),
+		PostgresSQL: !lib.ServiceDown("postgreql"),
 	}
 	apiTestStatus := lib.APITestStatus{
-		newUser:            lib.TryNewUser(),
-		fetchDashboardData: lib.TryFetchDashboardData(),
-		fetchData:          lib.TryFetchData(),
+		NewUser:            lib.TryNewUser(),
+		FetchDashboardData: lib.TryFetchDashboardData(),
+		FetchData:          lib.TryFetchData(),
 	}
 	if serviceStatus.ServiceDown() || apiTestStatus.TestFailed() {
 		address := email.GetEmailAddress()
