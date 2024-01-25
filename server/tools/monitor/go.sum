@@ -21,6 +21,8 @@ github.com/tom-draper/api-analytics/server/database v0.0.0-20231201184624-1d7478
 github.com/tom-draper/api-analytics/server/database v0.0.0-20231201184624-1d747880090d/go.mod h1:SQTCdpxNLRUzwokeY71HA2+8YokbcpUOTjifQONW3oM=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20240122191530-830c7eaf9953 h1:WIL2+9+SyXkxy63a2Dsz/hELDVNCCzdXWklCj5iIuEo=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20240122191530-830c7eaf9953/go.mod h1:l3k9xyPGyz2YXTpYLvq8eYAImG4RtE87RXJyDARBk20=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20240125183621-9b142186a937 h1:/DsbLqf1np+ug5konz4DH5nJxINS1WmE0bvathXiiqY=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20240125183621-9b142186a937/go.mod h1:l3k9xyPGyz2YXTpYLvq8eYAImG4RtE87RXJyDARBk20=
 github.com/tom-draper/api-analytics/server/email v0.0.0-20230826104618-95c71041cb62 h1:+uvdHr2+BmUdoY0eODPbhJeUqx1MIzc963/Ylu8zWY8=
 github.com/tom-draper/api-analytics/server/email v0.0.0-20230826104618-95c71041cb62/go.mod h1:OVOiclokr+iG+hkzATj1uEwuvvK0DggdVz5sYMYix2U=
 github.com/tom-draper/api-analytics/server/email v0.0.0-20231006213552-b9c9537b7bfd h1:nYj6ECktoO7T3llwbV3VuPkCDlJA4t+q7QdQipiWUv8=
@@ -29,6 +31,8 @@ github.com/tom-draper/api-analytics/server/email v0.0.0-20231201184624-1d7478800
 github.com/tom-draper/api-analytics/server/email v0.0.0-20231201184624-1d747880090d/go.mod h1:OVOiclokr+iG+hkzATj1uEwuvvK0DggdVz5sYMYix2U=
 github.com/tom-draper/api-analytics/server/email v0.0.0-20240122185718-6c258ea65a85 h1:8Gfo5T/VypAigAtnG8jGMdOQRi+A/lg37QEZODUpGtc=
 github.com/tom-draper/api-analytics/server/email v0.0.0-20240122185718-6c258ea65a85/go.mod h1:OVOiclokr+iG+hkzATj1uEwuvvK0DggdVz5sYMYix2U=
+github.com/tom-draper/api-analytics/server/email v0.0.0-20240125184145-b90bed70d4be h1:KfYFBy2wVdyIq7hnKUWh46kVFZPSWe/wr9EOKtm0IAg=
+github.com/tom-draper/api-analytics/server/email v0.0.0-20240125184145-b90bed70d4be/go.mod h1:OVOiclokr+iG+hkzATj1uEwuvvK0DggdVz5sYMYix2U=
 golang.org/x/crypto v0.18.0 h1:PGVlW0xEltQnzFZ55hkuX5+KLyrMYhHld1YHO4AKcdc=
 golang.org/x/crypto v0.18.0/go.mod h1:R0j02AL6hcrfOiy9T4ZYp/rcWeMxM3L6QYxlOuEG1mg=
 golang.org/x/text v0.14.0 h1:ScX5w1eTa3QqT8oi6+ziP7dTV1S2+ALU0bI+0zXKWiQ=

@@ -42,6 +42,8 @@ github.com/tom-draper/api-analytics/server/database v0.0.0-20240122185418-e27771
 github.com/tom-draper/api-analytics/server/database v0.0.0-20240122185418-e277711d6840/go.mod h1:l3k9xyPGyz2YXTpYLvq8eYAImG4RtE87RXJyDARBk20=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20240122191530-830c7eaf9953 h1:WIL2+9+SyXkxy63a2Dsz/hELDVNCCzdXWklCj5iIuEo=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20240122191530-830c7eaf9953/go.mod h1:l3k9xyPGyz2YXTpYLvq8eYAImG4RtE87RXJyDARBk20=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20240125183621-9b142186a937 h1:/DsbLqf1np+ug5konz4DH5nJxINS1WmE0bvathXiiqY=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20240125183621-9b142186a937/go.mod h1:l3k9xyPGyz2YXTpYLvq8eYAImG4RtE87RXJyDARBk20=
 golang.org/x/crypto v0.18.0 h1:PGVlW0xEltQnzFZ55hkuX5+KLyrMYhHld1YHO4AKcdc=
 golang.org/x/crypto v0.18.0/go.mod h1:R0j02AL6hcrfOiy9T4ZYp/rcWeMxM3L6QYxlOuEG1mg=
 golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=

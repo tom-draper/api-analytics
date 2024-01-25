@@ -4,10 +4,10 @@ go 1.20
 
 require (
 	github.com/fatih/color v1.16.0
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20240122191530-830c7eaf9953
-	github.com/tom-draper/api-analytics/server/email v0.0.0-20240122185718-6c258ea65a85
-	github.com/tom-draper/api-analytics/server/tools/monitor v0.0.0-20240122193001-f7e79fca18f0
-	github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20240122185718-6c258ea65a85
+	github.com/tom-draper/api-analytics/server/database v0.0.0-20240125183621-9b142186a937
+	github.com/tom-draper/api-analytics/server/email v0.0.0-20240125184145-b90bed70d4be
+	github.com/tom-draper/api-analytics/server/tools/monitor v0.0.0-20240125184145-b90bed70d4be
+	github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20240125184145-b90bed70d4be
 	golang.org/x/text v0.14.0
 )
 
