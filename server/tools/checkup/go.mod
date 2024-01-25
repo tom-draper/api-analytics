@@ -7,7 +7,7 @@ require (
 	github.com/tom-draper/api-analytics/server/database v0.0.0-20240125183621-9b142186a937
 	github.com/tom-draper/api-analytics/server/email v0.0.0-20240125184145-b90bed70d4be
 	github.com/tom-draper/api-analytics/server/tools/monitor v0.0.0-20240125184145-b90bed70d4be
-	github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20240125185315-674b379490f3
+	github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20240125190053-00406709c1ed
 	golang.org/x/text v0.14.0
 )
 
