@@ -37,7 +37,7 @@ func RequestsCount(interval string) (int, error) {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
 	query += ";"
-	err := conn.QueryRow(context.Background(), query, interval).Scan(&count)
+	err := conn.QueryRow(context.Background(), query).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
