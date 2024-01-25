@@ -36,10 +36,10 @@ func UsersCount(interval string) (int, error) {
 	var count int
 	query := "SELECT COUNT(*) FROM users"
 	if interval != "" {
-		query += " WHERE created_at >= NOW() - interval $1"
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
 	query += ";"
-	err := conn.QueryRow(context.Background(), query, interval).Scan(&count)
+	err := conn.QueryRow(context.Background(), query).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -73,10 +73,10 @@ func Users(interval string) ([]database.UserRow, error) {
 
 	query := "SELECT api_key, user_id, created_at FROM users"
 	if interval != "" {
-		query += " WHERE created_at >= NOW() - interval $1"
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
 	query += ";"
-	rows, err := conn.Query(context.Background(), query, interval)
+	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}

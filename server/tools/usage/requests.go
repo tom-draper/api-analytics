@@ -71,7 +71,7 @@ func Requests(interval string) ([]database.RequestRow, error) {
 
 	query := "SELECT request_id, api_key, path, hostname, ip_address, location, user_agent, method, status, response_time, framework, created_at FROM requests"
 	if interval != "" {
-		query += " WHERE created_at >= NOW() - interval $1"
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
 	query += ";"
 
@@ -119,7 +119,7 @@ func UserRequests(interval string) ([]UserCount, error) {
 
 	query := "SELECT api_key, COUNT(*) as count FROM requests"
 	if interval != "" {
-		query += " WHERE created_at >= NOW() - interval $1"
+		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
 	query += " GROUP BY api_key ORDER BY count;"
 	rows, err := conn.Query(context.Background(), query)
