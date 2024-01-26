@@ -73,11 +73,12 @@ func Monitors(interval string) ([]database.MonitorRow, error) {
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
-	query += "ORDER BY created_at;"
+	query += " ORDER BY created_at;"
 	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var monitors []database.MonitorRow
 	for rows.Next() {
@@ -124,6 +125,7 @@ func UserMonitors(interval string) ([]UserCount, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var monitors []UserCount
 	for rows.Next() {
