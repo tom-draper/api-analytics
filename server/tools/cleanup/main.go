@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -13,12 +15,12 @@ const requestsLimit int = 2_000_000
 const userExpiry time.Duration = time.Hour * 24 * 30 * 6
 
 func deleteOldestRequests(apiKey string, count int) error {
-	db := database.OpenDBConnection()
-	defer db.Close()
+	conn := database.NewConnection()
+	defer conn.Close(context.Background())
 
 	query := "DELETE FROM requests WHERE request_id = any(array(SELECT request_id from requests WHERE api_key = $1 ORDER BY created_at LIMIT $2));"
 
-	_, err := db.Query(query, apiKey, count)
+	_, err := conn.Exec(context.Background(), query, apiKey, count)
 	if err != nil {
 		return err
 	}
@@ -119,7 +121,40 @@ func deleteUser(apiKey string) {
 	fmt.Println("User deletion successful.")
 }
 
+type Options struct {
+	users      bool
+	targetUser string
+	help       bool
+}
+
+func getOptions() Options {
+	options := Options{}
+	for i, arg := range os.Args {
+		if arg == "--users" {
+			options.users = true
+		} else if arg == "--help" {
+			options.help = true
+		} else if i > 0 && os.Args[i-1] == "--target-user" {
+			options.targetUser = arg
+		}
+	}
+	return options
+}
+
+func displayHelp() {
+	fmt.Printf("Cleanup - A command-line tool to delete expired users and requests.\n\nOptions:\n`--users` to delete expired users\n`--target-user` to specify an API key for account deletion\n`--help` to display help\n")
+}
+
 func main() {
-	// deleteExpiredUsers()
-	deleteExpiredRequests()
+	options := getOptions()
+	if options.help {
+		displayHelp()
+	} else if options.targetUser != "" {
+		deleteUser(options.targetUser)
+	} else {
+		if options.users {
+			deleteExpiredUsers()
+		}
+		deleteExpiredRequests()
+	}
 }

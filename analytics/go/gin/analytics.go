@@ -13,6 +13,7 @@ type Config struct {
 	GetUserAgent func(c *gin.Context) string
 	GetIPAddress func(c *gin.Context) string
 	GetUserID    func(c *gin.Context) string
+	PrivacyLevel int
 }
 
 func Analytics(apiKey string) gin.HandlerFunc {
@@ -32,10 +33,11 @@ func AnalyticsWithConfig(apiKey string, config *Config) gin.HandlerFunc {
 			Method:       c.Request.Method,
 			Status:       c.Writer.Status(),
 			ResponseTime: time.Since(start).Milliseconds(),
+			UserID:       getUserID(c, config),
 			CreatedAt:    start.Format(time.RFC3339),
 		}
 
-		core.LogRequest(apiKey, data, "Gin")
+		core.LogRequest(apiKey, data, "Gin", config.PrivacyLevel)
 	}
 }
 
@@ -61,6 +63,10 @@ func getUserAgent(c *gin.Context, config *Config) string {
 }
 
 func getIPAddress(c *gin.Context, config *Config) string {
+	if config.PrivacyLevel >= 2 {
+		return ""
+	}
+
 	if config.GetIPAddress != nil {
 		return config.GetIPAddress(c)
 	}

@@ -13,6 +13,7 @@ type Config struct {
 	GetUserAgent func(c *fiber.Ctx) string
 	GetIPAddress func(c *fiber.Ctx) string
 	GetUserID    func(c *fiber.Ctx) string
+	PrivacyLevel int
 }
 
 func Analytics(apiKey string) func(c *fiber.Ctx) error {
@@ -32,10 +33,11 @@ func AnalyticsWithConfig(apiKey string, config *Config) func(c *fiber.Ctx) error
 			Method:       c.Method(),
 			Status:       c.Response().StatusCode(),
 			ResponseTime: time.Since(start).Milliseconds(),
+			UserID:       getUserID(c, config),
 			CreatedAt:    start.Format(time.RFC3339),
 		}
 
-		core.LogRequest(apiKey, data, "Fiber")
+		core.LogRequest(apiKey, data, "Fiber", config.PrivacyLevel)
 
 		return err
 	}
@@ -63,6 +65,10 @@ func getUserAgent(c *fiber.Ctx, config *Config) string {
 }
 
 func getIPAddress(c *fiber.Ctx, config *Config) string {
+	if config.PrivacyLevel >= 2 {
+		return ""
+	}
+
 	if config.GetIPAddress != nil {
 		return config.GetIPAddress(c)
 	}

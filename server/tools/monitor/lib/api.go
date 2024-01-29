@@ -146,7 +146,7 @@ func TryLogRequests(legacy bool) error {
 		"api_key":   apiKey,
 		"framework": "FastAPI",
 		"requests": []Request{
-			Request{
+			{
 				Path:         "/v1/test",
 				Hostname:     "api-analytics.com",
 				IPAddress:    "192.168.0.1",
@@ -156,7 +156,7 @@ func TryLogRequests(legacy bool) error {
 				ResponseTime: 10,
 				CreatedAt:    time.Now().Format(time.RFC3339),
 			},
-			Request{
+			{
 				Path:         "/v1/test",
 				Hostname:     "api-analytics.com",
 				IPAddress:    "192.168.0.1",
@@ -219,22 +219,22 @@ func getTestUserID() string {
 }
 
 type ServiceStatus struct {
-	api        bool
-	logger     bool
-	nginx      bool
-	postgresql bool
+	API         bool
+	Logger      bool
+	Nginx       bool
+	PostgresSQL bool
 }
 
 func (s ServiceStatus) ServiceDown() bool {
-	return s.api && s.logger && s.nginx && s.postgresql
+	return s.API && s.Logger && s.Nginx && s.PostgresSQL
 }
 
 type APITestStatus struct {
-	newUser            error
-	fetchDashboardData error
-	fetchData          error
+	NewUser            error
+	FetchDashboardData error
+	FetchData          error
 }
 
 func (s APITestStatus) TestFailed() bool {
-	return s.newUser != nil || s.fetchDashboardData != nil || s.fetchData != nil
+	return s.NewUser != nil || s.FetchDashboardData != nil || s.FetchData != nil
 }

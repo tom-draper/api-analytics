@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -146,6 +147,7 @@ func logRequestHandler() gin.HandlerFunc {
 
 		framework, ok := frameworkID[payload.Framework]
 		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Unsupported API framework."})
 			return
 		}
 
@@ -263,9 +265,9 @@ func logRequestHandler() gin.HandlerFunc {
 		query.WriteString(";")
 
 		// Insert logged requests into database
-		db := database.OpenDBConnection()
-		_, err = db.Query(query.String(), arguments...)
-		db.Close()
+		conn := database.NewConnection()
+		_, err = conn.Exec(context.Background(), query.String(), arguments...)
+		conn.Close(context.Background())
 		if err != nil {
 			log.LogToFile(err.Error())
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})

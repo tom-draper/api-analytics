@@ -1,7 +1,9 @@
 package usage
 
 import (
+	"context"
 	"fmt"
+
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
@@ -26,22 +28,16 @@ func TotalMonitorsCount() (int, error) {
 }
 
 func MonitorsCount(interval string) (int, error) {
-	db := database.OpenDBConnection()
-	defer db.Close()
+	conn := database.NewConnection()
+	defer conn.Close(context.Background())
 
+	var count int
 	query := "SELECT COUNT(*) FROM monitor"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
-	} 
-	query += ";"
-	rows, err := db.Query(query)
-	if err != nil {
-		return 0, err
 	}
-
-	var count int
-	rows.Next()
-	err = rows.Scan(&count)
+	query += ";"
+	err := conn.QueryRow(context.Background(), query).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -70,18 +66,19 @@ func TotalMonitors() ([]database.MonitorRow, error) {
 }
 
 func Monitors(interval string) ([]database.MonitorRow, error) {
-	db := database.OpenDBConnection()
-	defer db.Close()
+	conn := database.NewConnection()
+	defer conn.Close(context.Background())
 
 	query := "SELECT api_key, url, secure, ping, created_at FROM monitor"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
-	query += ";"
-	rows, err := db.Query(query)
+	query += " ORDER BY created_at;"
+	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var monitors []database.MonitorRow
 	for rows.Next() {
@@ -116,18 +113,19 @@ func TotalUserMonitors() ([]UserCount, error) {
 }
 
 func UserMonitors(interval string) ([]UserCount, error) {
-	db := database.OpenDBConnection()
-	defer db.Close()
+	conn := database.NewConnection()
+	defer conn.Close(context.Background())
 
 	query := "SELECT api_key, COUNT(*) AS count FROM monitor"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
 	query += " GROUP BY api_key ORDER BY count DESC;"
-	rows, err := db.Query(query)
+	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var monitors []UserCount
 	for rows.Next() {

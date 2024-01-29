@@ -44,12 +44,27 @@ export class Config {
      * A custom mapping function that takes a request and returns a user ID 
      * stored within the request.
      * If set, this can be used to track a custom user ID specific to your API 
-     * such as an API key or client ID. If left null, no custom user ID will be 
-     * used, and user identification will rely on client IP address only.
+     * such as an API key or client ID. If left as `null`, no custom user ID 
+     * will be used, and user identification will rely on client IP address only.
      * @type {((req: Request) => string) | null}
      * @public
      */
     this.getUserID = null;
+
+    /** 
+     * Controls client identification by IP address. 
+     * - 0: Sends client IP to the server to be stored and client location is 
+     * inferred. 
+     * - 1: Sends the client IP to the server only for the location to be 
+     * inferred and stored, with the IP discarded afterwards.
+     * - 2: Avoids sending the client IP address to the server. Providing a 
+     * custom `get_user_id` mapping function becomes the only method for client 
+     * identification.
+     * Defaults to 0.
+     * @type {number}
+     * @public
+     */
+    this.privacyLevel = 0;
   }
 }
 
@@ -64,6 +79,7 @@ export class Config {
  *   status: number;
  *   method: string;
  *   response_time: number;
+ *   user_id: string;
  *   created_at: string;
  * }} RequestData
  */
@@ -101,6 +117,7 @@ class Analytics {
           api_key: this.apiKey,
           requests: this.requests,
           framework: this.framework,
+          privacy_level: this.config.privacyLevel
         }),
         headers: {
           "Content-Type": "application/json",
@@ -131,6 +148,7 @@ export function expressAnalytics(apiKey, config = new Config()) {
       status: res.statusCode,
       method: req.method,
       response_time: Math.round((performance.now() - start) / 1000),
+      user_id: getUserID(req, config),
       created_at: new Date().toISOString(),
     };
 
@@ -157,6 +175,7 @@ export function fastifyAnalytics(apiKey, config = new Config()) {
       status: reply.statusCode,
       method: req.method,
       response_time: Math.round((performance.now() - start) / 1000),
+      user_id: getUserID(req, config),
       created_at: new Date().toISOString(),
     };
 
@@ -183,6 +202,7 @@ export function koaAnalytics(apiKey, config = new Config()) {
       status: ctx.status,
       method: ctx.method,
       response_time: Math.round((performance.now() - start) / 1000),
+      user_id: getUserID(ctx, config),
       created_at: new Date().toISOString(),
     };
 
@@ -199,7 +219,7 @@ export function koaAnalytics(apiKey, config = new Config()) {
  */
 function getHostname(req, config) {
   if (config.getHostname) {
-    return config.getHostname();
+    return config.getHostname(req);
   }
   return req.headers.host;
 }
@@ -212,8 +232,12 @@ function getHostname(req, config) {
  * @returns {string}
  */
 function getIPAddress(req, config) {
+  if (config.privacyLevel >= 2) {
+    return null;
+  }
+
   if (config.getIPAddress) {
-    return config.getIPAddress();
+    return config.getIPAddress(req);
   }
   return (
     req.headers["x-forwarded-for"] ||
@@ -231,7 +255,7 @@ function getIPAddress(req, config) {
  */
 function getUserAgent(req, config) {
   if (config.getUserAgent) {
-    return config.getUserAgent();
+    return config.getUserAgent(req);
   }
   return req.headers["user-agent"] || req.headers["User-Agent"];
 }
@@ -245,7 +269,7 @@ function getUserAgent(req, config) {
  */
 function getPath(req, config) {
   if (config.getPath) {
-    return config.getPath();
+    return config.getPath(req);
   }
   return req.url;
 }
@@ -259,7 +283,7 @@ function getPath(req, config) {
  */
 function getUserID(req, config) {
   if (config.getUserID) {
-    return config.getUserID();
+    return config.getUserID(req);
   }
   return null;
 }

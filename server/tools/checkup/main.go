@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/tom-draper/api-analytics/server/database"
@@ -12,6 +14,10 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
+
+func printBanner(text string) {
+	fmt.Printf("---- %s %s\n", text, strings.Repeat("-", 35-len(text)))
+}
 
 func emailBody(users []database.UserRow, requests []usage.UserCount, monitors []usage.UserCount, size string, connections int) string {
 	return fmt.Sprintf("%d new users\n%d requests\n%d monitors\nDatabase size: %s\nActive database connections: %d", len(users), len(requests), len(monitors), size, connections)
@@ -43,124 +49,83 @@ func emailCheckup() {
 	email.SendEmail("API Analytics", body, address)
 }
 
-func printCheckup() {
-	printServicesTest()
-	printAPITest()
-	printLoggerTest()
+func displayCheckup() {
+	displayServicesTest()
+	displayAPITest()
+	displayLoggerTest()
 
-	printDatabaseStats()
-	printLastHour()
-	printLast24Hours()
-	printLastWeek()
-	printTotal()
+	displayDatabaseStats()
+	displayLastHour()
+	displayLast24Hours()
+	displayLastWeek()
+	displayTotal()
 }
 
-func printUsersCheckup() {
-	printTopUsers()
-	printUnusedUsers()
-	printUsersSinceLastRequest()
+func displayServicesTest() {
+	printBanner("Services")
+
+	testService("api")
+	testService("logger")
+	testService("nginx")
+	testService("postgresql")
 }
 
-func printServicesTest() {
-	fmt.Println("---- Services ------------------------")
-	apiDown := monitor.ServiceDown("api")
-	fmt.Printf("api: ")
-	if apiDown {
-		color.Red("offline")
-	} else {
-		color.Green("online")
-	}
-	loggerDown := monitor.ServiceDown("logger")
-	fmt.Printf("logger: ")
-	if loggerDown {
-		color.Red("offline")
-	} else {
-		color.Green("online")
-	}
-	nginxDown := monitor.ServiceDown("nginx")
-	fmt.Printf("nginx: ")
-	if nginxDown {
-		color.Red("offline")
-	} else {
-		color.Green("online")
-	}
-	postgresqlDown := monitor.ServiceDown("postgresql")
-	fmt.Printf("postgresql: ")
-	if postgresqlDown {
+func testService(service string) {
+	down := monitor.ServiceDown(service)
+	fmt.Printf("%s: ", service)
+	if down {
 		color.Red("offline")
 	} else {
 		color.Green("online")
 	}
 }
 
-func printAPITest() {
-	fmt.Println("---- API -----------------------------")
-	var err error
-	err = monitor.TryNewUser()
-	fmt.Printf("/generate-api-key ")
-	if err != nil {
-		color.Red("offline")
-		fmt.Println(err)
-	} else {
-		color.Green("online")
-	}
-	err = monitor.TryFetchDashboardData()
-	fmt.Printf("/requests/<user-id> ")
-	if err != nil {
-		color.Red("offline")
-		fmt.Println(err)
-	} else {
-		color.Green("online")
-	}
-	err = monitor.TryFetchData()
-	fmt.Printf("/data ")
-	if err != nil {
-		color.Red("offline")
-		fmt.Println(err)
-	} else {
-		color.Green("online")
-	}
-	err = monitor.TryFetchUserID()
-	fmt.Printf("/user-id/<api-key> ")
-	if err != nil {
-		color.Red("offline")
-		fmt.Println(err)
-	} else {
-		color.Green("online")
-	}
-	err = monitor.TryFetchMonitorPings()
-	fmt.Printf("/monitor/pings/<user-id> ")
-	if err != nil {
-		color.Red("offline")
-		fmt.Println(err)
-	} else {
-		color.Green("online")
-	}
-	// err = monitor.TryLogRequests()
-	// fmt.Printf("/log-request ")
-	// if err != nil {
-	// 	color.Red("offline")
-	// 	fmt.Println(err)
-	// } else {
-	// 	color.Green("online")
-	// }
+func displayAPITest() {
+	printBanner("API")
+
+	testAPIEndpoint("/generate-api-key", monitor.TryNewUser)
+	testAPIEndpoint("/requests/<user-id>", monitor.TryFetchDashboardData)
+	testAPIEndpoint("/data", monitor.TryFetchData)
+	testAPIEndpoint("/user-id/<api-key>", monitor.TryFetchUserID)
+	testAPIEndpoint("/monitor/pings/<user-id>", monitor.TryFetchMonitorPings)
 }
 
-func printLoggerTest() {
-	fmt.Println("---- Logger --------------------------")
-	err := monitor.TryLogRequests()
-	fmt.Printf("/log-request ")
+func testAPIEndpoint(endpoint string, testEndpoint func() error) {
+	start := time.Now()
+	err := testEndpoint()
+	fmt.Printf("%s ", endpoint)
 	if err != nil {
-		color.Red("offline")
-		fmt.Println(err)
+		color.New(color.FgRed).Printf("offline")
+		fmt.Printf("\n%s\n", err.Error())
 	} else {
-		color.Green("online")
+		color.New(color.FgGreen).Printf("online")
+		fmt.Printf(" %s\n", time.Since(start))
 	}
 }
 
-func printDatabaseStats() {
+func displayLoggerTest() {
+	printBanner("Logger")
+
+	testLoggerEndpoint("/log-request", monitor.TryLogRequests, true)
+	testLoggerEndpoint("/requests", monitor.TryLogRequests, false)
+}
+
+func testLoggerEndpoint(endpoint string, testEndpoint func(legacy bool) error, legacy bool) {
+	start := time.Now()
+	err := testEndpoint(legacy)
+	fmt.Printf("%s ", endpoint)
+	if err != nil {
+		color.New(color.FgRed).Printf("offline")
+		fmt.Printf("\n%s\n", err.Error())
+	} else {
+		color.New(color.FgGreen).Printf("online")
+		fmt.Printf(" %s\n", time.Since(start))
+	}
+}
+
+func displayDatabaseStats() {
 	p := message.NewPrinter(language.English)
-	p.Println("---- Database ------------------------")
+	printBanner("Database")
 	connections, err := usage.DatabaseConnections()
 	if err != nil {
 		panic(err)
@@ -178,9 +143,9 @@ func printDatabaseStats() {
 	// columnSize.Display()
 }
 
-func printLastHour() {
+func displayLastHour() {
 	p := message.NewPrinter(language.English)
-	p.Println("---- Last hour -----------------------")
+	printBanner("Last Hour")
 	dailyUsers, err := usage.HourlyUsersCount()
 	if err != nil {
 		panic(err)
@@ -198,9 +163,9 @@ func printLastHour() {
 	p.Println("Monitors:", dailyMonitors)
 }
 
-func printLast24Hours() {
+func displayLast24Hours() {
 	p := message.NewPrinter(language.English)
-	p.Println("---- Last 24-hours -------------------")
+	printBanner("Last 24 Hours")
 	dailyUsers, err := usage.DailyUsersCount()
 	if err != nil {
 		panic(err)
@@ -218,9 +183,9 @@ func printLast24Hours() {
 	p.Println("Monitors:", dailyMonitors)
 }
 
-func printLastWeek() {
+func displayLastWeek() {
 	p := message.NewPrinter(language.English)
-	p.Println("---- Last week -----------------------")
+	printBanner("Last Week")
 	weeklyUsers, err := usage.WeeklyUsersCount()
 	if err != nil {
 		panic(err)
@@ -238,9 +203,15 @@ func printLastWeek() {
 	p.Println("Monitors:", weeklyMonitors)
 }
 
-func printTotal() {
+func displayUsersCheckup() {
+	displayTopUsers()
+	displayUnusedUsers()
+	displayUsersSinceLastRequest()
+}
+
+func displayTotal() {
 	p := message.NewPrinter(language.English)
-	p.Println("---- Total ---------------------------")
+	printBanner("Total")
 	totalUsers, err := usage.UsersCount("")
 	if err != nil {
 		panic(err)
@@ -258,8 +229,8 @@ func printTotal() {
 	p.Println("Monitors:", totalMonitors)
 }
 
-func printTopUsers() {
-	fmt.Println("---- Top Users -----------------------")
+func displayTopUsers() {
+	printBanner("Top Users")
 	topUsers, err := usage.TopUsers(10)
 	if err != nil {
 		panic(err)
@@ -267,8 +238,8 @@ func printTopUsers() {
 	usage.DisplayUsers(topUsers)
 }
 
-func printUnusedUsers() {
-	fmt.Println("---- Unused Users --------------------")
+func displayUnusedUsers() {
+	printBanner("Unused Users")
 	unusedUsers, err := usage.UnusedUsers()
 	if err != nil {
 		panic(err)
@@ -276,8 +247,8 @@ func printUnusedUsers() {
 	usage.DisplayUserTimes(unusedUsers)
 }
 
-func printUsersSinceLastRequest() {
-	fmt.Println("---- Users Since Last Request --------")
+func displayUsersSinceLastRequest() {
+	printBanner("Users Since Last Request")
 	sinceLastRequestUsers, err := usage.SinceLastRequestUsers()
 	if err != nil {
 		panic(err)
@@ -285,12 +256,59 @@ func printUsersSinceLastRequest() {
 	usage.DisplayUserTimes(sinceLastRequestUsers)
 }
 
+func displayMonitorsCheckup() {
+	displayMonitors()
+}
+
+func displayMonitors() {
+	printBanner("Monitors")
+	monitors, err := usage.TotalMonitors()
+	if err != nil {
+		panic(err)
+	}
+	for i, monitor := range monitors {
+		fmt.Printf("[%d] %s %s %s\n", i, monitor.APIKey, monitor.CreatedAt.Format("2006-01-02 15:04:05"), monitor.URL)
+	}
+}
+
+type Options struct {
+	email    bool
+	users    bool
+	monitors bool
+	help     bool
+}
+
+func getOptions() Options {
+	options := Options{}
+	for _, arg := range os.Args {
+		if arg == "--email" {
+			options.email = true
+		} else if arg == "--users" {
+			options.users = true
+		} else if arg == "--monitors" {
+			options.monitors = true
+		} else if arg == "--help" {
+			options.help = true
+		}
+	}
+	return options
+}
+
+func displayHelp() {
+	fmt.Printf("Checkup - A command-line tool for checking resource usage.\n\nOptions:\n`--users` show user account usage\n`--monitors` show monitor usage\n`--email` email the summary instead of printing to console\n`--help` to display help\n")
+}
+
 func main() {
-	if len(os.Args) > 1 && os.Args[1] == "--email" {
+	options := getOptions()
+	if options.help {
+		displayHelp()
+	} else if options.email {
 		emailCheckup()
-	} else if len(os.Args) > 1 && os.Args[1] == "--users" {
-		printUsersCheckup()
+	} else if options.users {
+		displayUsersCheckup()
+	} else if options.monitors {
+		displayMonitorsCheckup()
 	} else {
-		printCheckup()
+		displayCheckup()
 	}
 }
