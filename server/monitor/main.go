@@ -91,7 +91,9 @@ func uploadPings(pings []database.PingsRow, db *sql.DB) {
 
 func shuffle(monitored []database.MonitorRow) {
 	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(len(monitored), func(i, j int) { monitored[i], monitored[j] = monitored[j], monitored[i] })
+	rand.Shuffle(len(monitored), func(i, j int) {
+		monitored[i], monitored[j] = monitored[j], monitored[i]
+	})
 }
 
 func pingMonitored(monitored []database.MonitorRow) []database.PingsRow {

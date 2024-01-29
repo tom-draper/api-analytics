@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/tom-draper/api-analytics/server/database"
@@ -62,30 +63,17 @@ func displayCheckup() {
 
 func displayServicesTest() {
 	printBanner("Services")
-	apiDown := monitor.ServiceDown("api")
-	fmt.Printf("api: ")
-	if apiDown {
-		color.Red("offline")
-	} else {
-		color.Green("online")
-	}
-	loggerDown := monitor.ServiceDown("logger")
-	fmt.Printf("logger: ")
-	if loggerDown {
-		color.Red("offline")
-	} else {
-		color.Green("online")
-	}
-	nginxDown := monitor.ServiceDown("nginx")
-	fmt.Printf("nginx: ")
-	if nginxDown {
-		color.Red("offline")
-	} else {
-		color.Green("online")
-	}
-	postgresqlDown := monitor.ServiceDown("postgresql")
-	fmt.Printf("postgresql: ")
-	if postgresqlDown {
+
+	testService("api")
+	testService("logger")
+	testService("nginx")
+	testService("postgresql")
+}
+
+func testService(service string) {
+	down := monitor.ServiceDown(service)
+	fmt.Printf("%s: ", service)
+	if down {
 		color.Red("offline")
 	} else {
 		color.Green("online")
@@ -94,67 +82,44 @@ func displayServicesTest() {
 
 func displayAPITest() {
 	printBanner("API")
-	var err error
-	err = monitor.TryNewUser()
-	fmt.Printf("/generate-api-key ")
+
+	testAPIEndpoint("/generate-api-key", monitor.TryNewUser)
+	testAPIEndpoint("/requests/<user-id>", monitor.TryFetchDashboardData)
+	testAPIEndpoint("/data", monitor.TryFetchData)
+	testAPIEndpoint("/user-id/<api-key>", monitor.TryFetchUserID)
+	testAPIEndpoint("/monitor/pings/<user-id>", monitor.TryFetchMonitorPings)
+}
+
+func testAPIEndpoint(endpoint string, testEndpoint func() error) {
+	start := time.Now()
+	err := testEndpoint()
+	fmt.Printf("%s ", endpoint)
 	if err != nil {
-		color.Red("offline")
-		fmt.Println(err)
+		color.New(color.FgRed).Printf("offline")
+		fmt.Printf("\n%s\n", err.Error())
 	} else {
-		color.Green("online")
-	}
-	err = monitor.TryFetchDashboardData()
-	fmt.Printf("/requests/<user-id> ")
-	if err != nil {
-		color.Red("offline")
-		fmt.Println(err)
-	} else {
-		color.Green("online")
-	}
-	err = monitor.TryFetchData()
-	fmt.Printf("/data ")
-	if err != nil {
-		color.Red("offline")
-		fmt.Println(err)
-	} else {
-		color.Green("online")
-	}
-	err = monitor.TryFetchUserID()
-	fmt.Printf("/user-id/<api-key> ")
-	if err != nil {
-		color.Red("offline")
-		fmt.Println(err)
-	} else {
-		color.Green("online")
-	}
-	err = monitor.TryFetchMonitorPings()
-	fmt.Printf("/monitor/pings/<user-id> ")
-	if err != nil {
-		color.Red("offline")
-		fmt.Println(err)
-	} else {
-		color.Green("online")
+		color.New(color.FgGreen).Printf("online")
+		fmt.Printf(" %s\n", time.Since(start))
 	}
 }
 
 func displayLoggerTest() {
 	printBanner("Logger")
-	err := monitor.TryLogRequests(false)
-	fmt.Printf("/log-request (legacy)")
-	if err != nil {
-		color.Red("offline")
-		fmt.Println(err)
-	} else {
-		color.Green("online")
-	}
 
-	err = monitor.TryLogRequests(true)
-	fmt.Printf("/requests ")
+	testLoggerEndpoint("/log-request", monitor.TryLogRequests, true)
+	testLoggerEndpoint("/requests", monitor.TryLogRequests, false)
+}
+
+func testLoggerEndpoint(endpoint string, testEndpoint func(legacy bool) error, legacy bool) {
+	start := time.Now()
+	err := testEndpoint(legacy)
+	fmt.Printf("%s ", endpoint)
 	if err != nil {
-		color.Red("offline")
-		fmt.Println(err)
+		color.New(color.FgRed).Printf("offline")
+		fmt.Printf("\n%s\n", err.Error())
 	} else {
-		color.Green("online")
+		color.New(color.FgGreen).Printf("online")
+		fmt.Printf(" %s\n", time.Since(start))
 	}
 }
 

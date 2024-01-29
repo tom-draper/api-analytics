@@ -142,7 +142,7 @@ func DeleteUser(apiKey string) error {
 	defer db.Close()
 
 	query := fmt.Sprintf("DELETE FROM users WHERE api_key = '%s';", apiKey)
-	_, err := db.Query(query)
+	rows, err := db.Query(query)
 	return err
 }
 
