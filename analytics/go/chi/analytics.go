@@ -35,6 +35,7 @@ type Config struct {
 	GetUserAgent func(r *http.Request) string
 	GetIPAddress func(r *http.Request) string
 	GetUserID    func(r *http.Request) string
+	PrivacyLevel int
 }
 
 func Analytics(apiKey string) func(next http.Handler) http.Handler {
@@ -64,10 +65,11 @@ func AnalyticsWithConfig(apiKey string, config *Config) func(next http.Handler) 
 				Method:       r.Method,
 				Status:       rw.status,
 				ResponseTime: time.Since(start).Milliseconds(),
+				UserID:       getUserID(r, config),
 				CreatedAt:    start.Format(time.RFC3339),
 			}
 
-			core.LogRequest(apiKey, data, "Chi")
+			core.LogRequest(apiKey, data, "Chi", config.PrivacyLevel)
 		})
 	}
 }
@@ -94,6 +96,10 @@ func getUserAgent(r *http.Request, config *Config) string {
 }
 
 func getIPAddress(r *http.Request, config *Config) string {
+	if config.PrivacyLevel >= 2 {
+		return ""
+	}
+
 	if config.GetIPAddress != nil {
 		return config.GetIPAddress(r)
 	}
