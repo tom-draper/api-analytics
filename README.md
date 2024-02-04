@@ -643,3 +643,11 @@ Contributions, issues and feature requests are welcome.
 - Commit your changes (`git commit -am 'Add some feature'`)
 - Push to the branch (`git push origin my-new-feature`)
 - Create a new Pull Request
+
+--- 
+
+If you find value in my work consider supporting me.
+
+Buy Me a Coffee: https://www.buymeacoffee.com/tomdraper<br>
+PayPal: https://www.paypal.com/paypalme/tomdraper
+
