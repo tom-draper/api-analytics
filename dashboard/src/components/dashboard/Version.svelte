@@ -46,9 +46,7 @@
         continue;
       }
       const version = match[1];
-      if (!(version in versionCount)) {
-        versionCount[version] = 0;
-      }
+      versionCount[version] |= 0;
       versionCount[version]++;
     }
 

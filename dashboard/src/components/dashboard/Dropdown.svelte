@@ -9,14 +9,19 @@
   function setWidth() {
     // Set dropdown width considering width of hidden options within
     // Width of text div + dropdown icon
+    console.log(current.clientWidth)
     dropdown.style.width = `${current.clientWidth + 22}px`;
   }
 
   let dropdown: HTMLDivElement;
   let current: HTMLButtonElement;
   onMount(() => {
-    setWidth();
-    setWidth();  // Sometimes needs to be called twice when first loaded in mobile view (maybe due to image render?)
+    // setWidth();
+    // setWidth();
+    // setTimeout(() => {
+    //   setWidth();
+    // }, 1000);
+    // setWidth();  // Sometimes needs to be called twice when first loaded in mobile view (maybe due to image render?)
   });
 
   let hideOptions: boolean = true;
@@ -76,7 +81,7 @@
     background: var(--background);
     color: var(--dim-text);
     border: 1px solid #2e2e2e;
-    padding: 5px 8px 5px 9px;
+    padding: 5px 10px 5px 9px;
     cursor: pointer;
     display: flex;
   }
@@ -88,6 +93,8 @@
     color: var(--dim-text);
     top: 66px;
     z-index: 100;
+    margin-bottom: 50px;
+    width: fit-content;
   }
   .option {
     background: var(--background);
@@ -107,7 +114,7 @@
     border-radius: 4px 4px 0 0;
   }
   .inner {
-    position: absolute;
+    /* position: absolute; */
     z-index: 9;
     display: flex;
     width: inherit;

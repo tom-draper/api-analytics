@@ -22,7 +22,7 @@
       hovermode: 'closest',
       plot_bgcolor: 'transparent',
       paper_bgcolor: 'transparent',
-      height: 170,
+      height: 159,
       yaxis: {
         title: { text: 'Response time (ms)' },
         gridcolor: 'gray',
@@ -80,12 +80,12 @@
     });
 
     // Split into two lists
-    const dates: Date[] = [];
-    const responseTimes: number[] = [];
+    const dates: Date[] = new Array(responseTimeArr.length);
+    const responseTimes: number[] = new Array(responseTimeArr.length);
     let minAvgResponseTime = Number.POSITIVE_INFINITY;
     for (let i = 0; i < responseTimeArr.length; i++) {
-      dates.push(new Date(responseTimeArr[i].date));
-      responseTimes.push(responseTimeArr[i].avgResponseTime);
+      dates[i] = new Date(responseTimeArr[i].date);
+      responseTimes[i] = responseTimeArr[i].avgResponseTime;
       if (responseTimeArr[i].avgResponseTime < minAvgResponseTime) {
         minAvgResponseTime = responseTimeArr[i].avgResponseTime;
       }

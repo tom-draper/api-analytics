@@ -87,9 +87,7 @@
     const osCount = {};
     for (let i = 0; i < data.length; i++) {
       const os = getOS(data[i][ColumnIndex.UserAgent]);
-      if (!(os in osCount)) {
-        osCount[os] = 0;
-      }
+      osCount[os] |= 0;
       osCount[os]++;
     }
 
