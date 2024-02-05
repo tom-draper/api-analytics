@@ -590,7 +590,7 @@ app = FastAPI()
 app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
 ```
 
-With any of these privacy levels, you still have the option to define a custom user ID by providing a mapper function in the API middleware configuration to specify how to access the user ID on each request. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user.
+With any of these privacy levels, there is still the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user.
 
 ```py
 from fastapi import FastAPI
