@@ -1,6 +1,6 @@
 # API Analytics <img src="https://user-images.githubusercontent.com/41476809/210829625-697bba5b-97a8-45fa-91ce-d3c33fcfd0b2.png" align="right" height="140"/>
 
-A free lightweight API analytics solution, complete with a dashboard.
+A free and lightweight API analytics solution, complete with a dashboard.
 
 Currently compatible with:
  - Python: <b>FastAPI</b>, <b>Flask</b>, <b>Django</b> and <b>Tornado</b>
@@ -569,12 +569,39 @@ Example:
 curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?dateFrom=2022-01-01&dateTo=2022-06-01&status=200
 ```
 
-## Monitoring
+## Client ID and Privacy
 
-Active API monitoring can be set up by heading to https://apianalytics.dev/monitoring to enter your API key. Our servers will regularly ping chosen API endpoints to monitor uptime and response time. 
-<!-- Optional email alerts when your endpoints are down can be subscribed to. -->
+By default, API Analytics logs and stores the client IP address of all incoming requests made to your API and infers a country location from the IP address if possible. This IP address is used as a form of client identification in the dashboard to estimate the number of users accessing your service.
 
-![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)
+This behaviour can be controlled through a privacy level defined in the configuration of the API middleware. There are three privacy levels to choose from:
+
+1. Privacy level = 0 (default) - The client IP address is used to infer a location (country) and then stored for user identification.
+2. Privacy level = 1 - The client IP address is used to infer a location (country) and then discarded.
+3. Privacy level = 2 - The client IP address is never accessed and location is never inferred.
+
+```py
+from fastapi import FastAPI
+from api_analytics.fastapi import Analytics, Config
+
+config = Config()
+config.privacy_level = 2
+
+app = FastAPI()
+app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
+```
+
+With any of these privacy levels, you still have the option to define a custom user ID by providing a mapper function in the API middleware configuration to specify how to access the user ID on each request. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user.
+
+```py
+from fastapi import FastAPI
+from api_analytics.fastapi import Analytics, Config
+
+config = Config()
+config.get_user_id = lambda request: request.headers.get('X-AUTH-TOKEN', '')
+
+app = FastAPI()
+app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
+```
 
 ## Data and Security
 
@@ -592,13 +619,20 @@ For any given request to your API, data recorded is limited to:
  - API hostname
  - API framework (FastAPI, Flask, Express etc.)
 
-Data collected is only ever used to populate your analytics dashboard. All stored data is anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
+Data collected is only ever used to populate your analytics dashboard. All stored data is pseudo-anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
 
 ### Data Deletion
 
 At any time you can delete all stored data associated with your API key by going to https://apianalytics.dev/delete and entering your API key.
 
 API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity.
+
+## Monitoring
+
+Active API monitoring can be set up by heading to https://apianalytics.dev/monitoring to enter your API key. Our servers will regularly ping chosen API endpoints to monitor uptime and response time. 
+<!-- Optional email alerts when your endpoints are down can be subscribed to. -->
+
+![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)
 
 ## Contributions
 
@@ -609,3 +643,11 @@ Contributions, issues and feature requests are welcome.
 - Commit your changes (`git commit -am 'Add some feature'`)
 - Push to the branch (`git push origin my-new-feature`)
 - Create a new Pull Request
+
+--- 
+
+If you find value in my work consider supporting me.
+
+Buy Me a Coffee: https://www.buymeacoffee.com/tomdraper<br>
+PayPal: https://www.paypal.com/paypalme/tomdraper
+
