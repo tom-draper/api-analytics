@@ -1,6 +1,6 @@
 {
   "name": "node-api-analytics",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Monitoring and analytics for node API applications.",
   "main": "analytics.js",
   "type": "module",

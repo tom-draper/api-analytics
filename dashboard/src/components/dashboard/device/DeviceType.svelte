@@ -49,9 +49,7 @@
     const deviceCount = {};
     for (let i = 0; i < data.length; i++) {
       const device = getDevice(data[i][ColumnIndex.UserAgent]);
-      if (!(device in deviceCount)) {
-        deviceCount[device] = 0;
-      }
+      deviceCount[device] |= 0;
       deviceCount[device]++;
     }
 

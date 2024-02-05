@@ -170,9 +170,7 @@
       if (hostname === null || hostname === '' || hostname === 'null') {
         continue;
       }
-      if (!(hostname in hostnameFreq)) {
-        hostnameFreq[hostname] = 0;
-      }
+      hostnameFreq[hostname] |= 0;
       hostnameFreq[hostname] += 1;
     }
 
@@ -390,7 +388,7 @@
     margin-right: 2em;
   }
   .placeholder {
-    min-height: 85vh;
+    min-height: 82vh;
     display: grid;
     place-items: center;
   }
@@ -456,7 +454,7 @@
     transition: 0.1s;
   }
   .settings-icon:hover {
-    filter: contrast(0.35);
+    filter: contrast(0.1);
   }
 
   @media screen and (max-width: 800px) {

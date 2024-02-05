@@ -15,23 +15,23 @@
     'TRACE',
   ];
 
-  type EndpointFreq = {
-    [endpointID: string]: { path: string; status: number; count: number };
-  };
+  type EndpointFreq = Map<string, { path: string; status: number; count: number }>;
+
+  type MapValue<A> = A extends Map<any, infer V> ? V : never;
 
   function endpointFreq(): EndpointFreq {
-    const freq = {};
+    const freq = new Map();
     for (let i = 0; i < data.length; i++) {
       // Create groups of endpoints by path + status
       const endpointID = `${data[i][ColumnIndex.Path]}${data[i][ColumnIndex.Status]}`;
-      if (!(endpointID in freq)) {
-        freq[endpointID] = {
+      if (!freq.has(endpointID)) {
+        freq.set(endpointID, {
           path: `${methodMap[data[i][ColumnIndex.Method]]}  ${data[i][ColumnIndex.Path]}`,
           status: data[i][ColumnIndex.Status],
           count: 0,
-        };
+        });
       }
-      freq[endpointID].count++;
+      freq.get(endpointID).count += 1;
     }
     return freq;
   }
@@ -68,13 +68,13 @@
     const freq = endpointFreq();
 
     // Convert object to list
-    const freqArr: EndpointFreq[keyof EndpointFreq][] = [];
+    const freqArr: MapValue<EndpointFreq>[] = [];
     maxCount = 0;
-    for (const endpointID in freq) {
-      if (statusMatch(freq[endpointID].status)) {
-        freqArr.push(freq[endpointID]);
-        if (freq[endpointID].count > maxCount) {
-          maxCount = freq[endpointID].count;
+    for (const value of freq.values()) {
+      if (statusMatch(value.status)) {
+        freqArr.push(value);
+        if (value.count > maxCount) {
+          maxCount = value.count;
         }
       }
     }
@@ -166,6 +166,7 @@
                 endpoint.status === 0}
               class:bad={endpoint.status >= 400 && endpoint.status <= 499}
               class:error={endpoint.status >= 500}
+              class:other={endpoint.status >= 300 && endpoint.status <= 399}
             />
           </div>
         </div>
@@ -237,6 +238,9 @@
   }
   .error {
     background: var(--red);
+  }
+  .other {
+    background: rgb(241, 164, 20);
   }
   .cancel {
     display: none;

@@ -22,7 +22,7 @@
       hovermode: 'closest',
       plot_bgcolor: 'transparent',
       paper_bgcolor: 'transparent',
-      height: 169,
+      height: 160,
       barmode: 'stack',
       yaxis: {
         title: { text: 'Requests' },
@@ -81,24 +81,22 @@
     });
 
     // Split into two lists
-    const dates = [];
-    const requests = [];
-    const requestsText = [];
-    const users = [];
-    const usersText = [];
+    const dates = new Array(requestFreqArr.length);
+    const requests = new Array(requestFreqArr.length);
+    const requestsText = new Array(requestFreqArr.length);
+    const users = new Array(requestFreqArr.length);
+    const usersText = new Array(requestFreqArr.length);
     for (let i = 0; i < requestFreqArr.length; i++) {
-      dates.push(new Date(requestFreqArr[i].date));
+      dates[i] = new Date(requestFreqArr[i].date);
       // Subtract users due to bar stacking
-      requests.push(
-        requestFreqArr[i].requestCount - requestFreqArr[i].userCount
-      );
+      requests[i] = requestFreqArr[i].requestCount - requestFreqArr[i].userCount
+      
       // Keep actual requests count for hover text
-      requestsText.push(`${requestFreqArr[i].requestCount} requests`);
-      users.push(requestFreqArr[i].userCount);
-      usersText.push(
-        `${requestFreqArr[i].userCount} users from ${requestFreqArr[i].requestCount} requests`
-      );
+      requestsText[i] = `${requestFreqArr[i].requestCount} requests`;
+      users[i] = requestFreqArr[i].userCount;
+      usersText[i] =  `${requestFreqArr[i].userCount} users from ${requestFreqArr[i].requestCount} requests`
     }
+    
 
     return [
       {

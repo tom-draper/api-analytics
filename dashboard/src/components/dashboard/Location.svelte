@@ -21,22 +21,20 @@
     let max = 0;
     const locationsFreq = {};
     for (let i = 0; i < data.length; i++) {
-      if (!data[i][ColumnIndex.Location]) {
+      const location = data[i][ColumnIndex.Location];
+      if (!location) {
         continue;
       }
-      if (!(data[i][ColumnIndex.Location] in locationsFreq)) {
-        locationsFreq[data[i][ColumnIndex.Location]] = 1;
-      } else {
-        locationsFreq[data[i][ColumnIndex.Location]] += 1;
-      }
-      if (locationsFreq[data[i][ColumnIndex.Location]] > max) {
-        max = locationsFreq[data[i][ColumnIndex.Location]];
+      locationsFreq[location] |= 0;
+      locationsFreq[location] += 1;
+      if (locationsFreq[location] > max) {
+        max = locationsFreq[location];
       }
     }
 
-    const locs: LocationBar[] = [];
+    const locationBars: LocationBar[] = [];
     for (const location in locationsFreq) {
-      locs.push({
+      locationBars.push({
         location: location,
         frequency: locationsFreq[location],
         height: locationsFreq[location] / max,
@@ -44,11 +42,11 @@
     }
 
     // Sort by desc frequency
-    locs.sort((a, b) => {
+    locationBars.sort((a, b) => {
       return b.frequency - a.frequency;
     });
 
-    locations = locs;
+    locations = locationBars;
   }
 
   let locations: LocationBar[] = [];

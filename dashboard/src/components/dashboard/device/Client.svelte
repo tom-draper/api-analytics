@@ -72,9 +72,7 @@
     const clientCount = {};
     for (let i = 0; i < data.length; i++) {
       const client = getBrowser(data[i][ColumnIndex.UserAgent]);
-      if (!(client in clientCount)) {
-        clientCount[client] = 0;
-      }
+      clientCount[client] |= 0;
       clientCount[client]++;
     }
 

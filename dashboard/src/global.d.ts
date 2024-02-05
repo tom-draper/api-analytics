@@ -10,6 +10,7 @@ type RequestsData = [
     number,
     number,
     string,
+    string,
     Date
 ][];
 

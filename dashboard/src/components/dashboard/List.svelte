@@ -2,10 +2,9 @@
   function removeItem(item: string) {
     const newItems: Set<string> = new Set();
     for (const value of items) {
-      if (value === item) {
-        continue;
+      if (value !== item) {
+        newItems.add(value);
       }
-      newItems.add(value);
     }
     items = newItems;
   }

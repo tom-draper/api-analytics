@@ -35,11 +35,11 @@
       return a.hour - b.hour;
     });
 
-    let dates = [];
-    let requests = [];
+    let dates = new Array(requestFreqArr.length);
+    let requests = new Array(requestFreqArr.length);
     for (let i = 0; i < requestFreqArr.length; i++) {
-      dates.push(requestFreqArr[i].hour.toString() + ':00');
-      requests.push(requestFreqArr[i].responseTime);
+      dates[i] = requestFreqArr[i].hour.toString() + ':00';
+      requests[i] = requestFreqArr[i].responseTime;
     }
 
     // Shift to 12 onwards to make barpolar like clock face

@@ -127,7 +127,6 @@
     } else if (latest.label == 'success') {
       currentStatus = 'success';
     }
-    console.log(currentStatus)
     anyError = anyError || currentStatus === 'error';
   }
 
