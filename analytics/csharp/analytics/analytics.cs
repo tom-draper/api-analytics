@@ -1,9 +1,13 @@
+namespace analytics;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 
-public class APIAnalytics
+public class Analytics
 {
     private readonly RequestDelegate _next;
     private static string? _apiKey;
@@ -42,14 +46,14 @@ public class APIAnalytics
         public string CreatedAt { get; set; }
     }
 
-    public APIAnalytics(RequestDelegate next, string apiKey)
+    public Analytics(RequestDelegate next, string apiKey)
     {
         _next = next;
         _apiKey = apiKey;
         _lastPosted = DateTime.Now;
-        _requests = new List<RequestData>();
+        _requests = [];
     }
-    
+
     private static async Task PostRequest(string apiKey, List<RequestData> requests, string framework)
     {
         var payload = new Payload
@@ -75,9 +79,9 @@ public class APIAnalytics
         _requests.Add(RequestData);
         if (now.Subtract(_lastPosted).TotalSeconds > 60)
         {
-            Thread thread = new Thread(new ThreadStart(async () => await PostRequest(_apiKey, _requests, "ASP.NET Core")));
+            Thread thread = new(new ThreadStart(async () => await PostRequest(_apiKey, _requests, "ASP.NET Core")));
             await PostRequest(_apiKey, _requests, "ASP.NET Core");
-            _requests = new List<RequestData>();
+            _requests = [];
             _lastPosted = now;
         }
     }
@@ -88,12 +92,12 @@ public class APIAnalytics
         var createdAt = DateTime.Now;
         await _next(context);
         watch.Stop();
-        
+
         var requestData = new RequestData
         {
             Hostname = context.Request.Host.ToString(),
             IPAddress = context.Connection.RemoteIpAddress?.ToString() ?? "",
-            UserAgent = context.Request.Headers["User-Agent"].ToString(),
+            UserAgent = context.Request.Headers.UserAgent.ToString(),
             Path = context.Request.Path.ToString(),
             Method = context.Request.Method.ToString(),
             ResponseTime = watch.Elapsed.Milliseconds,
@@ -104,10 +108,10 @@ public class APIAnalytics
     }
 }
 
-public static class APIAnalyticsExtensions
+public static class AnalyticsExtensions
 {
-    public static IApplicationBuilder UseAPIAnalytics(this IApplicationBuilder app, string apiKey)
+    public static IApplicationBuilder UseAnalytics(this IApplicationBuilder app, string apiKey)
     {
-        return app.UseMiddleware<APIAnalytics>(apiKey);
+        return app.UseMiddleware<Analytics>(apiKey);
     }
 }
