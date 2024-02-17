@@ -2,6 +2,7 @@ namespace analytics;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -44,6 +45,11 @@ public class Analytics
         [JsonPropertyName("created_at")]
 
         public string CreatedAt { get; set; }
+
+        public override readonly string ToString()
+        {
+            return JsonSerializer.Serialize(this);
+        }
     }
 
     public Analytics(RequestDelegate next, string apiKey)
@@ -72,9 +78,8 @@ public class Analytics
     private async Task LogRequest(RequestData RequestData)
     {
         if (_apiKey == null)
-        {
             return;
-        }
+
         var now = DateTime.Now;
         _requests.Add(RequestData);
         if (now.Subtract(_lastPosted).TotalSeconds > 60)
@@ -88,7 +93,7 @@ public class Analytics
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var watch = System.Diagnostics.Stopwatch.StartNew();
+        var watch = Stopwatch.StartNew();
         var createdAt = DateTime.Now;
         await _next(context);
         watch.Stop();
