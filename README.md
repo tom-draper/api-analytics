@@ -3,11 +3,13 @@
 A free and lightweight API analytics solution, complete with a dashboard.
 
 Currently compatible with:
- - Python: <b>FastAPI</b>, <b>Flask</b>, <b>Django</b> and <b>Tornado</b>
- - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
- - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
- - Rust: <b>Actix</b>, <b>Axum</b> and <b>Rocket</b>
- - Ruby: <b>Rails</b> and <b>Sinatra</b>
+
+- Python: <b>FastAPI</b>, <b>Flask</b>, <b>Django</b> and <b>Tornado</b>
+- Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
+- Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
+- Rust: <b>Actix</b>, <b>Axum</b> and <b>Rocket</b>
+- Ruby: <b>Rails</b> and <b>Sinatra</b>
+- C#: <b>ASP.NET Core</b>
 
 ## Getting Started
 
@@ -498,6 +500,32 @@ get '/' do
 end
 ```
 
+#### ASP.NET Core
+
+![NuGet Version](https://img.shields.io/nuget/v/APIAnalytics.AspNetCore)
+
+```sh
+dotnet add package APIAnalytics.AspNetCore
+```
+
+```cs
+using analytics;
+using Microsoft.AspNetCore.Mvc;
+
+var builder = WebApplication.CreateBuilder(args);
+
+var app = builder.Build();
+
+app.UseAnalytics(<API-KEY>); // Add middleware
+
+app.MapGet("/", () =>
+{
+    return Results.Ok(new OkObjectResult(new { message = "Hello, World!" }));
+});
+
+app.Run();
+```
+
 ### 3. View your analytics
 
 Your API will now log and store incoming request data on all valid routes. Your logged data can be viewed using two methods:
@@ -573,9 +601,9 @@ curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 
 By default, API Analytics logs and stores the client IP address of all incoming requests made to your API and infers a country location from the IP address if possible. This IP address is used as a form of client identification in the dashboard to estimate the number of users accessing your service.
 
-This behaviour can be controlled through a privacy level defined in the configuration of the API middleware. There are three privacy levels to choose from:
+This behaviour can be controlled through a privacy level defined in the configuration of the API middleware. There are three privacy levels to choose from 0 (default) to a maximum of 2. A privacy level of 1 will disable IP address storing, and a value of 2 will also disable location inference.
 
-1. Privacy level = 0 (default) - The client IP address is used to infer a location (country) and then stored for user identification.
+1. Privacy level = 0 (default) - The client IP address is used to infer a location (country) and then stored for user identification of any given request.
 2. Privacy level = 1 - The client IP address is used to infer a location (country) and then discarded.
 3. Privacy level = 2 - The client IP address is never accessed and location is never inferred.
 
@@ -590,7 +618,7 @@ app = FastAPI()
 app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
 ```
 
-With any of these privacy levels, you still have the option to define a custom user ID by providing a mapper function in the API middleware configuration to specify how to access the user ID on each request. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user.
+With any of these privacy levels, there is still the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user.
 
 ```py
 from fastapi import FastAPI
@@ -608,16 +636,17 @@ app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middlewar
 All data is stored securely in compliance with The EU General Data Protection Regulation (GDPR).
 
 For any given request to your API, data recorded is limited to:
- - Path requested by client
- - Client IP address
- - Client operating system
- - Client browser
- - Request method (GET, POST, PUT, etc.)
- - Time of request
- - Status code
- - Response time
- - API hostname
- - API framework (FastAPI, Flask, Express etc.)
+
+- Path requested by client
+- Client IP address
+- Client operating system
+- Client browser
+- Request method (GET, POST, PUT, etc.)
+- Time of request
+- Status code
+- Response time
+- API hostname
+- API framework (FastAPI, Flask, Express etc.)
 
 Data collected is only ever used to populate your analytics dashboard. All stored data is pseudo-anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
 
@@ -644,10 +673,9 @@ Contributions, issues and feature requests are welcome.
 - Push to the branch (`git push origin my-new-feature`)
 - Create a new Pull Request
 
---- 
+---
 
 If you find value in my work consider supporting me.
 
 Buy Me a Coffee: https://www.buymeacoffee.com/tomdraper<br>
 PayPal: https://www.paypal.com/paypalme/tomdraper
-

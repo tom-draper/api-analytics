@@ -16,7 +16,7 @@ app.add_middleware(Analytics, api_key=api_key)
 
 @app.get("/")
 async def root():
-    return {'message': 'Hello World!'}
+    return {"message": "Hello World!"}
 
 if __name__ == "__main__":
     uvicorn.run("fastapi_ex:app", reload=True)
