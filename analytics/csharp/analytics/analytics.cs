@@ -8,6 +8,15 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 
+public class Config
+{
+    public Func<HttpContext, string>? GetPath { get; set; } = null;
+    public Func<HttpContext, string>? GetIPAddress { get; set; } = null;
+    public Func<HttpContext, string>? GetHostname { get; set; } = null;
+    public Func<HttpContext, string>? GetUserAgent { get; set; } = null;
+    public Func<HttpContext, string>? GetUserID { get; set; } = null;
+    public int PrivacyLevel { get; set; } = 0;
+}
 
 public class Analytics(RequestDelegate next, string apiKey, Config? config = null)
 {
@@ -160,14 +169,4 @@ public static class AnalyticsExtensions
     {
         return app.UseMiddleware<Analytics>(apiKey);
     }
-}
-
-public class Config
-{
-    public Func<HttpContext, string>? GetPath { get; set; } = null;
-    public Func<HttpContext, string>? GetIPAddress { get; set; } = null;
-    public Func<HttpContext, string>? GetHostname { get; set; } = null;
-    public Func<HttpContext, string>? GetUserAgent { get; set; } = null;
-    public Func<HttpContext, string>? GetUserID { get; set; } = null;
-    public int PrivacyLevel { get; set; } = 0;
 }

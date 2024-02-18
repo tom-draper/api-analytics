@@ -4,10 +4,35 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Title>ASP.NET Core Analytics</Title>
+    <Description>Monitoring and analytics for ASP.NET Core applications.</Description>
+    <PackageTags>analytics;middleware;ASP.NET Core;monitoring;dashboard;API Analytics</PackageTags>
+    <RepositoryUrl>https://github.com/tom-draper/api-analytics</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://www.apianalytics.dev/</PackageProjectUrl>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageId>APIAnalytics.AspNetCore</PackageId>
+    <Product>API Analytics</Product>
+    <Authors>Tom Draper</Authors>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <VersionPrefix>1.0.2</VersionPrefix>
+    <FileVersion>1.0.2</FileVersion>
+    <AssemblyVersion>1.0.2</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
