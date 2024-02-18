@@ -108,11 +108,9 @@
       const maxResponseTime = Math.max(...responseTimesFreq.keys());
 
       // Split into two lists
-      responseTimes = new Array(maxResponseTime - minResponseTime + 1);
-      counts = new Array(maxResponseTime - minResponseTime + 1);
       for (let i = 0; i < maxResponseTime - minResponseTime + 1; i++) {
-        responseTimes[i] = minResponseTime + i;
-        counts[i] = responseTimesFreq.get(minResponseTime + i) || 0;
+        responseTimes.push(minResponseTime + i);
+        counts.push(responseTimesFreq.get(minResponseTime + i) || 0);
       }
     }
 
