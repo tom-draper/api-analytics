@@ -3,11 +3,13 @@
 A free and lightweight API analytics solution, complete with a dashboard.
 
 Currently compatible with:
- - Python: <b>FastAPI</b>, <b>Flask</b>, <b>Django</b> and <b>Tornado</b>
- - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
- - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
- - Rust: <b>Actix</b>, <b>Axum</b> and <b>Rocket</b>
- - Ruby: <b>Rails</b> and <b>Sinatra</b>
+
+- Python: <b>FastAPI</b>, <b>Flask</b>, <b>Django</b> and <b>Tornado</b>
+- Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
+- Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
+- Rust: <b>Actix</b>, <b>Axum</b> and <b>Rocket</b>
+- Ruby: <b>Rails</b> and <b>Sinatra</b>
+- C#: <b>ASP.NET Core</b>
 
 ## Getting Started
 
@@ -498,6 +500,32 @@ get '/' do
 end
 ```
 
+#### ASP.NET Core
+
+![NuGet Version](https://img.shields.io/nuget/v/APIAnalytics.AspNetCore)
+
+```sh
+dotnet add package APIAnalytics.AspNetCore
+```
+
+```cs
+using analytics;
+using Microsoft.AspNetCore.Mvc;
+
+var builder = WebApplication.CreateBuilder(args);
+
+var app = builder.Build();
+
+app.UseAnalytics(<API-KEY>); // Add middleware
+
+app.MapGet("/", () =>
+{
+    return Results.Ok(new OkObjectResult(new { message = "Hello, World!" }));
+});
+
+app.Run();
+```
+
 ### 3. View your analytics
 
 Your API will now log and store incoming request data on all valid routes. Your logged data can be viewed using two methods:
@@ -608,16 +636,17 @@ app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middlewar
 All data is stored securely in compliance with The EU General Data Protection Regulation (GDPR).
 
 For any given request to your API, data recorded is limited to:
- - Path requested by client
- - Client IP address
- - Client operating system
- - Client browser
- - Request method (GET, POST, PUT, etc.)
- - Time of request
- - Status code
- - Response time
- - API hostname
- - API framework (FastAPI, Flask, Express etc.)
+
+- Path requested by client
+- Client IP address
+- Client operating system
+- Client browser
+- Request method (GET, POST, PUT, etc.)
+- Time of request
+- Status code
+- Response time
+- API hostname
+- API framework (FastAPI, Flask, Express etc.)
 
 Data collected is only ever used to populate your analytics dashboard. All stored data is pseudo-anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
 
@@ -644,10 +673,9 @@ Contributions, issues and feature requests are welcome.
 - Push to the branch (`git push origin my-new-feature`)
 - Create a new Pull Request
 
---- 
+---
 
 If you find value in my work consider supporting me.
 
 Buy Me a Coffee: https://www.buymeacoffee.com/tomdraper<br>
 PayPal: https://www.paypal.com/paypalme/tomdraper
-
