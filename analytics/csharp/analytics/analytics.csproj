@@ -15,9 +15,9 @@
     <Product>API Analytics</Product>
     <Authors>Tom Draper</Authors>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <VersionPrefix>1.0.2</VersionPrefix>
-    <FileVersion>1.0.2</FileVersion>
-    <AssemblyVersion>1.0.2</AssemblyVersion>
+    <VersionPrefix>1.0.3</VersionPrefix>
+    <FileVersion>1.0.3</FileVersion>
+    <AssemblyVersion>1.0.3</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>

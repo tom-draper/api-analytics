@@ -23,5 +23,9 @@
     height: 28px;
     filter: invert(0.24);
     margin-bottom: 30px;
+    transition: filter 0.15s;
+  }
+  .github-logo:hover {
+    filter: invert(0.5);
   }
 </style>

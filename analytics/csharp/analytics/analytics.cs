@@ -1,4 +1,4 @@
-namespace analytics;
+namespace Analytics;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -37,6 +37,9 @@ public class Analytics(RequestDelegate next, string apiKey, Config? config = nul
 
         [JsonPropertyName("framework")]
         public string Framework { get; set; }
+
+        [JsonPropertyName("privacy_level")]
+        public int PrivacyLevel { get; set; }
     }
 
     public struct RequestData
@@ -74,13 +77,14 @@ public class Analytics(RequestDelegate next, string apiKey, Config? config = nul
         }
     }
 
-    private async Task PostRequest(string apiKey, List<RequestData> requests, string framework)
+    private async Task PostRequest(string apiKey, List<RequestData> requests, string framework, int privacyLevel)
     {
         var payload = new Payload
         {
             ApiKey = apiKey,
             Requests = requests,
-            Framework = framework
+            Framework = framework,
+            PrivacyLevel = privacyLevel
         };
 
         var json = JsonSerializer.Serialize(payload);
@@ -98,8 +102,8 @@ public class Analytics(RequestDelegate next, string apiKey, Config? config = nul
         _requests.Add(RequestData);
         if (now.Subtract(_lastPosted).TotalSeconds > 60)
         {
-            Thread thread = new(new ThreadStart(async () => await PostRequest(_apiKey, _requests, "ASP.NET Core")));
-            await PostRequest(_apiKey, _requests, "ASP.NET Core");
+            Thread thread = new(new ThreadStart(async () => await PostRequest(_apiKey, _requests, "ASP.NET Core", _config.PrivacyLevel)));
+            await PostRequest(_apiKey, _requests, "ASP.NET Core", _config.PrivacyLevel);
             _requests = [];
             _lastPosted = now;
         }
@@ -129,6 +133,9 @@ public class Analytics(RequestDelegate next, string apiKey, Config? config = nul
 
     private string GetIPAddress(HttpContext context)
     {
+        if (_config.PrivacyLevel >= 2)
+            return "";
+
         if (_config.GetIPAddress != null)
             return _config.GetIPAddress.Invoke(context);
         return context.Connection.RemoteIpAddress?.ToString() ?? "";

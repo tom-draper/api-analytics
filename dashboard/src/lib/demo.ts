@@ -175,6 +175,7 @@ function addDemoSamples(demoData: RequestsData, config: Sample, outages: Range[]
             randInt(config.responseTime.min, config.responseTime.max),
             config.status,
             getLocation(),
+            null,
             date
         ]);
     }

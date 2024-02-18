@@ -7,7 +7,7 @@
   }
 
   type Framework = {
-    language: 'python' | 'javascript' | 'go' | 'rust' | 'ruby';
+    language: 'python' | 'javascript' | 'go' | 'rust' | 'ruby' | 'csharp' | 'php';
     framework: string;
   };
 
@@ -28,6 +28,7 @@
     { language: 'rust', framework: 'Rocket' },
     { language: 'ruby', framework: 'Rails' },
     { language: 'ruby', framework: 'Sinatra' },
+    { language: 'csharp', framework: 'ASP.NET Core' },
   ];
   let currentFramework = frameworks[0];
 </script>
@@ -76,9 +77,7 @@
           <code
             id="code"
             class="code language-{language}"
-            style="{currentFramework.framework === framework
-              ? 'display: initial'
-              : ''} ">{frameworkExamples[framework].example}</code
+            class:display-framework="{currentFramework.framework === framework}">{frameworkExamples[framework].example}</code
           >
         {/each}
       </div>
@@ -128,6 +127,10 @@
       transparent,
       var(--background)
     );
+  }
+
+  .display-framework {
+    display: unset !important;
   }
 
   .landing-page {
@@ -285,6 +288,9 @@
   .active.php {
     border: 3px solid #7377ad;
   }
+  .active.csharp {
+    border: 3px solid #178600;
+  }
   .subtitle {
     color: var(--faint-text);
     margin: 10px 0 2px 16px;
@@ -309,8 +315,8 @@
     color: #dcdfe4;
     white-space: pre-wrap;
     overflow: auto;
-    font-family: 'Fira Code' !important;
-    font-size: 0.9em !important;
+    font-family: 'Geist Mono', "Fira Code" !important;
+    font-size: 14px !important;
   }
   .code {
     display: none;

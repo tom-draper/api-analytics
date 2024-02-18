@@ -374,6 +374,25 @@ end`,
     ...
 ]`,
     },
+    "ASP.NET Core": {
+        install: "dotnet add package APIAnalytics.AspNetCore",
+        codeFile: '',
+        example: `using analytics;
+using Microsoft.AspNetCore.Mvc;
+
+var builder = WebApplication.CreateBuilder(args);
+
+var app = builder.Build();
+
+app.UseAnalytics(<API-KEY>); // Add middleware
+
+app.MapGet("/", () =>
+{
+    return Results.Ok(new OkObjectResult(new { message = "Hello, World!" }));
+});
+
+app.Run();`
+    },
 }
 
 export default frameworkExamples
