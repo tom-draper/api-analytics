@@ -509,7 +509,7 @@ dotnet add package APIAnalytics.AspNetCore
 ```
 
 ```cs
-using analytics;
+using Analytics;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
