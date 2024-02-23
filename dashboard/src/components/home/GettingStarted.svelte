@@ -267,6 +267,9 @@
     border: 3px solid transparent;
     border-radius: 4px;
   }
+  .framework:hover {
+    color: white;
+  }
   .active {
     color: white;
   }
