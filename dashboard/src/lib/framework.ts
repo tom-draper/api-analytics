@@ -1,7 +1,7 @@
 type FrameworkExamples = {
     [framework: string]: {
         install: string
-        codeFile: string
+        codeFile?: string
         example: string
     }
 }
@@ -19,7 +19,6 @@ MIDDLEWARE = [
     },
     Flask: {
         install: 'pip install api-analytics',
-        codeFile: '',
         example: `from flask import Flask
 from api_analytics.flask import add_middleware
 
@@ -35,7 +34,6 @@ if __name__ == '__main__':
     },
     FastAPI: {
         install: 'pip install fastapi-analytics',
-        codeFile: '',
         example: `import uvicorn
 from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
@@ -52,7 +50,6 @@ if __name__ == '__main__':
     },
     Tornado: {
         install: 'pip install tornado-analytics',
-        codeFile: '',
         example: `import asyncio
 from tornado.web import Application
 from api_analytics.tornado import Analytics
@@ -77,7 +74,6 @@ if __name__ == '__main__':
     },
     Express: {
         install: 'npm install node-api-analytics',
-        codeFile: '',
         example: `import express from 'express';
 import { expressAnalytics } from 'node-api-analytics';
 
@@ -95,7 +91,6 @@ app.listen(8080, () => {
     },
     Fastify: {
         install: 'npm install node-api-analytics',
-        codeFile: '',
         example: `import Fastify from 'fastify';
 import { fastifyAnalytics } from 'node-api-analytics';
 
@@ -117,7 +112,6 @@ fastify.listen({ port: 8080 }, function (err, address) {
     },
     Koa: {
         install: 'npm install node-api-analytics',
-        codeFile: '',
         example: `import Koa from "koa";
 import { koaAnalytics } from 'node-api-analytics';
 
@@ -135,7 +129,6 @@ app.listen(8080, () =>
     },
     Gin: {
         install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/gin',
-        codeFile: '',
         example: `package main
 
 import(
@@ -160,7 +153,6 @@ func main() {
     },
     Echo: {
         install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/echo',
-        codeFile: '',
         example: `package main
 
 import (
@@ -185,7 +177,6 @@ func main() {
     },
     Fiber: {
         install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/fiber',
-        codeFile: '',
         example: `package main
 
 import (
@@ -209,7 +200,6 @@ func main() {
     },
     Chi: {
         install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/chi',
-        codeFile: '',
         example: `package main
 
 import (
@@ -236,7 +226,6 @@ func main() {
     },
     Actix: {
         install: 'cargo add actix-analytics',
-        codeFile: '',
         example: `use actix_web::{get, web, App, HttpServer, Responder, Result};
 use serde::Serialize;
 use actix_analytics::Analytics;
@@ -268,7 +257,6 @@ async fn main() -> std::io::Result<()> {
     },
     Axum: {
         install: 'cargo add axum-analytics',
-        codeFile: '',
         example: `use axum::{
     routing::get,
     Json, Router,
@@ -305,7 +293,6 @@ async fn main() {
     },
     Rocket: {
         install: 'cargo add rocket-analytics',
-        codeFile: '',
         example: `#[macro_use]
 extern crate rocket;
 use rocket::serde::json::Json;
@@ -351,7 +338,6 @@ end`,
     },
     Sinatra: {
         install: 'gem install api_analytics',
-        codeFile: '',
         example: `require 'sinatra'
 require 'api_analytics'
 
@@ -375,7 +361,6 @@ end`,
     },
     "ASP.NET Core": {
         install: "dotnet add package APIAnalytics.AspNetCore",
-        codeFile: '',
         example: `using analytics;
 using Microsoft.AspNetCore.Mvc;
 

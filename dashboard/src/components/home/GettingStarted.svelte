@@ -71,7 +71,7 @@
         <!-- TODO: dynamic syntax highlight rendering to only render the 
             frameworks clicked on and reduce this code to one line -->
         <div class="code-file">
-          {frameworkExamples[currentFramework.framework].codeFile}
+          {frameworkExamples[currentFramework.framework].codeFile ?? ''}
         </div>
         {#each frameworks as { language, framework }}
           <code
