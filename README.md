@@ -39,7 +39,7 @@ app.add_middleware(Analytics, api_key=<API-KEY>)  # Add middleware
 
 @app.get('/')
 async def root():
-    return {'message': 'Hello World!'}
+    return {'message': 'Hello, World!'}
 
 if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
@@ -62,7 +62,7 @@ add_middleware(app, <API-KEY>)  # Add middleware
 
 @app.get('/')
 def root():
-    return {'message': 'Hello World!'}
+    return {'message': 'Hello, World!'}
 
 if __name__ == "__main__":
     app.run()
@@ -108,7 +108,7 @@ class MainHandler(Analytics):
         super().__init__(app, res, <API-KEY>)  # Provide api key
     
     def get(self):
-        self.write({'message': 'Hello World!'})
+        self.write({'message': 'Hello, World!'})
 
 def make_app():
     return Application([
@@ -138,7 +138,7 @@ const app = express();
 app.use(expressAnalytics(<API-KEY>)); // Add middleware
 
 app.get('/', (req, res) => {
-    res.send({ message: 'Hello World' });
+    res.send({ message: 'Hello, World!' });
 });
 
 app.listen(8080, () => {
@@ -156,14 +156,14 @@ npm install node-api-analytics
 
 ```js
 import Fastify from 'fastify';
-import { fastifyAnalytics } from 'node-api-analytics;
+import { fastifyAnalytics } from 'node-api-analytics';
 
 const fastify = Fastify();
 
 fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>)); // Add middleware
 
 fastify.get('/', function (request, reply) {
-  reply.send({ message: 'Hello World!' });
+  reply.send({ message: 'Hello, World!' });
 })
 
 fastify.listen({ port: 8080 }, function (err, address) {
@@ -192,7 +192,7 @@ const app = new Koa();
 app.use(koaAnalytics(<API-KEY>)); // Add middleware
 
 app.use((ctx) => {
-  ctx.body = { message: 'Hello World!' };
+  ctx.body = { message: 'Hello, World!' };
 });
 
 app.listen(8080, () =>
@@ -218,7 +218,7 @@ import (
 )
 
 func root(c *gin.Context) {
-    jsonData := []byte(`{"message": "Hello World!"}`)
+    jsonData := []byte(`{"message": "Hello, World!"}`)
     c.Data(http.StatusOK, "application/json", jsonData)
 }
 
@@ -251,7 +251,7 @@ import (
 )
 
 func root(c echo.Context) error {
-    jsonData := []byte(`{"message": "Hello World!"}`)
+    jsonData := []byte(`{"message": "Hello, World!"}`)
     return c.JSON(http.StatusOK, jsonData)
 }
 
@@ -284,7 +284,7 @@ import (
 )
 
 func root(c *fiber.Ctx) error {
-    jsonData := []byte(`{"message": "Hello World!"}`)
+    jsonData := []byte(`{"message": "Hello, World!"}`)
     return c.SendString(string(jsonData))
 }
 
@@ -318,7 +318,7 @@ import (
 func root(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusOK)
-    jsonData := []byte(`{"message": "Hello World!"}`)
+    jsonData := []byte(`{"message": "Hello, World!"}`)
     w.Write(jsonData)
 }
 
@@ -353,7 +353,7 @@ struct JsonData {
 #[get("/")]
 async fn index() -> Result<impl Responder> {
     let data = JsonData {
-        message: "Hello World!".to_string(),
+        message: "Hello, World!".to_string(),
     };
     Ok(web::Json(data))
 }
@@ -396,7 +396,7 @@ struct JsonData {
 
 async fn root() -> Json<JsonData> {
     let data = JsonData {
-        message: "Hello World!".to_string(),
+        message: "Hello, World!".to_string(),
     };
     Json(data)
 }
@@ -438,7 +438,7 @@ pub struct JsonData {
 #[get("/")]
 fn root() -> Json<JsonData> {
     let data = JsonData {
-        message: "Hello World".to_string(),
+        message: "Hello, World!".to_string(),
     };
     Json(data)
 }
@@ -496,7 +496,7 @@ before do
 end
 
 get '/' do
-    {message: 'Hello World!'}.to_json
+    {message: 'Hello, World!'}.to_json
 end
 ```
 
@@ -509,7 +509,7 @@ dotnet add package APIAnalytics.AspNetCore
 ```
 
 ```cs
-using analytics;
+using Analytics;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -599,20 +599,22 @@ curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 
 ## Client ID and Privacy
 
-By default, API Analytics logs and stores the client IP address of all incoming requests made to your API and infers a country location from the IP address if possible. This IP address is used as a form of client identification in the dashboard to estimate the number of users accessing your service.
+By default, API Analytics logs and stores the client IP address of all incoming requests made to your API and infers a location (country) from the IP address if possible. This IP address is used as a form of client identification in the dashboard to estimate the number of users accessing your service.
 
 This behaviour can be controlled through a privacy level defined in the configuration of the API middleware. There are three privacy levels to choose from 0 (default) to a maximum of 2. A privacy level of 1 will disable IP address storing, and a value of 2 will also disable location inference.
 
-1. Privacy level = 0 (default) - The client IP address is used to infer a location (country) and then stored for user identification of any given request.
-2. Privacy level = 1 - The client IP address is used to infer a location (country) and then discarded.
-3. Privacy level = 2 - The client IP address is never accessed and location is never inferred.
+Privacy Levels:
+
+- `0` - The client IP address is used to infer a location and then stored for user identification. (default)
+- `1` - The client IP address is used to infer a location and then discarded.
+- `2` - The client IP address is never accessed and location is never inferred.
 
 ```py
 from fastapi import FastAPI
 from api_analytics.fastapi import Analytics, Config
 
 config = Config()
-config.privacy_level = 2
+config.privacy_level = 2  # Disable IP storing and location inference
 
 app = FastAPI()
 app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
@@ -638,7 +640,7 @@ All data is stored securely in compliance with The EU General Data Protection Re
 For any given request to your API, data recorded is limited to:
 
 - Path requested by client
-- Client IP address
+- Client IP address (optional)
 - Client operating system
 - Client browser
 - Request method (GET, POST, PUT, etc.)

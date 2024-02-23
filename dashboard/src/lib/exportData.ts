@@ -25,7 +25,7 @@ function convertToCSV(data: RequestsData, columns: string[]) {
 
 export default function exportCSV(data: RequestsData, columns: string[]) {
     const csv = convertToCSV(data, columns);
-    const exportedFilename = 'export.csv';
+    const exportedFilename = `api_analytics_${(new Date).toJSON().replace(/[- .]/g, '_')}.csv`;
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
 
     const link = document.createElement('a');

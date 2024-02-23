@@ -454,7 +454,7 @@
     transition: 0.1s;
   }
   .settings-icon:hover {
-    filter: contrast(0.1);
+    filter: contrast(0.05);
   }
 
   @media screen and (max-width: 800px) {

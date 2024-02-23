@@ -1,7 +1,7 @@
 type FrameworkExamples = {
     [framework: string]: {
         install: string
-        codeFile: string
+        codeFile?: string
         example: string
     }
 }
@@ -19,7 +19,6 @@ MIDDLEWARE = [
     },
     Flask: {
         install: 'pip install api-analytics',
-        codeFile: '',
         example: `from flask import Flask
 from api_analytics.flask import add_middleware
 
@@ -28,14 +27,13 @@ add_middleware(app, <API-KEY>)  # Add middleware
 
 @app.get('/')
 def root():
-    return {'message': 'Hello World!'}
+    return {'message': 'Hello, World!'}
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run()`,
     },
     FastAPI: {
         install: 'pip install fastapi-analytics',
-        codeFile: '',
         example: `import uvicorn
 from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
@@ -45,17 +43,15 @@ app.add_middleware(Analytics, api_key=<API-KEY>)  # Add middleware
 
 @app.get('/')
 async def root():
-    return {'message': 'Hello World!'}
+    return {'message': 'Hello, World!'}
 
-if __name__ == "__main__":
-    uvicorn.run("app:app", reload=True)`,
+if __name__ == '__main__':
+    uvicorn.run('app:app', reload=True)`,
     },
     Tornado: {
         install: 'pip install tornado-analytics',
-        codeFile: '',
         example: `import asyncio
 from tornado.web import Application
-
 from api_analytics.tornado import Analytics
 
 # Inherit from the Analytics middleware class
@@ -64,21 +60,20 @@ class MainHandler(Analytics):
         super().__init__(app, res, <API-KEY>)  # Provide api key
     
     def get(self):
-        self.write({'message': 'Hello World!'})
+        self.write({'message': 'Hello, World!'})
 
 def make_app():
     return Application([
-        (r"/", MainHandler),
+        (r'/', MainHandler),
     ])
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app = make_app()
     app.listen(8080)
     IOLoop.instance().start()`,
     },
     Express: {
         install: 'npm install node-api-analytics',
-        codeFile: '',
         example: `import express from 'express';
 import { expressAnalytics } from 'node-api-analytics';
 
@@ -87,7 +82,7 @@ const app = express();
 app.use(expressAnalytics(<API-KEY>)); // Add middleware
 
 app.get('/', (req, res) => {
-    res.send({ message: 'Hello World' });
+    res.send({ message: 'Hello, World!' });
 });
 
 app.listen(8080, () => {
@@ -96,16 +91,15 @@ app.listen(8080, () => {
     },
     Fastify: {
         install: 'npm install node-api-analytics',
-        codeFile: '',
         example: `import Fastify from 'fastify';
-import { fastifyAnalytics } from 'node-api-analytics;
+import { fastifyAnalytics } from 'node-api-analytics';
 
 const fastify = Fastify();
 
 fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>)); // Add middleware
 
 fastify.get('/', function (request, reply) {
-    reply.send({ message: 'Hello World!' });
+    reply.send({ message: 'Hello, World!' });
 })
 
 fastify.listen({ port: 8080 }, function (err, address) {
@@ -118,7 +112,6 @@ fastify.listen({ port: 8080 }, function (err, address) {
     },
     Koa: {
         install: 'npm install node-api-analytics',
-        codeFile: '',
         example: `import Koa from "koa";
 import { koaAnalytics } from 'node-api-analytics';
 
@@ -127,7 +120,7 @@ const app = new Koa();
 app.use(koaAnalytics(<API-KEY>)); // Add middleware
 
 app.use((ctx) => {
-    ctx.body = { message: 'Hello World!' };
+    ctx.body = { message: 'Hello, World!' };
 });
 
 app.listen(8080, () =>
@@ -136,32 +129,30 @@ app.listen(8080, () =>
     },
     Gin: {
         install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/gin',
-        codeFile: '',
         example: `package main
 
 import(
     "net/http"
-	"github.com/gin-gonic/gin"
-	analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
+    "github.com/gin-gonic/gin"
+    analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
 )
 
 func root(c * gin.Context) {
-    jsonData:= []byte(\`{"message": "Hello World!"}\`)
-	c.Data(http.StatusOK, "application/json", jsonData)
+    jsonData:= []byte(\`{"message": "Hello, World!"}\`)
+    c.Data(http.StatusOK, "application/json", jsonData)
 }
 
 func main() {
-	router := gin.Default()
-	
-	router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
+    router := gin.Default()
+    
+    router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
-	router.GET("/", root)
-	router.Run(":8080")
+    router.GET("/", root)
+    router.Run(":8080")
 }`,
     },
     Echo: {
         install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/echo',
-        codeFile: '',
         example: `package main
 
 import (
@@ -171,7 +162,7 @@ import (
 )
 
 func root(c echo.Context) error {
-    jsonData := []byte(\`{"message": "Hello World!"}\`)
+    jsonData := []byte(\`{"message": "Hello, World!"}\`)
     return c.JSON(http.StatusOK, jsonData)
 }
 
@@ -186,58 +177,55 @@ func main() {
     },
     Fiber: {
         install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/fiber',
-        codeFile: '',
         example: `package main
 
 import (
-	"github.com/gofiber/fiber/v2"
-	analytics "github.com/tom-draper/api-analytics/analytics/go/fiber"
+    "github.com/gofiber/fiber/v2"
+    analytics "github.com/tom-draper/api-analytics/analytics/go/fiber"
 )
 
 func root(c *fiber.Ctx) error {
-	jsonData := []byte(\`{"message": "Hello World!"}\`)
-	return c.SendString(string(jsonData))
+    jsonData := []byte(\`{"message": "Hello, World!"}\`)
+    return c.SendString(string(jsonData))
 }
 
 func main() {
-	app := fiber.New()
+    app := fiber.New()
 
-	app.Use(analytics.Analytics(<API-KEY>)) // Add middleware
+    app.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
-	app.Get("/", root)
-	app.Listen(":8080")
+    app.Get("/", root)
+    app.Listen(":8080")
 }`,
     },
     Chi: {
         install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/chi',
-        codeFile: '',
         example: `package main
 
 import (
-	"net/http"
-	"github.com/go-chi/chi/v5"
-	analytics "github.com/tom-draper/api-analytics/analytics/go/chi"
+    "net/http"
+    "github.com/go-chi/chi/v5"
+    analytics "github.com/tom-draper/api-analytics/analytics/go/chi"
 )
 
 func root(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	jsonData := []byte(\`{"message": "Hello World!"}\`)
-	w.Write(jsonData)
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    jsonData := []byte(\`{"message": "Hello, World!"}\`)
+    w.Write(jsonData)
 }
 
 func main() {
-	router := chi.NewRouter()
+    router := chi.NewRouter()
 
-	router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
+    router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
-	router.GET("/", root)
-	router.Run(":8080")
+    router.GET("/", root)
+    router.Run(":8080")
 }`,
     },
     Actix: {
         install: 'cargo add actix-analytics',
-        codeFile: '',
         example: `use actix_web::{get, web, App, HttpServer, Responder, Result};
 use serde::Serialize;
 use actix_analytics::Analytics;
@@ -250,7 +238,7 @@ struct JsonData {
 #[get("/")]
 async fn index() -> Result<impl Responder> {
     let data = JsonData {
-        message: "Hello World!".to_string(),
+        message: "Hello, World!".to_string(),
     };
     Ok(web::Json(data))
 }
@@ -269,7 +257,6 @@ async fn main() -> std::io::Result<()> {
     },
     Axum: {
         install: 'cargo add axum-analytics',
-        codeFile: '',
         example: `use axum::{
     routing::get,
     Json, Router,
@@ -286,7 +273,7 @@ struct JsonData {
 
 async fn root() -> Json<JsonData> {
     let data = JsonData {
-        message: "Hello World!".to_string(),
+        message: "Hello, World!".to_string(),
     };
     Json(data)
 }
@@ -306,7 +293,6 @@ async fn main() {
     },
     Rocket: {
         install: 'cargo add rocket-analytics',
-        codeFile: '',
         example: `#[macro_use]
 extern crate rocket;
 use rocket::serde::json::Json;
@@ -321,7 +307,7 @@ pub struct JsonData {
 #[get("/")]
 fn root() -> Json<JsonData> {
     let data = JsonData {
-        message: "Hello World".to_string(),
+        message: "Hello, World!".to_string(),
     };
     Json(data)
 }
@@ -330,7 +316,7 @@ fn root() -> Json<JsonData> {
 fn rocket() -> _ {
     rocket::build()
         .mount("/", routes![root])
-        .attach(Analytics::new(<API-KEY>))
+        .attach(Analytics::new(<API-KEY>))  // Add middleware
 }`,
     },
     Rails: {
@@ -352,18 +338,17 @@ end`,
     },
     Sinatra: {
         install: 'gem install api_analytics',
-        codeFile: '',
         example: `require 'sinatra'
 require 'api_analytics'
 
-use Analytics::Sinatra, <API-KEY>
+use Analytics::Sinatra, <API-KEY> # Add middleware
 
 before do
     content_type 'application/json'
 end
 
 get '/' do
-    {message: 'Hello World!'}.to_json
+    {message: 'Hello, World!'}.to_json
 end`,
     },
     Laravel: {
@@ -376,7 +361,6 @@ end`,
     },
     "ASP.NET Core": {
         install: "dotnet add package APIAnalytics.AspNetCore",
-        codeFile: '',
         example: `using analytics;
 using Microsoft.AspNetCore.Mvc;
 

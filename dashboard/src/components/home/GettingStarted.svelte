@@ -71,7 +71,7 @@
         <!-- TODO: dynamic syntax highlight rendering to only render the 
             frameworks clicked on and reduce this code to one line -->
         <div class="code-file">
-          {frameworkExamples[currentFramework.framework].codeFile}
+          {frameworkExamples[currentFramework.framework].codeFile ?? ''}
         </div>
         {#each frameworks as { language, framework }}
           <code
@@ -266,6 +266,9 @@
     width: auto;
     border: 3px solid transparent;
     border-radius: 4px;
+  }
+  .framework:hover {
+    color: white;
   }
   .active {
     color: white;
