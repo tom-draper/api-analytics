@@ -33,14 +33,40 @@
         }}
       />
     </div>
+    <div class="setting-title">Filters:</div>
+    <div class="setting-filters">
+      <div class="setting-filter">
+        Hostname: <span class:text-white={settings.hostname}
+          >{settings.hostname ?? 'None'}</span
+        >
+      </div>
+      <div class="setting-filter">
+        Period: <span class:text-white={settings.period}
+          >{settings.period ?? 'None'}</span
+        >
+      </div>
+      <div class="setting-filter">
+        Endpoint: <span class:text-white={settings.targetEndpoint.path}
+          >{settings.targetEndpoint.path ?? 'None'}</span
+        >
+      </div>
+      <div class="setting-filter">
+        Status: <span class:text-white={settings.targetEndpoint.status}
+          >{settings.targetEndpoint.status ?? 'None'}</span
+        >
+      </div>
+      <div class="setting-filter">
+        Location: <span class:text-white={settings.targetLocation}
+          >{settings.targetLocation ?? 'None'}</span
+        >
+      </div>
+    </div>
     <div class="setting-title">Hidden endpoints:</div>
     <div class="setting">
       <List bind:items={settings.hiddenEndpoints} />
     </div>
     <div class="export-csv">
-      <button class="export-csv-btn" on:click={exportCSV}>
-        Export CSV
-      </button>
+      <button class="export-csv-btn" on:click={exportCSV}> Export CSV </button>
     </div>
   </div>
 </div>
@@ -61,7 +87,7 @@
     background: var(--background);
     border-radius: 6px;
     width: 30vw;
-    min-height: 30vh;
+    /* min-height: 30vh; */
     border: 1px solid #2e2e2e;
     color: var(--faded-text);
     z-index: 20;
@@ -69,6 +95,7 @@
     cursor: default !important;
     pointer-events: bounding-box;
     padding: 30px 50px 50px;
+    position: relative;
   }
   .title {
     font-size: 1.8em;
@@ -87,6 +114,24 @@
   .setting-label {
     margin-right: 10px;
   }
+  .text-white {
+    color: white;
+  }
+
+  .setting-filters {
+    margin-bottom: 2em;
+    margin-top: 5px;
+    text-align: left;
+    font-size: 0.9em;
+    color: #707070;
+  }
+  .setting-filter {
+    margin: 2px 0;
+  }
+
+  input {
+    margin-bottom: 2em;
+  }
 
   #checkbox {
     height: 15px;
@@ -95,8 +140,11 @@
   }
 
   .export-csv {
-    text-align: left;
-    margin-top: 30px;
+    position: absolute;
+    text-align: right;
+    /* margin-top: 30px; */
+    right: 50px;
+    top: 2em;
   }
   .export-csv-btn {
     background: var(--background);
@@ -105,6 +153,10 @@
     padding: 5px 12px;
     cursor: pointer;
     border-radius: 3px;
+  }
+  .export-csv-btn:hover {
+    background: var(--highlight);
+    color: var(--background);
   }
 
   @media screen and (max-width: 1400px) {
@@ -117,6 +169,9 @@
     .container {
       width: 70vw;
       padding: 1.5em 2em;
+    }
+    .export-csv {
+      top: 1.5em;
     }
   }
 </style>

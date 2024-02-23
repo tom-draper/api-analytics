@@ -166,10 +166,11 @@
     overflow: hidden;
   }
   .value {
-    margin: 20px auto;
-    width: fit-content;
+    padding: 20px 10px;
     font-size: 1.8em;
     font-weight: 700;
+    position: inherit;
+    z-index: 2;
   }
   .percentage-change {
     position: absolute;

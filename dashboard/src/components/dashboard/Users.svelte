@@ -27,6 +27,10 @@
     };
   }
 
+  function getUserIdentifier(request: RequestsData[number]) {
+    return request[ColumnIndex.IPAddress] ?? '' + request[ColumnIndex.UserID].toString() ?? '';
+  }
+
   function lines() {
     const n = 5;
     const x = [...Array(n).keys()];
@@ -37,7 +41,8 @@
       const end = data[data.length - 1][ColumnIndex.CreatedAt].getTime();
       const range = end - start;
       for (let i = 0; i < data.length; i++) {
-        if (!data[i][ColumnIndex.IPAddress]) {
+        const userID = getUserIdentifier(data[i]);
+        if (!data[i][userID]) {
           continue
         }
         const time = data[i][ColumnIndex.CreatedAt].getTime();
@@ -98,8 +103,9 @@
   function getUsers(data: RequestsData): Set<string> {
     const users: Set<string> = new Set();
     for (let i = 0; i < data.length; i++) {
-      if (data[i][ColumnIndex.IPAddress]) {
-        users.add(data[i][ColumnIndex.IPAddress]);
+      const userID = getUserIdentifier(data[i]);
+      if (data[i][userID]) {
+        users.add(data[i][userID]);
       }
     }
     return users;
@@ -183,8 +189,7 @@
     overflow: hidden;
   }
   .value {
-    margin: 20px auto;
-    width: fit-content;
+    padding: 20px 10px;
     font-size: 1.8em;
     font-weight: 700;
     position: inherit;
