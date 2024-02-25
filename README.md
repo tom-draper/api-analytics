@@ -584,17 +584,19 @@ curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 
 You can filter your data by providing URL parameters in your request.
 
-- `date` - specifies a particular day the requests occurred on (`YYYY-MM-DD`)
-- `dateFrom` - specifies the lower bound of a date range the requests occurred in (`YYYY-MM-DD`)
-- `dateTo` - specifies the upper bound of a date range the requests occurred in (`YYYY-MM-DD`)
-- `ipAddress` - an IP address string of the client
-- `status` - an integer status code of the response
+- `date` - the exact day the requests occurred on (`YYYY-MM-DD`)
+- `dateFrom` - a lower bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `dateTo` - a upper bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `hostname` - the hostname of your service
+- `ipAddress` - the IP address of the client
+- `status` - the status code of the response
 - `location` - a two-character location code of the client
+- `user_id` - a custom user identifier (only relevant if a `get_user_id` mapper function has been set)
 
 Example:
 
 ```bash
-curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?dateFrom=2022-01-01&dateTo=2022-06-01&status=200
+curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?dateFrom=2022-01-01&dateTo=2022-06-01&hostname=apianalytics.dev&status=200&user_id=b56cbd92-1168-4d7b-8d94-0418da207908
 ```
 
 ## Client ID and Privacy
