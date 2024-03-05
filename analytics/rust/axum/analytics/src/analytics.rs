@@ -1,6 +1,6 @@
 use axum::{body::Body, extract::ConnectInfo, http::Request, response::Response};
 use chrono::Utc;
-use futures::{future::BoxFuture, Future};
+use futures::Future;
 use http::{
     header::{HeaderValue, HOST, USER_AGENT},
     Extensions, HeaderMap,
@@ -171,7 +171,6 @@ fn log_request(api_key: String, request_data: RequestData) {
 
 impl<S> Service<Request<Body>> for AnalyticsMiddleware<S>
 where
-    // S: Service<Request<Body>, Response = Response, Error = Error> + Send + 'static,
     S: Service<Request<Body>, Response = Response> + Send + 'static,
     S::Future: Send + 'static,
 {
@@ -185,110 +184,42 @@ where
     }
 
     fn call(&mut self, req: Request<Body>) -> Self::Future {
-        todo!()
+        let now = Instant::now();
+
+        let api_key = self.api_key.clone();
+        let hostname = req
+            .headers()
+            .get(HOST)
+            .map(|x| x.to_string())
+            .unwrap_or_default();
+        let ip_address = extract_ip_address(&req);
+        let path = req.uri().path().to_owned();
+        let method = req.method().to_string();
+        let user_agent = req
+            .headers()
+            .get(USER_AGENT)
+            .map(|x| x.to_string())
+            .unwrap_or_default();
+
+        let future = self.inner.call(req);
+
+        Box::pin(async move {
+            let res: Response = future.await?;
+
+            let request_data = RequestData::new(
+                hostname,
+                ip_address,
+                path,
+                user_agent,
+                method,
+                res.status().as_u16(),
+                now.elapsed().as_millis().try_into().unwrap(),
+                Utc::now().to_rfc3339(),
+            );
+
+            log_request(api_key, request_data);
+
+            Ok(res)
+        })
     }
-
-    // fn call(&mut self, req: Request<Body>) -> Self::Future {
-    //     let now = Instant::now();
-
-    //     let api_key = self.api_key.clone();
-    //     // ... (rest of the code remains mostly unchanged)
-
-    //     Box::pin(async move {
-    //         // ... (rest of the code remains mostly unchanged)
-    //     })
-    // }
-
-    // fn _call(&mut self, req: Request<Body>) -> Self::Future {
-    //     let now = Instant::now();
-
-    //     let api_key = self.api_key.clone();
-    //     let hostname = req
-    //         .headers()
-    //         .get(HOST)
-    //         .map(|x| x.to_string())
-    //         .unwrap_or_default();
-    //     let ip_address = extract_ip_address(&req);
-    //     let path = req.uri().path().to_owned();
-    //     let method = req.method().to_string();
-    //     let user_agent = req
-    //         .headers()
-    //         .get(USER_AGENT)
-    //         .map(|x| x.to_string())
-    //         .unwrap_or_default();
-
-    //     let future = self.inner.call(req);
-
-    //     Box::pin(async move {
-    //         let res: Response = future.await?;
-
-    //         let request_data = RequestData::new(
-    //             hostname,
-    //             ip_address,
-    //             path,
-    //             user_agent,
-    //             method,
-    //             res.status().as_u16(),
-    //             now.elapsed().as_millis().try_into().unwrap(),
-    //             Utc::now().to_rfc3339(),
-    //         );
-
-    //         log_request(api_key, request_data);
-
-    //         Ok(res)
-    //     })
 }
-
-// impl<S> Service<Request<Body>> for AnalyticsMiddleware<S>
-// where
-//     S: Service<Request<Body>, Response = Response> + Send + 'static,
-//     S::Future: Send + 'static,
-// {
-//     type Response = S::Response;
-//     type Error = S::Error;
-//     type Future = BoxFuture<'static, Result<Self::Response, Self::Error>>;
-
-//     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-//         self.inner.poll_ready(cx)
-//     }
-
-//     fn call(&mut self, req: Request<Body>) -> Self::Future {
-//         let now = Instant::now();
-
-//         let api_key = self.api_key.clone();
-//         let hostname = req
-//             .headers()
-//             .get(HOST)
-//             .map(|x| x.to_string())
-//             .unwrap_or_default();
-//         let ip_address = extract_ip_address(&req);
-//         let path = req.uri().path().to_owned();
-//         let method = req.method().to_string();
-//         let user_agent = req
-//             .headers()
-//             .get(USER_AGENT)
-//             .map(|x| x.to_string())
-//             .unwrap_or_default();
-
-//         let future = self.inner.call(req);
-
-//         Box::pin(async move {
-//             let res: Response = future.await?;
-
-//             let request_data = RequestData::new(
-//                 hostname,
-//                 ip_address,
-//                 path,
-//                 user_agent,
-//                 method,
-//                 res.status().as_u16(),
-//                 now.elapsed().as_millis().try_into().unwrap(),
-//                 Utc::now().to_rfc3339(),
-//             );
-
-//             log_request(api_key, request_data);
-
-//             Ok(res)
-//         })
-//     }
-// }
