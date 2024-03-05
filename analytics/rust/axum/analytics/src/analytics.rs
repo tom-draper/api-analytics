@@ -30,6 +30,7 @@ struct RequestData {
 }
 
 impl RequestData {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         hostname: String,
         ip_address: String,
