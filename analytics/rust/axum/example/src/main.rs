@@ -1,13 +1,8 @@
-use axum::{
-    routing::get,
-    Json, Router,
-};
+use axum::{routing::get, Json, Router};
+use axum_analytics::Analytics;
+use dotenv::dotenv;
 use serde::Serialize;
 use std::net::SocketAddr;
-use tokio;
-use dotenv::dotenv;
-use axum_analytics::Analytics;
-
 
 #[derive(Serialize)]
 struct JsonData {
@@ -31,9 +26,7 @@ async fn main() {
         .layer(Analytics::new(api_key));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     println!("Server listening at: http://127.0.0.1:8080");
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
