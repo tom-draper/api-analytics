@@ -380,14 +380,10 @@ cargo add axum-analytics
 ```
 
 ```rust
-use axum::{
-    routing::get,
-    Json, Router,
-};
+use axum::{routing::get, Json, Router};
+use axum_analytics::Analytics;
 use serde::Serialize;
 use std::net::SocketAddr;
-use tokio;
-use axum_analytics::Analytics;
 
 #[derive(Serialize)]
 struct JsonData {
@@ -395,23 +391,22 @@ struct JsonData {
 }
 
 async fn root() -> Json<JsonData> {
-    let data = JsonData {
-        message: "Hello, World!".to_string(),
+    let json_data = JsonData {
+        message: String::from("Hello World!"),
     };
-    Json(data)
+    Json(json_data)
 }
 
 #[tokio::main]
 async fn main() {
     let app = Router::new()
-        .layer(Analytics::new(<API-KEY>))  // Add middleware
-        .route("/", get(root));
+        .route("/", get(root))
+        .layer(Analytics::new(<API-KEY>));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    println!("Server listening at: http://127.0.0.1:8080");
+    axum::serve(listener, app).await.unwrap();
 }
 ```
 
