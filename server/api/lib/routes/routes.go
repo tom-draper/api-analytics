@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -15,7 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v5"
-	"github.com/joho/godotenv"
 	"github.com/tom-draper/api-analytics/server/api/lib/log"
 	"github.com/tom-draper/api-analytics/server/database"
 )
@@ -65,11 +63,18 @@ func getUserID(c *gin.Context) {
 	c.JSON(http.StatusOK, userID)
 }
 
+type DashboardRequests struct {
+	UserAgents UserAgentsLookup `json:"user_agents"`
+	Requests   [][]any          `json:"requests"`
+}
+
+type UserAgentsLookup map[int]string
+
 type PublicRequestRow struct {
 	Hostname     *string     `json:"hostname"`
 	IPAddress    pgtype.CIDR `json:"ip_address"`
 	Path         string      `json:"path"`
-	UserAgent    *string     `json:"user_agent"`
+	UserAgent    int         `json:"user_agent"`
 	Method       int16       `json:"method"`
 	Status       int16       `json:"status"`
 	ResponseTime int16       `json:"response_time"`
@@ -101,17 +106,18 @@ func getUserRequests(c *gin.Context) {
 		return
 	}
 
-	cols := []any{"ip_address", "path", "hostname", "user_agent", "method", "response_time", "status", "location", "user_id", "created_at"}
+	cols := []any{"ip_address", "path", "hostname", "user_agent_id", "method", "response_time", "status", "location", "user_id", "created_at"}
 	requests := [][]any{cols}
-	pageSize := 500_000
+	pageSize := 1_000_000
 	maxRequests := pageSize   // Temporary limit to prevent memory issues
 	pageMarker := time.Time{} // Start with min time to capture first page
+	userAgentIDs := make(map[int]struct{})
 
 	// Read paginated requests data
 	for {
 		// Fetch user ID corresponding with API key
 		// Left table join was originally used but often exceeded postgresql working memory limit with large numbers of requests
-		query = "SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 AND created_at >= $2 ORDER BY created_at LIMIT $3;"
+		query = "SELECT ip_address, path, hostname, user_agent_id, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 AND created_at >= $2 ORDER BY created_at LIMIT $3;"
 		rows, err := conn.Query(context.Background(), query, apiKey, pageMarker, pageSize)
 		if err != nil {
 			log.LogToFile(fmt.Sprintf("key=%s: Invalid API key - %s", apiKey, err.Error()))
@@ -130,10 +136,12 @@ func getUserRequests(c *gin.Context) {
 					ip = request.IPAddress.IPNet.IP.String()
 				}
 				hostname := getNullableString(request.Hostname)
-				userAgent := getNullableString(request.UserAgent)
 				location := getNullableString(request.Location)
 				userID := getNullableString(request.UserID)
-				requests = append(requests, []any{ip, request.Path, hostname, userAgent, request.Method, request.ResponseTime, request.Status, location, userID, request.CreatedAt})
+				requests = append(requests, []any{ip, request.Path, hostname, request.UserAgent, request.Method, request.ResponseTime, request.Status, location, userID, request.CreatedAt})
+				if _, ok := userAgentIDs[int(request.UserAgent)]; !ok {
+					userAgentIDs[request.UserAgent] = struct{}{}
+				}
 			}
 			count++
 			if count >= maxRequests {
@@ -152,7 +160,42 @@ func getUserRequests(c *gin.Context) {
 		rows.Close()
 	}
 
-	gzipOutput, err := compressJSON(requests)
+	// Convert user agent IDs to names
+	userAgents := make(map[int]string)
+	var userAgentsQuery strings.Builder
+	userAgentsQuery.WriteString("SELECT id, name FROM user_agents WHERE id IN (")
+	arguments := []int{}
+	var i int
+	for id := range userAgentIDs {
+		userAgentsQuery.WriteString("$%d")
+		arguments = append(arguments, id)
+		if i < len(userAgentIDs)-1 {
+			userAgentsQuery.WriteString(",")
+		}
+	}
+	userAgentsQuery.WriteString(");")
+	rows, err := conn.Query(context.Background(), userAgentsQuery.String())
+	if err != nil {
+		log.LogToFile(fmt.Sprintf("key=%s: User agent lookup failed - %s", apiKey, err.Error()))
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User agent lookup failed."})
+		return
+	}
+
+	for rows.Next() {
+		var id int
+		var name string
+		err := rows.Scan(&id, &name)
+		if err == nil {
+			userAgents[id] = name
+		}
+	}
+
+	body := DashboardRequests{
+		UserAgents: userAgents,
+		Requests:   requests,
+	}
+
+	gzipOutput, err := compressJSON(body)
 	if err != nil {
 		log.LogToFile(fmt.Sprintf("key=%s: Compression failed - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Compression failed."})
