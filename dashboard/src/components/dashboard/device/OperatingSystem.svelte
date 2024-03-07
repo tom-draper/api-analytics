@@ -86,7 +86,8 @@
   function pieChart() {
     const osCount = {};
     for (let i = 0; i < data.length; i++) {
-      const os = getOS(data[i][ColumnIndex.UserAgent]);
+      const userAgent = getUserAgent(data[i][ColumnIndex.UserAgent]);
+      const os = getOS(userAgent);
       osCount[os] |= 0;
       osCount[os]++;
     }
@@ -140,7 +141,7 @@
 
   $: data && mounted && genPlot();
 
-  export let data: RequestsData;
+  export let data: RequestsData, getUserAgent: (id: number) => string;
 </script>
 
 <div id="plotly">

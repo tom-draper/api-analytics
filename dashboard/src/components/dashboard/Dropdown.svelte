@@ -1,39 +1,18 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-
   function selectOption(option: string) {
     selected = option;
     hideOptions = true;
   }
 
-  function setWidth() {
-    // Set dropdown width considering width of hidden options within
-    // Width of text div + dropdown icon
-    console.log(current.clientWidth)
-    dropdown.style.width = `${current.clientWidth + 22}px`;
-  }
-
-  let dropdown: HTMLDivElement;
-  let current: HTMLButtonElement;
-  onMount(() => {
-    // setWidth();
-    // setWidth();
-    // setTimeout(() => {
-    //   setWidth();
-    // }, 1000);
-    // setWidth();  // Sometimes needs to be called twice when first loaded in mobile view (maybe due to image render?)
-  });
-
   let hideOptions: boolean = true;
   export let options: string[], selected: string;
 </script>
 
-<div class="dropdown" bind:this={dropdown} id="dropdown">
+<div class="dropdown" id="dropdown">
   <div class="inner">
     <button
       class="current"
       class:square-bottom={!hideOptions}
-      bind:this={current}
       on:click={() => {
         hideOptions = !hideOptions;
       }}

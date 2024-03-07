@@ -144,22 +144,19 @@
   };
 
   function sortedFrequencies(freq: ValueCount): string[] {
-    const sortedFreq: { value: string; count: number }[] = [];
-    for (const value in freq) {
-      sortedFreq.push({
-        value: value,
-        count: freq[value],
-      });
-    }
+    const sortedFreq = Object.keys(freq).map(
+      (value) => {
+        return {
+          value: value,
+          count: freq[value],
+        };
+      }
+    );
     sortedFreq.sort((a, b) => {
       return b.count - a.count;
     });
 
-    const values = [];
-    for (const value of sortedFreq) {
-      values.push(value.value);
-    }
-
+    const values = sortedFreq.map((value) => value.value);
     return values;
   }
 
@@ -181,13 +178,12 @@
     }
   }
 
-  async function fetchData() {
+  async function fetchData(): Promise<DashboardData> {
     userID = formatUUID(userID);
     try {
       const response = await fetch(`${serverURL}/api/requests/${userID}`);
       if (response.status === 200) {
-        const json = await response.json();
-        return json;
+        return await response.json();
       }
     } catch (e) {
       failed = true;
@@ -201,6 +197,7 @@
   }
 
   let data: RequestsData;
+  let userAgents: UserAgents;
   let settings: DashboardSettings = initSettings();
   let showSettings: boolean = false;
   let hostnames: string[];
@@ -222,11 +219,9 @@
   let failed = false;
   let endpointsRendered = false;
   onMount(async () => {
-    if (demo) {
-      data = genDemoData();
-    } else {
-      data = await fetchData();
-    }
+    const dashboardData = await getDashboardData();
+    data = dashboardData.requests;
+    userAgents = dashboardData.userAgents;
 
     setPeriod(settings.period);
     setHostnames();
@@ -240,6 +235,20 @@
 
     console.log(data);
   });
+
+  async function getDashboardData() {
+    if (demo) {
+      return genDemoData();
+    }
+    return await fetchData();
+  }
+
+  function getUserAgent(id: number): string {
+    if (id in userAgents) {
+      return userAgents[id];
+    }
+    return ""
+  }
 
   function refreshData() {
     if (data === undefined) {
@@ -333,7 +342,7 @@
             data={periodData}
             bind:targetLocation={settings.targetLocation}
           />
-          <Device data={periodData} />
+          <Device data={periodData} {getUserAgent} />
         </div>
         <UsageTime data={periodData} />
       </div>
@@ -352,7 +361,7 @@
   bind:show={showSettings}
   bind:settings
   exportCSV={() => {
-    exportCSV(periodData, columns);
+    exportCSV(periodData, columns, userAgents);
   }}
 />
 <Notification state={notification} />

@@ -92,7 +92,11 @@
     build();
   }
 
-  let endpoints: EndpointFreq[keyof EndpointFreq][];
+  let endpoints: {
+    path: string;
+    status: number;
+    count: number;
+}[];
   let maxCount: number;
   let mounted = false;
   let activeBtn: 'all' | 'success' | 'client' | 'server' = 'all';

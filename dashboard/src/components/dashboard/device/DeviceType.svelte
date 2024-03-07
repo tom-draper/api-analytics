@@ -48,7 +48,8 @@
   function pieChart() {
     const deviceCount = {};
     for (let i = 0; i < data.length; i++) {
-      const device = getDevice(data[i][ColumnIndex.UserAgent]);
+      const userAgent = getUserAgent(data[i][ColumnIndex.UserAgent]);
+      const device = getDevice(userAgent);
       deviceCount[device] |= 0;
       deviceCount[device]++;
     }
@@ -102,7 +103,7 @@
 
   $: data && mounted && genPlot();
 
-  export let data: RequestsData;
+  export let data: RequestsData, getUserAgent: (id: number) => string;
 </script>
 
 <div id="plotly">
