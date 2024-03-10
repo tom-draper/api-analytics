@@ -80,23 +80,21 @@
     );
   }
 
-  function setPercentageChange() {
+  function getPercentageChange() {
     if (prevData.length == 0) {
-      percentageChange = null;
-    } else {
-      percentageChange = (data.length / prevData.length) * 100 - 100;
+      return null;
     }
+    return (data.length / prevData.length) * 100 - 100;
   }
 
-  function setRequestsPerHour() {
+  function getRequestsPerHour() {
     if (data.length > 0) {
       const days = periodToDays(period);
       if (days != null) {
-        requestsPerHour = (data.length / (24 * days)).toFixed(2);
+        return (data.length / (24 * days)).toFixed(2);
       }
-    } else {
-      requestsPerHour = '0';
     }
+    return '0';
   }
 
   function togglePeriod() {
@@ -104,8 +102,8 @@
   }
 
   function build() {
-    setPercentageChange();
-    setRequestsPerHour();
+    percentageChange = getPercentageChange();
+    requestsPerHour = getRequestsPerHour();
     genPlot();
   }
 

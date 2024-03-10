@@ -11,7 +11,7 @@
 
   let activeBtn: 'client' | 'os' | 'device' = 'client';
 
-  export let data: RequestsData;
+  export let data: RequestsData, getUserAgent: (id: number) => string;
 </script>
 
 <div class="card">
@@ -38,14 +38,14 @@
       >
     </div>
   </div>
-  <div class="client" style={activeBtn === 'client' ? 'display: initial' : ''}>
-    <Client {data} />
+  <div class="client" class:display={activeBtn === 'client'}>
+    <Client {data} {getUserAgent} />
   </div>
-  <div class="os" style={activeBtn === 'os' ? 'display: initial' : ''}>
-    <OperatingSystem {data} />
+  <div class="os" class:display={activeBtn === 'os'}>
+    <OperatingSystem {data} {getUserAgent} />
   </div>
-  <div class="device" style={activeBtn === 'device' ? 'display: initial' : ''}>
-    <DeviceType {data} />
+  <div class="device" class:display={activeBtn === 'device'}>
+    <DeviceType {data} {getUserAgent} />
   </div>
 </div>
 
@@ -68,6 +68,9 @@
   .client,
   .device {
     display: none;
+  }
+  .display {
+    display: initial;
   }
   button {
     border: none;

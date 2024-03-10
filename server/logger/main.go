@@ -81,6 +81,65 @@ func getCountryCode(IPAddress string) string {
 	return location
 }
 
+func storeNewUserAgents(userAgents map[string]struct{}) {
+	var query strings.Builder
+	query.WriteString("INSERT INTO user_agents (user_agent) VALUES ")
+	arguments := make([]any, len(userAgents))
+	i := 0
+	for userAgent := range userAgents {
+		query.WriteString(fmt.Sprintf("($%d)", i+1))
+		if i < len(userAgents)-1 {
+			query.WriteString(",")
+		}
+		arguments[i] = userAgent
+		i++
+	}
+	query.WriteString(" ON CONFLICT (user_agent) DO NOTHING;")
+
+	conn := database.NewConnection()
+	_, err := conn.Exec(context.Background(), query.String(), arguments...)
+	conn.Close(context.Background())
+	if err != nil {
+		log.LogToFile(err.Error())
+	}
+}
+
+func getUserAgentIDs(userAgents map[string]struct{}) map[string]int16 {
+	var query strings.Builder
+	query.WriteString("SELECT user_agent, id FROM user_agents WHERE user_agent IN (")
+	arguments := make([]any, len(userAgents))
+	i := 0
+	for userAgent := range userAgents {
+		query.WriteString(fmt.Sprintf("$%d", i+1))
+		if i < len(userAgents)-1 {
+			query.WriteString(",")
+		}
+		arguments[i] = userAgent
+		i++
+	}
+	query.WriteString(");")
+
+	ids := make(map[string]int16)
+	conn := database.NewConnection()
+	rows, err := conn.Query(context.Background(), query.String(), arguments...)
+	conn.Close(context.Background())
+	if err != nil {
+		log.LogToFile(err.Error())
+		return ids
+	}
+	for rows.Next() {
+		var userAgent string
+		var id int16
+		err := rows.Scan(&userAgent, &id)
+		if err != nil {
+			log.LogToFile(err.Error())
+			continue
+		}
+		ids[userAgent] = id
+	}
+	return ids
+}
+
 func logRequestHandler() gin.HandlerFunc {
 	var rateLimiter = ratelimit.RateLimiter{}
 
@@ -152,10 +211,11 @@ func logRequestHandler() gin.HandlerFunc {
 		}
 
 		var query strings.Builder
-		query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, user_id, created_at) VALUES ")
+		query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, user_id, created_at, user_agent_id) VALUES ")
 		arguments := make([]any, 0)
 		inserted := 0
-		badUserAgents := []string{}
+		userAgents := map[string]struct{}{}
+		badUserAgents := map[string]struct{}{}
 		for _, request := range payload.Requests {
 			// Temporary 1000 request per minute limit
 			if inserted >= maxInsert {
@@ -182,7 +242,10 @@ func logRequestHandler() gin.HandlerFunc {
 				request.UserAgent = request.UserAgent[:255]
 			}
 			if !database.ValidUserAgent(request.UserAgent) {
-				badUserAgents = append(badUserAgents, request.UserAgent)
+				// Store bad user agent for logging
+				if _, ok := badUserAgents[request.UserAgent]; !ok {
+					badUserAgents[request.UserAgent] = struct{}{}
+				}
 				continue
 			}
 
@@ -211,9 +274,15 @@ func logRequestHandler() gin.HandlerFunc {
 			if inserted > 0 && inserted < maxInsert && inserted < len(payload.Requests) {
 				query.WriteString(",")
 			}
+
+			// Register user agent to be stored in the database
+			if _, ok := userAgents[request.UserAgent]; !ok {
+				userAgents[request.UserAgent] = struct{}{}
+			}
+
 			numArgs := len(arguments)
 			query.WriteString(
-				fmt.Sprintf("($%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d)",
+				fmt.Sprintf("($%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d)",
 					numArgs+1,
 					numArgs+2,
 					numArgs+3,
@@ -225,7 +294,8 @@ func logRequestHandler() gin.HandlerFunc {
 					numArgs+9,
 					numArgs+10,
 					numArgs+11,
-					numArgs+12),
+					numArgs+12,
+					numArgs+13),
 			)
 			arguments = append(
 				arguments,
@@ -240,19 +310,9 @@ func logRequestHandler() gin.HandlerFunc {
 				framework,
 				location,
 				request.UserID,
-				request.CreatedAt)
+				request.CreatedAt,
+				0)
 			inserted += 1
-		}
-
-		// Record in log file for debugging
-		log.LogRequestsToFile(payload.APIKey, inserted, len(payload.Requests))
-		// Log any bad user agents found
-		if len(badUserAgents) > 0 {
-			var msg bytes.Buffer
-			for i, userAgent := range badUserAgents {
-				msg.WriteString(fmt.Sprintf("[%d] bad user agent: %s\n", i, userAgent))
-			}
-			log.LogToFile(msg.String())
 		}
 
 		// If no valid logged requests received
@@ -263,6 +323,18 @@ func logRequestHandler() gin.HandlerFunc {
 		}
 
 		query.WriteString(";")
+
+		// Store any new user agents in the database
+		storeNewUserAgents(userAgents)
+		// Get associated user IDs for user agents
+		userAgentIDs := getUserAgentIDs(userAgents)
+		// Insert user agent IDs into arguments
+		for i := 0; i < len(arguments); i += 13 {
+			userAgent := arguments[i+4].(string)
+			if id, ok := userAgentIDs[userAgent]; ok {
+				arguments[i+12] = id
+			}
+		}
 
 		// Insert logged requests into database
 		conn := database.NewConnection()
@@ -276,5 +348,18 @@ func logRequestHandler() gin.HandlerFunc {
 
 		// Return success response
 		c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "API requests logged successfully."})
+
+		// Record in log file for debugging
+		log.LogRequestsToFile(payload.APIKey, inserted, len(payload.Requests))
+		// Log any bad user agents found
+		if len(badUserAgents) > 0 {
+			var msg bytes.Buffer
+			i := 0
+			for userAgent := range badUserAgents {
+				msg.WriteString(fmt.Sprintf("[%d] bad user agent: %s\n", i, userAgent))
+				i++
+			}
+			log.LogToFile(msg.String())
+		}
 	}
 }

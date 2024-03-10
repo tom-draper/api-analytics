@@ -71,7 +71,8 @@
   function pieChart() {
     const clientCount = {};
     for (let i = 0; i < data.length; i++) {
-      const client = getBrowser(data[i][ColumnIndex.UserAgent]);
+      const userAgent = getUserAgent(data[i][ColumnIndex.UserAgent]);
+      const client = getBrowser(userAgent);
       clientCount[client] |= 0;
       clientCount[client]++;
     }
@@ -124,7 +125,7 @@
   });
 
   $: data && mounted && genPlot();
-  export let data: RequestsData;
+  export let data: RequestsData, getUserAgent: (id: number) => string;
 </script>
 
 <div id="plotly">

@@ -136,11 +136,6 @@ func displayDatabaseStats() {
 		panic(err)
 	}
 	p.Println("Database size:", size)
-	// columnSize, err := usage.RequestsColumnSize()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// columnSize.Display()
 }
 
 func displayLastHour() {
@@ -201,6 +196,26 @@ func displayLastWeek() {
 		panic(err)
 	}
 	p.Println("Monitors:", weeklyMonitors)
+}
+
+func displayDatabaseCheckup() {
+	displayDatabaseStats()
+	p := message.NewPrinter(language.English)
+	totalRequests, err := usage.RequestsCount("")
+	if err != nil {
+		panic(err)
+	}
+	p.Println("Requests:", totalRequests)
+	displayDatabaseTableStats()
+}
+
+func displayDatabaseTableStats() {
+	printBanner("Requests Fields")
+	columnSize, err := usage.RequestsColumnSize()
+	if err != nil {
+		panic(err)
+	}
+	columnSize.Display()
 }
 
 func displayUsersCheckup() {
@@ -275,6 +290,7 @@ type Options struct {
 	email    bool
 	users    bool
 	monitors bool
+	database bool
 	help     bool
 }
 
@@ -287,6 +303,8 @@ func getOptions() Options {
 			options.users = true
 		} else if arg == "--monitors" {
 			options.monitors = true
+		} else if arg == "--database" {
+			options.database = true
 		} else if arg == "--help" {
 			options.help = true
 		}
@@ -308,6 +326,8 @@ func main() {
 		displayUsersCheckup()
 	} else if options.monitors {
 		displayMonitorsCheckup()
+	} else if options.database {
+		displayDatabaseCheckup()
 	} else {
 		displayCheckup()
 	}

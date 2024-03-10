@@ -12,16 +12,20 @@ classifiers = [
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
 ]
-dependencies = ["Django", "fastapi", "Flask", "tornado", "requests"]
+dependencies = ["requests"]
 description = "Monitoring and analytics for Python API frameworks."
 keywords = ["analytics", "api", "dashboard", "django", "fastapi", "flask", "tornado", "middleware"]
 license = {file = "LICENSE"}
 name = "api-analytics"
 readme = "README.md"
 requires-python = ">=3.6"
-version = "1.2.2"
+version = "1.2.3"
 
 [project.optional-dependencies]
+django = ["Django"]
+fastapi = ["fastapi"]
+flask = ["Flask"]
+tornado = ["tornado"]
 build = ["build", "twine"]
 dev = ["pytest"]
 

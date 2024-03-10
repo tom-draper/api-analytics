@@ -32,14 +32,13 @@
       }
     }
 
-    const locationBars: LocationBar[] = [];
-    for (const location in locationsFreq) {
-      locationBars.push({
+    const locationBars = Object.keys(locationsFreq).map((location) => {
+      return {
         location: location,
         frequency: locationsFreq[location],
         height: locationsFreq[location] / max,
-      });
-    }
+      };
+    });
 
     // Sort by desc frequency
     locationBars.sort((a, b) => {

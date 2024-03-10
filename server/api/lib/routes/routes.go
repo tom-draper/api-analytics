@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -15,7 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v5"
-	"github.com/joho/godotenv"
 	"github.com/tom-draper/api-analytics/server/api/lib/log"
 	"github.com/tom-draper/api-analytics/server/database"
 )
@@ -65,11 +63,18 @@ func getUserID(c *gin.Context) {
 	c.JSON(http.StatusOK, userID)
 }
 
-type PublicRequestRow struct {
+type DashboardData struct {
+	UserAgents UserAgentsLookup `json:"user_agents"`
+	Requests   [][]any          `json:"requests"`
+}
+
+type UserAgentsLookup map[int]string
+
+type DashboardRequestRow struct {
 	Hostname     *string     `json:"hostname"`
 	IPAddress    pgtype.CIDR `json:"ip_address"`
 	Path         string      `json:"path"`
-	UserAgent    *string     `json:"user_agent"`
+	UserAgent    int         `json:"user_agent"`
 	Method       int16       `json:"method"`
 	Status       int16       `json:"status"`
 	ResponseTime int16       `json:"response_time"`
@@ -101,17 +106,18 @@ func getUserRequests(c *gin.Context) {
 		return
 	}
 
-	cols := []any{"ip_address", "path", "hostname", "user_agent", "method", "response_time", "status", "location", "user_id", "created_at"}
+	cols := []any{"ip_address", "path", "hostname", "user_agent_id", "method", "response_time", "status", "location", "user_id", "created_at"}
 	requests := [][]any{cols}
-	pageSize := 500_000
+	pageSize := 1_000_000
 	maxRequests := pageSize   // Temporary limit to prevent memory issues
 	pageMarker := time.Time{} // Start with min time to capture first page
+	userAgentIDs := make(map[int]struct{})
 
 	// Read paginated requests data
 	for {
 		// Fetch user ID corresponding with API key
 		// Left table join was originally used but often exceeded postgresql working memory limit with large numbers of requests
-		query = "SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 AND created_at >= $2 ORDER BY created_at LIMIT $3;"
+		query = "SELECT ip_address, path, hostname, user_agent_id, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 AND created_at >= $2 ORDER BY created_at LIMIT $3;"
 		rows, err := conn.Query(context.Background(), query, apiKey, pageMarker, pageSize)
 		if err != nil {
 			log.LogToFile(fmt.Sprintf("key=%s: Invalid API key - %s", apiKey, err.Error()))
@@ -120,7 +126,7 @@ func getUserRequests(c *gin.Context) {
 		}
 
 		// First value in list holds column names
-		request := new(PublicRequestRow)
+		request := new(DashboardRequestRow)
 		var count int
 		for rows.Next() {
 			err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
@@ -130,10 +136,12 @@ func getUserRequests(c *gin.Context) {
 					ip = request.IPAddress.IPNet.IP.String()
 				}
 				hostname := getNullableString(request.Hostname)
-				userAgent := getNullableString(request.UserAgent)
 				location := getNullableString(request.Location)
 				userID := getNullableString(request.UserID)
-				requests = append(requests, []any{ip, request.Path, hostname, userAgent, request.Method, request.ResponseTime, request.Status, location, userID, request.CreatedAt})
+				requests = append(requests, []any{ip, request.Path, hostname, request.UserAgent, request.Method, request.ResponseTime, request.Status, location, userID, request.CreatedAt})
+				if _, ok := userAgentIDs[int(request.UserAgent)]; !ok {
+					userAgentIDs[request.UserAgent] = struct{}{}
+				}
 			}
 			count++
 			if count >= maxRequests {
@@ -152,7 +160,42 @@ func getUserRequests(c *gin.Context) {
 		rows.Close()
 	}
 
-	gzipOutput, err := compressJSON(requests)
+	// Convert user agent IDs to names
+	userAgents := make(map[int]string)
+	var userAgentsQuery strings.Builder
+	userAgentsQuery.WriteString("SELECT id, name FROM user_agents WHERE id IN (")
+	arguments := []any{}
+	var i int
+	for id := range userAgentIDs {
+		userAgentsQuery.WriteString("$%d")
+		arguments = append(arguments, id)
+		if i < len(userAgentIDs)-1 {
+			userAgentsQuery.WriteString(",")
+		}
+	}
+	userAgentsQuery.WriteString(");")
+	rows, err := conn.Query(context.Background(), userAgentsQuery.String(), arguments...)
+	if err != nil {
+		log.LogToFile(fmt.Sprintf("key=%s: User agent lookup failed - %s", apiKey, err.Error()))
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User agent lookup failed."})
+		return
+	}
+
+	for rows.Next() {
+		var id int
+		var name string
+		err := rows.Scan(&id, &name)
+		if err == nil {
+			userAgents[id] = name
+		}
+	}
+
+	body := DashboardData{
+		UserAgents: userAgents,
+		Requests:   requests,
+	}
+
+	gzipOutput, err := compressJSON(body)
 	if err != nil {
 		log.LogToFile(fmt.Sprintf("key=%s: Compression failed - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Compression failed."})
@@ -219,8 +262,7 @@ func updateLastAccessed(conn *pgx.Conn, apiKey string) error {
 func buildRequestDataCompact(rows pgx.Rows, cols []any) [][]any {
 	// First value in list holds column names
 	requests := [][]any{cols}
-	// request := new(PublicRequestRow) // Reused to avoid repeated memory allocation
-	var request PublicRequestRow
+	var request DashboardRequestRow
 	for rows.Next() {
 		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
 		if err == nil {
@@ -295,7 +337,7 @@ func getData(c *gin.Context) {
 
 func buildDataFetchQuery(apiKey string, queries DataFetchQueries) (string, []any) {
 	var query strings.Builder
-	query.WriteString("SELECT ip_address, path, hostname, user_agent, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1")
+	query.WriteString("SELECT r.ip_address, r.path, r.hostname, u.user_agent, r.method, r.response_time, r.status, r.location, r.user_id, r.created_at FROM requests JOIN user_agents u ON r.user_agent_id = u.id WHERE api_key = $1")
 
 	arguments := []any{apiKey}
 
@@ -339,7 +381,7 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) (string, []any
 		arguments = append(arguments, queries.userID)
 	}
 
-	query.WriteString(" LIMIT 500000;")
+	query.WriteString(" LIMIT 1000000;")
 	return query.String(), arguments
 }
 
@@ -405,7 +447,7 @@ func parseQueryDateTime(date string) time.Time {
 	return time.Time{}
 }
 
-type PublicRequestData struct {
+type RequestData struct {
 	Hostname     string    `json:"hostname"`
 	IPAddress    string    `json:"ip_address"`
 	Path         string    `json:"path"`
@@ -418,9 +460,22 @@ type PublicRequestData struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
-func buildRequestData(rows pgx.Rows) []PublicRequestData {
-	requests := make([]PublicRequestData, 0)
-	var request PublicRequestRow
+type RequestRow struct {
+	Hostname     *string     `json:"hostname"`
+	IPAddress    pgtype.CIDR `json:"ip_address"`
+	Path         string      `json:"path"`
+	UserAgent    *string     `json:"user_agent"`
+	Method       int16       `json:"method"`
+	Status       int16       `json:"status"`
+	ResponseTime int16       `json:"response_time"`
+	Location     *string     `json:"location"`
+	UserID       *string     `json:"user_id"` // Custom user identifier field specific to each API service
+	CreatedAt    time.Time   `json:"created_at"`
+}
+
+func buildRequestData(rows pgx.Rows) []RequestData {
+	requests := make([]RequestData, 0)
+	var request RequestRow
 	for rows.Next() {
 		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
 		if err == nil {
@@ -432,7 +487,7 @@ func buildRequestData(rows pgx.Rows) []PublicRequestData {
 			userAgent := getNullableString(request.UserAgent)
 			location := getNullableString(request.Location)
 			userID := getNullableString(request.UserID)
-			requests = append(requests, PublicRequestData{
+			requests = append(requests, RequestData{
 				IPAddress:    ip,
 				Path:         request.Path,
 				Hostname:     hostname,
@@ -517,7 +572,7 @@ func deleteData(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "message": "Account data deleted successfully."})
 }
 
-type PublicMonitorRow struct {
+type MonitorRow struct {
 	URL       string    `json:"url"`
 	Secure    bool      `json:"secure"`
 	Ping      bool      `json:"ping"`
@@ -545,9 +600,9 @@ func getUserMonitor(c *gin.Context) {
 	defer rows.Close()
 
 	// Read monitors into list to return
-	monitors := make([]PublicMonitorRow, 0)
+	monitors := make([]MonitorRow, 0)
 	for rows.Next() {
-		var monitor PublicMonitorRow
+		var monitor MonitorRow
 		err := rows.Scan(&monitor.URL, &monitor.Secure, &monitor.Ping, &monitor.CreatedAt)
 		if err == nil {
 			monitors = append(monitors, monitor)
@@ -717,7 +772,7 @@ func deleteUserMonitor(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "Monitor deleted successfully."})
 }
 
-type PublicPingsRow struct {
+type PingsRow struct {
 	URL          string    `json:"url"`
 	ResponseTime int       `json:"response_time"`
 	Status       int       `json:"status"`

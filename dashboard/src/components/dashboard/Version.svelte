@@ -50,12 +50,8 @@
       versionCount[version]++;
     }
 
-    const versions = [];
-    const count = [];
-    for (const version in versionCount) {
-      versions.push(version);
-      count.push(versionCount[version]);
-    }
+    const versions = Object.keys(versionCount);
+    const count = Object.values(versionCount);
 
     return [
       {

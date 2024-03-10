@@ -26,7 +26,7 @@ Add our lightweight middleware to your API. Almost all processing is handled by 
 [![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
 ```bash
-pip install fastapi-analytics
+pip install api-analytics[fastapi]
 ```
 
 ```py
@@ -50,7 +50,7 @@ if __name__ == "__main__":
 [![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
 ```bash
-pip install api-analytics
+pip install api-analytics[flask]
 ```
 
 ```py
@@ -73,7 +73,7 @@ if __name__ == "__main__":
 [![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
 ```bash
-pip install api-analytics
+pip install api-analytics[django]
 ```
 
 Assign your API key to `ANALYTICS_API_KEY` in `settings.py` and add the Analytics middleware to the top of your middleware stack.
@@ -92,7 +92,7 @@ MIDDLEWARE = [
 [![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
 
 ```bash
-pip install tornado-analytics
+pip install api-analytics[tornado]
 ```
 
 Modify your handler to inherit from `Analytics`. Create a `__init__()` method, passing along the application and response along with your unique API key.
@@ -380,14 +380,10 @@ cargo add axum-analytics
 ```
 
 ```rust
-use axum::{
-    routing::get,
-    Json, Router,
-};
+use axum::{routing::get, Json, Router};
+use axum_analytics::Analytics;
 use serde::Serialize;
 use std::net::SocketAddr;
-use tokio;
-use axum_analytics::Analytics;
 
 #[derive(Serialize)]
 struct JsonData {
@@ -395,23 +391,22 @@ struct JsonData {
 }
 
 async fn root() -> Json<JsonData> {
-    let data = JsonData {
-        message: "Hello, World!".to_string(),
+    let json_data = JsonData {
+        message: String::from("Hello World!"),
     };
-    Json(data)
+    Json(json_data)
 }
 
 #[tokio::main]
 async fn main() {
     let app = Router::new()
-        .layer(Analytics::new(<API-KEY>))  // Add middleware
-        .route("/", get(root));
+        .route("/", get(root))
+        .layer(Analytics::new(<API-KEY>));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    println!("Server listening at: http://127.0.0.1:8080");
+    axum::serve(listener, app).await.unwrap();
 }
 ```
 
@@ -584,17 +579,19 @@ curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 
 You can filter your data by providing URL parameters in your request.
 
-- `date` - specifies a particular day the requests occurred on (`YYYY-MM-DD`)
-- `dateFrom` - specifies the lower bound of a date range the requests occurred in (`YYYY-MM-DD`)
-- `dateTo` - specifies the upper bound of a date range the requests occurred in (`YYYY-MM-DD`)
-- `ipAddress` - an IP address string of the client
-- `status` - an integer status code of the response
+- `date` - the exact day the requests occurred on (`YYYY-MM-DD`)
+- `dateFrom` - a lower bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `dateTo` - a upper bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `hostname` - the hostname of your service
+- `ipAddress` - the IP address of the client
+- `status` - the status code of the response
 - `location` - a two-character location code of the client
+- `user_id` - a custom user identifier (only relevant if a `get_user_id` mapper function has been set)
 
 Example:
 
 ```bash
-curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?dateFrom=2022-01-01&dateTo=2022-06-01&status=200
+curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&user_id=b56cbd92-1168-4d7b-8d94-0418da207908
 ```
 
 ## Client ID and Privacy
@@ -620,7 +617,7 @@ app = FastAPI()
 app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
 ```
 
-With any of these privacy levels, there is still the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user.
+With any of these privacy levels, there is the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user. In the dashboard, this custom user ID will identify the user in conjunction with the IP address or as an alternative.
 
 ```py
 from fastapi import FastAPI

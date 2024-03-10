@@ -1,6 +1,6 @@
 use axum::{body::Body, extract::ConnectInfo, http::Request, response::Response};
 use chrono::Utc;
-use futures::future::BoxFuture;
+use futures::Future;
 use http::{
     header::{HeaderValue, HOST, USER_AGENT},
     Extensions, HeaderMap,
@@ -8,13 +8,13 @@ use http::{
 use lazy_static::lazy_static;
 use reqwest::blocking::Client;
 use serde::Serialize;
-use std::sync::Mutex;
 use std::{
     net::{IpAddr, SocketAddr},
     task::{Context, Poll},
     thread::spawn,
     time::Instant,
 };
+use std::{pin::Pin, sync::Mutex};
 use tower::{Layer, Service};
 
 #[derive(Debug, Clone, Serialize)]
@@ -30,6 +30,7 @@ struct RequestData {
 }
 
 impl RequestData {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         hostname: String,
         ip_address: String,
@@ -175,7 +176,8 @@ where
 {
     type Response = S::Response;
     type Error = S::Error;
-    type Future = BoxFuture<'static, Result<Self::Response, Self::Error>>;
+    type Future =
+        Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send + 'static>>;
 
     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         self.inner.poll_ready(cx)
