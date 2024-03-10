@@ -23,6 +23,7 @@
   import Notification from '../components/dashboard/Notification.svelte';
   import exportCSV from '../lib/exportData';
   import { ColumnIndex, columns, serverURL } from '../lib/consts';
+  import Error from '../components/dashboard/Error.svelte';
 
   function inPeriod(date: Date, days: number): boolean {
     const periodAgo = new Date();
@@ -144,20 +145,17 @@
   };
 
   function sortedFrequencies(freq: ValueCount): string[] {
-    const sortedFreq = Object.keys(freq).map(
-      (value) => {
+    return Object.keys(freq)
+      .map((value) => {
         return {
           value: value,
           count: freq[value],
         };
-      }
-    );
-    sortedFreq.sort((a, b) => {
-      return b.count - a.count;
-    });
-
-    const values = sortedFreq.map((value) => value.value);
-    return values;
+      })
+      .sort((a, b) => {
+        return b.count - a.count;
+      })
+      .map((value) => value.value);
   }
 
   function setHostnames() {
@@ -186,7 +184,7 @@
         return await response.json();
       }
     } catch (e) {
-      failed = true;
+      fetchFailed = true;
     }
   }
 
@@ -216,7 +214,7 @@
     'Year',
     'All time',
   ];
-  let failed = false;
+  let fetchFailed = false;
   let endpointsRendered = false;
   onMount(async () => {
     const dashboardData = await getDashboardData();
@@ -247,7 +245,7 @@
     if (id in userAgents) {
       return userAgents[id];
     }
-    return ""
+    return '';
   }
 
   function refreshData() {
@@ -271,7 +269,7 @@
   export let userID: string, demo: boolean;
 </script>
 
-{#if periodData}
+{#if periodData && data.length > 0}
   <div class="dashboard">
     <div class="button-nav">
       <div class="donate">
@@ -348,8 +346,10 @@
       </div>
     </div>
   </div>
-{:else if failed}
-  <img class="no-requests" src="../img/no-requests-logged.png" alt="" />
+{:else if periodData && data.length <= 0}
+  <Error reason={'no-requests'} />
+{:else if fetchFailed}
+  <Error reason={'error'} />
 {:else}
   <div class="placeholder">
     <div class="spinner">
@@ -385,10 +385,6 @@
   }
   .grid-row {
     display: flex;
-  }
-  .no-requests {
-    width: 350px;
-    margin: 20vh 0;
   }
   .left {
     margin: 0 2em;
