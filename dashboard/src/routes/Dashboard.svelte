@@ -219,7 +219,7 @@
   onMount(async () => {
     const dashboardData = await getDashboardData();
     data = dashboardData.requests;
-    userAgents = dashboardData.userAgents;
+    userAgents = dashboardData.user_agents;
 
     setPeriod(settings.period);
     setHostnames();

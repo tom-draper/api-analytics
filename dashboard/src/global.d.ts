@@ -1,7 +1,7 @@
 /// <reference types="svelte" />
 
 type DashboardData = {
-    userAgents: UserAgents;
+    user_agents: UserAgents;
     requests: RequestsData;
 }
 

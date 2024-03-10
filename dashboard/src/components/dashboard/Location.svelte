@@ -38,10 +38,7 @@
         frequency: locationsFreq[location],
         height: locationsFreq[location] / max,
       };
-    });
-
-    // Sort by desc frequency
-    locationBars.sort((a, b) => {
+    }).sort((a, b) => {
       return b.frequency - a.frequency;
     });
 
