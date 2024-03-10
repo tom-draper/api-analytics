@@ -65,7 +65,7 @@ func getUserID(c *gin.Context) {
 
 type DashboardData struct {
 	UserAgents UserAgentsLookup `json:"user_agents"`
-	Requests   [][]any          `json:"requests"`
+	Requests   [][10]any        `json:"requests"`
 }
 
 type UserAgentsLookup map[int]string
@@ -74,7 +74,7 @@ type DashboardRequestRow struct {
 	Hostname     *string     `json:"hostname"`
 	IPAddress    pgtype.CIDR `json:"ip_address"`
 	Path         string      `json:"path"`
-	UserAgent    int         `json:"user_agent"`
+	UserAgent    *int        `json:"user_agent"`
 	Method       int16       `json:"method"`
 	Status       int16       `json:"status"`
 	ResponseTime int16       `json:"response_time"`
@@ -106,9 +106,8 @@ func getUserRequests(c *gin.Context) {
 		return
 	}
 
-	cols := []any{"ip_address", "path", "hostname", "user_agent_id", "method", "response_time", "status", "location", "user_id", "created_at"}
-	requests := [][]any{cols}
-	pageSize := 1_000_000
+	requests := [][10]any{}
+	pageSize := 500_000
 	maxRequests := pageSize   // Temporary limit to prevent memory issues
 	pageMarker := time.Time{} // Start with min time to capture first page
 	userAgentIDs := make(map[int]struct{})
@@ -138,9 +137,11 @@ func getUserRequests(c *gin.Context) {
 				hostname := getNullableString(request.Hostname)
 				location := getNullableString(request.Location)
 				userID := getNullableString(request.UserID)
-				requests = append(requests, []any{ip, request.Path, hostname, request.UserAgent, request.Method, request.ResponseTime, request.Status, location, userID, request.CreatedAt})
-				if _, ok := userAgentIDs[int(request.UserAgent)]; !ok {
-					userAgentIDs[request.UserAgent] = struct{}{}
+				requests = append(requests, [10]any{ip, request.Path, hostname, request.UserAgent, request.Method, request.ResponseTime, request.Status, location, userID, request.CreatedAt})
+				if request.UserAgent != nil {
+					if _, ok := userAgentIDs[*request.UserAgent]; !ok {
+						userAgentIDs[*request.UserAgent] = struct{}{}
+					}
 				}
 			}
 			count++
@@ -162,31 +163,34 @@ func getUserRequests(c *gin.Context) {
 
 	// Convert user agent IDs to names
 	userAgents := make(map[int]string)
-	var userAgentsQuery strings.Builder
-	userAgentsQuery.WriteString("SELECT id, name FROM user_agents WHERE id IN (")
-	arguments := []any{}
-	var i int
-	for id := range userAgentIDs {
-		userAgentsQuery.WriteString("$%d")
-		arguments = append(arguments, id)
-		if i < len(userAgentIDs)-1 {
-			userAgentsQuery.WriteString(",")
+	if len(userAgentIDs) > 0 {
+		var userAgentsQuery strings.Builder
+		userAgentsQuery.WriteString("SELECT id, user_agent FROM user_agents WHERE id IN (")
+		arguments := []any{}
+		var i int
+		for id := range userAgentIDs {
+			userAgentsQuery.WriteString(fmt.Sprintf("$%d", i+1))
+			arguments = append(arguments, id)
+			if i < len(userAgentIDs)-1 {
+				userAgentsQuery.WriteString(",")
+			}
+			i++
 		}
-	}
-	userAgentsQuery.WriteString(");")
-	rows, err := conn.Query(context.Background(), userAgentsQuery.String(), arguments...)
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("key=%s: User agent lookup failed - %s", apiKey, err.Error()))
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User agent lookup failed."})
-		return
-	}
+		userAgentsQuery.WriteString(");")
+		rows, err := conn.Query(context.Background(), userAgentsQuery.String(), arguments...)
+		if err != nil {
+			log.LogToFile(fmt.Sprintf("key=%s: User agent lookup failed - %s", apiKey, err.Error()))
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User agent lookup failed."})
+			return
+		}
 
-	for rows.Next() {
-		var id int
-		var name string
-		err := rows.Scan(&id, &name)
-		if err == nil {
-			userAgents[id] = name
+		for rows.Next() {
+			var id int
+			var name string
+			err := rows.Scan(&id, &name)
+			if err == nil {
+				userAgents[id] = name
+			}
 		}
 	}
 
@@ -222,9 +226,8 @@ func getUserRequests(c *gin.Context) {
 func getNullableString(value *string) string {
 	if value == nil {
 		return ""
-	} else {
-		return *value
 	}
+	return *value
 }
 
 func compressJSON(data any) ([]byte, error) {
@@ -259,14 +262,14 @@ func updateLastAccessed(conn *pgx.Conn, apiKey string) error {
 	return err
 }
 
-func buildRequestDataCompact(rows pgx.Rows, cols []any) [][]any {
+func buildRequestDataCompact(rows pgx.Rows, cols [10]any) [][10]any {
 	// First value in list holds column names
-	requests := [][]any{cols}
+	requests := [][10]any{cols}
 	var request DashboardRequestRow
 	for rows.Next() {
 		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
 		if err == nil {
-			requests = append(requests, []any{request.IPAddress, request.Path, request.Hostname, request.UserAgent, request.Method, request.ResponseTime, request.Status, request.Location, request.UserID, request.CreatedAt})
+			requests = append(requests, [10]any{request.IPAddress, request.Path, request.Hostname, request.UserAgent, request.Method, request.ResponseTime, request.Status, request.Location, request.UserID, request.CreatedAt})
 		}
 	}
 	return requests
@@ -315,7 +318,7 @@ func getData(c *gin.Context) {
 
 	// Read data into list of objects to return
 	if queries.compact {
-		cols := []interface{}{"ip_address", "path", "hostname", "user_agent", "method", "response_time", "status", "location", "user_id", "created_at"}
+		cols := [10]any{"ip_address", "path", "hostname", "user_agent", "method", "response_time", "status", "location", "user_id", "created_at"}
 		requests := buildRequestDataCompact(rows, cols)
 		log.LogToFile(fmt.Sprintf("key=%s: Data access successful (%d)", apiKey, len(requests)-1))
 		c.JSON(http.StatusOK, requests)
