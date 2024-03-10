@@ -182,6 +182,8 @@
       const response = await fetch(`${serverURL}/api/requests/${userID}`);
       if (response.status === 200) {
         return await response.json();
+      } else {
+        fetchFailed = true;
       }
     } catch (e) {
       fetchFailed = true;
