@@ -26,12 +26,11 @@
       // @ts-ignore
       responseTimes[time]++;
     }
-    
-    const requestFreqArr = Array.from(
-      {length: 24}, 
-      (_, i) => ({ hour: i, responseTime: responseTimes[i] })
-    );
-    requestFreqArr.sort((a, b) => {
+
+    const requestFreqArr = Array.from({ length: 24 }, (_, i) => ({
+      hour: i,
+      responseTime: responseTimes[i],
+    })).sort((a, b) => {
       return a.hour - b.hour;
     });
 
@@ -76,7 +75,7 @@
       plotDiv,
       plotData.data,
       plotData.layout,
-      plotData.config
+      plotData.config,
     );
   }
 

@@ -17,7 +17,7 @@
 
   type EndpointFreq = Map<string, { path: string; status: number; count: number }>;
 
-  type MapValue<A> = A extends Map<any, infer V> ? V : never;
+  type MapValue<A> = A extends Map<unknown, infer V> ? V : never;
 
   function endpointFreq(): EndpointFreq {
     const freq = new Map();

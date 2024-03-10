@@ -1,21 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { ColumnIndex } from '../../lib/consts';
-  import { initFreqMap } from '../../lib/activity';
-  import { periodToDays } from '../../lib/period';
 
   // Median and quartiles from StackOverflow answer
   // https://stackoverflow.com/a/55297611/8851732
   const asc = (arr) => arr.sort((a, b) => a - b);
   const sum = (arr) => arr.reduce((a, b) => a + b, 0);
   const mean = (arr) => sum(arr) / arr.length;
-
-  // sample standard deviation
-  function std(arr: number[]) {
-    const mu = mean(arr);
-    const diffArr = arr.map((a) => (a - mu) ** 2);
-    return Math.sqrt(sum(diffArr) / (arr.length - 1));
-  }
 
   function quantile(arr: number[], q: number) {
     const sorted = asc(arr);
@@ -101,8 +92,8 @@
       }
     }
 
-    let responseTimes: number[] = [];
-    let counts: number[] = [];
+    const responseTimes: number[] = [];
+    const counts: number[] = [];
     if (responseTimesFreq.size > 0) {
       const minResponseTime = Math.min(...responseTimesFreq.keys());
       const maxResponseTime = Math.max(...responseTimesFreq.keys());
@@ -236,40 +227,6 @@
     padding-bottom: 0;
   }
 
-  .bar {
-    padding: 20px 0 20px;
-    display: flex;
-    height: 30px;
-    width: 85%;
-    margin: auto;
-    align-items: center;
-    position: relative;
-  }
-  .bar-green {
-    background: var(--highlight);
-    width: 75%;
-    height: 10px;
-    border-radius: 2px 0 0 2px;
-  }
-  .bar-yellow {
-    width: 15%;
-    height: 10px;
-    background: rgb(235, 235, 129);
-  }
-  .bar-red {
-    width: 20%;
-    height: 10px;
-    border-radius: 0 2px 2px 0;
-    background: rgb(228, 97, 97);
-  }
-  .marker {
-    position: absolute;
-    height: 30px;
-    width: 5px;
-    background: white;
-    border-radius: 2px;
-    left: 0; /* Changed during runtime to reflect median */
-  }
   @media screen and (max-width: 1030px) {
     .card {
       width: auto;
