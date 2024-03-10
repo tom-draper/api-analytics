@@ -1047,7 +1047,7 @@ export default function genDemoData() {
     createErrorSamples(demoRequests, maxDaysAgo, scale, outages);
 
     const demoData: DashboardData = {
-        userAgents: getUserAgents(),
+        user_agents: getUserAgents(),
         requests: demoRequests,
     };
     return demoData;
