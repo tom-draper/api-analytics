@@ -107,7 +107,7 @@ func getUserRequests(c *gin.Context) {
 	}
 
 	requests := [][10]any{}
-	pageSize := 500_000
+	pageSize := 1_000_000
 	maxRequests := pageSize   // Temporary limit to prevent memory issues
 	pageMarker := time.Time{} // Start with min time to capture first page
 	userAgentIDs := make(map[int]struct{})
@@ -212,7 +212,7 @@ func getUserRequests(c *gin.Context) {
 	c.Writer.Header().Set("Content-Type", "application/json")
 	c.Data(http.StatusOK, "gzip", gzipOutput)
 
-	log.LogToFile(fmt.Sprintf("key=%s: Dashboard access successful (%d)", apiKey, len(requests)-1))
+	log.LogToFile(fmt.Sprintf("key=%s: Dashboard access successful (%d)", apiKey, len(requests)))
 
 	// Record access
 	err = updateLastAccessed(conn, apiKey)
@@ -324,7 +324,7 @@ func getData(c *gin.Context) {
 		c.JSON(http.StatusOK, requests)
 	} else {
 		requests := buildRequestData(rows)
-		log.LogToFile(fmt.Sprintf("key=%s: Data access successful (%d)", apiKey, len(requests)-1))
+		log.LogToFile(fmt.Sprintf("key=%s: Data access successful (%d)", apiKey, len(requests)))
 		c.JSON(http.StatusOK, requests)
 	}
 
@@ -340,7 +340,7 @@ func getData(c *gin.Context) {
 
 func buildDataFetchQuery(apiKey string, queries DataFetchQueries) (string, []any) {
 	var query strings.Builder
-	query.WriteString("SELECT r.ip_address, r.path, r.hostname, u.user_agent, r.method, r.response_time, r.status, r.location, r.user_id, r.created_at FROM requests JOIN user_agents u ON r.user_agent_id = u.id WHERE api_key = $1")
+	query.WriteString("SELECT r.ip_address, r.path, r.hostname, u.user_agent, r.method, r.response_time, r.status, r.location, r.user_id, r.created_at FROM requests r JOIN user_agents u ON r.user_agent_id = u.id WHERE api_key = $1")
 
 	arguments := []any{apiKey}
 
@@ -384,7 +384,7 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) (string, []any
 		arguments = append(arguments, queries.userID)
 	}
 
-	query.WriteString(" LIMIT 1000000;")
+	query.WriteString(" LIMIT 50000;")
 	return query.String(), arguments
 }
 
