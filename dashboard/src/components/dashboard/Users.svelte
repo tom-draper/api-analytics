@@ -42,7 +42,7 @@
       const range = end - start;
       for (let i = 0; i < data.length; i++) {
         const userID = getUserIdentifier(data[i]);
-        if (!data[i][userID]) {
+        if (!userID) {
           continue
         }
         const time = data[i][ColumnIndex.CreatedAt].getTime();
@@ -104,8 +104,8 @@
     const users: Set<string> = new Set();
     for (let i = 0; i < data.length; i++) {
       const userID = getUserIdentifier(data[i]);
-      if (data[i][userID]) {
-        users.add(data[i][userID]);
+      if (userID) {
+        users.add(userID);
       }
     }
     return users;
