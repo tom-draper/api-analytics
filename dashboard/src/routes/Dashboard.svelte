@@ -447,8 +447,6 @@
     color: rgb(73, 73, 73);
     color: rgb(82, 82, 82);
     color: #464646;
-    /* font-family: Arial, 'Noto Sans', */
-    /* text-decoration: underline; */
     transition: 0.1s;
   }
   .donate-link:hover {
