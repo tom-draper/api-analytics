@@ -35,7 +35,7 @@
     </button>
     <div class="options" class:hidden={hideOptions}>
       {#each [defaultOption, ...options] as option, i}
-        {#if option !== selected && (selected !== null || option !== defaultOption)}
+        {#if option !== selected && option !== null && (selected !== null || option !== defaultOption)}
           <button
             class="option"
             class:last-option={(selected === defaultOption && i === options.length - 1) || (selected !== defaultOption && i === options.length)}
@@ -64,7 +64,7 @@
     background: var(--background);
     color: var(--dim-text);
     border: 1px solid #2e2e2e;
-    padding: 5px 10px 5px 9px;
+    padding: 5px 15px 5px 9px;
     cursor: pointer;
     display: flex;
   }
