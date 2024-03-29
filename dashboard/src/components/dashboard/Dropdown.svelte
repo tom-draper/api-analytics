@@ -38,7 +38,7 @@
         {#if option !== selected && (selected !== null || option !== defaultOption)}
           <button
             class="option"
-            class:last-option={i === options.length - 1}
+            class:last-option={(selected === defaultOption && i === options.length - 1) || (selected !== defaultOption && i === options.length)}
             on:click={() => {
               if (option === defaultOption) {
                 selected = null;

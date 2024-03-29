@@ -76,7 +76,7 @@
   <div class="card-text">
     <div class="url">
       <div class="dropdown-container">
-        <Dropdown {options} bind:selected={urlPrefix} />
+        <Dropdown {options} bind:selected={urlPrefix} defaultOption={null} />
       </div>
       <input
         type="text"
