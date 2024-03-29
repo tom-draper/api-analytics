@@ -63,7 +63,7 @@
     </div>
     <div class="setting-title">Hidden endpoints:</div>
     <div class="setting">
-      <List bind:items={settings.hiddenEndpoints} />
+      <List bind:items={settings.hiddenEndpoints} placeholder={'/api/v1/example'} />
     </div>
     <div class="export-csv">
       <button class="export-csv-btn" on:click={exportCSV}> Export CSV </button>
@@ -144,7 +144,7 @@
     text-align: right;
     /* margin-top: 30px; */
     right: 50px;
-    top: 2em;
+    top: 2.4em;
   }
   .export-csv-btn {
     background: var(--background);

@@ -9,13 +9,13 @@ export type Period =
 
 export type DashboardSettings = {
     disable404: boolean
-    hostname: string
+    hostname: string | null
     period: Period
     targetEndpoint: {
-        path: string,
-        status: number,
+        path: string | null,
+        status: number | null,
     }
-    targetLocation: string,
+    targetLocation: string | null,
     hiddenEndpoints: Set<string>
 }
 

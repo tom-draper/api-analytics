@@ -5,7 +5,7 @@
   }
 
   let hideOptions: boolean = true;
-  export let options: string[], selected: string;
+  export let options: string[], selected: string | null, defaultOption: string;
 </script>
 
 <div class="dropdown" id="dropdown">
@@ -31,16 +31,20 @@
           d="M19.5 8.25l-7.5 7.5-7.5-7.5"
         />
       </svg>
-      {selected}
+      {selected || defaultOption}
     </button>
     <div class="options" class:hidden={hideOptions}>
-      {#each options as option, i}
-        {#if option !== selected}
+      {#each [defaultOption, ...options] as option, i}
+        {#if option !== selected && (selected !== null || option !== defaultOption)}
           <button
             class="option"
-            class:last-option={i === options.length - 1}
+            class:last-option={(selected === defaultOption && i === options.length - 1) || (selected !== defaultOption && i === options.length)}
             on:click={() => {
-              selectOption(option);
+              if (option === defaultOption) {
+                selected = null;
+              } else {
+                selectOption(option);
+              }
             }}>{option}</button
           >
         {/if}
@@ -73,18 +77,19 @@
     top: 66px;
     z-index: 100;
     margin-bottom: 50px;
-    width: fit-content;
+    width: 100%;
   }
   .option {
     background: var(--background);
     color: var(--dim-text);
     border: 1px solid #2e2e2e;
-    padding: 5px 6px 5px 31px;
+    border-top: none;
+    padding: 5px 15px 5px 31px;
     text-align: left;
     cursor: pointer;
   }
   .hidden {
-    display: none;
+    visibility: hidden;
   }
   .last-option {
     border-radius: 0 0 4px 4px;

@@ -158,7 +158,7 @@
       .map((value) => value.value);
   }
 
-  function setHostnames() {
+  function getHostnames() {
     const hostnameFreq: ValueCount = {};
     for (let i = 0; i < data.length; i++) {
       const hostname = data[i][ColumnIndex.Hostname];
@@ -169,11 +169,11 @@
       hostnameFreq[hostname] += 1;
     }
 
-    hostnames = sortedFrequencies(hostnameFreq);
+    return sortedFrequencies(hostnameFreq);
+  }
 
-    if (hostnames.length > 0) {
-      settings.hostname = hostnames[0];
-    }
+  function setHostnames() {
+    hostnames = getHostnames();
   }
 
   async function fetchData(): Promise<DashboardData> {
@@ -291,7 +291,7 @@
       </button>
       {#if hostnames}
         <div class="dropdown-container">
-          <Dropdown options={hostnames} bind:selected={settings.hostname} />
+          <Dropdown options={hostnames.slice(0, 25)} bind:selected={settings.hostname} defaultOption={'All hostnames'} />
         </div>
       {/if}
       <div class="nav-btn time-period">
@@ -447,8 +447,6 @@
     color: rgb(73, 73, 73);
     color: rgb(82, 82, 82);
     color: #464646;
-    /* font-family: Arial, 'Noto Sans', */
-    /* text-decoration: underline; */
     transition: 0.1s;
   }
   .donate-link:hover {
@@ -462,7 +460,7 @@
     transition: 0.1s;
   }
   .settings-icon:hover {
-    filter: contrast(0.05);
+    filter: contrast(0.01);
   }
 
   @media screen and (max-width: 800px) {
