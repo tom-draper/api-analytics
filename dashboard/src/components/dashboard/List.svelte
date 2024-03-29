@@ -27,7 +27,7 @@
 
   let input: HTMLInputElement;
   const hideOptions: boolean = true;
-  export let items: Set<string>;
+  export let items: Set<string>, placeholder: string;
 </script>
 
 <div class="container">
@@ -36,6 +36,7 @@
       type="text"
       name="item"
       id=""
+      placeholder={placeholder}
       bind:this={input}
       on:keydown={handleInputKeyDown}
     />
