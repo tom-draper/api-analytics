@@ -202,8 +202,8 @@
           title={sample.createdAt === null
             ? ''
             : sample.status === 0
-            ? `No response\n${sample.createdAt.toLocaleDateString()}`
-            : `Status: ${sample.status}\n${sample.createdAt.toLocaleDateString()}`}
+            ? `No response\n${sample.createdAt.toLocaleString()}`
+            : `Status: ${sample.status}\n${sample.createdAt.toLocaleString()}`}
         />
       {/each}
     </div>
