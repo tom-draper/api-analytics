@@ -104,7 +104,7 @@ func storeNewUserAgents(userAgents map[string]struct{}) {
 	}
 }
 
-func getUserAgentIDs(userAgents map[string]struct{}) map[string]int16 {
+func getUserAgentIDs(userAgents map[string]struct{}) map[string]int {
 	var query strings.Builder
 	query.WriteString("SELECT user_agent, id FROM user_agents WHERE user_agent IN (")
 	arguments := make([]any, len(userAgents))
@@ -119,7 +119,7 @@ func getUserAgentIDs(userAgents map[string]struct{}) map[string]int16 {
 	}
 	query.WriteString(");")
 
-	ids := make(map[string]int16)
+	ids := make(map[string]int)
 	conn := database.NewConnection()
 	rows, err := conn.Query(context.Background(), query.String(), arguments...)
 	conn.Close(context.Background())
@@ -129,7 +129,7 @@ func getUserAgentIDs(userAgents map[string]struct{}) map[string]int16 {
 	}
 	for rows.Next() {
 		var userAgent string
-		var id int16
+		var id int
 		err := rows.Scan(&userAgent, &id)
 		if err != nil {
 			log.LogToFile(err.Error())
