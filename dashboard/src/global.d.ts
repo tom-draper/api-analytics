@@ -1,32 +1,32 @@
 /// <reference types="svelte" />
 
 type DashboardData = {
-    user_agents: UserAgents;
-    requests: RequestsData;
-}
+	user_agents: UserAgents;
+	requests: RequestsData;
+};
 
 // ip_address, path, hostname, user_agent, method, response_time, status, location, created_at
 type RequestsData = [
-    string,
-    string,
-    string,
-    number,
-    number,
-    number,
-    number,
-    string,
-    string,
-    Date
+	string,
+	string,
+	string,
+	number,
+	number,
+	number,
+	number,
+	string,
+	string,
+	Date,
 ][];
 
 type UserAgents = {
-    [id: number]: string;
-}
+	[id: number]: string;
+};
 
 type MonitorSample = {
-    status: number;
-    responseTime: number;
-    createdAt: Date;
+	status: number;
+	responseTime: number;
+	createdAt: Date;
 };
 
 type MonitorData = { [url: string]: MonitorSample[] };

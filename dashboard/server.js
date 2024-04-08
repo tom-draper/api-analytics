@@ -13,9 +13,9 @@ const server = express();
 server.use(express.static(join(__dirname, 'public')));
 
 server.get('*', function (req, res) {
-    const { html } = app.render({ url: req.url });
+	const { html } = app.render({ url: req.url });
 
-    res.write(`
+	res.write(`
     <!DOCTYPE html>
     <head>
       <title>API Analytics</title>
@@ -34,7 +34,7 @@ server.get('*', function (req, res) {
     </body>
   `);
 
-    res.end();
+	res.end();
 });
 
 server.listen(port, () => console.log(`Listening on http://localhost:${port}`));
