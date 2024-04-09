@@ -276,6 +276,7 @@ func buildRequestDataCompact(rows pgx.Rows, cols [10]any) [][10]any {
 }
 
 type DataFetchQueries struct {
+	page      int
 	compact   bool
 	date      time.Time
 	dateFrom  time.Time
@@ -346,49 +347,52 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) (string, []any
 
 	// Providing a single date takes priority over range with dateFrom and dateTo
 	if !queries.date.IsZero() && database.ValidDate(queries.date) {
-		query.WriteString(fmt.Sprintf(" and created_at >= $%d and created_at < date $%d + interval '1 days'", len(arguments)+1, len(arguments)+2))
+		query.WriteString(fmt.Sprintf(" and r.created_at >= $%d and r.created_at < date $%d + interval '1 days'", len(arguments)+1, len(arguments)+2))
 		arguments = append(arguments, queries.date.Format("2006-01-02"), queries.date.Format("2006-01-02"))
 	} else {
 		if !queries.dateFrom.IsZero() && database.ValidDate(queries.dateFrom) {
-			query.WriteString(fmt.Sprintf(" and created_at >= $%d", len(arguments)+1))
+			query.WriteString(fmt.Sprintf(" and r.created_at >= $%d", len(arguments)+1))
 			arguments = append(arguments, queries.dateFrom.Format("2006-01-02"))
 		}
 		if !queries.dateTo.IsZero() && database.ValidDate(queries.dateTo) {
-			query.WriteString(fmt.Sprintf(" and created_at <= $%d", len(arguments)+1))
+			query.WriteString(fmt.Sprintf(" and r.created_at <= $%d", len(arguments)+1))
 			arguments = append(arguments, queries.dateTo.Format("2006-01-02"))
 		}
 	}
 
 	if queries.ipAddress != "" && database.ValidIPAddress(queries.ipAddress) {
-		query.WriteString(fmt.Sprintf(" and ip_address = $%d", len(arguments)+1))
+		query.WriteString(fmt.Sprintf(" and r.ip_address = $%d", len(arguments)+1))
 		arguments = append(arguments, queries.ipAddress)
 	}
 
 	if queries.location != "" && database.ValidLocation(queries.location) {
-		query.WriteString(fmt.Sprintf(" and location = $%d", len(arguments)+1))
+		query.WriteString(fmt.Sprintf(" and r.location = $%d", len(arguments)+1))
 		arguments = append(arguments, queries.location)
 	}
 
 	if queries.status != 0 && database.ValidStatus(queries.status) {
-		query.WriteString(fmt.Sprintf(" and status = $%d", len(arguments)+1))
+		query.WriteString(fmt.Sprintf(" and r.status = $%d", len(arguments)+1))
 		arguments = append(arguments, queries.status)
 	}
 
 	if queries.hostname != "" && database.ValidString(queries.hostname) {
-		query.WriteString(fmt.Sprintf(" and hostname = $%d", len(arguments)+1))
+		query.WriteString(fmt.Sprintf(" and r.hostname = $%d", len(arguments)+1))
 		arguments = append(arguments, queries.hostname)
 	}
 
 	if queries.userID != "" && database.ValidString(queries.userID) {
-		query.WriteString(fmt.Sprintf(" and user_id = $%d", len(arguments)+1))
+		query.WriteString(fmt.Sprintf(" and r.user_id = $%d", len(arguments)+1))
 		arguments = append(arguments, queries.userID)
 	}
 
-	query.WriteString(" LIMIT 50000;")
+	const pageSize = 50_000
+	offset := (queries.page - 1) * pageSize
+	query.WriteString(fmt.Sprintf(" ORDER BY created_at LIMIT %d OFFSET %d;", pageSize, offset))
 	return query.String(), arguments
 }
 
 func getQueriesFromRequest(c *gin.Context) DataFetchQueries {
+	pageQuery := c.Query("page")
 	compactQuery := c.Query("compact")
 	dateQuery := c.Query("date")
 	dateFromQuery := c.Query("dateFrom")
@@ -406,8 +410,16 @@ func getQueriesFromRequest(c *gin.Context) DataFetchQueries {
 	if err != nil {
 		status = 0
 	}
+	page := 1
+	if pageQuery != "" {
+		p, err := strconv.Atoi(pageQuery)
+		if err == nil {
+			page = p
+		}
+	}
 
 	queries := DataFetchQueries{
+		page,
 		compactQuery == "true",
 		date,
 		dateFrom,
