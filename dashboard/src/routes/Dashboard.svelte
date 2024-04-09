@@ -293,7 +293,7 @@
 			>
 				<img class="settings-icon" src="../img/cog.png" alt="" />
 			</button>
-			{#if hostnames}
+			{#if hostnames.length > 1}
 				<div class="dropdown-container">
 					<Dropdown
 						options={hostnames.slice(0, 25)}
