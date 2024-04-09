@@ -579,7 +579,7 @@ curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 
 You can filter your data by providing URL parameters in your request.
 
-- `page` - the page number, with a page size of 50,000 (defaults to 1)
+- `page` - the page number, with a max page size of 50,000 (defaults to 1)
 - `date` - the exact day the requests occurred on (`YYYY-MM-DD`)
 - `dateFrom` - a lower bound of a date range the requests occurred in (`YYYY-MM-DD`)
 - `dateTo` - a upper bound of a date range the requests occurred in (`YYYY-MM-DD`)
