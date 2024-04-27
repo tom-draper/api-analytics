@@ -16,10 +16,6 @@
 			return 'Python requests';
 		} else if (userAgent.match(/node-fetch\//)) {
 			return 'Nodejs fetch';
-		} else if (userAgent.match(/go-http-client\//)) {
-			return 'Go http';
-		} else if (userAgent.match(/Java\//)) {
-			return 'Java';
 		} else if (userAgent.match(/Seamonkey\//)) {
 			return 'Seamonkey';
 		} else if (userAgent.match(/Firefox\//)) {
@@ -28,6 +24,50 @@
 			return 'Chrome';
 		} else if (userAgent.match(/Chromium\//)) {
 			return 'Chromium';
+		} else if (userAgent.match(/aiohttp\//)) {
+			return 'aiohttp';
+		} else if (userAgent.match(/Python\//)) {
+			return 'Python';
+		} else if (userAgent.match(/[Gg]o-http-client\//)) {
+			return 'Go http';
+		} else if (userAgent.match(/Java\//)) {
+			return 'axios';
+		} else if (userAgent.match(/axios\//)) {
+			return 'Dart';
+		} else if (userAgent.match(/Dart\//)) {
+			return 'okhttp';
+		} else if (userAgent.match(/Uptime-Kuma\//)) {
+			return 'Uptime Kuma';
+		} else if (userAgent.match(/undici\//)) {
+			return 'undici';
+		} else if (userAgent.match(/Lush\//)) {
+			return 'Lush';
+		} else if (userAgent.match(/Zabbix/)) {
+			return 'Zabbix';
+		} else if (userAgent.match(/GuzzleHttp\//)) {
+			return 'Guzzle';
+		} else if (userAgent.match(/Better Uptime/)) {
+			return 'Uptime';
+		} else if (userAgent.match(/github-camo/)) {
+			return 'GitHub Camo';
+		} else if (userAgent.match(/Ruby/)) {
+			return 'Ruby';
+		} else if (userAgent.match(/node/)) {
+			return 'node';
+		} else if (userAgent.match(/Java\//)) {
+			return 'Java';
+		} else if (userAgent.match(/Next\.js/)) {
+			return 'Next.js';
+		} else if (userAgent.match(/Vercel Edge Functions/)) {
+			return 'Vercel Edge Functions';
+		} else if (userAgent.match(/OpenAI Image Downloader/)) {
+			return 'OpenAI Image Downloader';
+		} else if (userAgent.match(/OpenAI\//)) {
+			return 'OpenAI';
+		} else if (userAgent.match(/TsunamiSecurityScanner/)) {
+			return 'Tsunami Security Scanner';
+		} else if (userAgent.match(/iOS\//)) {
+			return 'iOS';
 		} else if (userAgent.match(/Safari\//)) {
 			return 'Safari';
 		} else if (userAgent.match(/Edg\//)) {

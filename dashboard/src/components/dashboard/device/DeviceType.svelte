@@ -11,6 +11,10 @@
 			return 'Android';
 		} else if (userAgent.match(/Tizen\//)) {
 			return 'Samsung';
+		} else if (userAgent.match(/Macintosh/)) {
+			return 'Mac';
+		} else if (userAgent.match(/Windows NT 10.0/)) {
+			return 'PC';
 		} else {
 			return 'Other';
 		}

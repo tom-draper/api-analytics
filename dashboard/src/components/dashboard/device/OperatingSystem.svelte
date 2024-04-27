@@ -24,7 +24,7 @@
 		} else if (userAgent.match(/(Windows NT 6.2)/)) {
 			return 'Windows 8';
 		} else if (userAgent.match(/(Windows NT 10.0)/)) {
-			return 'Windows 10';
+			return 'Windows 10/11';
 		} else if (
 			userAgent.match(/(Windows NT 4.0)|(WinNT4.0)|(WinNT)|(Windows NT)/)
 		) {
@@ -35,12 +35,16 @@
 			return 'OpenBSE';
 		} else if (userAgent.match(/SunOS/)) {
 			return 'SunOS';
+		} else if (userAgent.match(/Android/)) {
+			return 'Android';
 		} else if (userAgent.match(/(Linux)|(X11)/)) {
 			return 'Linux';
 		} else if (userAgent.match(/(Mac_PowerPC)|(Macintosh)/)) {
 			return 'MacOS';
 		} else if (userAgent.match(/QNX/)) {
 			return 'QNX';
+		} else if (userAgent.match(/iPhone OS/)) {
+			return 'iOS';
 		} else if (userAgent.match(/BeOS/)) {
 			return 'BeOS';
 		} else if (userAgent.match(/OS\/2/)) {
