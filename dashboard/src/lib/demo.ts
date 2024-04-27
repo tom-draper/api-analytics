@@ -1,3 +1,5 @@
+import { get } from 'svelte/store';
+
 function randomChoice(p) {
 	let rnd = p.reduce((a, b) => a + b) * Math.random();
 	return p.findIndex((a) => (rnd -= a) < 0);
@@ -52,7 +54,96 @@ function getDemoHour() {
 	return randomChoices(hoursDist, 1)[0];
 }
 
-const demoLocations = [
+const ipAddresses = [
+	'221.145.0.181',
+	'179.165.209.6',
+	'218.185.112.183',
+	'164.106.76.181',
+	'107.183.11.134',
+	'127.140.0.171',
+	'1.242.251.102',
+	'160.191.80.183',
+	'208.153.65.203',
+	'75.240.83.185',
+	'236.31.180.203',
+	'174.103.88.45',
+	'154.187.209.190',
+	'217.15.141.250',
+	'195.61.155.243',
+	'204.201.72.66',
+	'200.9.89.143',
+	'237.181.159.169',
+	'66.158.205.227',
+	'48.8.241.128',
+	'74.38.156.61',
+	'230.53.33.64',
+	'134.114.31.208',
+	'56.42.158.51',
+	'165.118.190.85',
+	'111.26.120.254',
+	'163.37.131.30',
+	'113.23.155.145',
+	'60.169.195.69',
+	'187.174.225.253',
+	'58.44.200.161',
+	'80.69.238.210',
+	'29.44.240.56',
+	'119.244.146.139',
+	'202.170.147.216',
+	'224.104.121.86',
+	'167.195.189.164',
+	'9.61.35.157',
+	'147.188.109.247',
+	'143.123.172.59',
+	'219.188.252.222',
+	'165.69.249.54',
+	'89.24.126.49',
+	'144.48.121.130',
+	'23.4.58.252',
+	'92.244.221.27',
+	'163.119.106.48',
+	'64.166.232.8',
+	'230.32.68.99',
+	'70.127.237.2',
+];
+const ipAddressesDist = (() => {
+	const p = Array(ipAddresses.length).fill(1);
+	for (let i = 1; i < ipAddresses.length; i++) {
+		p[i] = p[i - 1] / 1.4;
+	}
+	return p;
+})();
+
+const userIDs = [
+	'7aeb0c47-3d1d-4e5b-b650-5a5d89688a8c',
+	'af2f8c61-4c39-48c5-95fc-10112d91f96f',
+	'eebc6e3f-b18d-4b2a-bc14-1f649d5d8fb2',
+	'05f3fc20-8f48-4b19-ae25-7223446b4b0a',
+	'c1e1c92d-7415-4c4e-bc1c-9b7eb7f11d78',
+	'f2c17664-2be4-45d4-a2b5-9fd69a4e69c8',
+	'73d8e71d-89f7-4648-9419-b6d75b83b0f3',
+	'9a7c47c5-30a4-4c1d-ae85-99b5fcfca32a',
+	'e2675b9c-1f91-4e91-8d76-b5f7a2059a11',
+	'a450a0c6-c3b4-4b48-b52c-038eb380647d',
+	'5a3b9ad3-92a1-4e2e-834d-ec2134228c85',
+	'8b812cc0-ee91-4b99-81b2-b290c6e70784',
+	'd8894ea0-7b0f-4b29-9a76-9508cdd73d0d',
+	'63492fb4-29d5-45a1-ae5b-d85b8e1270ac',
+	'1a381a63-2b6b-44c0-8721-3b131199fbc2',
+	'56e04612-0f34-4e52-8fe5-53b754aa1e90',
+	'b97af44b-9b43-43c0-95e0-2c4b9127a77f',
+	'e4fb46e3-ae3d-4031-8b47-0b5d16dc83fc',
+	'99d7e572-26d4-44b5-88c4-92f1f3e50892',
+	'2fd7a3fb-5de9-4e8e-93a7-2dbf1d6d7485',
+	'9c622482-69ff-491d-a96b-4e7dd29b4a5d',
+]
+
+function getUserID() {
+	const idx = randomChoice(ipAddressesDist);
+	return [ipAddresses[idx], userIDs[idx]];
+}
+
+const locations = [
 	'GB',
 	'US',
 	'MX',
@@ -90,7 +181,7 @@ const demoLocations = [
 	'BO',
 	'BQ',
 ];
-const demoLocationsDist = [
+const locationsDist = [
 	0.56, 1, 0.18, 0.2, 0.4, 0.3, 0.1, 0.05, 0.2, 0.06, 0.01, 0.01, 0.01, 0.01,
 	0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01,
 	0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01,
@@ -98,16 +189,16 @@ const demoLocationsDist = [
 ];
 
 function getLocation() {
-	const idx = randomChoice(demoLocationsDist);
-	return demoLocations[idx];
+	const idx = randomChoice(locationsDist);
+	return locations[idx];
 }
 
-const demoHostnames = ['example.com', 'example2.com', 'example3.com'];
-const demoHostnamesDist = [0.5, 0.35, 0.15];
+const hostnames = ['example.com', 'example2.com', 'example3.com'];
+const hostnamesDist = [0.5, 0.35, 0.15];
 
 function getHostname() {
-	const idx = randomChoice(demoHostnamesDist);
-	return demoHostnames[idx];
+	const idx = randomChoice(hostnamesDist);
+	return hostnames[idx];
 }
 
 function daysToSeconds(days: number) {
@@ -181,8 +272,10 @@ function addDemoSamples(
 		if (date === null) {
 			continue;
 		}
+		const [ipAddress, userID] = getUserID();
 		demoData.push([
-			randInt(config.user.min, config.user.max).toString(),
+			// randInt(config.user.min, config.user.max).toString(),
+			ipAddress,
 			config.endpoint,
 			getHostname(),
 			getUserAgent(),
@@ -190,7 +283,7 @@ function addDemoSamples(
 			randInt(config.responseTime.min, config.responseTime.max),
 			config.status,
 			getLocation(),
-			null,
+			userID,
 			date,
 		]);
 	}

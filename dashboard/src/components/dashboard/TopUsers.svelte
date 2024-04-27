@@ -31,7 +31,7 @@
 				};
 			}
 			users[userID].requests += 1;
-			if (createdAt < users[userID].createdAt) {
+			if (createdAt > users[userID].createdAt) {
 				users[userID].createdAt = createdAt;
 			}
 		}
@@ -117,13 +117,14 @@
 	}
 	tr {
 		border-bottom: 1px solid #2e2e2e;
+		/* font-size: 0.9em; */
 	}
 	thead {
 		font-weight: 600;
 	}
 	table {
 		border-collapse: collapse;
-		font-size: 0.95em;
+		font-size: 0.85em;
 	}
 	tbody {
 		color: #707070;

@@ -13,7 +13,7 @@
 			return 'Samsung';
 		} else if (userAgent.match(/Macintosh/)) {
 			return 'Mac';
-		} else if (userAgent.match(/Windows NT 10.0/)) {
+		} else if (userAgent.match(/Windows/)) {
 			return 'PC';
 		} else {
 			return 'Other';
