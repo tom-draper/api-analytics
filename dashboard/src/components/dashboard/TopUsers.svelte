@@ -36,7 +36,11 @@
 			}
 		}
 
-		if (Object.keys(users).length < 10) {
+		const totalUsers = Object.keys(users).length;
+		const topUserRequestsCount = Math.max(
+			...Object.values(users).map((user) => user.requests),
+		);
+		if (totalUsers < 10 || topUserRequestsCount <= 1) {
 			topUsers = null;
 			return;
 		}
