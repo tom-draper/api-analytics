@@ -540,7 +540,7 @@ Demo: https://apianalytics.dev/dashboard/demo
 
 #### Data API
 
-Logged data for all requests can be accessed via our REST API. Simply send a GET request to `https://apianalytics-server.com/api/data` with your API key set as `X-AUTH-TOKEN` in headers.
+Logged data for all requests can be accessed via our REST API. Simply send a GET request to `https://apianalytics-server.com/api/data` with your API key set as `X-AUTH-TOKEN` in the headers.
 
 ##### Python
 
