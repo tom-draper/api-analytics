@@ -1,5 +1,3 @@
-import { get } from 'svelte/store';
-
 function randomChoice(p) {
 	let rnd = p.reduce((a, b) => a + b) * Math.random();
 	return p.findIndex((a) => (rnd -= a) < 0);
@@ -136,7 +134,7 @@ const userIDs = [
 	'99d7e572-26d4-44b5-88c4-92f1f3e50892',
 	'2fd7a3fb-5de9-4e8e-93a7-2dbf1d6d7485',
 	'9c622482-69ff-491d-a96b-4e7dd29b4a5d',
-]
+];
 
 function getUserID() {
 	const idx = randomChoice(ipAddressesDist);
