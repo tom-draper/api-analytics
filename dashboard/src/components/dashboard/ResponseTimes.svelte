@@ -2,40 +2,17 @@
 	import { onMount } from 'svelte';
 	import { ColumnIndex } from '../../lib/consts';
 
-	// Median and quartiles from StackOverflow answer
-	// https://stackoverflow.com/a/55297611/8851732
-	const asc = (arr) => arr.sort((a, b) => a - b);
-	const sum = (arr) => arr.reduce((a, b) => a + b, 0);
-	const mean = (arr) => sum(arr) / arr.length;
-
+	/* Parameter `arr` assumed sorted. */
 	function quantile(arr: number[], q: number) {
-		const sorted = asc(arr);
-		const pos = (sorted.length - 1) * q;
+		const pos = (arr.length - 1) * q;
 		const base = Math.floor(pos);
 		const rest = pos - base;
-		if (sorted[base + 1] != undefined) {
-			return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
-		} else if (sorted[base] != undefined) {
-			return sorted[base];
+		if (arr[base + 1] !== undefined) {
+			return arr[base] + rest * (arr[base + 1] - arr[base]);
+		} else if (arr[base] !== undefined) {
+			return arr[base];
 		}
 		return 0;
-	}
-
-	function markerPosition(x: number): number {
-		// 170.125 ms -> 0
-		// 1000 ms -> 100
-		const position = Math.log10(x) * 130 - 290;
-		if (position < 0) {
-			return 0;
-		} else if (position > 100) {
-			return 100;
-		}
-		return position;
-	}
-
-	function setMarkerPosition(median: number) {
-		const position = markerPosition(median);
-		marker.style.left = `${position}%`;
 	}
 
 	function build() {
@@ -43,10 +20,10 @@
 		for (let i = 0; i < data.length; i++) {
 			responseTimes[i] = data[i][ColumnIndex.ResponseTime];
 		}
+		responseTimes.sort((a, b) => a - b);
 		LQ = quantile(responseTimes, 0.25);
 		median = quantile(responseTimes, 0.5);
 		UQ = quantile(responseTimes, 0.75);
-		// setMarkerPosition(median);
 		genPlot(data);
 	}
 
@@ -145,7 +122,6 @@
 	let median: number;
 	let LQ: number;
 	let UQ: number;
-	let marker: HTMLDivElement;
 	let plotDiv: HTMLDivElement;
 	let mounted = false;
 	onMount(() => {
@@ -180,12 +156,6 @@
 			</div>
 		</div>
 	</div>
-	<!-- <div class="bar">
-    <div class="bar-green" />
-    <div class="bar-yellow" />
-    <div class="bar-red" />
-    <div class="marker" bind:this={marker} />
-  </div> -->
 </div>
 
 <style scoped>

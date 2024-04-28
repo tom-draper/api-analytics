@@ -3,25 +3,28 @@
 	import type { DashboardSettings } from '../../lib/settings';
 	import List from './List.svelte';
 
+	function toggleDisable404() {
+		settings.disable404 = !settings.disable404;
+	}
+
+	function hideSettings() {
+		show = false;
+	}
+
 	let container: HTMLDivElement;
 	onMount(() => {
 		container.addEventListener('click', (e) => {
 			e.stopImmediatePropagation();
 		});
 	});
+
 	export let show: boolean,
 		settings: DashboardSettings,
 		exportCSV: () => void;
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div
-	class="background"
-	class:hidden={!show}
-	on:click={() => {
-		show = false;
-	}}
->
+<div class="background" class:hidden={!show} on:click={hideSettings}>
 	<div class="container" bind:this={container}>
 		<h2 class="title">Settings</h2>
 		<div class="disable404 setting">
@@ -30,9 +33,7 @@
 				type="checkbox"
 				name="disable404"
 				id="checkbox"
-				on:change={() => {
-					settings.disable404 = !settings.disable404;
-				}}
+				on:change={toggleDisable404}
 			/>
 		</div>
 		<div class="setting-title">Filters:</div>
@@ -44,7 +45,9 @@
 			</div>
 			<div class="setting-filter">
 				Period: <span class:text-white={settings.period}
-					>{settings.period ?? 'None'}</span
+					>{settings.period === 'All time'
+						? 'None'
+						: settings.period}</span
 				>
 			</div>
 			<div class="setting-filter">
