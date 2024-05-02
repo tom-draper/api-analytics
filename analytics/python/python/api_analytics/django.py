@@ -3,7 +3,7 @@ from datetime import datetime
 from time import time
 from typing import Callable, Union
 
-from api_analytics.core import log_request
+from api_analytics.core import log_request, DEFAULT_SERVER_URL
 from django import conf
 from django.core.handlers.wsgi import WSGIRequest
 from django.http.response import HttpResponse
@@ -49,6 +49,7 @@ class Config:
     get_user_agent: Union[Callable[[WSGIRequest], str], None] = None
     get_user_id: Union[Callable[[WSGIRequest], str], None] = None
     privacy_level: int = 0
+    server_url: str = DEFAULT_SERVER_URL
 
 
 class Analytics:
@@ -75,7 +76,7 @@ class Analytics:
             "created_at": datetime.now().isoformat(),
         }
 
-        log_request(self.api_key, request_data, "Django", self.config.privacy_level)
+        log_request(self.api_key, request_data, "Django", self.config.privacy_level, self.config.server_url)
         return response
 
     def _get_path(self, request: WSGIRequest) -> Union[str, None]:

@@ -3,7 +3,7 @@ from datetime import datetime
 from time import time
 from typing import Callable, Union
 
-from api_analytics.core import log_request
+from api_analytics.core import log_request, DEFAULT_SERVER_URL
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
@@ -50,6 +50,7 @@ class Config:
     get_user_agent: Union[Callable[[Request], str], None] = None
     get_user_id: Union[Callable[[Request], str], None] = None
     privacy_level: int = 0
+    server_url: str = DEFAULT_SERVER_URL
 
 
 class Analytics(BaseHTTPMiddleware):
@@ -75,8 +76,8 @@ class Analytics(BaseHTTPMiddleware):
         return request.url.path
 
     def _get_ip_address(self, request: Request) -> Union[str, None]:
-        # If privacy_level is 2, client IP address is never sent to the server
-        if self.config.privacy_level == 2:
+        # If privacy_level is max, client IP address is never sent to the server
+        if self.config.privacy_level >= 2:
             return None
 
         if self.config.get_ip_address:
@@ -111,5 +112,5 @@ class Analytics(BaseHTTPMiddleware):
             "created_at": datetime.now().isoformat(),
         }
 
-        log_request(self.api_key, request_data, "FastAPI", self.config.privacy_level)
+        log_request(self.api_key, request_data, "FastAPI", self.config.privacy_level, self.config.server_url)
         return response

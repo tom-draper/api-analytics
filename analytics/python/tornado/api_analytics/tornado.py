@@ -3,7 +3,7 @@ from datetime import datetime
 from time import time
 from typing import Callable, Union
 
-from api_analytics.core import log_request
+from api_analytics.core import log_request, DEFAULT_SERVER_URL
 from tornado.httputil import HTTPServerRequest
 from tornado.web import Application, RequestHandler
 
@@ -40,6 +40,8 @@ class Config:
         custom `get_user_id` mapping function becomes the only method for client
         identification.
         Defaults to 0.
+    :param server_url: For self-hosting. Points to the public server url to post 
+        requests to.
     """
 
     get_path: Union[Callable[[HTTPServerRequest], str], None] = None
@@ -48,6 +50,7 @@ class Config:
     get_user_agent: Union[Callable[[HTTPServerRequest], str], None] = None
     get_user_id: Union[Callable[[HTTPServerRequest], str], None] = None
     privacy_level: int = 0
+    server_url: str = DEFAULT_SERVER_URL
 
 
 class Analytics(RequestHandler):
@@ -81,7 +84,7 @@ class Analytics(RequestHandler):
             "created_at": datetime.now().isoformat(),
         }
 
-        log_request(self.api_key, request_data, "Tornado", self.config.privacy_level)
+        log_request(self.api_key, request_data, "Tornado", self.config.privacy_level, self.config.server_url)
         self.start = None
 
     def _get_path(self) -> Union[str, None]:

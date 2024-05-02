@@ -3,7 +3,7 @@ from datetime import datetime
 from time import time
 from typing import Callable, Union
 
-from api_analytics.core import log_request
+from api_analytics.core import log_request, DEFAULT_SERVER_URL
 from flask import Flask, Request, Response, request
 
 
@@ -47,6 +47,7 @@ class Config:
     get_user_agent: Union[Callable[[Request], str], None] = None
     get_user_id: Union[Callable[[Request], str], None] = None
     privacy_level: int = 0
+    server_url: str = DEFAULT_SERVER_URL
 
 
 def add_middleware(app: Flask, api_key: str, config: Config = Config()):
@@ -79,7 +80,7 @@ def add_middleware(app: Flask, api_key: str, config: Config = Config()):
             "created_at": datetime.now().isoformat(),
         }
 
-        log_request(api_key, request_data, "Flask", config.privacy_level)
+        log_request(api_key, request_data, "Flask", config.privacy_level, config.server_url)
         return response
 
 
