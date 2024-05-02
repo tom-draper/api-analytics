@@ -12,24 +12,6 @@ class Config:
     """
     Configuration for the Flask API Analytics middleware.
 
-    :param get_path: Optional custom mapping function that takes a request and
-        returns the path stored within the request. If set, it overrides the
-        default behaviour of API Analytics.
-    :param get_ip_address: Optional custom mapping function that takes a request
-        and returns the IP address stored within the request. If set, it
-        overrides the default behaviour of API Analytics.
-    :param get_hostname: Optional custom mapping function that takes a request
-        and returns the hostname stored within the request. If set, it overrides
-        the default behaviour of API Analytics.
-    :param get_user_agent: Optional custom mapping function that takes a request
-        and returns the user agent stored within the request. If set, it
-        overrides the default behaviour of API Analytics.
-    :param get_user_id: Optional custom mapping function that takes a request
-        and returns a custom user ID stored within the request. If set, this can
-        be used to track a custom user ID specific to your API such as an API
-        key or client ID. If left as `None`, no custom user ID will be used, and
-        user identification may rely on client IP address only (depending on
-        `privacy_level`).
     :param privacy_level: Controls client identification by IP address.
         - 0: Sends client IP to the server to be stored and client location is
         inferred.
@@ -39,15 +21,35 @@ class Config:
         custom `get_user_id` mapping function becomes the only method for client
         identification.
         Defaults to 0.
+    :param server_url: For self-hosting. Points to the public server url to post 
+        requests to.
+    :param get_path: Mapping function that takes a request and returns the path 
+        stored within the request. Assigning a value will override the default 
+        behavior.
+    :param get_ip_address: Mapping function that takes a request and returns the 
+        IP address stored within the request. Assigning a value will override the 
+        default behavior.
+    :param get_hostname: Mapping function that takes a request and returns the 
+        hostname stored within the request. Assigning a value will override the 
+        default behavior.
+    :param get_user_agent: Mapping function that takes a request and returns the 
+        user agent stored within the request. Assigning a value will override the 
+        default behavior.
+    :param get_user_id: Mapping function that takes a request and returns a 
+        custom user ID stored within the request. Always returns None by default. 
+        Assigning a value allows for tracking a custom user ID specific to your API 
+        such as an API key or client ID. If left as the default value, user 
+        identification may rely on client IP address only (depending on
+        `privacy_level`).
     """
 
-    get_path: Union[Callable[[Request], str], None] = None
-    get_ip_address: Union[Callable[[Request], str], None] = None
-    get_hostname: Union[Callable[[Request], str], None] = None
-    get_user_agent: Union[Callable[[Request], str], None] = None
-    get_user_id: Union[Callable[[Request], str], None] = None
     privacy_level: int = 0
     server_url: str = DEFAULT_SERVER_URL
+    get_path: Callable[[Request], Union[str, None]] = Mappers.get_path
+    get_ip_address: Callable[[Request], Union[str, None]] = Mappers.get_ip_address
+    get_hostname: Callable[[Request], Union[str, None]] = Mappers.get_hostname
+    get_user_agent: Callable[[Request], Union[str, None]] = Mappers.get_user_agent
+    get_user_id: Callable[[Request], Union[str, None]] = Mappers.get_user_id
 
 
 def add_middleware(app: Flask, api_key: str, config: Config = Config()):
@@ -69,54 +71,53 @@ def add_middleware(app: Flask, api_key: str, config: Config = Config()):
     def on_finish(response: Response) -> Response:
         nonlocal start
         request_data = {
-            "hostname": _get_hostname(request, config),
+            "hostname": config.get_hostname(request, config),
             "ip_address": _get_ip_address(request, config),
-            "path": _get_path(request, config),
-            "user_agent": _get_user_agent(request, config),
+            "path": config.get_path(request, config),
+            "user_agent": config.get_user_agent(request, config),
             "method": request.method,
             "status": response.status_code,
             "response_time": int((time() - start) * 1000),
-            "user_id": _get_user_id(request, config),
+            "user_id": config.get_user_id(request, config),
             "created_at": datetime.now().isoformat(),
         }
 
-        log_request(api_key, request_data, "Flask", config.privacy_level, config.server_url)
+        log_request(
+            api_key, 
+            request_data, 
+            "Flask", 
+            config.privacy_level, 
+            config.server_url
+        )
         return response
 
+class Mappers:
+    @staticmethod
+    def get_path(request: Request) -> Union[str, None]:
+        return request.path
 
-def _get_path(request: Request, config: Config) -> Union[str, None]:
-    if config.get_path:
-        return config.get_path(request)
-    return request.path
+    @staticmethod
+    def get_ip_address(request: Request) -> Union[str, None]:
+        return request.remote_addr
 
+    @staticmethod
+    def get_hostname(request: Request) -> Union[str, None]:
+        return request.url.hostname
+    
+    @staticmethod
+    def get_user_id(request: Request) -> Union[str, None]:
+        return None
+    
+    @staticmethod
+    def get_user_agent(request: Request) -> Union[str, None]:
+        if "user-agent" in request.headers:
+            return request.headers["user-agent"]
+        elif "User-Agent" in request.headers:
+            return request.headers["User-Agent"]
+        return None
 
 def _get_ip_address(request: Request, config: Config) -> Union[str, None]:
     # If privacy_level is max, client IP address is never sent to the server
     if config.privacy_level >= 2:
         return None
-
-    if config.get_ip_address:
-        return config.get_ip_address(request)
-    return request.remote_addr
-
-
-def _get_hostname(request: Request, config: Config) -> Union[str, None]:
-    if config.get_hostname:
-        return config.get_hostname(request)
-    return request.host
-
-
-def _get_user_id(request: Request, config: Config) -> Union[str, None]:
-    if config.get_user_id:
-        return config.get_user_id(request)
-    return None
-
-
-def _get_user_agent(request: Request, config: Config) -> Union[str, None]:
-    if config.get_user_agent:
-        return config.get_user_agent(request)
-    if "user-agent" in request.headers:
-        return request.headers["user-agent"]
-    elif "User-Agent" in request.headers:
-        return request.headers["User-Agent"]
-    return None
+    return config.get_ip_address(request)

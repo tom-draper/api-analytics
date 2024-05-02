@@ -13,24 +13,6 @@ class Config:
     """
     Configuration for the Tornado API Analytics middleware.
 
-    :param get_path: Optional custom mapping function that takes a request and
-        returns the path stored within the request. If set, it overrides the
-        default behaviour of API Analytics.
-    :param get_ip_address: Optional custom mapping function that takes a request
-        and returns the IP address stored within the request. If set, it
-        overrides the default behaviour of API Analytics.
-    :param get_hostname: Optional custom mapping function that takes a request
-        and returns the hostname stored within the request. If set, it overrides
-        the default behaviour of API Analytics.
-    :param get_user_agent: Optional custom mapping function that takes a request
-        and returns the user agent stored within the request. If set, it
-        overrides the default behaviour of API Analytics.
-    :param get_user_id: Optional custom mapping function that takes a request
-        and returns a custom user ID stored within the request. If set, this can
-        be used to track a custom user ID specific to your API such as an API
-        key or client ID. If left as `None`, no custom user ID will be used, and
-        user identification may rely on client IP address only (depending on
-        `privacy_level`).
     :param privacy_level: Controls client identification by IP address.
         - 0: Sends client IP to the server to be stored and client location is
         inferred.
@@ -42,15 +24,33 @@ class Config:
         Defaults to 0.
     :param server_url: For self-hosting. Points to the public server url to post 
         requests to.
+    :param get_path: Mapping function that takes a request and returns the path 
+        stored within the request. Assigning a value will override the default 
+        behavior.
+    :param get_ip_address: Mapping function that takes a request and returns the 
+        IP address stored within the request. Assigning a value will override the 
+        default behavior.
+    :param get_hostname: Mapping function that takes a request and returns the 
+        hostname stored within the request. Assigning a value will override the 
+        default behavior.
+    :param get_user_agent: Mapping function that takes a request and returns the 
+        user agent stored within the request. Assigning a value will override the 
+        default behavior.
+    :param get_user_id: Mapping function that takes a request and returns a 
+        custom user ID stored within the request. Always returns None by default. 
+        Assigning a value allows for tracking a custom user ID specific to your API 
+        such as an API key or client ID. If left as the default value, user 
+        identification may rely on client IP address only (depending on
+        `privacy_level`).
     """
 
-    get_path: Union[Callable[[HTTPServerRequest], str], None] = None
-    get_ip_address: Union[Callable[[HTTPServerRequest], str], None] = None
-    get_hostname: Union[Callable[[HTTPServerRequest], str], None] = None
-    get_user_agent: Union[Callable[[HTTPServerRequest], str], None] = None
-    get_user_id: Union[Callable[[HTTPServerRequest], str], None] = None
     privacy_level: int = 0
     server_url: str = DEFAULT_SERVER_URL
+    get_path: Callable[[HTTPServerRequest], Union[str, None]] = Analytics.Mappers.get_path
+    get_ip_address: Callable[[HTTPServerRequest], Union[str, None]] = Analytics.Mappers.get_ip_address
+    get_hostname: Callable[[HTTPServerRequest], Union[str, None]] = Analytics.Mappers.get_hostname
+    get_user_agent: Callable[[HTTPServerRequest], Union[str, None]] = Analytics.Mappers.get_user_agent
+    get_user_id: Callable[[HTTPServerRequest], Union[str, None]] = Analytics.Mappers.get_user_id
 
 
 class Analytics(RequestHandler):
@@ -73,24 +73,50 @@ class Analytics(RequestHandler):
 
     def on_finish(self):
         request_data = {
-            "hostname": self._get_hostname(),
+            "hostname": self.config.get_hostname(),
             "ip_address": self._get_ip_address(),
-            "path": self._get_path(),
-            "user_agent": self.get_user_agent(),
+            "path": self.config.get_path(),
+            "user_agent": self.config.get_user_agent(),
             "method": self.request.method,
             "status": self.get_status(),
             "response_time": int((time() - self.start) * 1000),
-            "user_id": self.get_user_id(),
+            "user_id": self.config.get_user_id(),
             "created_at": datetime.now().isoformat(),
         }
 
-        log_request(self.api_key, request_data, "Tornado", self.config.privacy_level, self.config.server_url)
+        log_request(
+            self.api_key, 
+            request_data, 
+            "Tornado", 
+            self.config.privacy_level, 
+            self.config.server_url
+        )
         self.start = None
+    
+    class Mappers:
+        @staticmethod
+        def get_path(request: HTTPServerRequest) -> Union[str, None]:
+            return request.path
 
-    def _get_path(self) -> Union[str, None]:
-        if self.config.get_path:
-            return self.config.get_path(self.request)
-        return self.request.path
+        @staticmethod
+        def get_ip_address(request: HTTPServerRequest) -> Union[str, None]:
+            return request.remote_ip
+
+        @staticmethod
+        def get_hostname(request: HTTPServerRequest) -> Union[str, None]:
+            return request.host
+        
+        @staticmethod
+        def get_user_id(request: HTTPServerRequest) -> Union[str, None]:
+            return None
+        
+        @staticmethod
+        def get_user_agent(request: HTTPServerRequest) -> Union[str, None]:
+            if "user-agent" in request.headers:
+                return request.headers["user-agent"]
+            elif "User-Agent" in request.headers:
+                return request.headers["User-Agent"]
+            return None
 
     def _get_ip_address(self) -> Union[str, None]:
         # If privacy_level is max, client IP address is never sent to the server
@@ -101,21 +127,3 @@ class Analytics(RequestHandler):
             return self.config.get_ip_address(self.request)
         return self.request.remote_ip
 
-    def _get_hostname(self) -> Union[str, None]:
-        if self.config.get_hostname:
-            return self.config.get_hostname(self.request)
-        return self.request.host
-
-    def _get_user_id(self) -> Union[str, None]:
-        if self.config.get_user_id:
-            return self.config.get_user_id(self.request)
-        return None
-
-    def _get_user_agent(self) -> Union[str, None]:
-        if self.config.get_user_agent:
-            return self.config.get_user_agent(self.request)
-        elif "user-agent" in self.request.headers:
-            return self.request.headers["user-agent"]
-        elif "User-Agent" in self.request.headers:
-            return self.request.headers["User-Agent"]
-        return None
