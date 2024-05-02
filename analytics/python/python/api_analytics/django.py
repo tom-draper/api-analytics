@@ -75,7 +75,7 @@ class Analytics:
             "created_at": datetime.now().isoformat(),
         }
 
-        log_request(self.api_key, request_data, "Django")
+        log_request(self.api_key, request_data, "Django", self.config.privacy_level)
         return response
 
     def _get_path(self, request: WSGIRequest) -> Union[str, None]:
