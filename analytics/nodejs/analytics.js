@@ -11,7 +11,7 @@ export class Config {
      * - 1: Sends the client IP to the server only for the location to be 
      * inferred and stored, with the IP discarded afterwards.
      * - 2: Avoids sending the client IP address to the server. Providing a 
-     * custom `get_user_id` mapping function becomes the only method for client 
+     * custom `getUserID` mapping function becomes the only method for client 
      * identification.
      * Defaults to 0.
      * @type {number}
@@ -69,7 +69,7 @@ export class Config {
      * Assigning a value allows for tracking a custom user ID specific to your API 
      * such as an API key or client ID. If left as the default value, user 
      * identification may rely on client IP address only (depending on
-     * `privacy_level`).
+     * config `privacyLevel`).
      * @type {(req: Request) => string}
      * @public
      */
