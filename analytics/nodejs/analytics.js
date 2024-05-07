@@ -25,7 +25,7 @@ export class Config {
      * @type {string}
      * @public
      */
-    this.serverUrl = 'https://www.apianalytics-server.com';
+    this.serverUrl = 'https://www.apianalytics-server.com/';
 
     /**
      * A mapping function that takes a request and returns the path 
@@ -120,7 +120,8 @@ class Analytics {
     this.requests.push(requestData);
     const now = new Date();
     if (now - this.lastPosted > 60000) {
-      await fetch("https://www.apianalytics-server.com/api/log-request", {
+      const url = this.getServerEndpoint()
+      await fetch(url, {
         method: "POST",
         body: JSON.stringify({
           api_key: this.apiKey,
@@ -135,6 +136,13 @@ class Analytics {
       this.requests = [];
       this.lastPosted = now;
     }
+  }
+
+  getServerEndpoint() {
+    if (this.config.serverUrl.endsWith('/')) {
+      return this.config.serverUrl + "api/log-request"
+    }
+    return this.config.serverUrl + "/api/log-request"
   }
 }
 
