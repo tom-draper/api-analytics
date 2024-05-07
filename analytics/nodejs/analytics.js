@@ -4,53 +4,6 @@ import fetch from "node-fetch";
  * the default functionality when extracting data from the request. */
 export class Config {
   constructor() {
-    /**
-     * A custom mapping function that takes a request and returns the path 
-     * stored within the request.
-     * If set, it overrides the default behaviour of API Analytics.
-     * @type {((req: Request) => string) | null}
-     * @public
-     */
-    this.getPath = null;
-
-    /**
-     * A custom mapping function that takes a request and returns the hostname 
-     * stored within the request.
-     * If set, it overrides the default behaviour of API Analytics.
-     * @type {((req: Request) => string) | null}
-     * @public
-     */
-    this.getHostname = null;
-
-    /**
-     * A custom mapping function that takes a request and returns the IP address
-     * stored within the request.
-     * If set, it overrides the default behaviour of API Analytics.
-     * @type {((req: Request) => string) | null}
-     * @public
-     */
-    this.getIPAddress = null;
-
-    /**
-     * A custom mapping function that takes a request and returns the user agent
-     * stored within the request.
-     * If set, it overrides the default behaviour of API Analytics.
-     * @type {((req: Request) => string) | null}
-     * @public
-     */
-    this.getUserAgent = null;
-
-    /**
-     * A custom mapping function that takes a request and returns a user ID 
-     * stored within the request.
-     * If set, this can be used to track a custom user ID specific to your API 
-     * such as an API key or client ID. If left as `null`, no custom user ID 
-     * will be used, and user identification will rely on client IP address only.
-     * @type {((req: Request) => string) | null}
-     * @public
-     */
-    this.getUserID = null;
-
     /** 
      * Controls client identification by IP address. 
      * - 0: Sends client IP to the server to be stored and client location is 
@@ -65,6 +18,62 @@ export class Config {
      * @public
      */
     this.privacyLevel = 0;
+
+    /** 
+     * For self-hosting. Points to the public server url to post 
+     * requests to.
+     * @type {string}
+     * @public
+     */
+    this.serverUrl = 'https://www.apianalytics-server.com';
+
+    /**
+     * A mapping function that takes a request and returns the path 
+     * stored within the request.
+     * Assigning a value will overrides the default behaviour.
+     * @type {(req: Request) => string}
+     * @public
+     */
+    this.getPath = Mappers.getPath;
+
+    /**
+     * A mapping function that takes a request and returns the hostname 
+     * stored within the request.
+     * Assigning a value will overrides the default behaviour.
+     * @type {(req: Request) => string}
+     * @public
+     */
+    this.getHostname = Mappers.getHostname;
+
+    /**
+     * A mapping function that takes a request and returns the IP address
+     * stored within the request.
+     * Assigning a value will overrides the default behaviour.
+     * @type {(req: Request) => string}
+     * @public
+     */
+    this.getIPAddress = Mappers.getIPAddress;
+
+    /**
+     * A mapping function that takes a request and returns the user agent
+     * stored within the request.
+     * Assigning a value will overrides the default behaviour.
+     * @type {(req: Request) => string}
+     * @public
+     */
+    this.getUserAgent = Mappers.getUserAgent;
+
+    /**
+     * A mapping function that takes a request and returns a user ID 
+     * stored within the request. Always returns `null` by default.
+     * Assigning a value allows for tracking a custom user ID specific to your API 
+     * such as an API key or client ID. If left as the default value, user 
+     * identification may rely on client IP address only (depending on
+     * `privacy_level`).
+     * @type {(req: Request) => string}
+     * @public
+     */
+    this.getUserID = Mappers.getUserID;
   }
 }
 
@@ -141,14 +150,14 @@ export function expressAnalytics(apiKey, config = new Config()) {
     next();
 
     const requestData = {
-      hostname: getHostname(req, config),
+      hostname: config.getHostname(req),
       ip_address: getIPAddress(req, config),
-      user_agent: getUserAgent(req, config),
-      path: getPath(req, config),
+      user_agent: config.getUserAgent(req),
+      path: config.getPath(req),
       status: res.statusCode,
       method: req.method,
       response_time: Math.round((performance.now() - start) / 1000),
-      user_id: getUserID(req, config),
+      user_id: config.getUserID(req),
       created_at: new Date().toISOString(),
     };
 
@@ -168,14 +177,14 @@ export function fastifyAnalytics(apiKey, config = new Config()) {
     done();
 
     const requestData = {
-      hostname: getHostname(req, config),
+      hostname: config.getHostname(req),
       ip_address: getIPAddress(req, config),
-      user_agent: getUserAgent(req, config),
-      path: getPath(req, config),
+      user_agent: config.getUserAgent(req),
+      path: config.getPath(req),
       status: reply.statusCode,
       method: req.method,
       response_time: Math.round((performance.now() - start) / 1000),
-      user_id: getUserID(req, config),
+      user_id: config.getUserID(req),
       created_at: new Date().toISOString(),
     };
 
@@ -195,33 +204,19 @@ export function koaAnalytics(apiKey, config = new Config()) {
     await next();
 
     const requestData = {
-      hostname: getHostname(ctx, config),
+      hostname: config.getHostname(ctx),
       ip_address: getIPAddress(ctx, config),
-      user_agent: getUserAgent(ctx, config),
-      path: getPath(ctx, config),
+      user_agent: config.getUserAgent(ctx),
+      path: config.getPath(ctx),
       status: ctx.status,
       method: ctx.method,
       response_time: Math.round((performance.now() - start) / 1000),
-      user_id: getUserID(ctx, config),
+      user_id: config.getUserID(ctx),
       created_at: new Date().toISOString(),
     };
 
     analytics.logRequest(requestData);
   };
-}
-
-/**
- * Gets the hostname from the request, using the custom mapping function if 
- * provided, or the default behaviour if not.
- * @param {Request} req 
- * @param {Config} config 
- * @returns {string}
- */
-function getHostname(req, config) {
-  if (config.getHostname) {
-    return config.getHostname(req);
-  }
-  return req.headers.host;
 }
 
 /**
@@ -235,55 +230,61 @@ function getIPAddress(req, config) {
   if (config.privacyLevel >= 2) {
     return null;
   }
-
-  if (config.getIPAddress) {
-    return config.getIPAddress(req);
-  }
-  return (
-    req.headers["x-forwarded-for"] ||
-    req.headers["X-Forwarded-For"] ||
-    req.socket.remoteAddress
-  );
+  return config.getIPAddress(req);
 }
 
-/**
- * Gets the user agent from the request, using the custom mapping function if 
- * provided, or the default behaviour if not.
- * @param {Request} req 
- * @param {Config} config 
- * @returns {string}
- */
-function getUserAgent(req, config) {
-  if (config.getUserAgent) {
-    return config.getUserAgent(req);
+class Mappers {
+  /**
+   * Gets the hostname from the request, using the custom mapping function if 
+   * provided, or the default behaviour if not.
+   * @param {Request} req 
+   * @returns {string}
+   */
+  static getHostname(req) {
+    return req.headers.host;
   }
-  return req.headers["user-agent"] || req.headers["User-Agent"];
-}
 
-/**
- * Gets the path from the request, using the custom mapping function if 
- * provided, or the default behaviour if not.
- * @param {Request} req 
- * @param {Config} config 
- * @returns {string}
- */
-function getPath(req, config) {
-  if (config.getPath) {
-    return config.getPath(req);
+  /**
+   * Gets the IP address from the request, using the custom mapping function if 
+   * provided, or the default behaviour if not.
+   * @param {Request} req 
+   * @returns {string}
+   */
+  static getIPAddress(req) {
+    return (
+      req.headers["x-forwarded-for"] ||
+      req.headers["X-Forwarded-For"] ||
+      req.socket.remoteAddress
+    );
   }
-  return req.url;
-}
 
-/**
- * Gets the user agent from the request, using the custom mapping function if 
- * provided, or no user ID is used.
- * @param {Request} req 
- * @param {Config} config 
- * @returns {string}
- */
-function getUserID(req, config) {
-  if (config.getUserID) {
-    return config.getUserID(req);
+  /**
+   * Gets the user agent from the request, using the custom mapping function if 
+   * provided, or the default behaviour if not.
+   * @param {Request} req 
+   * @returns {string}
+   */
+  static getUserAgent(req) {
+    return req.headers["user-agent"] || req.headers["User-Agent"];
   }
-  return null;
+
+  /**
+   * Gets the path from the request, using the custom mapping function if 
+   * provided, or the default behaviour if not.
+   * @param {Request} req 
+   * @returns {string}
+   */
+  static getPath(req) {
+    return req.url;
+  }
+
+  /**
+   * Gets the user agent from the request, using the custom mapping function if 
+   * provided, or no user ID is used.
+   * @param {Request} req 
+   * @returns {string}
+   */
+  static getUserID(req) {
+    return null;
+  }
 }
