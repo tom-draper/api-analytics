@@ -10,6 +10,8 @@ import (
 var requests []RequestData
 var lastPosted time.Time = time.Now()
 
+const DefaultServerURL string = "https://www.apianalytics-server.com/"
+
 type Payload struct {
 	APIKey       string        `json:"api_key"`
 	Requests     []RequestData `json:"requests"`
@@ -29,7 +31,17 @@ type RequestData struct {
 	CreatedAt    string `json:"created_at"`
 }
 
-func postRequest(apiKey string, requests []RequestData, framework string, privacyLevel int) {
+func getServerEndpoint(serverURL string) {
+	if serverURL = "" {
+		return DefaultServerUrl + "api/log-request"
+	}
+	if serverURL.HasSuffix("/") {
+		return serverURL + "api/log-request"
+	}
+	return serverURL + "/api/log-request"
+}
+
+func postRequest(apiKey string, requests []RequestData, framework string, privacyLevel int, serverURL string) {
 	data := Payload{
 		APIKey:       apiKey,
 		Requests:     requests,
@@ -38,18 +50,19 @@ func postRequest(apiKey string, requests []RequestData, framework string, privac
 	}
 	body, err := json.Marshal(data)
 	if err == nil {
-		http.Post("https://www.apianalytics-server.com/api/log-request", "application/json", bytes.NewBuffer(body))
+		url := getServerEndpoint(serverURL)
+		http.Post(url, "application/json", bytes.NewBuffer(body))
 	}
 }
 
-func LogRequest(apiKey string, request RequestData, framework string, privacyLevel int) {
+func LogRequest(apiKey string, request RequestData, framework string, privacyLevel int, serverURL string) {
 	if apiKey == "" {
 		return
 	}
 	now := time.Now()
 	requests = append(requests, request)
 	if time.Since(lastPosted) > time.Minute {
-		go postRequest(apiKey, requests, framework, privacyLevel)
+		go postRequest(apiKey, requests, framework, privacyLevel, serverURL)
 		requests = nil
 		lastPosted = now
 	}

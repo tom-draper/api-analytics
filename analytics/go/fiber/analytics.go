@@ -8,12 +8,25 @@ import (
 )
 
 type Config struct {
+	PrivacyLevel int
+	ServerURL    string
 	GetPath      func(c *fiber.Ctx) string
 	GetHostname  func(c *fiber.Ctx) string
 	GetUserAgent func(c *fiber.Ctx) string
 	GetIPAddress func(c *fiber.Ctx) string
 	GetUserID    func(c *fiber.Ctx) string
-	PrivacyLevel int
+}
+
+func NewConfig() *Config {
+	return &Config{
+		PrivacyLevel: 0,
+		ServerURL: core.DefaultServerURL,
+		GetPath: GetPath,
+		GetHostname: GetHostname,
+		GetUserAgent: GetUserAgent,
+		GetIPAddress: GetIPAddress,
+		GetUserID: GetUserID
+	}
 }
 
 func Analytics(apiKey string) func(c *fiber.Ctx) error {
@@ -37,7 +50,7 @@ func AnalyticsWithConfig(apiKey string, config *Config) func(c *fiber.Ctx) error
 			CreatedAt:    start.Format(time.RFC3339),
 		}
 
-		core.LogRequest(apiKey, data, "Fiber", config.PrivacyLevel)
+		core.LogRequest(apiKey, data, "Fiber", config.PrivacyLevel, config.ServerURL)
 
 		return err
 	}
@@ -47,21 +60,21 @@ func getHostname(c *fiber.Ctx, config *Config) string {
 	if config.GetHostname != nil {
 		return config.GetHostname(c)
 	}
-	return c.Hostname()
+	return GetHostname(c)
 }
 
 func getPath(c *fiber.Ctx, config *Config) string {
 	if config.GetPath != nil {
 		return config.GetPath(c)
 	}
-	return c.Path()
+	return GetPath(c)
 }
 
 func getUserAgent(c *fiber.Ctx, config *Config) string {
 	if config.GetUserAgent != nil {
 		return config.GetUserAgent(c)
 	}
-	return string(c.Request().Header.UserAgent())
+	return GetUserAgent(c)
 }
 
 func getIPAddress(c *fiber.Ctx, config *Config) string {
@@ -72,12 +85,32 @@ func getIPAddress(c *fiber.Ctx, config *Config) string {
 	if config.GetIPAddress != nil {
 		return config.GetIPAddress(c)
 	}
-	return c.IP()
+	return GetIPAddress(c)
 }
 
 func getUserID(c *fiber.Ctx, config *Config) string {
 	if config.GetUserID != nil {
 		return config.GetUserID(c)
 	}
+	return GetUserID(c)
+}
+
+func GetHostname(c *fiber.Ctx) string {
+	return c.Hostname()
+}
+
+func GetPath(c *fiber.Ctx) string {
+	return c.Path()
+}
+
+func GetUserAgent(c *fiber.Ctx) string {
+	return string(c.Request().Header.UserAgent())
+}
+
+func GetIPAddress(c *fiber.Ctx) string {
+	return c.IP()
+}
+
+func GetUserID(c *fiber.Ctx) string {
 	return ""
 }
