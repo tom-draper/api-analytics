@@ -79,7 +79,7 @@ type DashboardRequestRow struct {
 	Status       int16       `json:"status"`
 	ResponseTime int16       `json:"response_time"`
 	Location     *string     `json:"location"` // Nullable
-	UserID       *string     `json:"user_id"` // Nullable, custom user identifier field specific to each API service
+	UserID       *string     `json:"user_id"`  // Nullable, custom user identifier field specific to each API service
 	CreatedAt    time.Time   `json:"created_at"`
 }
 
@@ -113,7 +113,7 @@ func getRequests(c *gin.Context) {
 	// Read paginated requests data
 	for {
 		// Left table join was originally used but often exceeded postgresql working memory limit with large numbers of requests
-		query = "SELECT ip_address, path, hostname, user_agent_id, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 AND created_at >= $2 ORDER BY created_at LIMIT $3;"
+		query := "SELECT ip_address, path, hostname, user_agent_id, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 AND created_at >= $2 ORDER BY created_at LIMIT $3;"
 		rows, err := connection.Query(context.Background(), query, apiKey, pageMarker, pageSize)
 		if err != nil {
 			log.LogToFile(fmt.Sprintf("key=%s: Invalid API key - %s", apiKey, err.Error()))
@@ -203,7 +203,7 @@ func getPaginatedRequests(c *gin.Context) {
 		return
 	}
 
-	page, err = strconv.Atoi(c.Param("page"))
+	page, err := strconv.Atoi(c.Param("page"))
 	if err != nil || page == 0 {
 		log.LogToFile("Invalid page number")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid page number."})
@@ -223,18 +223,18 @@ func getPaginatedRequests(c *gin.Context) {
 		return
 	}
 
-	const pageSize int = 500_000
+	const pageSize int = 400_000
 	requests := [][10]any{}
 	userAgentIDs := make(map[int]struct{})
 
-	query = "SELECT ip_address, path, hostname, user_agent_id, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 ORDER BY created_at LIMIT $2 OFFSET $3;"
-	rows, err := connection.Query(context.Background(), query, apiKey, pageSize, page*pageSize)
+	query := "SELECT ip_address, path, hostname, user_agent_id, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 ORDER BY created_at LIMIT $2 OFFSET $3;"
+	rows, err := connection.Query(context.Background(), query, apiKey, pageSize, (page-1)*pageSize)
 	if err != nil {
 		log.LogToFile(fmt.Sprintf("key=%s: Invalid API key - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
-	request := new(DashboardRequestRow)  // Reuseable request struct
+	request := new(DashboardRequestRow) // Reuseable request struct
 	for rows.Next() {
 		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
 		if err != nil {
@@ -325,7 +325,7 @@ func getUserAgents(connection *pgx.Conn, userAgentIDs map[int]struct{}) (map[int
 	userAgentsQuery.WriteString(");")
 	rows, err := connection.Query(context.Background(), userAgentsQuery.String(), arguments...)
 	if err != nil {
-		return userAgent, err
+		return userAgents, err
 	}
 	for rows.Next() {
 		var id int

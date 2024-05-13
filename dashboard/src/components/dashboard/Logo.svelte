@@ -1,5 +1,17 @@
+<script lang="ts">
+	export let fetching: boolean;
+</script>
+
 <div class="card">
-	<img src="../img/logo.png" alt="" />
+	{#if fetching}
+		<div class="placeholder">
+			<div class="spinner">
+				<div class="loader" />
+			</div>
+		</div>
+	{:else}
+		<img src="../img/logo.png" alt="" />
+	{/if}
 </div>
 
 <style scoped>
@@ -12,6 +24,13 @@
 	}
 	img {
 		width: 25px;
+	}
+	.spinner {
+		height: auto !important;
+	}
+	.loader {
+		height: 20px !important;
+		width: 20px !important;
 	}
 	@media screen and (max-width: 1030px) {
 		.card {

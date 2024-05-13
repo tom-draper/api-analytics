@@ -54,7 +54,10 @@
 
 	function userIDActive(users: Users) {
 		for (const user in users) {
-			if (users[user].customUserID !== null) {
+			if (
+				users[user].customUserID !== '' &&
+				users[user].customUserID !== null
+			) {
 				return true;
 			}
 		}
@@ -84,7 +87,7 @@
 						{#if customUserIDActive}
 							<th>User ID</th>
 						{/if}
-						<th>Last</th>
+						<th>Last Access</th>
 						<th style="text-align: right;">Requests</th>
 					</tr>
 				</thead>
@@ -99,7 +102,7 @@
 								{createdAt.toLocaleString()}
 							</td>
 							<td style="text-align: right;">
-								{requests}
+								{requests.toLocaleString()}
 							</td>
 						</tr>
 					{/each}

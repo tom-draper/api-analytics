@@ -180,7 +180,9 @@
 	async function fetchData(): Promise<DashboardData> {
 		userID = formatUUID(userID);
 		try {
-			const response = await fetch(`${serverURL}/api/requests/${userID}`);
+			const response = await fetch(
+				`${serverURL}/api/requests/${userID}/1`,
+			);
 			if (response.status === 200) {
 				return await response.json();
 			} else {
@@ -219,12 +221,21 @@
 		'Year',
 		'All time',
 	];
+	let fetching = true;
 	let fetchFailed = false;
 	let endpointsRendered = false;
+	const pageSize = 250_000;
 	onMount(async () => {
 		const dashboardData = await getDashboardData();
 		data = dashboardData.requests;
 		userAgents = dashboardData.user_agents;
+
+		if (data.length === pageSize) {
+			// Fetch page 2 and onwards if initial fetch didn't get all data
+			fetchAdditionalPages(2);
+		} else {
+			fetching = false;
+		}
 
 		setPeriod(settings.period);
 		setHostnames();
@@ -239,6 +250,49 @@
 
 		console.log(data);
 	});
+
+	async function fetchAdditionalPages(page: number) {
+		try {
+			const response = await fetch(
+				`${serverURL}/api/requests/${userID}/${page}`,
+			);
+			if (response.status !== 200) {
+				fetching = false;
+				return;
+			}
+
+			const json = await response.json();
+			if (json.requests.length <= 0) {
+				fetching = false;
+				return;
+			}
+
+			userAgents = { ...userAgents, ...json.user_agents };
+
+			parseDates(json.requests);
+			json.requests?.sort((a, b) => {
+				return (
+					a[ColumnIndex.CreatedAt].getTime() -
+					b[ColumnIndex.CreatedAt].getTime()
+				);
+			});
+
+			data = [...data, ...json.requests];
+			console.log(data);
+
+			setPeriod(settings.period);
+			setHostnames();
+
+			if (json.requests.length === pageSize) {
+				fetchAdditionalPages(page + 1);
+			} else {
+				fetching = false;
+			}
+		} catch (e) {
+			console.log(e);
+			fetching = false;
+		}
+	}
 
 	async function getDashboardData() {
 		if (demo) {
@@ -320,7 +374,7 @@
 		<div class="dashboard-content">
 			<div class="left">
 				<div class="row">
-					<Logo />
+					<Logo bind:fetching />
 					<SuccessRate data={periodData} />
 				</div>
 				<div class="row">
