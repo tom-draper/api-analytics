@@ -99,7 +99,7 @@ class Analytics {
    * @param {string} framework - Web framework that is being used
    * @param {Config} config - Configuration for API Analytics
    */
-  constructor(apiKey, framework, config = new Config()) {
+  constructor(apiKey, config = new Config(), framework,) {
     this.apiKey = apiKey;
     this.framework = framework
     this.config = config;
