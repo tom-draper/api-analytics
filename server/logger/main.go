@@ -232,6 +232,12 @@ func logRequestHandler() gin.HandlerFunc {
 				// Client IP address discarded for privacy level P2 and P3
 				request.IPAddress = ""
 			}
+			var ipAddress any
+			if request.IPAddress == "" {
+				ipAddress = nil
+			} else {
+				ipAddress = request.IPAddress
+			}
 
 			method, ok := methodID[request.Method]
 			if !ok {
@@ -302,7 +308,7 @@ func logRequestHandler() gin.HandlerFunc {
 				payload.APIKey,
 				request.Path,
 				request.Hostname,
-				request.IPAddress,
+				ipAddress,
 				request.UserAgent,
 				request.Status,
 				request.ResponseTime,
