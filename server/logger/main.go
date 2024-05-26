@@ -217,7 +217,7 @@ func logRequestHandler() gin.HandlerFunc {
 		userAgents := map[string]struct{}{}
 		badUserAgents := map[string]struct{}{}
 		for _, request := range payload.Requests {
-			// Temporary 1000 request per minute limit
+			// Temporary request per minute limit
 			if inserted >= maxInsert {
 				break
 			}
@@ -324,7 +324,7 @@ func logRequestHandler() gin.HandlerFunc {
 
 		query.WriteString(";")
 
-		// Store any new user agents in the database
+		// Store any new user agents found
 		storeNewUserAgents(userAgents)
 		// Get associated user IDs for user agents
 		userAgentIDs := getUserAgentIDs(userAgents)
