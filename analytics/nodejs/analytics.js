@@ -99,7 +99,7 @@ class Analytics {
    * @param {string} framework - Web framework that is being used
    * @param {Config} config - Configuration for API Analytics
    */
-  constructor(apiKey, config = new Config(), framework,) {
+  constructor(apiKey, framework, config = new Config()) {
     this.apiKey = apiKey;
     this.framework = framework
     this.config = config;
@@ -152,7 +152,7 @@ class Analytics {
  * @returns {function}
  */
 export function expressAnalytics(apiKey, config = new Config()) {
-  const analytics = new Analytics(apiKey, config, "Express");
+  const analytics = new Analytics(apiKey, "Express", config);
   return (req, res, next) => {
     const start = performance.now();
     next();
@@ -179,7 +179,7 @@ export function expressAnalytics(apiKey, config = new Config()) {
  * @returns {function}
  */
 export function fastifyAnalytics(apiKey, config = new Config()) {
-  const analytics = new Analytics(apiKey, config, "Fastify");
+  const analytics = new Analytics(apiKey, "Fastify", config);
   return (req, reply, done) => {
     const start = performance.now();
     done();
@@ -206,7 +206,7 @@ export function fastifyAnalytics(apiKey, config = new Config()) {
  * @returns {function}
  */
 export function koaAnalytics(apiKey, config = new Config()) {
-  const analytics = new Analytics(apiKey, config, "Koa");
+  const analytics = new Analytics(apiKey, "Koa", config);
   return async (ctx, next) => {
     const start = performance.now();
     await next();
