@@ -1,8 +1,8 @@
-github.com/go-chi/chi/v5 v5.0.11 h1:BnpYbFZ3T3S1WMpD79r7R5ThWX40TaFB7L31Y8xqSwA=
-github.com/go-chi/chi/v5 v5.0.11/go.mod h1:DslCQbL2OYiznFReuXYUmQ2hGd1aDpCnlMNITLSKoi8=
+github.com/go-chi/chi/v5 v5.0.12 h1:9euLV5sTrTNTRUU9POmDUvfxyj6LAABLUcEWO+JJb4s=
+github.com/go-chi/chi/v5 v5.0.12/go.mod h1:DslCQbL2OYiznFReuXYUmQ2hGd1aDpCnlMNITLSKoi8=
 github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
 github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
-github.com/tom-draper/api-analytics/analytics/go/chi v0.0.0-20240131194017-ce9a529d93ac h1:UGyV7dSwlMIwhJMVu/qujhwaupOLpchSLH/ow5EE1ZI=
-github.com/tom-draper/api-analytics/analytics/go/chi v0.0.0-20240131194017-ce9a529d93ac/go.mod h1:1pkN57A/D6KEkRB/n/pTUFh5lGSoHsewoAuVlBSNekU=
-github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20240131194017-ce9a529d93ac h1:rLy60tmh5727NmE8Fxzwq4DSh5jv/txgM/NQkeDKS6w=
-github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20240131194017-ce9a529d93ac/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=
+github.com/tom-draper/api-analytics/analytics/go/chi v0.0.0-20240603174719-d5fc13e14fb1 h1:BOwUMIZHu6eFOu6f7ayIVzC+l13pGeveN7yISjLBmS4=
+github.com/tom-draper/api-analytics/analytics/go/chi v0.0.0-20240603174719-d5fc13e14fb1/go.mod h1:ceLGjBcNEZ+rzQvDCTa1d28WXJHzy0NSz63xM+3/KHo=
+github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20240603174719-d5fc13e14fb1 h1:qbBFIdaau+FnOCXyexT0q6uaqkq3JjeoX9UG8Ur++WU=
+github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20240603174719-d5fc13e14fb1/go.mod h1:i4J5p6GM4Goswl0cgeJtkIIrYMw7F1xKCnDr4v4oUNk=
