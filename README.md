@@ -15,7 +15,7 @@ Currently compatible with:
 
 ### 1. Generate an API key
 
-Head to https://apianalytics.dev/generate to generate your unique API key with a single click. This key is used to monitor your API server and should be stored privately. It's also required in order to view your API analytics dashboard and data.
+Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It's also required in order to access your API analytics dashboard and data.
 
 ### 2. Add middleware to your API
 
@@ -532,9 +532,9 @@ You can use the same API key across multiple APIs, but all of your data will app
 
 #### Dashboard
 
-Head to https://apianalytics.dev/dashboard and paste in your API key to access your dashboard.
+Head to [apianalytics.dev/dashboard](https://apianalytics.dev/dashboard) and paste in your API key to access your dashboard.
 
-Demo: https://apianalytics.dev/dashboard/demo
+Demo: [apianalytics.dev/dashboard/demo](https://apianalytics.dev/dashboard/demo)
 
 ![dashboard](https://user-images.githubusercontent.com/41476809/272061832-74ba4146-f4b3-4c05-b759-3946f4deb9de.png)
 
@@ -652,13 +652,13 @@ Data collected is only ever used to populate your analytics dashboard. All store
 
 ### Data Deletion
 
-At any time you can delete all stored data associated with your API key by going to https://apianalytics.dev/delete and entering your API key.
+At any time you can delete all stored data associated with your API key by going to [apianalytics.dev/delete](https://apianalytics.dev/delete) and entering your API key.
 
 API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity.
 
 ## Monitoring
 
-Active API monitoring can be set up by heading to https://apianalytics.dev/monitoring to enter your API key. Our servers will regularly ping chosen API endpoints to monitor uptime and response time. 
+Active API monitoring can be set up by heading to [apianalytics.dev/monitoring](https://apianalytics.dev/monitoring) to enter your API key. Our servers will regularly ping chosen API endpoints to monitor uptime and response time. 
 <!-- Optional email alerts when your endpoints are down can be subscribed to. -->
 
 ![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)
