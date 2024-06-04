@@ -32,3 +32,21 @@ export function periodToMarkers(period: string): number | null {
 			return null;
 	}
 }
+
+export function dateInPeriod(date: Date, period: Period) {
+	const days = periodToDays(period);
+	if (days === null) {
+		return true;
+	}
+	const periodAgo = new Date();
+	periodAgo.setDate(periodAgo.getDate() - days);
+	return date > periodAgo;
+}
+
+export function dateInPrevPeriod(date: Date, period: Period) {
+	const days = periodToDays(period);
+	if (days === null) {
+		return true;
+	}
+	return dateInPrevPeriod(date, period);
+}

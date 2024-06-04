@@ -12,7 +12,7 @@
 	import UsageTime from '../components/dashboard/UsageTime.svelte';
 	import Location from '../components/dashboard/Location.svelte';
 	import Device from '../components/dashboard/device/Device.svelte';
-	import { periodToDays } from '../lib/period';
+	import { dateInPeriod, dateInPrevPeriod } from '../lib/period';
 	import genDemoData from '../lib/demo';
 	import formatUUID from '../lib/uuid';
 	import Settings from '../components/dashboard/Settings.svelte';
@@ -26,38 +26,13 @@
 	import Error from '../components/dashboard/Error.svelte';
 	import TopUsers from '../components/dashboard/TopUsers.svelte';
 
-	function inPeriod(date: Date, days: number): boolean {
-		const periodAgo = new Date();
-		periodAgo.setDate(periodAgo.getDate() - days);
-		return date > periodAgo;
-	}
-
 	function allTimePeriod(_: Date) {
 		return true;
 	}
 
 	function setData() {
-		const days = periodToDays(settings.period);
-
-		let inRange: (date: Date) => boolean;
-		if (days !== null) {
-			inRange = (date: Date) => {
-				return inPeriod(date, days);
-			};
-		} else {
-			// If period is null, set to all time
-			inRange = allTimePeriod;
-		}
-
-		let inPrevRange: (date: Date) => boolean;
-		if (days !== null) {
-			inPrevRange = (date) => {
-				return inPrevPeriod(date, days);
-			};
-		} else {
-			// If period is null, set to all time
-			inPrevRange = allTimePeriod;
-		}
+		const inRange = getInRange();
+		const inPrevRange = getInPrevRange();
 
 		const dataSubset = [];
 		const prevDataSubset = [];
@@ -92,24 +67,44 @@
 		prevPeriodData = prevDataSubset;
 	}
 
-	function inPrevPeriod(date: Date, days: number): boolean {
-		const startPeriodAgo = new Date();
-		startPeriodAgo.setDate(startPeriodAgo.getDate() - days * 2);
-		const endPeriodAgo = new Date();
-		endPeriodAgo.setDate(endPeriodAgo.getDate() - days);
-		return startPeriodAgo < date && date < endPeriodAgo;
+	function getInRange() {
+		let inRange: (date: Date) => boolean;
+		if (settings.period === 'All time') {
+			inRange = (date: Date) => {
+				return dateInPeriod(date, settings.period);
+			};
+		} else {
+			// If period is null, set to all time
+			inRange = allTimePeriod;
+		}
+		return inRange;
+	}
+
+	function getInPrevRange() {
+		let inPrevRange: (date: Date) => boolean;
+		if (settings.period === 'All time') {
+			inPrevRange = (date) => {
+				return dateInPrevPeriod(date, settings.period);
+			};
+		} else {
+			// If period is null, set to all time
+			inPrevRange = allTimePeriod;
+		}
+		return inPrevRange;
 	}
 
 	function isHiddenEndpoint(endpoint: string): boolean {
+		const firstChar = endpoint.charAt(0);
+		const lastChar = endpoint.charAt(endpoint.length - 1);
 		return (
 			settings.hiddenEndpoints.has(endpoint) ||
-			(endpoint.charAt(0) === '/' &&
+			(firstChar === '/' &&
 				settings.hiddenEndpoints.has(endpoint.slice(1))) ||
-			(endpoint.charAt(endpoint.length - 1) === '/' &&
+			(lastChar === '/' &&
 				settings.hiddenEndpoints.has(endpoint.slice(0, -1))) ||
-			(endpoint.charAt(0) !== '/' &&
+			(firstChar !== '/' &&
 				settings.hiddenEndpoints.has('/' + endpoint)) ||
-			(endpoint.charAt(endpoint.length - 1) !== '/' &&
+			(lastChar !== '/' &&
 				settings.hiddenEndpoints.has(endpoint + '/')) ||
 			wildCardMatch(endpoint)
 		);
@@ -119,19 +114,21 @@
 		if (endpoint.charAt(endpoint.length - 1) !== '/') {
 			endpoint = endpoint + '/';
 		}
+
 		for (let value of settings.hiddenEndpoints) {
-			if (value.charAt(value.length - 1) === '*') {
-				value = value.slice(0, value.length - 1); // Remove asterisk
-				// Format both paths with a starting '/' and no trailing '/'
-				if (value.charAt(0) !== '/') {
-					value = '/' + value;
-				}
-				if (value.charAt(value.length - 1) !== '/') {
-					value = value + '/';
-				}
-				if (endpoint.slice(0, value.length) === value) {
-					return true;
-				}
+			if (value.charAt(value.length - 1) !== '*') {
+				continue;
+			}
+			value = value.slice(0, value.length - 1); // Remove asterisk
+			// Format both paths with a starting '/' and no trailing '/'
+			if (value.charAt(0) !== '/') {
+				value = '/' + value;
+			}
+			if (value.charAt(value.length - 1) !== '/') {
+				value = value + '/';
+			}
+			if (endpoint.slice(0, value.length) === value) {
+				return true;
 			}
 		}
 		return false;
@@ -180,9 +177,7 @@
 	async function fetchData(): Promise<DashboardData> {
 		userID = formatUUID(userID);
 		try {
-			const response = await fetch(
-				`${serverURL}/api/requests/${userID}/1`,
-			);
+			const response = await fetch(`${serverURL}/api/requests/${userID}`);
 			if (response.status === 200) {
 				return await response.json();
 			} else {
@@ -221,7 +216,7 @@
 		'Year',
 		'All time',
 	];
-	let fetching = true;
+	let loading = true;
 	let fetchFailed = false;
 	let endpointsRendered = false;
 	const pageSize = 250_000;
@@ -230,12 +225,13 @@
 		data = dashboardData.requests;
 		userAgents = dashboardData.user_agents;
 
-		if (data.length === pageSize) {
-			// Fetch page 2 and onwards if initial fetch didn't get all data
-			fetchAdditionalPages(2);
-		} else {
-			fetching = false;
-		}
+		loading = false;
+		// if (data.length === pageSize) {
+		// 	// Fetch page 2 and onwards if initial fetch didn't get all data
+		// 	fetchAdditionalPages(2);
+		// } else {
+		// 	fetching = false;
+		// }
 
 		setPeriod(settings.period);
 		setHostnames();
@@ -257,13 +253,13 @@
 				`${serverURL}/api/requests/${userID}/${page}`,
 			);
 			if (response.status !== 200) {
-				fetching = false;
+				loading = false;
 				return;
 			}
 
 			const json = await response.json();
 			if (json.requests.length <= 0) {
-				fetching = false;
+				loading = false;
 				return;
 			}
 
@@ -277,8 +273,14 @@
 				);
 			});
 
-			data = [...data, ...json.requests];
-			console.log(data);
+			const mostRecent =
+				json.requests[json.requests.length - 1].CreatedAt;
+			if (dateInPeriod(mostRecent, settings.period)) {
+				data.push(...json.requests);
+			} else {
+				// Trigger dashboard re-render
+				data = [...data, ...json.requests];
+			}
 
 			setPeriod(settings.period);
 			setHostnames();
@@ -286,11 +288,11 @@
 			if (json.requests.length === pageSize) {
 				fetchAdditionalPages(page + 1);
 			} else {
-				fetching = false;
+				loading = false;
 			}
 		} catch (e) {
 			console.log(e);
-			fetching = false;
+			loading = false;
 		}
 	}
 
@@ -374,7 +376,7 @@
 		<div class="dashboard-content">
 			<div class="left">
 				<div class="row">
-					<Logo bind:fetching />
+					<Logo bind:fetching={loading} />
 					<SuccessRate data={periodData} />
 				</div>
 				<div class="row">
@@ -467,6 +469,7 @@
 	.button-nav {
 		margin: 2.5em 2em 0;
 		display: flex;
+		/* font-family: 'Geist'; */
 	}
 	.time-period {
 		display: flex;
@@ -496,7 +499,6 @@
 	}
 	.donate {
 		margin-left: auto;
-		font-weight: 300;
 		font-size: 0.85em;
 		display: grid;
 		place-items: center;
@@ -506,6 +508,10 @@
 	.dropdown-container {
 		margin-right: 10px;
 	}
+
+	/* button {
+		font-family: 'Geist' !important;
+	} */
 
 	.donate-link {
 		color: rgb(73, 73, 73);

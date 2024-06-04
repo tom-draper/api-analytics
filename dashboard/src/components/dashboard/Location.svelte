@@ -118,6 +118,7 @@
 		height: 180px;
 		display: grid;
 		place-items: center;
+		font-size: 0.95em;
 	}
 	.no-locations-text {
 		margin-bottom: 25px;
