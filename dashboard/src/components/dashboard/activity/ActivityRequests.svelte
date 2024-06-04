@@ -40,7 +40,9 @@
 	}
 
 	function bars(data: RequestsData, period: Period) {
-		const requestFreq = initFreqMap(period, () => 0);
+		const requestFreq = initFreqMap(period, () => ({
+			count: 0,
+		}));
 		const userFreq = initFreqMap(period, () => new Set());
 
 		const days = periodToDays(period);
@@ -60,20 +62,22 @@
 			userFreq.get(time).add(ipAddress);
 
 			if (!requestFreq.has(time)) {
-				requestFreq.set(time, 0);
+				requestFreq.set(time, { count: 0 });
 			}
-			requestFreq.set(time, requestFreq.get(time) + 1);
+			requestFreq.get(time).count++;
 		}
 
 		// Combine date and frequency count into (x, y) tuples for sorting
-		const requestFreqArr = [];
+		const requestFreqArr = new Array(requestFreq.size);
+		let i = 0;
 		for (const [time, requestsCount] of requestFreq.entries()) {
 			const userCount = userFreq.has(time) ? userFreq.get(time).size : 0;
-			requestFreqArr.push({
+			requestFreqArr[i] = {
 				date: time,
-				requestCount: requestsCount,
+				requestCount: requestsCount.count,
 				userCount: userCount,
-			});
+			};
+			i++;
 		}
 		// Sort by date
 		requestFreqArr.sort((a, b) => {

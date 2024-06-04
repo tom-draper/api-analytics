@@ -138,10 +138,6 @@
 		settings.period = value;
 	}
 
-	type ValueCount = {
-		[value: string]: number;
-	};
-
 	function sortedFrequencies(freq: ValueCount): string[] {
 		return Object.keys(freq)
 			.map((value) => {

@@ -1,9 +1,9 @@
 <script lang="ts">
-	export let fetching: boolean;
+	export let loading: boolean;
 </script>
 
 <div class="card">
-	{#if fetching}
+	{#if loading}
 		<div class="placeholder">
 			<div class="spinner">
 				<div class="loader" />

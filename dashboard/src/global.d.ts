@@ -30,3 +30,7 @@ type MonitorSample = {
 };
 
 type MonitorData = { [url: string]: MonitorSample[] };
+
+type ValueCount = {
+	[value: string]: number;
+};

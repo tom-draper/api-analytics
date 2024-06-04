@@ -65,13 +65,16 @@
 		}
 
 		// Combine date and avg response time into (x, y) tuples for sorting
-		const responseTimeArr: { date: number; avgResponseTime: number }[] = [];
+		const responseTimeArr: { date: number; avgResponseTime: number }[] =
+			new Array(responseTimesFreq.size);
+		let i = 0;
 		for (const [time, obj] of responseTimesFreq.entries()) {
 			const point = { date: time, avgResponseTime: 0 };
 			if (obj.count > 0) {
 				point.avgResponseTime = obj.totalResponseTime / obj.count;
 			}
-			responseTimeArr.push(point);
+			responseTimeArr[i] = point;
+			i++;
 		}
 
 		// Sort by date

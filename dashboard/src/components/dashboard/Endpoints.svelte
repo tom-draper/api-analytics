@@ -34,7 +34,7 @@
 					count: 0,
 				});
 			}
-			freq.get(endpointID).count += 1;
+			freq.get(endpointID).count++;
 		}
 		return freq;
 	}
@@ -71,15 +71,17 @@
 		const freq = endpointFreq();
 
 		// Convert object to list
-		const freqArr: MapValue<EndpointFreq>[] = [];
+		const freqArr: MapValue<EndpointFreq>[] = new Array(freq.size);
 		maxCount = 0;
+		let i = 0;
 		for (const value of freq.values()) {
 			if (statusMatch(value.status)) {
-				freqArr.push(value);
+				freqArr[i] = value;
 				if (value.count > maxCount) {
 					maxCount = value.count;
 				}
 			}
+			i++;
 		}
 
 		// Sort by count

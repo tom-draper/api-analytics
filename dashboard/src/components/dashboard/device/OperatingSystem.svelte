@@ -88,24 +88,28 @@
 	}
 
 	function pieChart() {
-		const osCount = {};
+		const osCount = new Map();
 		for (let i = 0; i < data.length; i++) {
 			const userAgent = getUserAgent(data[i][ColumnIndex.UserAgent]);
 			const os = getOS(userAgent);
-			osCount[os] |= 0;
-			osCount[os]++;
+			if (!osCount.has(os)) {
+				osCount.set(os, { count: 0 });
+			}
+			osCount.get(os).count++;
 		}
 
-		const os = [];
-		const count = [];
-		for (const browser in osCount) {
-			os.push(browser);
-			count.push(osCount[browser]);
+		const oss = new Array(osCount.size);
+		const counts = new Array(osCount.size);
+		let i = 0;
+		for (const [os, count] of osCount.entries()) {
+			oss[i] = os;
+			counts[i] = count.count;
+			i++;
 		}
 		return [
 			{
-				values: count,
-				labels: os,
+				values: counts,
+				labels: oss,
 				type: 'pie',
 				marker: {
 					colors: graphColors,

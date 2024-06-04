@@ -109,23 +109,27 @@
 	}
 
 	function pieChart() {
-		const clientCount = {};
+		const clientCount = new Map();
 		for (let i = 0; i < data.length; i++) {
 			const userAgent = getUserAgent(data[i][ColumnIndex.UserAgent]);
 			const client = getBrowser(userAgent);
-			clientCount[client] |= 0;
-			clientCount[client]++;
+			if (!clientCount.has(client)) {
+				clientCount.set(client, { count: 0 });
+			}
+			clientCount.get(client).count++;
 		}
 
-		const clients = [];
-		const count = [];
-		for (const browser in clientCount) {
-			clients.push(browser);
-			count.push(clientCount[browser]);
+		const clients = new Array(clientCount.size);
+		const counts = new Array(clientCount.size);
+		let i = 0;
+		for (const [client, count] of clientCount.entries()) {
+			clients[i] = client;
+			counts[i] = count.count;
+			i++;
 		}
 		return [
 			{
-				values: count,
+				values: counts,
 				labels: clients,
 				type: 'pie',
 				marker: {
