@@ -597,7 +597,7 @@ curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 
 ## Client ID and Privacy
 
-By default, API Analytics logs and stores the client IP address of all incoming requests made to your API and infers a location (country) from the IP address if possible. This IP address is used as a form of client identification in the dashboard to estimate the number of users accessing your service.
+By default, API Analytics logs and stores the client IP address of all incoming requests made to your API and infers a location (country) from each IP address if possible. The IP address is used as a form of client identification in the dashboard to estimate the number of users accessing your service.
 
 This behaviour can be controlled through a privacy level defined in the configuration of the API middleware. There are three privacy levels to choose from 0 (default) to a maximum of 2. A privacy level of 1 will disable IP address storing, and a value of 2 will also disable location inference.
 
