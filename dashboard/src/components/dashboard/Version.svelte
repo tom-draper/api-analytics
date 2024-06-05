@@ -41,7 +41,7 @@
 	}
 
 	function pieChart() {
-		const versionCount = {};
+		const versionCount: ValueCount = {};
 		for (let i = 0; i < data.length; i++) {
 			const match = data[i][ColumnIndex.Path].match(
 				/[^a-z0-9](v\d)[^a-z0-9]/i,
@@ -50,8 +50,11 @@
 				continue;
 			}
 			const version = match[1];
-			versionCount[version] |= 0;
-			versionCount[version]++;
+			if (version in versionCount) {
+				versionCount[version]++
+			} else {
+				versionCount[version] = 1
+			}
 		}
 
 		const versions = Object.keys(versionCount);

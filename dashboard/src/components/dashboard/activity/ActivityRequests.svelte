@@ -56,15 +56,17 @@
 			}
 			const ipAddress = data[i][ColumnIndex.IPAddress];
 			const time = date.getTime();
-			if (!userFreq.has(time)) {
+			if (userFreq.has(time)) {
+				userFreq.get(time).add(ipAddress);
+			} else {
 				userFreq.set(time, new Set());
 			}
-			userFreq.get(time).add(ipAddress);
 
-			if (!requestFreq.has(time)) {
-				requestFreq.set(time, { count: 0 });
+			if (requestFreq.has(time)) {
+				requestFreq.get(time).count++;
+			} else {
+				requestFreq.set(time, { count: 1 });
 			}
-			requestFreq.get(time).count++;
 		}
 
 		// Combine date and frequency count into (x, y) tuples for sorting

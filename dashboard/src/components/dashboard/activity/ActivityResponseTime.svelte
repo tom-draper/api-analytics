@@ -56,12 +56,12 @@
 				date.setHours(0, 0, 0, 0);
 			}
 			const time = date.getTime();
-			if (!responseTimesFreq.has(time)) {
-				responseTimesFreq.set(time, { totalResponseTime: 0, count: 0 });
+			if (responseTimesFreq.has(time)) {
+				responseTimesFreq.get(time).totalResponseTime += data[i][ColumnIndex.ResponseTime];
+				responseTimesFreq.get(time).count++;
+			} else {
+				responseTimesFreq.set(time, { totalResponseTime: 1, count: 1 });
 			}
-			responseTimesFreq.get(time).totalResponseTime +=
-				data[i][ColumnIndex.ResponseTime];
-			responseTimesFreq.get(time).count++;
 		}
 
 		// Combine date and avg response time into (x, y) tuples for sorting

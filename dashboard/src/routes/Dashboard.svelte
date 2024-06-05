@@ -139,17 +139,11 @@
 	}
 
 	function sortedFrequencies(freq: ValueCount): string[] {
-		return Object.keys(freq)
-			.map((value) => {
-				return {
-					value: value,
-					count: freq[value],
-				};
-			})
+		return Object.entries(freq)
 			.sort((a, b) => {
-				return b.count - a.count;
+				return b[1] - a[1];
 			})
-			.map((value) => value.value);
+			.map((value) => value[0]);
 	}
 
 	function getHostnames() {
@@ -159,8 +153,11 @@
 			if (hostname === null || hostname === '' || hostname === 'null') {
 				continue;
 			}
-			hostnameFreq[hostname] |= 0;
-			hostnameFreq[hostname] += 1;
+			if (hostname in hostnameFreq) {
+				hostnameFreq[hostname]++
+			} else {
+				hostnameFreq[hostname] = 1
+			}
 		}
 
 		return sortedFrequencies(hostnameFreq);

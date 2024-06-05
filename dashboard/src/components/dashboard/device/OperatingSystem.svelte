@@ -88,22 +88,23 @@
 	}
 
 	function pieChart() {
-		const osCount = new Map();
+		const osCount: ValueCount = {};
 		for (let i = 0; i < data.length; i++) {
 			const userAgent = getUserAgent(data[i][ColumnIndex.UserAgent]);
 			const os = getOS(userAgent);
-			if (!osCount.has(os)) {
-				osCount.set(os, { count: 0 });
+			if (os in osCount) {
+				osCount[os]++
+			} else {
+				osCount[os] = 1
 			}
-			osCount.get(os).count++;
 		}
 
-		const oss = new Array(osCount.size);
-		const counts = new Array(osCount.size);
+		const oss = new Array(Object.keys(osCount).length);
+		const counts = new Array(Object.keys(osCount).length);
 		let i = 0;
-		for (const [os, count] of osCount.entries()) {
+		for (const [os, count] of Object.entries(osCount)) {
 			oss[i] = os;
-			counts[i] = count.count;
+			counts[i] = count;
 			i++;
 		}
 		return [

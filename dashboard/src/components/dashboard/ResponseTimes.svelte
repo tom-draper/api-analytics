@@ -56,30 +56,27 @@
 	}
 
 	function bars(data: RequestsData) {
-		const responseTimesFreq = new Map<number, number>();
+		const responseTimesFreq: ValueCount;
 		for (let i = 0; i < data.length; i++) {
-			const responseTime =
-				Math.round(data[i][ColumnIndex.ResponseTime]) || 0;
-			if (responseTimesFreq.has(responseTime)) {
-				responseTimesFreq.set(
-					responseTime,
-					responseTimesFreq.get(responseTime) + 1,
-				);
+			const responseTime = Math.round(data[i][ColumnIndex.ResponseTime]) || 0;
+			if (responseTime in responseTimesFreq) {
+				responseTimesFreq[responseTime]++;
 			} else {
-				responseTimesFreq.set(responseTime, 0);
+				responseTimesFreq[responseTime] = 1;
 			}
 		}
 
 		const responseTimes: number[] = [];
 		const counts: number[] = [];
-		if (responseTimesFreq.size > 0) {
-			const minResponseTime = Math.min(...responseTimesFreq.keys());
-			const maxResponseTime = Math.max(...responseTimesFreq.keys());
+		const times = Object.keys(responseTimeFreq)
+		if (times.length > 0) {
+			const minResponseTime = Math.min(...times);
+			const maxResponseTime = Math.max(...times);
 
 			// Split into two lists
 			for (let i = 0; i < maxResponseTime - minResponseTime + 1; i++) {
 				responseTimes.push(minResponseTime + i);
-				counts.push(responseTimesFreq.get(minResponseTime + i) || 0);
+				counts.push(responseTimesFreq[minResponseTime + i] || 0);
 			}
 		}
 

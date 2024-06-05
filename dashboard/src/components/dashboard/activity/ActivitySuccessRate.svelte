@@ -12,8 +12,7 @@
 	}
 
 	function setSuccessRate() {
-		const success: Map<number, { total: number; successful: number }> =
-			new Map();
+		const success: Map<number, { total: number; successful: number }> = new Map();
 		let minDate = new Date(8640000000000000);
 		for (let i = 0; i < data.length; i++) {
 			const date = new Date(data[i][ColumnIndex.CreatedAt]);

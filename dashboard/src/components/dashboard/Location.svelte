@@ -19,28 +19,28 @@
 
 	function build() {
 		let max = 0;
-		const locationsFreq = new Map();
+		const locationsFreq: ValueCount = {}
 		for (let i = 0; i < data.length; i++) {
 			const location = data[i][ColumnIndex.Location];
 			if (!location) {
 				continue;
 			}
-			if (!locationsFreq.has(location)) {
-				locationsFreq.set(location, { count: 0 });
+			if (location in locationsFreq)) {
+				locationsFreq[location]++
+			} else {
+				locationsFreq[location] = 1
 			}
-			locationsFreq.get(location).count++;
-			const count = locationsFreq.get(location).count;
-			if (count > max) {
-				max = count;
+			if (locationsFreq[location] > max) {
+				max = locationsFreq[location];
 			}
 		}
 
-		const locationBars = [...locationsFreq.entries()]
+		const locationBars = Object.entries(locationsFreq)
 			.map(([location, count]) => {
 				return {
 					location: location,
-					frequency: count.count,
-					height: count.count / max,
+					frequency: count,
+					height: count / max,
 				};
 			})
 			.sort((a, b) => {

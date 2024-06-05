@@ -50,22 +50,23 @@
 	];
 
 	function pieChart() {
-		const deviceCount = new Map();
+		const deviceCount: ValueCount = {};
 		for (let i = 0; i < data.length; i++) {
 			const userAgent = getUserAgent(data[i][ColumnIndex.UserAgent]);
 			const device = getDevice(userAgent);
-			if (!deviceCount.has(device)) {
-				deviceCount.set(device, { count: 0 });
+			if (device in deviceCount) {
+				deviceCount[device]++
+			} else {
+				deviceCount[device] = 1
 			}
-			deviceCount.get(device).count++;
 		}
 
-		const devices = new Array(deviceCount.size);
-		const counts = new Array(deviceCount.size);
+		const devices = new Array(Object.keys(deviceCount).length);
+		const counts = new Array(Object.keys(deviceCount).length);
 		let i = 0;
-		for (const [browser, count] of deviceCount.entries()) {
+		for (const [browser, count] of Object.entries(deviceCount)) {
 			devices[i] = browser;
-			counts[i] = count.count;
+			counts[i] = count;
 			i++;
 		}
 		return [

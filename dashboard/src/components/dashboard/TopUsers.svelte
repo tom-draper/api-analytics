@@ -37,9 +37,7 @@
 		}
 
 		const totalUsers = Object.keys(users).length;
-		const topUserRequestsCount = Math.max(
-			...Object.values(users).map((user) => user.requests),
-		);
+		const topUserRequestsCount = getTopUserRequestsCount(users)
 		if (totalUsers < 10 || topUserRequestsCount <= 1) {
 			topUsers = null;
 			return;
@@ -50,6 +48,16 @@
 		topUsers = Object.values(users)
 			.sort((a, b) => b.requests - a.requests)
 			.slice(0, 10);
+	}
+
+	function getTopUserRequestsCount(users: Users) {
+		let max = 0;
+		for (const user of Object.values(users)) {
+			if (user.requests > max) {
+				max = user.requests;
+			}
+		}
+		return max;
 	}
 
 	function userIDActive(users: Users) {
