@@ -56,9 +56,10 @@
 	}
 
 	function bars(data: RequestsData) {
-		const responseTimesFreq: ValueCount;
+		const responseTimesFreq: ValueCount = {};
 		for (let i = 0; i < data.length; i++) {
-			const responseTime = Math.round(data[i][ColumnIndex.ResponseTime]) || 0;
+			const responseTime =
+				Math.round(data[i][ColumnIndex.ResponseTime]) || 0;
 			if (responseTime in responseTimesFreq) {
 				responseTimesFreq[responseTime]++;
 			} else {
@@ -68,7 +69,7 @@
 
 		const responseTimes: number[] = [];
 		const counts: number[] = [];
-		const times = Object.keys(responseTimeFreq)
+		const times = Object.keys(responseTimesFreq).map(Number);
 		if (times.length > 0) {
 			const minResponseTime = Math.min(...times);
 			const maxResponseTime = Math.max(...times);

@@ -114,16 +114,16 @@
 			const userAgent = getUserAgent(data[i][ColumnIndex.UserAgent]);
 			const client = getBrowser(userAgent);
 			if (client in clientCount) {
-				clientCount[client]++
+				clientCount[client]++;
 			} else {
-				clientCount[client] = 1
+				clientCount[client] = 1;
 			}
 		}
 
-		const clients = new Array(Object.keys(clientCounts).length);
-		const counts = new Array(Object.keys(clientCounts).length);
+		const clients = new Array(Object.keys(clientCount).length);
+		const counts = new Array(Object.keys(clientCount).length);
 		let i = 0;
-		for (const [client, count] of Object.entries(clientCounts)) {
+		for (const [client, count] of Object.entries(clientCount)) {
 			clients[i] = client;
 			counts[i] = count;
 			i++;

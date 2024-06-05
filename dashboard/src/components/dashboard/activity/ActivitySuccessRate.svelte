@@ -11,12 +11,33 @@
 		);
 	}
 
+	function daysAgoTime(time: number): number {
+		const now = new Date();
+		return Math.floor((now.getTime() - time) / (24 * 60 * 60 * 1000));
+	}
+
+	function hoursAgo(date: Date): number {
+		const now = new Date();
+		return Math.floor((now.getTime() - date.getTime()) / (60 * 60 * 1000));
+	}
+
+	function hoursAgoTime(time: number): number {
+		const now = new Date();
+		return Math.floor((now.getTime() - time) / (60 * 60 * 1000));
+	}
+
 	function setSuccessRate() {
-		const success: Map<number, { total: number; successful: number }> = new Map();
+		const success: Map<number, { total: number; successful: number }> =
+			new Map();
 		let minDate = new Date(8640000000000000);
 		for (let i = 0; i < data.length; i++) {
 			const date = new Date(data[i][ColumnIndex.CreatedAt]);
-			date.setHours(0, 0, 0, 0);
+			if (period === '24 hours' || period === 'Week') {
+				// Hourly
+				date.setMinutes(0, 0, 0);
+			} else {
+				date.setHours(0, 0, 0, 0);
+			}
 			const time = date.getTime();
 			if (!success.has(time)) {
 				success.set(time, { total: 0, successful: 0 });
@@ -33,16 +54,36 @@
 			}
 		}
 
-		let days = periodToDays(period);
-		if (days === null) {
-			days = daysAgo(minDate);
-		}
+		let successArr: number[];
+		if (period === '24 hours' || period === 'Week') {
+			// Hourly
+			let hours: number;
+			if (period === '24 hours') {
+				hours = 24;
+			} else {
+				hours = 24 * 7;
+			}
 
-		const successArr = new Array(days).fill(-0.1); // -0.1 -> 0
-		for (const time of success.keys()) {
-			const idx = daysAgo(new Date(time));
-			successArr[successArr.length - 1 - idx] =
-				success.get(time).successful / success.get(time).total;
+			successArr = new Array(hours).fill(-0.1); // -0.1 -> 0
+			for (const time of success.keys()) {
+				const idx = hoursAgoTime(time);
+				successArr[successArr.length - 1 - idx] =
+					success.get(time).successful / success.get(time).total;
+			}
+		} else {
+			let days: number;
+			if (period === 'All time') {
+				days = daysAgo(minDate);
+			} else {
+				days = periodToDays(period);
+			}
+
+			successArr = new Array(days).fill(-0.1); // -0.1 -> 0
+			for (const time of success.keys()) {
+				const idx = daysAgoTime(time);
+				successArr[successArr.length - 1 - idx] =
+					success.get(time).successful / success.get(time).total;
+			}
 		}
 
 		successRate = successArr;

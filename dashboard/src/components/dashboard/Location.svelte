@@ -19,16 +19,16 @@
 
 	function build() {
 		let max = 0;
-		const locationsFreq: ValueCount = {}
+		const locationsFreq: ValueCount = {};
 		for (let i = 0; i < data.length; i++) {
 			const location = data[i][ColumnIndex.Location];
 			if (!location) {
 				continue;
 			}
-			if (location in locationsFreq)) {
-				locationsFreq[location]++
+			if (location in locationsFreq) {
+				locationsFreq[location]++;
 			} else {
-				locationsFreq[location] = 1
+				locationsFreq[location] = 1;
 			}
 			if (locationsFreq[location] > max) {
 				max = locationsFreq[location];

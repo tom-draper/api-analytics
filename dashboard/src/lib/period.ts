@@ -34,19 +34,23 @@ export function periodToMarkers(period: string): number | null {
 }
 
 export function dateInPeriod(date: Date, period: Period) {
-	const days = periodToDays(period);
-	if (days === null) {
+	if (period === 'All time') {
 		return true;
 	}
+	const days = periodToDays(period);
 	const periodAgo = new Date();
 	periodAgo.setDate(periodAgo.getDate() - days);
 	return date > periodAgo;
 }
 
 export function dateInPrevPeriod(date: Date, period: Period) {
-	const days = periodToDays(period);
-	if (days === null) {
+	if (period === 'All time') {
 		return true;
 	}
-	return dateInPrevPeriod(date, period);
+	const days = periodToDays(period);
+	const startPeriodAgo = new Date();
+	startPeriodAgo.setDate(startPeriodAgo.getDate() - days * 2);
+	const endPeriodAgo = new Date();
+	endPeriodAgo.setDate(endPeriodAgo.getDate() - days);
+	return startPeriodAgo < date && date < endPeriodAgo;
 }
