@@ -2,9 +2,10 @@
 	import { onMount } from 'svelte';
 	import { graphColors, ColumnIndex } from '../../../lib/consts';
 	import { cachedFunction } from '../../../lib/cache';
+	import { type Candidate, maintainCandidates } from '../../../lib/candidate';
 	import { Chart } from 'chart.js/auto';
 
-	const clientCandidates = [
+	const clientCandidates: Candidate[] = [
 		{name: 'Curl', regex: /curl\//, matches: 0},
 		{name: 'Postman', regex: /PostmanRuntime\//, matches: 0},
 		{name: 'Insomnia', regex: /insomnia\//, matches: 0},
@@ -58,16 +59,6 @@
 		}
 
 		return 'Other';
-	}
-
-	function maintainCandidates(indexUpdated: number, candidates: {name: string, regex: string, matches: number}[]) {
-		let j = indexUpdated;
-    	while (j > 0 && count > candidates[j - 1].matches) {
-        	j--
-    	}
-    	if (j < indexUpdated) {
-        	[candidates[indexUpdated], candidates[j]] = [candidates[j], candidates[indexUpdated]]
-    	}
 	}
 
 	function getChartData() {

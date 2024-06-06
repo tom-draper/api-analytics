@@ -2,9 +2,10 @@
 	import { onMount } from 'svelte';
 	import { ColumnIndex, graphColors } from '../../../lib/consts';
 	import { cachedFunction } from '../../../lib/cache';
+	import { type Candidate, maintainCandidates } from '../../../lib/candidate';
 	import { Chart } from 'chart.js/auto';
 
-	const deviceCandidates = [
+	const deviceCandidates: Candidate[] = [
 		{name: 'iPhone', regex: /iPhone/, matches: 0},
 		{name: 'Android', regex: /Android/, matches: 0},
 		{name: 'Samsung', regex: /Tizen\//, matches: 0},
@@ -28,16 +29,6 @@
 		}
 
 		return 'Other';
-	}
-
-	function maintainCandidates(indexUpdated: number, candidates: {name: string, regex: string, matches: number}[]) {
-		let j = indexUpdated;
-    	while (j > 0 && count > candidates[j - 1].matches) {
-        	j--
-    	}
-    	if (j < indexUpdated) {
-        	[candidates[indexUpdated], candidates[j]] = [candidates[j], candidates[indexUpdated]]
-    	}
 	}
 
 	function getChartData() {
