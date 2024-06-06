@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { graphColors, ColumnIndex } from '../../../lib/consts';
 	import { cachedFunction } from '../../../lib/cache';
-	import { type Candidate, maintainCandidates } from '../../../lib/candidate';
+	import { type Candidate, maintainCandidates } from '../../../lib/candidates';
 	import { Chart } from 'chart.js/auto';
 
 	const clientCandidates: Candidate[] = [

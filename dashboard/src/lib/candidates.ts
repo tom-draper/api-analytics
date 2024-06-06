@@ -1,5 +1,5 @@
 
-export type Candidate = {name: string, regex: string, matches: number}
+export type Candidate = {name: string, regex: RegExp, matches: number}
 
 export function maintainCandidates(indexUpdated: number, candidates: Candidate[]) {
     let j = indexUpdated;
