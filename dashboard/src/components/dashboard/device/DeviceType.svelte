@@ -4,31 +4,43 @@
 	import { cachedFunction } from '../../../lib/cache';
 	import { Chart } from 'chart.js/auto';
 
+	const deviceCandidates = [
+		{name: 'iPhone', regex: /iPhone/, matches: 0},
+		{name: 'Android', regex: /Android/, matches: 0},
+		{name: 'Samsung', regex: /Tizen\//, matches: 0},
+		{name: 'Mac', regex: /Macintosh/, matches: 0},
+		{name: 'Windows', regex: /Windows/, matches: 0},
+	]
+
 	function getDevice(userAgent: string): string {
 		if (userAgent === null) {
 			return 'Unknown';
-		} else if (userAgent.match(/iPhone/)) {
-			return 'iPhone';
-		} else if (userAgent.match(/Android/)) {
-			return 'Android';
-		} else if (userAgent.match(/Tizen\//)) {
-			return 'Samsung';
-		} else if (userAgent.match(/Macintosh/)) {
-			return 'Mac';
-		} else if (userAgent.match(/Windows/)) {
-			return 'PC';
-		} else {
-			return 'Other';
 		}
+
+		for (let i = 0; i < deviceCandidates.length; i++) {
+			const candidate = deviceCandidates[i];
+			if (userAgent.match(candidate.regex)) {
+				candidate.matches++;
+				// Ensure deviceCandidates remains sorted by matches desc for future hits
+				maintainCandidates(i, deviceCandidates);
+				return candidate.name;
+			}
+		}
+
+		return 'Other';
 	}
 
-	const colors = [
-		'#3FCF8E', // Green
-		'#E46161', // Red
-		'#EBEB81', // Yellow
-	];
+	function maintainCandidates(indexUpdated: number, candidates: {name: string, regex: string, matches: number}[]) {
+		let j = indexUpdated;
+    	while (j > 0 && count > candidates[j - 1].matches) {
+        	j--
+    	}
+    	if (j < indexUpdated) {
+        	[candidates[indexUpdated], candidates[j]] = [candidates[j], candidates[indexUpdated]]
+    	}
+	}
 
-	function pieChart() {
+	function getChartData() {
 		const deviceCount: ValueCount = {};
 		const deviceGetter = cachedFunction(getDevice);
 		for (let i = 0; i < data.length; i++) {
@@ -68,7 +80,7 @@
 	}
 
 	function genPlot() {
-		const data = pieChart();
+		const data = getChartData();
 
 		let ctx = chartCanvas.getContext('2d');
 		let chart = new Chart(ctx, {

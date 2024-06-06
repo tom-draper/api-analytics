@@ -52,7 +52,7 @@
 			if (userAgent.match(candidate.regex)) {
 				candidate.matches++;
 				// Ensure clientCandidates remains sorted by matches desc for future hits
-				maintainClientCandidates(i);
+				maintainCandidates(i, clientCandidates);
 				return candidate.name;
 			}
 		}
@@ -60,13 +60,13 @@
 		return 'Other';
 	}
 
-	function maintainClientCandidates(indexUpdated: number) {
+	function maintainCandidates(indexUpdated: number, candidates: {name: string, regex: string, matches: number}[]) {
 		let j = indexUpdated;
-    	while (j > 0 && count > clientCandidates[j - 1].matches) {
+    	while (j > 0 && count > candidates[j - 1].matches) {
         	j--
     	}
     	if (j < indexUpdated) {
-        	[clientCandidates[indexUpdated], clientCandidates[j]] = [clientCandidates[j], clientCandidates[indexUpdated]]
+        	[candidates[indexUpdated], candidates[j]] = [candidates[j], candidates[indexUpdated]]
     	}
 	}
 
@@ -135,7 +135,7 @@
 	});
 
 	$: data && mounted && genPlot();
-	
+
 	export let data: RequestsData, getUserAgent: (id: number) => string;
 </script>
 
