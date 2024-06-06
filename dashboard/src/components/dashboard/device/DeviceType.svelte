@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { ColumnIndex } from '../../../lib/consts';
+	import { ColumnIndex, graphColors } from '../../../lib/consts';
 	import { Chart } from 'chart.js/auto';
 
 	function getDevice(userAgent: string): string {
@@ -19,29 +19,6 @@
 		} else {
 			return 'Other';
 		}
-	}
-
-	function devicePlotLayout() {
-		return {
-			title: false,
-			autosize: true,
-			margin: { r: 35, l: 70, t: 10, b: 20, pad: 0 },
-			hovermode: 'closest',
-			plot_bgcolor: 'transparent',
-			paper_bgcolor: 'transparent',
-			height: 180,
-			width: 411,
-			yaxis: {
-				title: { text: 'Requests' },
-				gridcolor: 'gray',
-				showgrid: false,
-				fixedrange: true,
-			},
-			xaxis: {
-				visible: false,
-			},
-			dragmode: false,
-		};
 	}
 
 	const colors = [
@@ -77,7 +54,7 @@
 				{
 					label: 'Device Type',
 					data: counts,
-					backgroundColor: colors,
+					backgroundColor: graphColors,
 					hoverOffset: 4,
 				},
 			],

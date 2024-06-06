@@ -60,42 +60,15 @@
 		}
 	}
 
-	function osPlotLayout() {
-		const monthAgo = new Date();
-		monthAgo.setDate(monthAgo.getDate() - 30);
-		const tomorrow = new Date();
-		tomorrow.setDate(tomorrow.getDate() + 1);
-		return {
-			title: false,
-			autosize: true,
-			margin: { r: 35, l: 70, t: 20, b: 20, pad: 0 },
-			hovermode: 'closest',
-			plot_bgcolor: 'transparent',
-			paper_bgcolor: 'transparent',
-			height: 180,
-			width: 411,
-			yaxis: {
-				title: { text: 'Requests' },
-				gridcolor: 'gray',
-				showgrid: false,
-				fixedrange: true,
-			},
-			xaxis: {
-				visible: false,
-			},
-			dragmode: false,
-		};
-	}
-
-	function pieChart() {
+	function getChartData() {
 		const osCount: ValueCount = {};
 		for (let i = 0; i < data.length; i++) {
 			const userAgent = getUserAgent(data[i][ColumnIndex.UserAgent]);
 			const os = getOS(userAgent);
 			if (os in osCount) {
-				osCount[os]++
+				osCount[os]++;
 			} else {
-				osCount[os] = 1
+				osCount[os] = 1;
 			}
 		}
 
@@ -107,42 +80,40 @@
 			counts[i] = count;
 			i++;
 		}
-		return [
-			{
-				values: counts,
-				labels: oss,
-				type: 'pie',
-				marker: {
-					colors: graphColors,
-				},
-			},
-		];
-	}
 
-	function osPlotData() {
 		return {
-			data: pieChart(),
-			layout: osPlotLayout(),
-			config: {
-				responsive: true,
-				showSendToCloud: false,
-				displayModeBar: false,
-			},
+			labels: oss,
+			datasets: [
+				{
+					label: 'Operating Systems',
+					data: counts,
+					backgroundColor: graphColors,
+					hoverOffset: 4,
+				},
+			],
 		};
 	}
 
 	function genPlot() {
-		const plotData = osPlotData();
-		//@ts-ignore
-		new Plotly.newPlot(
-			plotDiv,
-			plotData.data,
-			plotData.layout,
-			plotData.config,
-		);
+		const data = getChartData();
+
+		let ctx = chartCanvas.getContext('2d');
+		let chart = new Chart(ctx, {
+			type: 'doughnut',
+			data: data,
+			options: {
+				maintainAspectRatio: false,
+				borderWidth: 0,
+				plugins: {
+					legend: {
+						position: 'right',
+					},
+				},
+			},
+		});
 	}
 
-	let plotDiv: HTMLDivElement;
+	let chartCanvas: HTMLCanvasElement;
 	let mounted = false;
 	onMount(() => {
 		mounted = true;
@@ -154,13 +125,12 @@
 </script>
 
 <div id="plotly">
-	<div id="plotDiv" bind:this={plotDiv}>
-		<!-- Plotly chart will be drawn inside this DIV -->
-	</div>
+	<canvas bind:this={chartCanvas} id="chart"></canvas>
 </div>
 
 <style>
-	#plotDiv {
-		margin-right: 20px;
+	#chart {
+		height: 180px !important;
+		width: 100% !important;
 	}
 </style>
