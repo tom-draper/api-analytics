@@ -25,7 +25,6 @@
 	import { ColumnIndex, columns, serverURL } from '../lib/consts';
 	import Error from '../components/dashboard/Error.svelte';
 	import TopUsers from '../components/dashboard/TopUsers.svelte';
-	import { get } from 'svelte/store';
 
 	function allTimePeriod(_: Date) {
 		return true;

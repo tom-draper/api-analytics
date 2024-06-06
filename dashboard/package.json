@@ -1,6 +1,7 @@
 {
 	"type": "module",
 	"dependencies": {
+		"chart.js": "^4.4.3",
 		"express": "^4.18.1",
 		"highlight.js": "^11.7.0",
 		"nodemon": "^2.0.19",

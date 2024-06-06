@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { ColumnIndex } from '../../../lib/consts';
+	import { Chart } from 'chart.js/auto';
 
 	function getDevice(userAgent: string): string {
 		if (userAgent === null) {
@@ -55,9 +56,9 @@
 			const userAgent = getUserAgent(data[i][ColumnIndex.UserAgent]);
 			const device = getDevice(userAgent);
 			if (device in deviceCount) {
-				deviceCount[device]++
+				deviceCount[device]++;
 			} else {
-				deviceCount[device] = 1
+				deviceCount[device] = 1;
 			}
 		}
 
@@ -69,42 +70,40 @@
 			counts[i] = count;
 			i++;
 		}
-		return [
-			{
-				values: counts,
-				labels: devices,
-				type: 'pie',
-				marker: {
-					colors: colors,
-				},
-			},
-		];
-	}
 
-	function devicePlotData() {
 		return {
-			data: pieChart(),
-			layout: devicePlotLayout(),
-			config: {
-				responsive: true,
-				showSendToCloud: false,
-				displayModeBar: false,
-			},
+			labels: devices,
+			datasets: [
+				{
+					label: 'Device Type',
+					data: counts,
+					backgroundColor: colors,
+					hoverOffset: 4,
+				},
+			],
 		};
 	}
 
 	function genPlot() {
-		const plotData = devicePlotData();
-		//@ts-ignore
-		new Plotly.newPlot(
-			plotDiv,
-			plotData.data,
-			plotData.layout,
-			plotData.config,
-		);
+		const data = pieChart();
+
+		let ctx = chartCanvas.getContext('2d');
+		let chart = new Chart(ctx, {
+			type: 'doughnut',
+			data: data,
+			options: {
+				maintainAspectRatio: false,
+				borderWidth: 0,
+				plugins: {
+					legend: {
+						position: 'right',
+					},
+				},
+			},
+		});
 	}
 
-	let plotDiv: HTMLDivElement;
+	let chartCanvas: HTMLCanvasElement;
 	let mounted = false;
 	onMount(() => {
 		mounted = true;
@@ -116,13 +115,12 @@
 </script>
 
 <div id="plotly">
-	<div id="plotDiv" bind:this={plotDiv}>
-		<!-- Plotly chart will be drawn inside this DIV -->
-	</div>
+	<canvas bind:this={chartCanvas} id="chart"></canvas>
 </div>
 
 <style>
-	#plotDiv {
-		margin-right: 20px;
+	#chart {
+		height: 180px !important;
+		width: 100% !important;
 	}
 </style>
