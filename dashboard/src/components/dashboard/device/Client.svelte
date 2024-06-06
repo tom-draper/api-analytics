@@ -51,6 +51,8 @@
 			const candidate = clientCandidates[i];
 			if (userAgent.match(candidate.regex)) {
 				candidate.matches++;
+				// Ensure clientCandidates remains sorted by matches desc for future hits
+				maintainClientCandidates(i);
 				return candidate.name;
 			}
 		}
@@ -58,7 +60,17 @@
 		return 'Other';
 	}
 
-	function pieChart() {
+	function maintainClientCandidates(indexUpdated: number) {
+		let j = indexUpdated;
+    	while (j > 0 && count > clientCandidates[j - 1].matches) {
+        	j--
+    	}
+    	if (j < indexUpdated) {
+        	[clientCandidates[indexUpdated], clientCandidates[j]] = [clientCandidates[j], clientCandidates[indexUpdated]]
+    	}
+	}
+
+	function getChartData() {
 		const clientCount: ValueCount = {};
 		const clientGetter = cachedFunction(getClient)
 		for (let i = 0; i < data.length; i++) {
@@ -88,7 +100,7 @@
 			labels: clients,
 			datasets: [
 				{
-					label: 'Device Type',
+					label: 'Client',
 					data: counts,
 					backgroundColor: graphColors,
 					hoverOffset: 4,
@@ -98,7 +110,7 @@
 	}
 
 	function genPlot() {
-		const data = pieChart();
+		const data = getChartData();
 
 		let ctx = chartCanvas.getContext('2d');
 		let chart = new Chart(ctx, {
@@ -110,7 +122,6 @@
 				plugins: {
 					legend: {
 						position: 'right',
-						// reverse: true,
 					},
 				},
 			},
@@ -124,6 +135,7 @@
 	});
 
 	$: data && mounted && genPlot();
+	
 	export let data: RequestsData, getUserAgent: (id: number) => string;
 </script>
 
