@@ -9,7 +9,7 @@
 	<Landing />
 	<Highlight
 		title="Dashboard"
-		description="An all-in-one analytics dashboard. Real-time insight into your API's usage."
+		description="A powerful all-in-one analytics dashboard. Real-time usage insight."
 		path="/dashboard"
 		img="dashboard.png"
 	/>
