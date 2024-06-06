@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { ColumnIndex, graphColors } from '../../../lib/consts';
+	import { cachedFunction } from '../../../lib/cache';
 	import { Chart } from 'chart.js/auto';
 
 	function getDevice(userAgent: string): string {
@@ -29,9 +30,10 @@
 
 	function pieChart() {
 		const deviceCount: ValueCount = {};
+		const deviceGetter = cachedFunction(getDevice);
 		for (let i = 0; i < data.length; i++) {
 			const userAgent = getUserAgent(data[i][ColumnIndex.UserAgent]);
-			const device = getDevice(userAgent);
+			const device = deviceGetter(userAgent);
 			if (device in deviceCount) {
 				deviceCount[device]++;
 			} else {
@@ -39,10 +41,14 @@
 			}
 		}
 
-		const devices = new Array(Object.keys(deviceCount).length);
-		const counts = new Array(Object.keys(deviceCount).length);
+		const dataPoints = Object.entries(clientCount).sort(
+			(a, b) => b[1] - a[1],
+		);
+
+		const devices = new Array(dataPoints.length);
+		const counts = new Array(dataPoints.length);
 		let i = 0;
-		for (const [browser, count] of Object.entries(deviceCount)) {
+		for (const [browser, count] of dataPoints) {
 			devices[i] = browser;
 			counts[i] = count;
 			i++;

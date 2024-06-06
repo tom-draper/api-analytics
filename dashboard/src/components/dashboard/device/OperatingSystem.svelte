@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { ColumnIndex, graphColors } from '../../../lib/consts';
+	import { cachedFunction } from '../../../lib/cache';
 
 	function getOS(userAgent: string): string {
 		if (userAgent === null) {
@@ -62,9 +63,10 @@
 
 	function getChartData() {
 		const osCount: ValueCount = {};
+		const osGetter = cachedFunction(getOS)
 		for (let i = 0; i < data.length; i++) {
 			const userAgent = getUserAgent(data[i][ColumnIndex.UserAgent]);
-			const os = getOS(userAgent);
+			const os = osGetter(userAgent);
 			if (os in osCount) {
 				osCount[os]++;
 			} else {
@@ -72,10 +74,14 @@
 			}
 		}
 
-		const oss = new Array(Object.keys(osCount).length);
-		const counts = new Array(Object.keys(osCount).length);
+		const dataPoints = Object.entries(clientCount).sort(
+			(a, b) => b[1] - a[1],
+		);
+
+		const oss = new Array(dataPoints.length);
+		const counts = new Array(dataPoints.length);
 		let i = 0;
-		for (const [os, count] of Object.entries(osCount)) {
+		for (const [os, count] of dataPoints) {
 			oss[i] = os;
 			counts[i] = count;
 			i++;

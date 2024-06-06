@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { graphColors } from '../../../lib/consts';
-	import { ColumnIndex } from '../../../lib/consts';
+	import { graphColors, ColumnIndex } from '../../../lib/consts';
+	import { cachedFunction } from '../../../lib/cache';
+	import { Chart } from 'chart.js/auto';
 
 	function getBrowser(userAgent: string): string {
 		if (userAgent == null) {
@@ -83,9 +84,10 @@
 
 	function pieChart() {
 		const clientCount: ValueCount = {};
+		const browserGetter = cachedFunction(getBrowser)
 		for (let i = 0; i < data.length; i++) {
 			const userAgent = getUserAgent(data[i][ColumnIndex.UserAgent]);
-			const client = getBrowser(userAgent);
+			const client = browserGetter(userAgent);
 			if (client in clientCount) {
 				clientCount[client]++;
 			} else {

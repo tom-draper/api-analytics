@@ -25,10 +25,7 @@ server.get('*', function (req, res) {
       <link rel='stylesheet' href='/global.css'>
       <link rel='stylesheet' href='/bundle.css'>
       <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
-      <script src="
-      https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js
-    "></script>
-      
+      <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
       <script src="https://cdn.plot.ly/plotly-latest.min.js" type="text/javascript"></script>
     </head>
 
