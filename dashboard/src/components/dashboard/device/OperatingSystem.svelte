@@ -61,7 +61,7 @@
 			}
 		}
 
-		const dataPoints = Object.entries(clientCount).sort(
+		const dataPoints = Object.entries(osCount).sort(
 			(a, b) => b[1] - a[1],
 		);
 
