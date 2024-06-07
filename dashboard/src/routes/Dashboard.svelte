@@ -209,7 +209,6 @@
 	];
 	let loading = true;
 	let fetchFailed = false;
-	let endpointsRendered = false;
 	const pageSize = 250_000;
 	onMount(async () => {
 		const dashboardData = await getDashboardData();
@@ -387,9 +386,8 @@
 					data={periodData}
 					bind:targetPath={settings.targetEndpoint.path}
 					bind:targetStatus={settings.targetEndpoint.status}
-					bind:endpointsRendered
 				/>
-				<Version data={periodData} bind:endpointsRendered />
+				<Version data={periodData} />
 			</div>
 			<div class="right">
 				<Activity data={periodData} period={settings.period} />
@@ -499,10 +497,6 @@
 	.dropdown-container {
 		margin-right: 10px;
 	}
-
-	/* button {
-		font-family: 'Geist' !important;
-	} */
 
 	.donate-link {
 		color: rgb(73, 73, 73);

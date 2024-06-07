@@ -67,16 +67,15 @@
 	}
 
 	function build() {
-		endpointsRendered = false;
 		const freq = endpointFreq();
 
 		// Convert object to list
-		const freqArr: MapValue<EndpointFreq>[] = new Array(freq.size);
+		const freqArr: MapValue<EndpointFreq>[] = [];
 		maxCount = 0;
 		let i = 0;
 		for (const value of freq.values()) {
 			if (statusMatch(value.status)) {
-				freqArr[i] = value;
+				freqArr.push(value);
 				if (value.count > maxCount) {
 					maxCount = value.count;
 				}
@@ -89,7 +88,6 @@
 			return b.count - a.count;
 		});
 		endpoints = freqArr.slice(0, 50);
-		endpointsRendered = true;
 	}
 
 	function setBtn(value: typeof activeBtn) {
@@ -111,10 +109,7 @@
 
 	$: data && mounted && build();
 
-	export let data: RequestsData,
-		targetPath: string,
-		targetStatus: number,
-		endpointsRendered: boolean;
+	export let data: RequestsData, targetPath: string, targetStatus: number;
 </script>
 
 <div class="card">

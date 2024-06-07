@@ -1,38 +1,25 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { ColumnIndex } from '../../lib/consts';
+	import { Chart } from 'chart.js/auto';
 
-	function defaultLayout() {
-		return {
-			font: { size: 12 },
-			paper_bgcolor: 'transparent',
-			height: 500,
-			margin: { r: 35, l: 70, t: 20, b: 50, pad: 0 },
-			polar: {
-				bargap: 0,
-				bgcolor: 'transparent',
-				angularaxis: { direction: 'clockwise', showgrid: false },
-				radialaxis: { gridcolor: '#303030' },
-			},
-		};
-	}
-
-	function bars() {
+	function getChartData() {
 		const responseTimes = Array(24).fill(0);
 
 		for (let i = 0; i < data.length; i++) {
 			const date = data[i][ColumnIndex.CreatedAt];
 			const time = date.getHours();
-			// @ts-ignore
 			responseTimes[time]++;
 		}
 
-		const requestFreqArr = Array.from({ length: 24 }, (_, i) => ({
-			hour: i,
-			responseTime: responseTimes[i],
-		})).sort((a, b) => {
-			return a.hour - b.hour;
-		});
+		const requestFreqArr = responseTimes
+			.map((requestCount, i) => ({
+				hour: i,
+				responseTime: requestCount,
+			}))
+			.sort((a, b) => {
+				return a.hour - b.hour;
+			});
 
 		let dates = new Array(requestFreqArr.length);
 		let requests = new Array(requestFreqArr.length);
@@ -45,56 +32,87 @@
 		dates = dates.slice(12).concat(...dates.slice(0, 12));
 		requests = requests.slice(12).concat(...requests.slice(0, 12));
 
-		return [
-			{
-				r: requests,
-				theta: dates,
-				marker: { color: '#3fcf8e' },
-				type: 'barpolar',
-				hovertemplate: `<b>%{r}</b> requests at <b>%{theta}</b><extra></extra>`,
-			},
-		];
-	}
-
-	function buildPlotData() {
 		return {
-			data: bars(),
-			layout: defaultLayout(),
-			config: {
-				responsive: true,
-				showSendToCloud: false,
-				displayModeBar: false,
-			},
+			labels: dates,
+			datasets: [
+				{
+					label: 'Usage',
+					data: requests,
+					backgroundColor: ['#3FCF8E'],
+				},
+			],
 		};
 	}
 
 	function genPlot() {
-		const plotData = buildPlotData();
-		//@ts-ignore
-		new Plotly.newPlot(
-			plotDiv,
-			plotData.data,
-			plotData.layout,
-			plotData.config,
-		);
+		const data = getChartData();
+
+		let ctx = chartCanvas.getContext('2d');
+		chart = new Chart(ctx, {
+			type: 'polarArea',
+			data: data,
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				borderWidth: 0,
+				layout: {
+					padding: {
+						left: 20,
+						right: 20,
+						bottom: 20,
+					},
+				},
+				scales: {
+					r: {
+						pointLabels: {
+							display: true,
+							centerPointLabels: true,
+							font: {
+								size: 12,
+							},
+						},
+						ticks: {
+							display: false, // Hides the number labels
+						},
+					},
+				},
+				plugins: {
+					legend: {
+						display: false,
+					},
+					title: {
+						display: false,
+					},
+				},
+			},
+		});
 	}
 
-	let plotDiv: HTMLDivElement;
-	let mounted = false;
+	function updatePlot() {
+		if (chart === null) {
+			return;
+		}
+		chart.data = getChartData();
+		chart.update();
+	}
+
+	let chart: Chart | null = null;
+	let chartCanvas: HTMLCanvasElement;
 	onMount(() => {
-		mounted = true;
+		genPlot();
 	});
 
-	$: data && mounted && genPlot();
+	$: if (data) {
+		updatePlot();
+	}
+
 	export let data: RequestsData;
 </script>
 
 <div class="card">
 	<div class="card-title">Usage time</div>
 	<div id="plotly">
-		<div id="plotDiv" bind:this={plotDiv}>
-			<!-- Plotly chart will be drawn inside this DIV -->
-		</div>
+		<canvas bind:this={chartCanvas} id="chart"></canvas>
 	</div>
 </div>
 
@@ -102,5 +120,10 @@
 	.card {
 		width: 100%;
 		margin: 0;
+	}
+	#chart {
+		height: 500px !important;
+		width: 100% !important;
+		margin: auto;
 	}
 </style>

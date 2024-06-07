@@ -1,46 +1,22 @@
 <script lang="ts">
 	import { ColumnIndex, graphColors } from '../../lib/consts';
+	import { onMount } from 'svelte';
+	import { Chart } from 'chart.js/auto';
 
-	function setVersions() {
-		const v: Set<string> = new Set();
+	function getVersions() {
+		const versions = new Set<string>();
 		for (let i = 0; i < data.length; i++) {
 			const match = data[i][ColumnIndex.Path].match(
 				/[^a-z0-9](v\d)[^a-z0-9]/i,
 			);
 			if (match) {
-				v.add(match[1]);
+				versions.add(match[1]);
 			}
 		}
-		versions = v;
-
-		if (versions.size > 1) {
-			setTimeout(genPlot, 1000);
-		}
+		return versions;
 	}
 
-	function versionPlotLayout() {
-		return {
-			title: false,
-			autosize: true,
-			margin: { r: 35, l: 70, t: 10, b: 20, pad: 0 },
-			hovermode: 'closest',
-			plot_bgcolor: 'transparent',
-			paper_bgcolor: 'transparent',
-			height: 180,
-			yaxis: {
-				title: { text: 'Requests' },
-				gridcolor: 'gray',
-				showgrid: false,
-				fixedrange: true,
-			},
-			xaxis: {
-				visible: false,
-			},
-			dragmode: false,
-		};
-	}
-
-	function pieChart() {
+	function getChartData() {
 		const versionCount: ValueCount = {};
 		for (let i = 0; i < data.length; i++) {
 			const match = data[i][ColumnIndex.Path].match(
@@ -51,68 +27,94 @@
 			}
 			const version = match[1];
 			if (version in versionCount) {
-				versionCount[version]++
+				versionCount[version]++;
 			} else {
-				versionCount[version] = 1
+				versionCount[version] = 1;
 			}
 		}
 
-		const versions = Object.keys(versionCount);
-		const count = Object.values(versionCount);
+		const dataPoints = Object.entries(versionCount).sort(
+			(a, b) => b[1] - a[1],
+		);
 
-		return [
-			{
-				values: count,
-				labels: versions,
-				type: 'pie',
-				marker: {
-					colors: graphColors,
-				},
-			},
-		];
-	}
+		const versions = new Array(dataPoints.length);
+		const counts = new Array(dataPoints.length);
+		let i = 0;
+		for (const [browser, count] of dataPoints) {
+			versions[i] = browser;
+			counts[i] = count;
+			i++;
+		}
 
-	function versionPlotData() {
 		return {
-			data: pieChart(),
-			layout: versionPlotLayout(),
-			config: {
-				responsive: true,
-				showSendToCloud: false,
-				displayModeBar: false,
-			},
+			labels: versions,
+			datasets: [
+				{
+					label: 'Version',
+					data: counts,
+					backgroundColor: graphColors,
+					hoverOffset: 4,
+				},
+			],
 		};
 	}
 
 	function genPlot() {
-		const plotData = versionPlotData();
-		//@ts-ignore
-		new Plotly.newPlot(
-			plotDiv,
-			plotData.data,
-			plotData.layout,
-			plotData.config,
-		);
+		const data = getChartData();
+
+		let ctx = chartCanvas.getContext('2d');
+		chart = new Chart(ctx, {
+			type: 'doughnut',
+			data: data,
+			options: {
+				maintainAspectRatio: false,
+				borderWidth: 0,
+				layout: {
+					padding: {
+						right: 10,
+					},
+				},
+				plugins: {
+					legend: {
+						position: 'right',
+					},
+				},
+			},
+		});
 	}
 
+	function updatePlot() {
+		if (chart === null) {
+			return;
+		}
+		chart.data = getChartData();
+		chart.update();
+	}
+
+	let chart: Chart | null = null;
+	let chartCanvas: HTMLCanvasElement;
 	let versions: Set<string> = new Set();
-	let plotDiv: HTMLDivElement;
 
-	$: data && endpointsRendered && setVersions();
+	onMount(() => {
+		versions = getVersions();
+		if (versions.size > 1) {
+			genPlot();
+		}
+	});
 
-	export let data: RequestsData, endpointsRendered: boolean;
+	$: if (data) {
+		updatePlot();
+	}
+
+	export let data: RequestsData;
 </script>
 
-{#if versions.size > 1}
-	<div class="card">
-		<div class="card-title">Version</div>
-		<div id="plotly">
-			<div id="plotDiv" bind:this={plotDiv}>
-				<!-- Plotly chart will be drawn inside this DIV -->
-			</div>
-		</div>
+<div class="card" class:hidden={versions.size <= 1}>
+	<div class="card-title">Version</div>
+	<div id="plotly">
+		<canvas bind:this={chartCanvas} id="chart"></canvas>
 	</div>
-{/if}
+</div>
 
 <style scoped>
 	.card {
@@ -120,8 +122,12 @@
 		padding-bottom: 1em;
 		flex: 1;
 	}
-	#plotDiv {
-		margin-right: 20px;
+	#chart {
+		height: 180px !important;
+		width: 100% !important;
+	}
+	.hidden {
+		visibility: hidden;
 	}
 	@media screen and (max-width: 1030px) {
 		.card {

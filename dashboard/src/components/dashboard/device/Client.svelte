@@ -2,46 +2,61 @@
 	import { onMount } from 'svelte';
 	import { graphColors, ColumnIndex } from '../../../lib/consts';
 	import { cachedFunction } from '../../../lib/cache';
-	import { type Candidate, maintainCandidates } from '../../../lib/candidates';
-	import { Chart } from 'chart.js/auto';
+	import {
+		type Candidate,
+		maintainCandidates,
+	} from '../../../lib/candidates';
+	import Chart from 'chart.js/auto';
 
 	const clientCandidates: Candidate[] = [
-		{name: 'Curl', regex: /curl\//, matches: 0},
-		{name: 'Postman', regex: /PostmanRuntime\//, matches: 0},
-		{name: 'Insomnia', regex: /insomnia\//, matches: 0},
-		{name: 'Python requests', regex: /python-requests\//, matches: 0},
-		{name: 'Nodejs fetch', regex: /node-fetch\//, matches: 0},
-		{name: 'Seamonkey', regex: /Seamonkey\//, matches: 0},
-		{name: 'Firefox', regex: /Firefox\//, matches: 0},
-		{name: 'Chrome', regex: /Chrome\//, matches: 0},
-		{name: 'Chromium', regex: /Chromium\//, matches: 0},
-		{name: 'aiohttp', regex: /aiohttp\//, matches: 0},
-		{name: 'Python', regex: /Python\//, matches: 0},
-		{name: 'Go http', regex: /[Gg]o-http-client\//, matches: 0},
-		{name: 'Java', regex: /Java\//, matches: 0},
-		{name: 'axios', regex: /axios\//, matches: 0},
-		{name: 'Dart', regex: /Dart\//, matches: 0},
-		{name: 'OkHttp', regex: /OkHttp\//, matches: 0},
-		{name: 'Uptime Kuma', regex: /Uptime-Kuma\//, matches: 0},
-		{name: 'undici', regex: /undici\//, matches: 0},
-		{name: 'Lush', regex: /Lush\//, matches: 0},
-		{name: 'Zabbix', regex: /Zabbix/, matches: 0},
-		{name: 'Guzzle', regex: /GuzzleHttp\//, matches: 0},
-		{name: 'Uptime', regex: /Better Uptime/, matches: 0},
-		{name: 'GitHub Camo', regex: /github-camo/, matches: 0},
-		{name: 'Ruby', regex: /Ruby/, matches: 0},
-		{name: 'Node.js', regex: /node/, matches: 0},
-		{name: 'Next.js', regex: /Next\.js/, matches: 0},
-		{name: 'Vercel Edge Functions', regex: /Vercel Edge Functions/, matches: 0},
-		{name: 'OpenAI Image Downloader', regex: /OpenAI Image Downloader/, matches: 0},
-		{name: 'OpenAI', regex: /OpenAI/, matches: 0},
-		{name: 'Tsunami Security Scanner', regex: /TsunamiSecurityScanner/, matches: 0},
-		{name: 'iOS', regex: /iOS\//, matches: 0},
-		{name: 'Safari', regex: /Safari\//, matches: 0},
-		{name: 'Edge', regex: /Edg\//, matches: 0},
-		{name: 'Opera', regex: /(OPR|Opera)\//, matches: 0},
-		{name: 'Internet Explorer', regex: /(; MSIE |Trident\/)/, matches: 0},
-	]
+		{ name: 'Curl', regex: /curl\//, matches: 0 },
+		{ name: 'Postman', regex: /PostmanRuntime\//, matches: 0 },
+		{ name: 'Insomnia', regex: /insomnia\//, matches: 0 },
+		{ name: 'Python requests', regex: /python-requests\//, matches: 0 },
+		{ name: 'Nodejs fetch', regex: /node-fetch\//, matches: 0 },
+		{ name: 'Seamonkey', regex: /Seamonkey\//, matches: 0 },
+		{ name: 'Firefox', regex: /Firefox\//, matches: 0 },
+		{ name: 'Chrome', regex: /Chrome\//, matches: 0 },
+		{ name: 'Chromium', regex: /Chromium\//, matches: 0 },
+		{ name: 'aiohttp', regex: /aiohttp\//, matches: 0 },
+		{ name: 'Python', regex: /Python\//, matches: 0 },
+		{ name: 'Go http', regex: /[Gg]o-http-client\//, matches: 0 },
+		{ name: 'Java', regex: /Java\//, matches: 0 },
+		{ name: 'axios', regex: /axios\//, matches: 0 },
+		{ name: 'Dart', regex: /Dart\//, matches: 0 },
+		{ name: 'OkHttp', regex: /OkHttp\//, matches: 0 },
+		{ name: 'Uptime Kuma', regex: /Uptime-Kuma\//, matches: 0 },
+		{ name: 'undici', regex: /undici\//, matches: 0 },
+		{ name: 'Lush', regex: /Lush\//, matches: 0 },
+		{ name: 'Zabbix', regex: /Zabbix/, matches: 0 },
+		{ name: 'Guzzle', regex: /GuzzleHttp\//, matches: 0 },
+		{ name: 'Uptime', regex: /Better Uptime/, matches: 0 },
+		{ name: 'GitHub Camo', regex: /github-camo/, matches: 0 },
+		{ name: 'Ruby', regex: /Ruby/, matches: 0 },
+		{ name: 'Node.js', regex: /node/, matches: 0 },
+		{ name: 'Next.js', regex: /Next\.js/, matches: 0 },
+		{
+			name: 'Vercel Edge Functions',
+			regex: /Vercel Edge Functions/,
+			matches: 0,
+		},
+		{
+			name: 'OpenAI Image Downloader',
+			regex: /OpenAI Image Downloader/,
+			matches: 0,
+		},
+		{ name: 'OpenAI', regex: /OpenAI/, matches: 0 },
+		{
+			name: 'Tsunami Security Scanner',
+			regex: /TsunamiSecurityScanner/,
+			matches: 0,
+		},
+		{ name: 'iOS', regex: /iOS\//, matches: 0 },
+		{ name: 'Safari', regex: /Safari\//, matches: 0 },
+		{ name: 'Edge', regex: /Edg\//, matches: 0 },
+		{ name: 'Opera', regex: /(OPR|Opera)\//, matches: 0 },
+		{ name: 'Internet Explorer', regex: /(; MSIE |Trident\/)/, matches: 0 },
+	];
 
 	function getClient(userAgent: string): string {
 		if (userAgent == null) {
@@ -63,7 +78,7 @@
 
 	function getChartData() {
 		const clientCount: ValueCount = {};
-		const clientGetter = cachedFunction(getClient)
+		const clientGetter = cachedFunction(getClient);
 		for (let i = 0; i < data.length; i++) {
 			const userAgent = getUserAgent(data[i][ColumnIndex.UserAgent]);
 			const client = clientGetter(userAgent);
@@ -104,12 +119,17 @@
 		const data = getChartData();
 
 		let ctx = chartCanvas.getContext('2d');
-		let chart = new Chart(ctx, {
+		chart = new Chart(ctx, {
 			type: 'doughnut',
 			data: data,
 			options: {
 				maintainAspectRatio: false,
 				borderWidth: 0,
+				layout: {
+					padding: {
+						right: 10,
+					},
+				},
 				plugins: {
 					legend: {
 						position: 'right',
@@ -119,13 +139,23 @@
 		});
 	}
 
+	function updatePlot() {
+		if (chart === null) {
+			return;
+		}
+		chart.data = getChartData();
+		chart.update();
+	}
+
+	let chart: Chart | null = null;
 	let chartCanvas: HTMLCanvasElement;
-	let mounted = false;
 	onMount(() => {
-		mounted = true;
+		genPlot();
 	});
 
-	$: data && mounted && genPlot();
+	$: if (data) {
+		updatePlot();
+	}
 
 	export let data: RequestsData, getUserAgent: (id: number) => string;
 </script>

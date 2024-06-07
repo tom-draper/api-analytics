@@ -2,16 +2,19 @@
 	import { onMount } from 'svelte';
 	import { ColumnIndex, graphColors } from '../../../lib/consts';
 	import { cachedFunction } from '../../../lib/cache';
-	import { type Candidate, maintainCandidates } from '../../../lib/candidates';
-	import { Chart } from 'chart.js/auto';
+	import {
+		type Candidate,
+		maintainCandidates,
+	} from '../../../lib/candidates';
+	import type Chart from 'chart.js/auto';
 
 	const deviceCandidates: Candidate[] = [
-		{name: 'iPhone', regex: /iPhone/, matches: 0},
-		{name: 'Android', regex: /Android/, matches: 0},
-		{name: 'Samsung', regex: /Tizen\//, matches: 0},
-		{name: 'Mac', regex: /Macintosh/, matches: 0},
-		{name: 'Windows', regex: /Windows/, matches: 0},
-	]
+		{ name: 'iPhone', regex: /iPhone/, matches: 0 },
+		{ name: 'Android', regex: /Android/, matches: 0 },
+		{ name: 'Samsung', regex: /Tizen\//, matches: 0 },
+		{ name: 'Mac', regex: /Macintosh/, matches: 0 },
+		{ name: 'Windows', regex: /Windows/, matches: 0 },
+	];
 
 	function getDevice(userAgent: string): string {
 		if (userAgent === null) {
@@ -74,12 +77,17 @@
 		const data = getChartData();
 
 		let ctx = chartCanvas.getContext('2d');
-		let chart = new Chart(ctx, {
+		chart = new Chart(ctx, {
 			type: 'doughnut',
 			data: data,
 			options: {
 				maintainAspectRatio: false,
 				borderWidth: 0,
+				layout: {
+					padding: {
+						right: 10,
+					},
+				},
 				plugins: {
 					legend: {
 						position: 'right',
@@ -89,13 +97,23 @@
 		});
 	}
 
+	function updatePlot() {
+		if (chart === null) {
+			return;
+		}
+		chart.data = getChartData();
+		chart.update();
+	}
+
+	let chart: Chart | null = null;
 	let chartCanvas: HTMLCanvasElement;
-	let mounted = false;
 	onMount(() => {
-		mounted = true;
+		genPlot();
 	});
 
-	$: data && mounted && genPlot();
+	$: if (data) {
+		updatePlot();
+	}
 
 	export let data: RequestsData, getUserAgent: (id: number) => string;
 </script>
