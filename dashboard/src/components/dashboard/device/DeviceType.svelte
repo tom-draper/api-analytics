@@ -44,7 +44,7 @@
 			}
 		}
 
-		const dataPoints = Object.entries(clientCount).sort(
+		const dataPoints = Object.entries(deviceCount).sort(
 			(a, b) => b[1] - a[1],
 		);
 
