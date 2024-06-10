@@ -3,7 +3,7 @@
 	import { ColumnIndex } from '../../lib/consts';
 	import { Chart } from 'chart.js/auto';
 
-	function getChartData() {
+	function getChartData(data: RequestsData) {
 		const responseTimes = Array(24).fill(0);
 
 		for (let i = 0; i < data.length; i++) {
@@ -44,13 +44,13 @@
 		};
 	}
 
-	function genPlot() {
-		const data = getChartData();
+	function genPlot(data: RequestsData) {
+		const chartData = getChartData(data);
 
 		let ctx = chartCanvas.getContext('2d');
 		chart = new Chart(ctx, {
 			type: 'polarArea',
-			data: data,
+			data: chartData,
 			options: {
 				responsive: true,
 				maintainAspectRatio: false,
@@ -88,22 +88,22 @@
 		});
 	}
 
-	function updatePlot() {
+	function updatePlot(data: RequestsData) {
 		if (chart === null) {
 			return;
 		}
-		chart.data = getChartData();
+		chart.data = getChartData(data);
 		chart.update();
 	}
 
-	let chart: Chart | null = null;
+	let chart: Chart<'polarArea'> | null = null;
 	let chartCanvas: HTMLCanvasElement;
 	onMount(() => {
-		genPlot();
+		genPlot(data);
 	});
 
 	$: if (data) {
-		updatePlot();
+		updatePlot(data);
 	}
 
 	export let data: RequestsData;

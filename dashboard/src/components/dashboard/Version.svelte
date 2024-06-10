@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { Chart } from 'chart.js/auto';
 
-	function getVersions() {
+	function getVersions(data: RequestsData) {
 		const versions = new Set<string>();
 		for (let i = 0; i < data.length; i++) {
 			const match = data[i][ColumnIndex.Path].match(
@@ -16,7 +16,7 @@
 		return versions;
 	}
 
-	function getChartData() {
+	function getChartData(data: RequestsData) {
 		const versionCount: ValueCount = {};
 		for (let i = 0; i < data.length; i++) {
 			const match = data[i][ColumnIndex.Path].match(
@@ -59,13 +59,13 @@
 		};
 	}
 
-	function genPlot() {
-		const data = getChartData();
+	function genPlot(data: RequestsData) {
+		const chartData = getChartData(data);
 
-		let ctx = chartCanvas.getContext('2d');
+		const ctx = chartCanvas.getContext('2d');
 		chart = new Chart(ctx, {
 			type: 'doughnut',
-			data: data,
+			data: chartData,
 			options: {
 				maintainAspectRatio: false,
 				borderWidth: 0,
@@ -83,27 +83,27 @@
 		});
 	}
 
-	function updatePlot() {
+	function updatePlot(data: RequestsData) {
 		if (chart === null) {
 			return;
 		}
-		chart.data = getChartData();
+		chart.data = getChartData(data);
 		chart.update();
 	}
 
-	let chart: Chart | null = null;
+	let chart: Chart<'doughnut'> | null = null;
 	let chartCanvas: HTMLCanvasElement;
 	let versions: Set<string> = new Set();
 
 	onMount(() => {
-		versions = getVersions();
+		versions = getVersions(data);
 		if (versions.size > 1) {
-			genPlot();
+			genPlot(data);
 		}
 	});
 
 	$: if (data) {
-		updatePlot();
+		updatePlot(data);
 	}
 
 	export let data: RequestsData;

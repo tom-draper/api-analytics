@@ -37,7 +37,7 @@
 		}
 
 		const totalUsers = Object.keys(users).length;
-		const topUserRequestsCount = getTopUserRequestsCount(users)
+		const topUserRequestsCount = getTopUserRequestsCount(users);
 		if (totalUsers < 10 || topUserRequestsCount <= 1) {
 			topUsers = null;
 			return;
@@ -126,20 +126,22 @@
 		margin-top: 2em;
 	}
 	.table {
-		margin: 1em 2em 2em;
+		margin: 1em 1.5em 1.8em;
 		text-align: left;
 		width: -webkit-fill-available;
 	}
 	tr {
 		border-bottom: 1px solid #2e2e2e;
-		/* font-size: 0.9em; */
 	}
 	thead {
 		font-weight: 600;
+		font-size: 0.85em;
+	}
+	tbody {
+		font-size: 0.8em;
 	}
 	table {
 		border-collapse: collapse;
-		font-size: 0.85em;
 	}
 	tbody {
 		color: #707070;

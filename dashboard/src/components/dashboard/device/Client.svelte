@@ -6,7 +6,7 @@
 		type Candidate,
 		maintainCandidates,
 	} from '../../../lib/candidates';
-	import Chart from 'chart.js/auto';
+	import { Chart } from 'chart.js/auto';
 
 	const clientCandidates: Candidate[] = [
 		{ name: 'Curl', regex: /curl\//, matches: 0 },
@@ -58,7 +58,7 @@
 		{ name: 'Internet Explorer', regex: /(; MSIE |Trident\/)/, matches: 0 },
 	];
 
-	function getClient(userAgent: string): string {
+	function getClient(userAgent: string | null): string {
 		if (userAgent == null) {
 			return 'Unknown';
 		}
@@ -76,7 +76,7 @@
 		return 'Other';
 	}
 
-	function getChartData() {
+	function getChartData(data: RequestsData) {
 		const clientCount: ValueCount = {};
 		const clientGetter = cachedFunction(getClient);
 		for (let i = 0; i < data.length; i++) {
@@ -115,13 +115,13 @@
 		};
 	}
 
-	function genPlot() {
-		const data = getChartData();
+	function genPlot(data: RequestsData) {
+		const chartData = getChartData(data);
 
-		let ctx = chartCanvas.getContext('2d');
+		const ctx = chartCanvas.getContext('2d');
 		chart = new Chart(ctx, {
 			type: 'doughnut',
-			data: data,
+			data: chartData,
 			options: {
 				maintainAspectRatio: false,
 				borderWidth: 0,
@@ -139,22 +139,22 @@
 		});
 	}
 
-	function updatePlot() {
+	function updatePlot(data: RequestsData) {
 		if (chart === null) {
 			return;
 		}
-		chart.data = getChartData();
+		chart.data = getChartData(data);
 		chart.update();
 	}
 
-	let chart: Chart | null = null;
+	let chart: Chart<'doughnut'> | null = null;
 	let chartCanvas: HTMLCanvasElement;
 	onMount(() => {
-		genPlot();
+		genPlot(data);
 	});
 
 	$: if (data) {
-		updatePlot();
+		updatePlot(data);
 	}
 
 	export let data: RequestsData, getUserAgent: (id: number) => string;

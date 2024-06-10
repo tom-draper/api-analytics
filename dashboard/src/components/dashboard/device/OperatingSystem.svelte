@@ -6,7 +6,7 @@
 		type Candidate,
 		maintainCandidates,
 	} from '../../../lib/candidates';
-	import type { Chart } from 'chart.js/auto';
+	import { Chart } from 'chart.js/auto';
 
 	const osCandidates: Candidate[] = [
 		{ name: 'Windows 3.11', regex: /Win16/, matches: 0 },
@@ -53,7 +53,7 @@
 		},
 	];
 
-	function getOS(userAgent: string): string {
+	function getOS(userAgent: string | null): string {
 		if (userAgent === null) {
 			return 'Unknown';
 		}
@@ -71,7 +71,7 @@
 		return 'Other';
 	}
 
-	function getChartData() {
+	function getChartData(data: RequestsData) {
 		const osCount: ValueCount = {};
 		const osGetter = cachedFunction(getOS);
 		for (let i = 0; i < data.length; i++) {
@@ -108,13 +108,13 @@
 		};
 	}
 
-	function genPlot() {
-		const data = getChartData();
+	function genPlot(data: RequestsData) {
+		const chartData = getChartData(data);
 
-		let ctx = chartCanvas.getContext('2d');
+		const ctx = chartCanvas.getContext('2d');
 		chart = new Chart(ctx, {
 			type: 'doughnut',
-			data: data,
+			data: chartData,
 			options: {
 				maintainAspectRatio: false,
 				borderWidth: 0,
@@ -132,22 +132,22 @@
 		});
 	}
 
-	function updatePlot() {
+	function updatePlot(data: RequestsData) {
 		if (chart === null) {
 			return;
 		}
-		chart.data = getChartData();
+		chart.data = getChartData(data);
 		chart.update();
 	}
 
-	let chart: Chart | null = null;
+	let chart: Chart<'doughnut'> | null = null;
 	let chartCanvas: HTMLCanvasElement;
 	onMount(() => {
-		genPlot();
+		genPlot(data);
 	});
 
 	$: if (data) {
-		updatePlot();
+		updatePlot(data);
 	}
 
 	export let data: RequestsData, getUserAgent: (id: number) => string;

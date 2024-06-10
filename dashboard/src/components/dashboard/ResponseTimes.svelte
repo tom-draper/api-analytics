@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { ColumnIndex } from '../../lib/consts';
+	import { Chart } from 'chart.js/auto';
 
 	/* Parameter `arr` assumed sorted. */
 	function quantile(arr: number[], q: number) {
@@ -15,47 +16,20 @@
 		return 0;
 	}
 
-	function build() {
+	function setQuartiles(data: RequestsData) {
 		const responseTimes: number[] = new Array(data.length);
 		for (let i = 0; i < data.length; i++) {
 			responseTimes[i] = data[i][ColumnIndex.ResponseTime];
 		}
 		responseTimes.sort((a, b) => a - b);
-		LQ = quantile(responseTimes, 0.25);
-		median = quantile(responseTimes, 0.5);
-		UQ = quantile(responseTimes, 0.75);
-		genPlot(data);
-	}
-
-	function defaultLayout(range: [number, number]) {
-		return {
-			title: false,
-			autosize: true,
-			margin: { r: 15, l: 15, t: 5, b: 10, pad: 10 },
-			// margin: { r: , l: 0, t: 0, b: 0, pad: 0 },
-			hovermode: 'closest',
-			plot_bgcolor: 'transparent',
-			paper_bgcolor: 'transparent',
-			height: 50,
-			yaxis: {
-				// title: { text: 'Response time (ms)' },
-				gridcolor: 'gray',
-				showgrid: false,
-				fixedrange: true,
-				visible: false,
-			},
-			xaxis: {
-				// title: { text: 'Response Time' },
-				range: range,
-				showgrid: false,
-				fixedrange: true,
-				visible: false,
-			},
-			dragmode: false,
+		quartiles = {
+			lq: quantile(responseTimes, 0.25),
+			median: quantile(responseTimes, 0.5),
+			uq: quantile(responseTimes, 0.75),
 		};
 	}
 
-	function bars(data: RequestsData) {
+	function getChartData(data: RequestsData) {
 		const responseTimesFreq: ValueCount = {};
 		for (let i = 0; i < data.length; i++) {
 			const responseTime =
@@ -81,52 +55,96 @@
 			}
 		}
 
-		return [
-			{
-				x: responseTimes,
-				y: counts,
-				type: 'bar',
-				marker: { color: '#707070' },
-				hovertemplate: `<b>%{y}</b><br>%{x:.1f}ms</b><extra></extra>`,
-				showlegend: false,
-			},
-		];
-	}
-
-	function buildPlotData(data: RequestsData) {
-		const b = bars(data);
 		return {
-			data: b,
-			layout: defaultLayout([b[0].x[0], b[0].x[b[0].x.length - 1]]),
-			config: {
-				responsive: true,
-				showSendToCloud: false,
-				displayModeBar: false,
-			},
+			labels: responseTimes,
+			datasets: [
+				{
+					label: 'Requests',
+					data: counts,
+					backgroundColor: '#707070',
+					borderColor: '#707070',
+					borderWidth: 1,
+				},
+			],
 		};
 	}
 
 	function genPlot(data: RequestsData) {
-		const plotData = buildPlotData(data);
-		//@ts-ignore
-		new Plotly.newPlot(
-			plotDiv,
-			plotData.data,
-			plotData.layout,
-			plotData.config,
-		);
+		const chartData = getChartData(data);
+
+		const ctx = chartCanvas.getContext('2d');
+		chart = new Chart(ctx, {
+			type: 'bar',
+			data: chartData,
+			options: {
+				maintainAspectRatio: false,
+				layout: {
+					padding: {
+						left: 10,
+						right: 10,
+					},
+				},
+				scales: {
+					y: {
+						grid: {
+							display: false,
+						},
+						border: {
+							display: false,
+						},
+						beginAtZero: true,
+						ticks: {
+							display: false,
+						},
+					},
+					x: {
+						grid: {
+							display: false,
+						},
+						border: {
+							display: false,
+						},
+						ticks: {
+							display: false,
+						},
+						beginAtZero: true,
+					},
+				},
+				plugins: {
+					legend: {
+						display: false,
+					},
+				},
+			},
+		});
 	}
 
-	let median: number;
-	let LQ: number;
-	let UQ: number;
-	let plotDiv: HTMLDivElement;
-	let mounted = false;
+	function updatePlot(data: RequestsData) {
+		if (chart === null) {
+			return;
+		}
+		chart.data = getChartData(data);
+		chart.update();
+	}
+
+	type Quartiles = {
+		lq: number;
+		median: number;
+		uq: number;
+	};
+
+	let chart: Chart<'bar'> | null = null;
+	let chartCanvas: HTMLCanvasElement;
+	let quartiles: Quartiles;
 	onMount(() => {
-		mounted = true;
+		setQuartiles(data);
+		genPlot(data);
 	});
 
-	$: data && mounted && build();
+	$: if (data) {
+		setQuartiles(data);
+		updatePlot(data);
+	}
 
 	export let data: RequestsData;
 </script>
@@ -135,11 +153,11 @@
 	<div class="card-title">
 		Response times <span class="milliseconds">(ms)</span>
 	</div>
-	{#if LQ !== undefined && median !== undefined && UQ !== undefined}
+	{#if quartiles !== undefined}
 		<div class="values">
-			<div class="value lower-quartile">{LQ.toFixed(1)}</div>
-			<div class="value median">{median.toFixed(1)}</div>
-			<div class="value upper-quartile">{UQ.toFixed(1)}</div>
+			<div class="value lower-quartile">{quartiles.lq.toFixed(1)}</div>
+			<div class="value median">{quartiles.median.toFixed(1)}</div>
+			<div class="value upper-quartile">{quartiles.uq.toFixed(1)}</div>
 		</div>
 	{/if}
 	<div class="labels">
@@ -149,9 +167,7 @@
 	</div>
 	<div class="distribution">
 		<div id="plotly">
-			<div id="plotDiv" bind:this={plotDiv}>
-				<!-- Plotly chart will be drawn inside this DIV -->
-			</div>
+			<canvas bind:this={chartCanvas} id="chart"></canvas>
 		</div>
 	</div>
 </div>
@@ -194,6 +210,10 @@
 	.lower-quartile {
 		font-size: 1em;
 		padding-bottom: 0;
+	}
+	#chart {
+		height: 50px !important;
+		width: 100% !important;
 	}
 
 	@media screen and (max-width: 1030px) {

@@ -4,43 +4,9 @@
 	import type { Period } from '../../../lib/settings';
 	import { initFreqMap } from '../../../lib/activity';
 	import { ColumnIndex } from '../../../lib/consts';
+	import { Chart } from 'chart.js/auto';
 
-	function defaultLayout(period: Period) {
-		const days = periodToDays(period);
-		let periodAgo = new Date();
-		if (days != null) {
-			periodAgo.setDate(periodAgo.getDate() - days);
-		} else {
-			periodAgo = null;
-		}
-		const now = new Date();
-
-		return {
-			title: false,
-			autosize: true,
-			margin: { r: 35, l: 70, t: 20, b: 20, pad: 10 },
-			hovermode: 'closest',
-			plot_bgcolor: 'transparent',
-			paper_bgcolor: 'transparent',
-			height: 159,
-			yaxis: {
-				title: { text: 'Response time (ms)' },
-				gridcolor: 'gray',
-				showgrid: false,
-				fixedrange: true,
-			},
-			xaxis: {
-				title: { text: 'Date' },
-				showgrid: false,
-				fixedrange: true,
-				range: [periodAgo, now],
-				visible: false,
-			},
-			dragmode: false,
-		};
-	}
-
-	function bars(data: RequestsData, period: Period) {
+	function getChartData(data: RequestsData, period: Period) {
 		const responseTimesFreq = initFreqMap(period, () => {
 			return { totalResponseTime: 0, count: 0 };
 		});
@@ -57,7 +23,8 @@
 			}
 			const time = date.getTime();
 			if (responseTimesFreq.has(time)) {
-				responseTimesFreq.get(time).totalResponseTime += data[i][ColumnIndex.ResponseTime];
+				responseTimesFreq.get(time).totalResponseTime +=
+					data[i][ColumnIndex.ResponseTime];
 				responseTimesFreq.get(time).count++;
 			} else {
 				responseTimesFreq.set(time, { totalResponseTime: 1, count: 1 });
@@ -95,54 +62,95 @@
 			}
 		}
 
-		return [
-			{
-				x: dates,
-				y: responseTimes,
-				type: 'bar',
-				marker: { color: '#707070' },
-				hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y %H:%M}</b><extra></extra>`,
-				showlegend: false,
-			},
-		];
-	}
-
-	function buildPlotData(data: RequestsData, period: Period) {
 		return {
-			data: bars(data, period),
-			layout: defaultLayout(period),
-			config: {
-				responsive: true,
-				showSendToCloud: false,
-				displayModeBar: false,
-			},
+			labels: dates,
+			datasets: [
+				{
+					label: 'Requests',
+					data: responseTimes,
+					backgroundColor: '#707070',
+					// borderColor: '#707070',
+					borderWidth: 0,
+				},
+			],
 		};
 	}
 
 	function genPlot(data: RequestsData, period: Period) {
-		const plotData = buildPlotData(data, period);
-		//@ts-ignore
-		new Plotly.newPlot(
-			plotDiv,
-			plotData.data,
-			plotData.layout,
-			plotData.config,
-		);
+		const chartData = getChartData(data, period);
+
+		const ctx = chartCanvas.getContext('2d');
+		chart = new Chart(ctx, {
+			type: 'bar',
+			data: chartData,
+			options: {
+				maintainAspectRatio: false,
+				layout: {
+					padding: {
+						top: 10,
+						left: 40,
+						right: 40,
+					},
+				},
+				scales: {
+					y: {
+						grid: {
+							display: false,
+						},
+						border: {
+							display: false,
+						},
+						beginAtZero: true,
+					},
+					x: {
+						grid: {
+							display: false,
+						},
+						border: {
+							display: false,
+						},
+						ticks: {
+							display: false,
+						},
+					},
+				},
+				plugins: {
+					legend: {
+						display: false,
+					},
+				},
+			},
+		});
 	}
 
-	let plotDiv: HTMLDivElement;
-	let mounted = false;
+	function updatePlot(data: RequestsData, period: Period) {
+		if (chart === null) {
+			return;
+		}
+		chart.data = getChartData(data, period);
+		chart.update();
+	}
+
+	let chart: Chart<'bar'> | null = null;
+	let chartCanvas: HTMLCanvasElement;
 	onMount(() => {
-		mounted = true;
+		genPlot(data, period);
 	});
 
-	$: data && mounted && genPlot(data, period);
+	$: if (data) {
+		updatePlot(data, period);
+	}
 
 	export let data: RequestsData, period: Period;
 </script>
 
 <div id="plotly">
-	<div id="plotDiv" bind:this={plotDiv}>
-		<!-- Plotly chart will be drawn inside this DIV -->
-	</div>
+	<canvas bind:this={chartCanvas} id="chart"></canvas>
 </div>
+
+<style scoped>
+	#chart {
+		height: 159px !important;
+		width: 100% !important;
+	}
+</style>
