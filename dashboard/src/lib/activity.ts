@@ -9,13 +9,22 @@ export function initFreqMap(period: Period, genValue: () => any) {
 		return freq;
 	}
 
-	if (days <= 7) {
+	if (days === 1) {
 		// Freq count for every 5 minute in date range
-		for (let i = 0; i < 288; i++) {
+		for (let i = 0; i < 4 * 24; i++) {
 			const date = new Date();
 			date.setSeconds(0, 0);
 			// Round down to multiple of 5
-			date.setMinutes(Math.floor(date.getMinutes() / 5) * 5 - i * 5);
+			date.setMinutes(Math.floor(date.getMinutes() / 15) * 15 - i * 15);
+			freq.set(date.getTime(), genValue());
+		}
+	} if (days === 7) {
+		// Freq count for every 5 minute in date range
+		for (let i = 0; i < 24 * 7; i++) {
+			const date = new Date();
+			date.setSeconds(0, 0);
+			// Round down to multiple of 15
+			date.setMinutes(Math.floor(date.getMinutes() / 60) * 60 - i * 60);
 			freq.set(date.getTime(), genValue());
 		}
 	} else {

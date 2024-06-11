@@ -16,11 +16,19 @@
 		for (let i = 0; i < data.length; i++) {
 			const date = new Date(data[i][ColumnIndex.CreatedAt]);
 			if (days === 1) {
-				const minutePeriod = 5
-				date.setMinutes(Math.floor(date.getMinutes() / minutePeriod) * minutePeriod, 0, 0);
+				const minutePeriod = 15;
+				date.setMinutes(
+					Math.floor(date.getMinutes() / minutePeriod) * minutePeriod,
+					0,
+					0,
+				);
 			} else if (days === 7) {
-				const minutePeriod = 30
-				date.setMinutes(Math.floor(date.getMinutes() / minutePeriod) * minutePeriod, 0, 0);
+				const minutePeriod = 60;
+				date.setMinutes(
+					Math.floor(date.getMinutes() / minutePeriod) * minutePeriod,
+					0,
+					0,
+				);
 			} else {
 				date.setHours(0, 0, 0, 0);
 			}
