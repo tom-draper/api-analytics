@@ -83,6 +83,14 @@
 					title: {
 						display: false,
 					},
+					tooltip: {
+						callbacks: {
+							title: () => null,
+							label: function (context) {
+								return `${context.label}: ${context.formattedValue} requests`;
+							},
+						},
+					},
 				},
 			},
 		});

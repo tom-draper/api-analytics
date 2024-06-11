@@ -114,6 +114,14 @@
 					legend: {
 						display: false,
 					},
+					tooltip: {
+						callbacks: {
+							title: () => null,
+							label: function (context) {
+								return `${context.label}ms: ${context.formattedValue} requests`;
+							},
+						},
+					},
 				},
 			},
 		});

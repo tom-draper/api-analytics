@@ -127,12 +127,20 @@
 				borderWidth: 0,
 				layout: {
 					padding: {
-						right: 10,
+						right: 20,
 					},
 				},
 				plugins: {
 					legend: {
 						position: 'right',
+					},
+					tooltip: {
+						callbacks: {
+							title: () => null,
+							label: function (context) {
+								return `${context.label}: ${context.formattedValue} requests`;
+							},
+						},
 					},
 				},
 			},

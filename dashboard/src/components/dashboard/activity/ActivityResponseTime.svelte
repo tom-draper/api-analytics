@@ -15,9 +15,12 @@
 
 		for (let i = 0; i < data.length; i++) {
 			const date = new Date(data[i][ColumnIndex.CreatedAt]);
-			if (days !== null && days <= 7) {
-				// Round down to multiple of 5
-				date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
+			if (days === 1) {
+				const minutePeriod = 5
+				date.setMinutes(Math.floor(date.getMinutes() / minutePeriod) * minutePeriod, 0, 0);
+			} else if (days === 7) {
+				const minutePeriod = 30
+				date.setMinutes(Math.floor(date.getMinutes() / minutePeriod) * minutePeriod, 0, 0);
 			} else {
 				date.setHours(0, 0, 0, 0);
 			}
@@ -69,7 +72,6 @@
 					label: 'Requests',
 					data: responseTimes,
 					backgroundColor: '#707070',
-					// borderColor: '#707070',
 					borderWidth: 0,
 				},
 			],
@@ -87,8 +89,8 @@
 				maintainAspectRatio: false,
 				layout: {
 					padding: {
-						top: 10,
-						left: 40,
+						top: 20,
+						left: 10,
 						right: 40,
 					},
 				},
@@ -101,13 +103,22 @@
 							display: false,
 						},
 						beginAtZero: true,
+						title: {
+							display: true,
+							text: 'Response time (ms)',
+							color: '#505050',
+						},
+						ticks: {
+							color: '#505050',
+						},
 					},
 					x: {
 						grid: {
 							display: false,
 						},
 						border: {
-							display: false,
+							color: '#505050',
+							width: 1,
 						},
 						ticks: {
 							display: false,
@@ -117,6 +128,20 @@
 				plugins: {
 					legend: {
 						display: false,
+					},
+					tooltip: {
+						callbacks: {
+							title: () => null,
+							label: function (context) {
+								return `${context.formattedValue}ms average`;
+							},
+							footer: function (context) {
+								const date = new Date(
+									context[0].label,
+								).toLocaleString();
+								return date;
+							},
+						},
 					},
 				},
 			},
