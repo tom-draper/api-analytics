@@ -144,27 +144,25 @@ Privacy Levels:
 - `2` - The client IP address is never accessed and location is never inferred.
 
 ```py
-from fastapi import FastAPI
-from api_analytics.fastapi import Analytics, Config
+from api_analytics.tornado import Analytics, Config
 
-config = Config()
-config.privacy_level = 2  # Disable IP storing and location inference
-
-app = FastAPI()
-app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
+class MainHandler(Analytics):
+    def __init__(self, app, res):
+        config = Config()
+        config.privacy_level = 2  # Disable IP storing and location inference
+        super().__init__(app, res, <API-KEY>, config)  # Provide api key
 ```
 
 With any of these privacy levels, there is the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user. In the dashboard, this custom user ID will identify the user in conjunction with the IP address or as an alternative.
 
 ```py
-from fastapi import FastAPI
-from api_analytics.fastapi import Analytics, Config
+from api_analytics.tornado import Analytics, Config
 
-config = Config()
-config.get_user_id = lambda request: request.headers.get('X-AUTH-TOKEN', '')
-
-app = FastAPI()
-app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
+class MainHandler(Analytics):
+    def __init__(self, app, res):
+        config = Config()
+        config.get_user_id = lambda request: request.headers['X-AUTH-TOKEN']
+        super().__init__(app, res, <API-KEY>, config)  # Provide api key
 ```
 
 ## Data and Security
