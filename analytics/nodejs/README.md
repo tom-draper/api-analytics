@@ -39,7 +39,7 @@ app.listen(8080, () => {
 
 Custom mapping functions can be assigned to override the default behaviour and define how values are extracted from each incoming request to better suit your specific API.
 
-```py
+```js
 import express from 'express';
 import { expressAnalytics, Config } from 'node-api-analytics';
 
@@ -219,28 +219,32 @@ Privacy Levels:
 - `1` - The client IP address is used to infer a location and then discarded.
 - `2` - The client IP address is never accessed and location is never inferred.
 
-```py
-from fastapi import FastAPI
-from api_analytics.fastapi import Analytics, Config
+```js
+import express from 'express';
+import { expressAnalytics, Config } from 'node-api-analytics';
 
-config = Config()
-config.privacy_level = 2  # Disable IP storing and location inference
+const app = express();
 
-app = FastAPI()
-app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
+const config = new Config();
+config.privacyLevel = 2; // Disable IP storing and location inference
+
+app.use(expressAnalytics(<API-KEY>, config));  // Add middleware
 ```
 
 With any of these privacy levels, there is the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user. In the dashboard, this custom user ID will identify the user in conjunction with the IP address or as an alternative.
 
-```py
-from fastapi import FastAPI
-from api_analytics.fastapi import Analytics, Config
+```js
+import express from 'express';
+import { expressAnalytics, Config } from 'node-api-analytics';
 
-config = Config()
-config.get_user_id = lambda request: request.headers.get('X-AUTH-TOKEN', '')
+const app = express();
 
-app = FastAPI()
-app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
+const config = new Config();
+config.getUserID = (req) => {
+  return req.headers["X-AUTH-TOKEN"] ?? '';
+}
+
+app.use(expressAnalytics(<API-KEY>, config));  // Add middleware
 ```
 
 ## Data and Security
