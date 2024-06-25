@@ -42,33 +42,6 @@ func main() {
 }
 ```
 
-Custom mapping functions can be assigned to override the default behaviour and define how values are extracted from each incoming request to better suit your specific API.
-
-```go
-package main
-
-import (
-    "github.com/gin-gonic/gin"
-    analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
-)
-
-func main() {
-    router := gin.Default()
-    
-    config := analytics.NewConfig()
-    config.GetIPAddress = func(c *gin.Context) string {
-        return c.Request.Header.Get("X-Forwarded-For")
-    }
-    config.GetUserAgent = func(c *gin.Context) string {
-        return c.Request.Header.Get("User-Agent")
-    }
-    router.Use(analytics.AnalyticsWithConfig(<API-KEY>, &config)) // Add middleware
-
-    router.GET("/", root)
-    router.Run(":8080")
-}
-```
-
 ### 3. View your analytics
 
 Your API will now log and store incoming request data on all valid routes. Your logged data can be viewed using two methods:
@@ -135,12 +108,41 @@ You can filter your data by providing URL parameters in your request.
 - `ipAddress` - the IP address of the client
 - `status` - the status code of the response
 - `location` - a two-character location code of the client
-- `user_id` - a custom user identifier (only relevant if a `get_user_id` mapper function has been set)
+- `user_id` - a custom user identifier (only relevant if a `GetUserID` mapper function has been set)
 
 Example:
 
 ```bash
 curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&user_id=b56cbd92-1168-4d7b-8d94-0418da207908
+```
+
+## Customisation
+
+Custom mapping functions can be assigned to override the default behaviour and define how values are extracted from each incoming request to better suit your specific API.
+
+```go
+package main
+
+import (
+    "github.com/gin-gonic/gin"
+    analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
+)
+
+func main() {
+    router := gin.Default()
+    
+    config := analytics.NewConfig()
+    config.GetIPAddress = func(c *gin.Context) string {
+        return c.Request.Header.Get("X-Forwarded-For")
+    }
+    config.GetUserAgent = func(c *gin.Context) string {
+        return c.Request.Header.Get("User-Agent")
+    }
+    router.Use(analytics.AnalyticsWithConfig(<API-KEY>, &config)) // Add middleware
+
+    router.GET("/", root)
+    router.Run(":8080")
+}
 ```
 
 ## Client ID and Privacy
@@ -155,47 +157,17 @@ Privacy Levels:
 - `1` - The client IP address is used to infer a location and then discarded.
 - `2` - The client IP address is never accessed and location is never inferred.
 
-```py
-package main
-
-import (
-    "github.com/gin-gonic/gin"
-    analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
-)
-
-func main() {
-    router := gin.Default()
-    
-    config := analytics.NewConfig()
-    config.PrivacyLevel = 2 // Disable IP storing and location inference
-    router.Use(analytics.AnalyticsWithConfig(<API-KEY>, &config)) // Add middleware
-
-    router.GET("/", root)
-    router.Run(":8080")
-}
+```go
+config := analytics.NewConfig()
+config.PrivacyLevel = 2 // Disable IP storing and location inference
 ```
 
 With any of these privacy levels, there is the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user. In the dashboard, this custom user ID will identify the user in conjunction with the IP address or as an alternative.
 
 ```go
-package main
-
-import (
-    "github.com/gin-gonic/gin"
-    analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
-)
-
-func main() {
-    router := gin.Default()
-    
-    config := analytics.NewConfig()
-    config.GetUserID = func(c *gin.Context) string {
-        return c.Request.Header.Get("X-AUTH-TOKEN")
-    }
-    router.Use(analytics.AnalyticsWithConfig(<API-KEY>, &config)) // Add middleware
-
-    router.GET("/", root)
-    router.Run(":8080")
+config := analytics.NewConfig()
+config.GetUserID = func(c *gin.Context) string {
+    return c.Request.Header.Get("X-AUTH-TOKEN")
 }
 ```
 
@@ -214,7 +186,7 @@ For any given request to your API, data recorded is limited to:
 - Status code
 - Response time
 - API hostname
-- API framework (FastAPI, Flask, Express etc.)
+- API framework (Gin)
 
 Data collected is only ever used to populate your analytics dashboard. All stored data is pseudo-anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
 
