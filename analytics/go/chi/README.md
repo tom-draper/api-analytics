@@ -187,7 +187,7 @@ For any given request to your API, data recorded is limited to:
 - Status code
 - Response time
 - API hostname
-- API framework (FastAPI, Flask, Express etc.)
+- API framework (Chi)
 
 Data collected is only ever used to populate your analytics dashboard. All stored data is pseudo-anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
 
