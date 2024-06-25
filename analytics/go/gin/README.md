@@ -2,13 +2,6 @@
 
 A free and lightweight API analytics solution, complete with a dashboard.
 
-Currently compatible with:
- - Python: <b>FastAPI</b>, <b>Flask</b>, <b>Django</b> and <b>Tornado</b>
- - Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
- - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
- - Rust: <b>Actix</b>, <b>Axum</b> and <b>Rocket</b>
- - Ruby: <b>Rails</b> and <b>Sinatra</b>
-
 ## Getting Started
 
 ### 1. Generate an API key
@@ -62,7 +55,7 @@ import (
 func main() {
     router := gin.Default()
     
-    config := analytics.Config{}
+    config := analytics.NewConfig()
     config.GetIPAddress = func(c *gin.Context) string {
         return c.Request.Header.Get("X-Forwarded-For")
     }
@@ -163,27 +156,47 @@ Privacy Levels:
 - `2` - The client IP address is never accessed and location is never inferred.
 
 ```py
-from fastapi import FastAPI
-from api_analytics.fastapi import Analytics, Config
+package main
 
-config = Config()
-config.privacy_level = 2  # Disable IP storing and location inference
+import (
+    "github.com/gin-gonic/gin"
+    analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
+)
 
-app = FastAPI()
-app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
+func main() {
+    router := gin.Default()
+    
+    config := analytics.NewConfig()
+    config.PrivacyLevel = 2 // Disable IP storing and location inference
+    router.Use(analytics.AnalyticsWithConfig(<API-KEY>, &config)) // Add middleware
+
+    router.GET("/", root)
+    router.Run(":8080")
+}
 ```
 
 With any of these privacy levels, there is the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user. In the dashboard, this custom user ID will identify the user in conjunction with the IP address or as an alternative.
 
-```py
-from fastapi import FastAPI
-from api_analytics.fastapi import Analytics, Config
+```go
+package main
 
-config = Config()
-config.get_user_id = lambda request: request.headers.get('X-AUTH-TOKEN', '')
+import (
+    "github.com/gin-gonic/gin"
+    analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
+)
 
-app = FastAPI()
-app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
+func main() {
+    router := gin.Default()
+    
+    config := analytics.NewConfig()
+    config.GetUserID = func(c *gin.Context) string {
+        return c.Request.Header.Get("X-AUTH-TOKEN")
+    }
+    router.Use(analytics.AnalyticsWithConfig(<API-KEY>, &config)) // Add middleware
+
+    router.GET("/", root)
+    router.Run(":8080")
+}
 ```
 
 ## Data and Security
