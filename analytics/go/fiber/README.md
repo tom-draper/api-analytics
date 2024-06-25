@@ -108,7 +108,7 @@ You can filter your data by providing URL parameters in your request.
 - `ipAddress` - the IP address of the client
 - `status` - the status code of the response
 - `location` - a two-character location code of the client
-- `user_id` - a custom user identifier (only relevant if a `get_user_id` mapper function has been set)
+- `user_id` - a custom user identifier (only relevant if a `GetUserID` mapper function has been set)
 
 Example:
 
