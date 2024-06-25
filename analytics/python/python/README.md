@@ -36,22 +36,6 @@ if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
 ```
 
-##### Configuration
-
-Custom mapping functions can be assigned to override the default behaviour and define how values are extracted from each incoming request to better suit your specific API.
-
-```py
-from fastapi import FastAPI
-from api_analytics.fastapi import Analytics, Config
-
-config = Config()
-config.get_ip_address = lambda request: request.headers.get('X-Forwarded-For', request.client.host)
-config.get_user_agent = lambda request: request.headers.get('User-Agent', '')
-
-app = FastAPI()
-app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
-```
-
 #### Flask
 
 [![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
@@ -75,19 +59,6 @@ if __name__ == "__main__":
     app.run()
 ```
 
-##### Configuration
-
-```py
-from flask import Flask
-from api_analytics.flask import add_middleware, Config
-
-app = Flask(__name__)
-config = Config()
-config.get_ip_address = lambda request: request.headers['X-Forwarded-For']
-config.get_user_agent = lambda request: request.headers['User-Agent']
-add_middleware(app, <API-KEY>, config)  # Add middleware
-```
-
 #### Django
 
 [![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
@@ -105,19 +76,6 @@ MIDDLEWARE = [
     'api_analytics.django.Analytics',  # Add middleware
     ...
 ]
-```
-
-##### Configuration
-
-Assign your config to `ANALYTICS_CONFIG` in `settings.py`.
-
-```py
-from api_analytics.django import Config
-
-config = Config()
-config.get_ip_address = lambda request: request.headers['X-Forwarded-For']
-config.get_user_agent = lambda request: request.headers['User-Agent']
-ANALYTICS_CONFIG = config
 ```
 
 #### Tornado
@@ -152,19 +110,6 @@ if __name__ == "__main__":
     app = make_app()
     app.listen(8080)
     IOLoop.instance().start()
-```
-
-##### Configuration
-
-```py
-from api_analytics.tornado import Analytics, Config
-
-class MainHandler(Analytics):
-    def __init__(self, app, res):
-        config = Config()
-        config.get_ip_address = lambda request: request.headers['X-Forwarded-For']
-        config.get_user_agent = lambda request: request.headers['User-Agent']
-        super().__init__(app, res, <API-KEY>, config)  # Provide api key
 ```
 
 ### 3. View your analytics
@@ -241,6 +186,63 @@ Example:
 curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&user_id=b56cbd92-1168-4d7b-8d94-0418da207908
 ```
 
+## Customisation
+
+Custom mapping functions can be assigned to override the default behaviour and define how values are extracted from each incoming request to better suit your specific API.
+
+### FastAPI
+
+```py
+from fastapi import FastAPI
+from api_analytics.fastapi import Analytics, Config
+
+config = Config()
+config.get_ip_address = lambda request: request.headers.get('X-Forwarded-For', request.client.host)
+config.get_user_agent = lambda request: request.headers.get('User-Agent', '')
+
+app = FastAPI()
+app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
+```
+
+### Flask
+
+```py
+from flask import Flask
+from api_analytics.flask import add_middleware, Config
+
+app = Flask(__name__)
+config = Config()
+config.get_ip_address = lambda request: request.headers['X-Forwarded-For']
+config.get_user_agent = lambda request: request.headers['User-Agent']
+add_middleware(app, <API-KEY>, config)  # Add middleware
+```
+
+### Django
+
+Assign your config to `ANALYTICS_CONFIG` in `settings.py`.
+
+```py
+from api_analytics.django import Config
+
+config = Config()
+config.get_ip_address = lambda request: request.headers['X-Forwarded-For']
+config.get_user_agent = lambda request: request.headers['User-Agent']
+ANALYTICS_CONFIG = config
+```
+
+### Tornado
+
+```py
+from api_analytics.tornado import Analytics, Config
+
+class MainHandler(Analytics):
+    def __init__(self, app, res):
+        config = Config()
+        config.get_ip_address = lambda request: request.headers['X-Forwarded-For']
+        config.get_user_agent = lambda request: request.headers['User-Agent']
+        super().__init__(app, res, <API-KEY>, config)  # Provide api key
+```
+
 ## Client ID and Privacy
 
 By default, API Analytics logs and stores the client IP address of all incoming requests made to your API and infers a location (country) from each IP address if possible. The IP address is used as a form of client identification in the dashboard to estimate the number of users accessing your service.
@@ -254,27 +256,15 @@ Privacy Levels:
 - `2` - The client IP address is never accessed and location is never inferred.
 
 ```py
-from fastapi import FastAPI
-from api_analytics.fastapi import Analytics, Config
-
 config = Config()
 config.privacy_level = 2  # Disable IP storing and location inference
-
-app = FastAPI()
-app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
 ```
 
 With any of these privacy levels, there is the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user. In the dashboard, this custom user ID will identify the user in conjunction with the IP address or as an alternative.
 
 ```py
-from fastapi import FastAPI
-from api_analytics.fastapi import Analytics, Config
-
 config = Config()
 config.get_user_id = lambda request: request.headers.get('X-AUTH-TOKEN', '')
-
-app = FastAPI()
-app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
 ```
 
 ## Data and Security
@@ -292,7 +282,7 @@ For any given request to your API, data recorded is limited to:
 - Status code
 - Response time
 - API hostname
-- API framework (FastAPI, Flask, Express etc.)
+- API framework (FastAPI, Flask, Django, Tornado)
 
 Data collected is only ever used to populate your analytics dashboard. All stored data is pseudo-anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
 
