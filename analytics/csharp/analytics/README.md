@@ -125,7 +125,7 @@ config.GetUserID = (HttpContext context) => {
     if (context.user.Identity.IsAuthenticated)
         return context.user.Identity.Name
     return "";
-}
+};
 
 app.UseAnalytics(<API-KEY>, config); // Add middleware
 
@@ -150,8 +150,8 @@ Privacy Levels:
 - `2` - The client IP address is never accessed and location is never inferred.
 
 ```cs
-var config = Config()
-config.PrivacyLevel = 2
+var config = Config();
+config.PrivacyLevel = 2; // Disable IP storing and location inference
 ```
 
 With any of these privacy levels, there is the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user. In the dashboard, this custom user ID will identify the user in conjunction with the IP address or as an alternative.
@@ -185,7 +185,7 @@ For any given request to your API, data recorded is limited to:
 - Status code
 - Response time
 - API hostname
-- API framework (FastAPI, Flask, Express etc.)
+- API framework (ASP.NET Core)
 
 Data collected is only ever used to populate your analytics dashboard. All stored data is pseudo-anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
 
