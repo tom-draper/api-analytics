@@ -108,6 +108,35 @@ Example:
 curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&user_id=b56cbd92-1168-4d7b-8d94-0418da207908
 ```
 
+## Customisation
+
+Custom mapping functions can be assigned to override the default behaviour and define how values are extracted from each incoming request to better suit your specific API.
+
+```cs
+using analytics;
+using Microsoft.AspNetCore.Mvc;
+
+var builder = WebApplication.CreateBuilder(args);
+
+var app = builder.Build();
+
+var config = Config()
+config.GetUserID = (HttpContext context) => {
+    if (context.user.Identity.IsAuthenticated)
+        return context.user.Identity.Name
+    return "";
+}
+
+app.UseAnalytics(<API-KEY>, config); // Add middleware
+
+app.MapGet("/", () =>
+{
+    return Results.Ok(new OkObjectResult(new { message = "Hello, World!" }));
+});
+
+app.Run();
+```
+
 ## Client ID and Privacy
 
 By default, API Analytics logs and stores the client IP address of all incoming requests made to your API and infers a location (country) from each IP address if possible. The IP address is used as a form of client identification in the dashboard to estimate the number of users accessing your service.
@@ -121,51 +150,24 @@ Privacy Levels:
 - `2` - The client IP address is never accessed and location is never inferred.
 
 ```cs
-using analytics;
-using Microsoft.AspNetCore.Mvc;
-
-var builder = WebApplication.CreateBuilder(args);
-
-var app = builder.Build();
-
 var config = Config()
 config.PrivacyLevel = 2
-
-app.UseAnalytics(<API-KEY>, config); // Add middleware
-
-app.MapGet("/", () =>
-{
-    return Results.Ok(new OkObjectResult(new { message = "Hello, World!" }));
-});
-
-app.Run();
 ```
 
 With any of these privacy levels, there is the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user. In the dashboard, this custom user ID will identify the user in conjunction with the IP address or as an alternative.
 
 ```cs
-using analytics;
-using Microsoft.AspNetCore.Mvc;
-
-var builder = WebApplication.CreateBuilder(args);
-
-var app = builder.Build();
-
 var config = Config()
-config.GetUserID = (context) => {
-    if (context.user.Identity.IsAuthenticated)
-        return context.user.Identity.Name;
+config.GetIPAddress = (HttpContext context) => {
+    if (context.Request.Headers.TryGetValue("X-Forwarded-For", out var iPAddress))
+        return ipAddress.ToString();
     return "";
 };
-
-app.UseAnalytics(<API-KEY>, config); // Add middleware
-
-app.MapGet("/", () =>
-{
-    return Results.Ok(new OkObjectResult(new { message = "Hello, World!" }));
-});
-
-app.Run();
+config.GetUserAgent = (HttpContext context) => {
+    if (context.Request.Headers.TryGetValue("User-Agent", out var userAgent))
+        return userAgent.ToString();
+    return "";
+};
 ```
 
 ## Data and Security
