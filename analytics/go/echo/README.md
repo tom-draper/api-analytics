@@ -42,33 +42,6 @@ func main() {
 }
 ```
 
-Custom mapping functions can be assigned to override the default behaviour and define how values are extracted from each incoming request to better suit your specific API.
-
-```go
-package main
-
-import (
-	echo "github.com/labstack/echo/v4"
-	analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
-)
-
-func main() {
-	router := echo.New()
-
-	config := analytics.NewConfig()
-	config.GetIPAddress = func(c echo.Context) string {
-		return c.Request().Header.Get("X-Forwarded-For")
-	}
-	config.GetUserAgent = func(c echo.Context) string {
-		return c.Request().Header.Get("User-Agent")
-	}
-	router.Use(analytics.AnalyticsWithConfig(<API-KEY>, config))
-
-	router.GET("/", root)
-	router.Start(":8080")
-}
-```
-
 ### 3. View your analytics
 
 Your API will now log and store incoming request data on all valid routes. Your logged data can be viewed using two methods:
@@ -143,6 +116,35 @@ Example:
 curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&user_id=b56cbd92-1168-4d7b-8d94-0418da207908
 ```
 
+## Customisation
+
+Custom mapping functions can be assigned to override the default behaviour and define how values are extracted from each incoming request to better suit your specific API.
+
+```go
+package main
+
+import (
+	echo "github.com/labstack/echo/v4"
+	analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
+)
+
+func main() {
+	router := echo.New()
+
+	config := analytics.NewConfig()
+	config.GetIPAddress = func(c echo.Context) string {
+		return c.Request().Header.Get("X-Forwarded-For")
+	}
+	config.GetUserAgent = func(c echo.Context) string {
+		return c.Request().Header.Get("User-Agent")
+	}
+	router.Use(analytics.AnalyticsWithConfig(<API-KEY>, config))
+
+	router.GET("/", root)
+	router.Start(":8080")
+}
+```
+
 ## Client ID and Privacy
 
 By default, API Analytics logs and stores the client IP address of all incoming requests made to your API and infers a location (country) from each IP address if possible. The IP address is used as a form of client identification in the dashboard to estimate the number of users accessing your service.
@@ -156,46 +158,16 @@ Privacy Levels:
 - `2` - The client IP address is never accessed and location is never inferred.
 
 ```go
-package main
-
-import (
-	echo "github.com/labstack/echo/v4"
-	analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
-)
-
-func main() {
-	router := echo.New()
-
-	config := analytics.NewConfig()
-	config.PrivacyLevel = 2 // Disable IP storing and location inference
-	router.Use(analytics.AnalyticsWithConfig(<API-KEY>, config))
-
-	router.GET("/", root)
-	router.Start(":8080")
-}
+config := analytics.NewConfig()
+config.PrivacyLevel = 2 // Disable IP storing and location inference
 ```
 
 With any of these privacy levels, there is the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user. In the dashboard, this custom user ID will identify the user in conjunction with the IP address or as an alternative.
 
 ```go
-package main
-
-import (
-	echo "github.com/labstack/echo/v4"
-	analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
-)
-
-func main() {
-	router := echo.New()
-
-	config := analytics.NewConfig()
-	config.GetUserID = func(c echo.Context) string {
-		return c.Request().Header.Get("X-AUTH-TOKEN")
-	}
-	router.Use(analytics.AnalyticsWithConfig(<API-KEY>, config))
-
-	router.GET("/", root)
-	router.Start(":8080")
+config := analytics.NewConfig()
+config.GetUserID = func(c echo.Context) string {
+	return c.Request().Header.Get("X-AUTH-TOKEN")
 }
 ```
 
