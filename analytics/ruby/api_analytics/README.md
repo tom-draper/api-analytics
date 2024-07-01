@@ -55,7 +55,7 @@ end
 
 ### 3. View your analytics
 
-Your API will now log and store incoming request data on all valid routes. Your logged data can be viewed using two methods:
+Your API will now log and store incoming request data on all routes. Your logged data can be viewed using two methods:
 
 1. Through visualizations and statistics on our dashboard
 2. Accessed directly via our data API
