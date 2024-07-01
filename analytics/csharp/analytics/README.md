@@ -12,6 +12,8 @@ Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to genera
 
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on the performance of your API.
 
+[![NuGet Version](https://img.shields.io/nuget/v/APIAnalytics.AspNetCore)](https://www.nuget.org/packages/APIAnalytics.AspNetCore)
+
 ```sh
 dotnet add package APIAnalytics.AspNetCore
 ```
