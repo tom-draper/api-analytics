@@ -23,7 +23,7 @@ Add our lightweight middleware to your API. Almost all processing is handled by 
 
 #### FastAPI
 
-[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
+[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.org/project/api-analytics)
 
 ```bash
 pip install api-analytics[fastapi]
@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
 #### Flask
 
-[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
+[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.org/project/api-analytics)
 
 ```bash
 pip install api-analytics[flask]
@@ -70,7 +70,7 @@ if __name__ == "__main__":
 
 #### Django
 
-[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
+[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.org/project/api-analytics)
 
 ```bash
 pip install api-analytics[django]
@@ -89,7 +89,7 @@ MIDDLEWARE = [
 
 #### Tornado
 
-[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
+[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.org/project/api-analytics)
 
 ```bash
 pip install api-analytics[tornado]
