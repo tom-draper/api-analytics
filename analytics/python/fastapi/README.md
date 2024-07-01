@@ -12,7 +12,7 @@ Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to genera
 
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on the performance of your API.
 
-[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
+[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.org/project/api-analytics)
 
 ```bash
 pip install fastapi-analytics
