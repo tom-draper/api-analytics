@@ -12,6 +12,8 @@ Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to genera
 
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on the performance of your API.
 
+[![Chi](https://img.shields.io/badge/go.mod-Chi-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/chi)
+
 ```bash
 go get -u github.com/tom-draper/api-analytics/analytics/go/chi
 ```
