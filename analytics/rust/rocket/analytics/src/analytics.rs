@@ -195,7 +195,7 @@ fn post_requests(data: Payload, server_url: String) {
 
 fn log_request(api_key: &str, request_data: RequestData, config: &Config) {
     REQUESTS.lock().unwrap().push(request_data);
-    if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > 5.0 {
+    if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > 60.0 {
         let payload = Payload::new(
             api_key.to_string(),
             REQUESTS.lock().unwrap().to_vec(),
