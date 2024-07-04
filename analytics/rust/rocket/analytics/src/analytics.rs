@@ -95,7 +95,7 @@ fn get_user_agent(req: &Request) -> String {
 }
 
 fn get_user_id(_req: &Request) -> String {
-    "".to_string()
+    String::new()
 }
 
 #[derive(Default)]
