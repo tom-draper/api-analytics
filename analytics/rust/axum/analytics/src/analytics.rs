@@ -87,6 +87,16 @@ impl Default for Config {
     }
 }
 
+pub trait HeaderValueExt {
+    fn to_string(&self) -> String;
+}
+
+impl HeaderValueExt for HeaderValue {
+    fn to_string(&self) -> String {
+        self.to_str().unwrap_or_default().to_string()
+    }
+}
+
 fn get_hostname(req: &Request<Body>) -> String {
     req.headers()
         .get(HOST)
@@ -108,6 +118,30 @@ fn get_ip_address(req: &Request<Body>) -> String {
     ip_address
 }
 
+fn ip_from_x_forwarded_for(headers: &HeaderMap) -> Option<IpAddr> {
+    headers
+        .get("x-forwarded-for")
+        .and_then(|hv| hv.to_str().ok())
+        .and_then(|s| {
+            s.split(',')
+                .rev()
+                .find_map(|s| s.trim().parse::<IpAddr>().ok())
+        })
+}
+
+fn ip_from_x_real_ip(headers: &HeaderMap) -> Option<IpAddr> {
+    headers
+        .get("x-real-ip")
+        .and_then(|hv| hv.to_str().ok())
+        .and_then(|s| s.parse::<IpAddr>().ok())
+}
+
+fn ip_from_connect_info(extensions: &Extensions) -> Option<IpAddr> {
+    extensions
+        .get::<ConnectInfo<SocketAddr>>()
+        .map(|ConnectInfo(addr)| addr.ip())
+}
+
 fn get_path(req: &Request<Body>) -> String {
     req.uri().path().to_owned()
 }
@@ -120,7 +154,7 @@ fn get_user_agent(req: &Request<Body>) -> String {
 }
 
 fn get_user_id(_req: &Request<Body>) -> String {
-    "".to_string()
+    String::new()
 }
 
 #[derive(Clone)]
@@ -203,40 +237,6 @@ pub struct AnalyticsMiddleware<S> {
     inner: S,
 }
 
-pub trait HeaderValueExt {
-    fn to_string(&self) -> String;
-}
-
-impl HeaderValueExt for HeaderValue {
-    fn to_string(&self) -> String {
-        self.to_str().unwrap_or_default().to_string()
-    }
-}
-
-fn ip_from_x_forwarded_for(headers: &HeaderMap) -> Option<IpAddr> {
-    headers
-        .get("x-forwarded-for")
-        .and_then(|hv| hv.to_str().ok())
-        .and_then(|s| {
-            s.split(',')
-                .rev()
-                .find_map(|s| s.trim().parse::<IpAddr>().ok())
-        })
-}
-
-fn ip_from_x_real_ip(headers: &HeaderMap) -> Option<IpAddr> {
-    headers
-        .get("x-real-ip")
-        .and_then(|hv| hv.to_str().ok())
-        .and_then(|s| s.parse::<IpAddr>().ok())
-}
-
-fn ip_from_connect_info(extensions: &Extensions) -> Option<IpAddr> {
-    extensions
-        .get::<ConnectInfo<SocketAddr>>()
-        .map(|ConnectInfo(addr)| addr.ip())
-}
-
 lazy_static! {
     static ref REQUESTS: Mutex<Vec<RequestData>> = Mutex::new(vec![]);
     static ref LAST_POSTED: Mutex<Instant> = Mutex::new(Instant::now());
@@ -278,7 +278,7 @@ fn log_request(api_key: &str, request_data: RequestData, config: &Config) {
         );
         let server_url = config.server_url.to_owned();
         REQUESTS.lock().unwrap().clear();
-        spawn(|| post_requests(payload, server_url));
+        post_requests(payload, server_url);
         *LAST_POSTED.lock().unwrap() = Instant::now();
     }
 }
@@ -326,7 +326,7 @@ where
                 Utc::now().to_rfc3339(),
             );
 
-            log_request(&api_key, request_data, &config);
+            spawn(move || log_request(&api_key, request_data, &config));
 
             Ok(res)
         })
