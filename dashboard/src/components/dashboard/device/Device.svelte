@@ -3,13 +3,15 @@
 	import OperatingSystem from './OperatingSystem.svelte';
 	import DeviceType from './DeviceType.svelte';
 
-	function setBtn(target: 'client' | 'os' | 'device') {
+	type ActiveState = 'client' | 'os' | 'device';
+
+	function setBtn(target: ActiveState) {
 		activeBtn = target;
 		// Resize window to trigger new plot resize to match current card size
 		window.dispatchEvent(new Event('resize'));
 	}
 
-	let activeBtn: 'client' | 'os' | 'device' = 'client';
+	let activeBtn: ActiveState = 'client';
 
 	export let data: RequestsData, getUserAgent: (id: number) => string;
 </script>

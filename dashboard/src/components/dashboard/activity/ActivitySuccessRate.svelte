@@ -26,9 +26,13 @@
 		return Math.floor((now.getTime() - time) / (60 * 60 * 1000));
 	}
 
+	type NumberSuccessCounter = Map<
+		number,
+		{ total: number; successful: number }
+	>;
+
 	function setSuccessRate() {
-		const success: Map<number, { total: number; successful: number }> =
-			new Map();
+		const success: NumberSuccessCounter = new Map();
 		let minDate = new Date(8640000000000000);
 		for (let i = 0; i < data.length; i++) {
 			const date = new Date(data[i][ColumnIndex.CreatedAt]);
@@ -94,12 +98,10 @@
 	}
 
 	let successRate: number[];
-	let mounted = false;
-	onMount(() => {
-		mounted = true;
-	});
 
-	$: data && mounted && build();
+	$: if (data) {
+		build();
+	}
 
 	export let data: RequestsData, period: Period;
 </script>

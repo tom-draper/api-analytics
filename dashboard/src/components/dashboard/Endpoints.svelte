@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { ColumnIndex } from '../../lib/consts';
 
 	// Integer to method string mapping used by server
@@ -95,19 +94,19 @@
 		build();
 	}
 
+	type ActiveState = 'all' | 'success' | 'client' | 'server';
+
 	let endpoints: {
 		path: string;
 		status: number;
 		count: number;
 	}[];
 	let maxCount: number;
-	let mounted = false;
-	let activeBtn: 'all' | 'success' | 'client' | 'server' = 'all';
-	onMount(() => {
-		mounted = true;
-	});
+	let activeBtn: ActiveState = 'all';
 
-	$: data && mounted && build();
+	$: if (data) {
+		build();
+	}
 
 	export let data: RequestsData, targetPath: string, targetStatus: number;
 </script>

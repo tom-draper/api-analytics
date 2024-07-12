@@ -38,7 +38,7 @@
 	function lines() {
 		const n = 5;
 		const x = [...Array(n).keys()];
-		const y = Array(n).fill(0);
+		const uniqueUsers = Array.from({ length: n }, () => new Set());
 
 		if (data.length > 0) {
 			const start = data[0][ColumnIndex.CreatedAt].getTime();
@@ -51,10 +51,13 @@
 				}
 				const time = data[i][ColumnIndex.CreatedAt].getTime();
 				const diff = time - start;
-				const idx = Math.floor(diff / (range / n));
-				y[idx] += 1;
+				const idx = Math.min(n - 1, Math.floor(diff / (range / n)));
+				uniqueUsers[idx].add(userID);
 			}
 		}
+
+		const y = uniqueUsers.map((set) => set.size);
+
 		return [
 			{
 				x: x,

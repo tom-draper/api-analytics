@@ -31,7 +31,7 @@
 		const y = Array(n).fill(0);
 
 		for (let i = 0; i < data.length; i++) {
-			const idx = Math.floor(i / (data.length / n));
+			const idx = Math.min(n - 1, Math.floor(i / (data.length / n)));
 			if (
 				data[i][ColumnIndex.Status] >= 200 &&
 				data[i][ColumnIndex.Status] <= 299

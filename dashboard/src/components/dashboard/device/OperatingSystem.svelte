@@ -121,6 +121,8 @@
 				layout: {
 					padding: {
 						right: 20,
+						top: 16,
+						bottom: 16,
 					},
 				},
 				plugins: {

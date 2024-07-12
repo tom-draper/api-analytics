@@ -63,7 +63,7 @@
 					data: counts,
 					backgroundColor: '#707070',
 					borderColor: '#707070',
-					borderWidth: 1,
+					// borderWidth: 1,
 				},
 			],
 		};

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { ColumnIndex } from '../../lib/consts';
 
 	function getFlagEmoji(countryCode: string) {
@@ -51,12 +50,10 @@
 	}
 
 	let locations: LocationBar[] = [];
-	let mounted = false;
-	onMount(() => {
-		mounted = true;
-	});
 
-	$: data && mounted && build();
+	$: if (data) {
+		build();
+	}
 
 	export let data: RequestsData, targetLocation: string;
 </script>

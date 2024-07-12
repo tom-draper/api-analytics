@@ -175,6 +175,9 @@
 		display: flex;
 		justify-content: left;
 	}
+	.plus {
+		line-height: 0;
+	}
 	.period-controls {
 		margin-left: auto;
 		display: flex;

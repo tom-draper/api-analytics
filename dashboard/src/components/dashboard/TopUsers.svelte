@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { getUserIdentifier } from '../../lib/user';
 	import { ColumnIndex } from '../../lib/consts';
 
@@ -72,14 +71,12 @@
 		return false;
 	}
 
-	let mounted = false;
 	let topUsers = null;
 	let customUserIDActive = false;
-	onMount(async () => {
-		mounted = true;
-	});
 
-	$: data && mounted && build();
+	$: if (data) {
+		build();
+	}
 
 	export let data: RequestsData;
 </script>

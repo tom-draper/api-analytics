@@ -59,7 +59,7 @@
 					padding: {
 						left: 20,
 						right: 20,
-						bottom: 20,
+						bottom: 25,
 					},
 				},
 				scales: {
@@ -73,6 +73,9 @@
 						},
 						ticks: {
 							display: false, // Hides the number labels
+						},
+						grid: {
+							color: '#2e2e2e',
 						},
 					},
 				},

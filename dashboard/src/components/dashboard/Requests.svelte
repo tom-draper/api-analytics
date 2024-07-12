@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { periodToDays } from '../../lib/period';
 	import type { Period } from '../../lib/settings';
 	import { ColumnIndex } from '../../lib/consts';
+	import { onMount } from 'svelte';
 
 	function requestsPlotLayout() {
 		return {
@@ -39,10 +39,11 @@
 			for (let i = 0; i < data.length; i++) {
 				const time = data[i][ColumnIndex.CreatedAt].getTime();
 				const diff = time - start;
-				const idx = Math.floor(diff / (range / n));
+				const idx = Math.min(n - 1, Math.floor(diff / (range / n)));
 				y[idx] += 1;
 			}
 		}
+
 		return [
 			{
 				x: x,
@@ -88,13 +89,13 @@
 	}
 
 	function getRequestsPerHour() {
-		if (data.length > 0) {
-			const days = periodToDays(period);
-			if (days != null) {
-				return (data.length / (24 * days)).toFixed(2);
-			}
+		if (data.length <= 0) {
+			return 0;
 		}
-		return '0';
+		const days = periodToDays(period);
+		if (days != null) {
+			return data.length / (24 * days);
+		}
 	}
 
 	function togglePeriod() {
@@ -108,9 +109,9 @@
 	}
 
 	let plotDiv: HTMLDivElement;
-	let requestsPerHour: string;
-	let perHour = false;
 	let percentageChange: number;
+	let requestsPerHour: number;
+	let perHour = false;
 	let mounted = false;
 	onMount(() => {
 		mounted = true;
@@ -127,7 +128,9 @@
 			Requests <span class="per-hour">/ hour</span>
 		</div>
 		{#if requestsPerHour}
-			<div class="value">{requestsPerHour}</div>
+			<div class="value">
+				{requestsPerHour === 0 ? '0' : requestsPerHour.toFixed(2)}
+			</div>
 		{/if}
 	{:else}
 		{#if percentageChange}
