@@ -61,7 +61,9 @@
 <div class="card">
 	<div class="card-title">Location</div>
 	{#if locations.length > 0}
-		<div class="locations-count">{locations.length} locations</div>
+		<div class="locations-count">
+			{`${locations.length} location${locations.length > 1 ? 's' : ''}`}
+		</div>
 		<div class="bars">
 			{#each locations.slice(0, 12) as location}
 				<div class="bar-container">

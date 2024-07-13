@@ -5,13 +5,14 @@
 	type Users = {
 		[userID: string]: {
 			ipAddress: string;
+			location: string;
 			customUserID: string;
 			createdAt: Date;
 			requests: number;
 		};
 	};
 
-	function build() {
+	function build(data: RequestsData) {
 		const users: Users = {};
 		for (let i = 0; i < data.length; i++) {
 			const userID = getUserIdentifier(data[i]);
@@ -19,11 +20,13 @@
 				continue;
 			}
 			const ipAddress = data[i][ColumnIndex.IPAddress];
+			const location = data[i][ColumnIndex.Location];
 			const customUserID = data[i][ColumnIndex.UserID];
 			const createdAt = data[i][ColumnIndex.CreatedAt];
 			if (!(userID in users)) {
 				users[userID] = {
 					ipAddress,
+					location,
 					customUserID,
 					createdAt,
 					requests: 0,
@@ -46,7 +49,7 @@
 
 		topUsers = Object.values(users)
 			.sort((a, b) => b.requests - a.requests)
-			.slice(0, 10);
+			.slice(0, 15);
 	}
 
 	function getTopUserRequestsCount(users: Users) {
@@ -62,8 +65,8 @@
 	function userIDActive(users: Users) {
 		for (const user in users) {
 			if (
-				users[user].customUserID !== '' &&
-				users[user].customUserID !== null
+				users[user].customUserID !== null &&
+				users[user].customUserID !== ''
 			) {
 				return true;
 			}
@@ -75,7 +78,7 @@
 	let customUserIDActive = false;
 
 	$: if (data) {
-		build();
+		build(data);
 	}
 
 	export let data: RequestsData;
@@ -97,7 +100,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each topUsers as { ipAddress, customUserID, requests, createdAt }}
+					{#each topUsers as { ipAddress, location, customUserID, requests, createdAt }}
 						<tr>
 							<td>{ipAddress}</td>
 							{#if customUserIDActive}
@@ -135,7 +138,7 @@
 		font-size: 0.85em;
 	}
 	tbody {
-		font-size: 0.8em;
+		font-size: 0.85em;
 	}
 	table {
 		border-collapse: collapse;

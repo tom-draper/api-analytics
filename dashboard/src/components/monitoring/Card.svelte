@@ -1,11 +1,15 @@
 <script lang="ts">
 	import ResponseTime from './ResponseTime.svelte';
 	import { periodToMarkers } from '../../lib/period';
-	import type { NotificationState } from '../../lib/notification';
+	import type {
+		NotificationState,
+		NotificationStyle,
+	} from '../../lib/notification';
+	import { serverURL } from '../../lib/consts';
 
 	function triggerNotificationMessage(
 		message: string,
-		style: 'error' | 'warn' | 'success' = 'error',
+		style: NotificationStyle = 'error',
 	) {
 		notification.message = message;
 		notification.style = style;
@@ -17,18 +21,15 @@
 
 	async function deleteMonitor() {
 		try {
-			const response = await fetch(
-				'https://www.apianalytics-server.com/api/monitor/delete',
-				{
-					method: 'POST',
-					headers: {},
-					body: JSON.stringify({
-						user_id: userID,
-						url: url,
-						status: 0,
-					}),
-				},
-			);
+			const response = await fetch(`${serverURL}/api/monitor/delete`, {
+				method: 'POST',
+				headers: {},
+				body: JSON.stringify({
+					user_id: userID,
+					url: url,
+					status: 0,
+				}),
+			});
 			if (response.status === 201) {
 				triggerNotificationMessage('Deleted successfully', 'success');
 				removeMonitor(url);
@@ -66,7 +67,7 @@
 		}
 	}
 
-	function periodSample(): MonitorSample[] {
+	function periodSample(data: MonitorData): MonitorSample[] {
 		/* Sample ping recordings at regular intervals if number of bars fewer than 
 		total recordings the current period length */
 		let sample: MonitorSample[] = [];
@@ -95,7 +96,7 @@
 		return sample;
 	}
 
-	function setSamples() {
+	function setSamples(data: MonitorData) {
 		const markers = periodToMarkers(period);
 		samples = Array(markers).fill({
 			label: 'no-request',
@@ -103,7 +104,7 @@
 			status: 0,
 			createdAt: null,
 		});
-		const sampledData = periodSample();
+		const sampledData = periodSample(data);
 		const start = markers - sampledData.length;
 
 		for (let i = 0; i < sampledData.length; i++) {
@@ -143,18 +144,17 @@
 		}
 	}
 
-	function build() {
+	function build(data: MonitorData) {
 		separateURL();
-		setSamples();
+		setSamples(data);
 		setCurrentStatus();
 		setUptime();
 	}
 
-	// Monitor sample with label for status colour CSS class
-	type Sample = MonitorSample & { label: string };
+	type StatusState = 'success' | 'error' | 'no-request';
 
 	let uptime = '';
-	let currentStatus: 'success' | 'error' | 'no-request' = 'no-request';
+	let currentStatus: StatusState = 'no-request';
 	let samples: Sample[];
 	const separatedURL = {
 		prefix: '',
@@ -162,7 +162,9 @@
 	};
 
 	// If card period or url changes at any time, rebuild
-	$: (period || url) && build();
+	$: if (period || url) {
+		build(data);
+	}
 
 	export let url: string,
 		data: MonitorData,

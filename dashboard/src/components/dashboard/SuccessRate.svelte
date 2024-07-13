@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { ColumnIndex } from '../../lib/consts';
 
 	function successRatePlotLayout() {
@@ -76,7 +75,7 @@
 		);
 	}
 
-	function build() {
+	function build(data: RequestsData) {
 		let totalRequests = 0;
 		let successfulRequests = 0;
 		for (let i = 0; i < data.length; i++) {
@@ -98,12 +97,10 @@
 
 	let plotDiv: HTMLDivElement;
 	let successRate: number;
-	let mounted = false;
-	onMount(() => {
-		mounted = true;
-	});
 
-	$: data && mounted && build();
+	$: if (plotDiv && data) {
+		build(data);
+	}
 
 	export let data: RequestsData;
 </script>

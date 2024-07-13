@@ -1,5 +1,7 @@
+export type NotificationStyle = 'error' | 'warn' | 'success';
+
 export type NotificationState = {
 	message: string;
-	style: 'error' | 'warn' | 'success';
+	style: NotificationStyle;
 	show: boolean;
 };

@@ -1,10 +1,13 @@
 <script lang="ts">
-	import type { NotificationState } from '../../lib/notification';
+	import type {
+		NotificationState,
+		NotificationStyle,
+	} from '../../lib/notification';
 	import Dropdown from '../dashboard/Dropdown.svelte';
 
 	function triggerNotificationMessage(
 		message: string,
-		style: 'error' | 'warn' | 'success' = 'error',
+		style: NotificationStyle = 'error',
 	) {
 		notification.message = message;
 		notification.style = style;

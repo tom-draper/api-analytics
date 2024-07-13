@@ -7,13 +7,16 @@
 	import formatUUID from '../lib/uuid';
 	import type { NotificationState } from '../lib/notification';
 	import { serverURL } from '../lib/consts';
+	import { getSourceURL } from '../lib/url';
 
 	async function fetchData() {
+		const source = getSourceURL();
+		const url = source === null ? serverURL : source;
+
 		userID = formatUUID(userID);
+
 		try {
-			const response = await fetch(
-				`${serverURL}/api/monitor/pings/${userID}`,
-			);
+			const response = await fetch(`${url}/api/monitor/pings/${userID}`);
 			if (response.status === 200) {
 				data = await response.json();
 			}

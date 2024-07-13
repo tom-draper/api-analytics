@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { periodToMarkers } from '../../lib/period';
 
 	function defaultLayout() {
@@ -27,7 +26,7 @@
 		};
 	}
 
-	function bars() {
+	function bars(data: Sample[]) {
 		const markers = periodToMarkers(period);
 
 		const dates: Date[] = Array(markers);
@@ -66,9 +65,9 @@
 		];
 	}
 
-	function buildPlotData() {
+	function buildPlotData(data: Sample[]) {
 		return {
-			data: bars(),
+			data: bars(data),
 			layout: defaultLayout(),
 			config: {
 				responsive: true,
@@ -78,8 +77,8 @@
 		};
 	}
 
-	function genPlot() {
-		const plotData = buildPlotData();
+	function genPlot(data: Sample[]) {
+		const plotData = buildPlotData(data);
 		//@ts-ignore
 		new Plotly.newPlot(
 			plotDiv,
@@ -90,15 +89,19 @@
 	}
 
 	let plotDiv: HTMLDivElement;
-	let setup = false;
-	onMount(() => {
-		genPlot();
-		setup = true;
-	});
+	// let setup = false;
+	// onMount(() => {
+	// 	genPlot();
+	// 	setup = true;
+	// });
 
-	$: setup && (data || period) && genPlot();
+	$: if (plotDiv && data) {
+		genPlot(data);
+	}
 
-	export let data, period: string;
+	// $: setup && (data || period) && genPlot();
+
+	export let data: Sample[], period: string;
 </script>
 
 <div id="plotly">

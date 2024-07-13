@@ -29,6 +29,9 @@ type MonitorSample = {
 	createdAt: Date;
 };
 
+// Monitor sample with label for status colour CSS class
+type Sample = MonitorSample & { label: string };
+
 type MonitorData = { [url: string]: MonitorSample[] };
 
 type ValueCount = {

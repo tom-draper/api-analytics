@@ -15,6 +15,7 @@
 	import { dateInPeriod, dateInPrevPeriod } from '../lib/period';
 	import genDemoData from '../lib/demo';
 	import formatUUID from '../lib/uuid';
+	import { getSourceURL } from '../lib/url';
 	import Settings from '../components/dashboard/Settings.svelte';
 	import type { DashboardSettings, Period } from '../lib/settings';
 	import { initSettings } from '../lib/settings';
@@ -44,6 +45,8 @@
 			const hostname = request[ColumnIndex.Hostname];
 			const location = request[ColumnIndex.Location];
 			if (
+				(settings.hostname === null ||
+					settings.hostname === hostname) &&
 				(!settings.disable404 || status !== 404) &&
 				(settings.targetEndpoint.path === null ||
 					settings.targetEndpoint.path === path) &&
@@ -51,8 +54,7 @@
 					settings.targetEndpoint.status === status) &&
 				(settings.targetLocation === null ||
 					settings.targetLocation === location) &&
-				!isHiddenEndpoint(path) &&
-				(settings.hostname === null || settings.hostname === hostname)
+				!isHiddenEndpoint(path)
 			) {
 				const date = request[ColumnIndex.CreatedAt];
 				if (inRange(date)) {
@@ -132,7 +134,7 @@
 		return false;
 	}
 
-	function setPeriod(value: Period) {
+	function setCurrentPeriod(value: Period) {
 		settings.period = value;
 	}
 
@@ -166,9 +168,13 @@
 	}
 
 	async function fetchData(): Promise<DashboardData> {
+		const source = getSourceURL();
+		const url = source === null ? serverURL : source;
+
 		userID = formatUUID(userID);
+
 		try {
-			const response = await fetch(`${serverURL}/api/requests/${userID}`);
+			const response = await fetch(`${url}/api/requests/${userID}`);
 			if (response.status === 200) {
 				return await response.json();
 			} else {
@@ -179,12 +185,21 @@
 		}
 	}
 
-	function parseDates(data: RequestsData) {
+	function parseDatesInPlace(data: RequestsData) {
 		for (let i = 0; i < data.length; i++) {
 			data[i][ColumnIndex.CreatedAt] = new Date(
 				data[i][ColumnIndex.CreatedAt],
 			);
 		}
+	}
+
+	function sortByDateInPlace(data: RequestsData) {
+		data.sort((a, b) => {
+			return (
+				a[ColumnIndex.CreatedAt].getTime() -
+				b[ColumnIndex.CreatedAt].getTime()
+			);
+		});
 	}
 
 	let data: RequestsData;
@@ -211,9 +226,11 @@
 	let fetchFailed = false;
 	const pageSize = 250_000;
 	onMount(async () => {
-		const dashboardData = await getDashboardData();
-		data = dashboardData.requests;
-		userAgents = dashboardData.user_agents;
+		({ requests: data, user_agents: userAgents } =
+			await getDashboardData());
+		// const dashboardData = await getDashboardData();
+		// data = dashboardData.requests;
+		// userAgents = dashboardData.user_agents;
 
 		loading = false;
 		// if (data.length === pageSize) {
@@ -223,16 +240,10 @@
 		// 	fetching = false;
 		// }
 
-		setPeriod(settings.period);
+		setCurrentPeriod(settings.period);
 		setHostnames();
-		parseDates(data);
-
-		data?.sort((a, b) => {
-			return (
-				a[ColumnIndex.CreatedAt].getTime() -
-				b[ColumnIndex.CreatedAt].getTime()
-			);
-		});
+		parseDatesInPlace(data);
+		sortByDateInPlace(data);
 
 		console.log(data);
 	});
@@ -255,7 +266,7 @@
 
 			userAgents = { ...userAgents, ...json.user_agents };
 
-			parseDates(json.requests);
+			parseDatesInPlace(json.requests);
 			json.requests?.sort((a, b) => {
 				return (
 					a[ColumnIndex.CreatedAt].getTime() -
@@ -272,7 +283,7 @@
 				data = [...data, ...json.requests];
 			}
 
-			setPeriod(settings.period);
+			setCurrentPeriod(settings.period);
 			setHostnames();
 
 			if (json.requests.length === pageSize) {
@@ -355,7 +366,7 @@
 						class:time-period-btn-active={settings.period ===
 							period}
 						on:click={() => {
-							setPeriod(period);
+							setCurrentPeriod(period);
 						}}
 					>
 						{period}

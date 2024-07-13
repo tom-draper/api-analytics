@@ -3,6 +3,7 @@
 	import { periodToDays } from '../../lib/period';
 	import type { Period } from '../../lib/settings';
 	import { ColumnIndex } from '../../lib/consts';
+	import Requests from './Requests.svelte';
 
 	function usersPlotLayout() {
 		return {
@@ -118,9 +119,8 @@
 		return users;
 	}
 
-	function build() {
-		const users = getUsers(data);
-		numUsers = users.size;
+	function build(data: RequestsData) {
+		({ size: numUsers } = getUsers(data));
 
 		const prevUsers = getUsers(prevData);
 		const prevNumUsers = prevUsers.size;
@@ -130,25 +130,23 @@
 		if (numUsers > 0) {
 			const days = periodToDays(period);
 			if (days !== null) {
-				usersPerHour = (numUsers / (24 * days)).toFixed(2);
+				usersPerHour = numUsers / (24 * days);
 			}
 		} else {
-			usersPerHour = '0';
+			usersPerHour = 0;
 		}
 		genPlot();
 	}
 
 	let plotDiv: HTMLDivElement;
 	let numUsers: number = 0;
-	let usersPerHour: string;
+	let usersPerHour: number;
 	let perHour = false;
 	let percentageChange: number;
-	let mounted = false;
-	onMount(() => {
-		mounted = true;
-	});
 
-	$: data && mounted && build();
+	$: if (plotDiv && data) {
+		build(data);
+	}
 
 	export let data: RequestsData, prevData: RequestsData, period: Period;
 </script>
@@ -159,7 +157,9 @@
 			Users <span class="per-hour">/ hour</span>
 		</div>
 		{#if usersPerHour}
-			<div class="value">{usersPerHour}</div>
+			<div class="value">
+				{usersPerHour === 0 ? '0' : usersPerHour.toFixed(2)}
+			</div>
 		{/if}
 	{:else}
 		{#if percentageChange}

@@ -1,12 +1,17 @@
 <script lang="ts">
 	import { serverURL } from '../lib/consts';
+	import { getSourceURL } from '../lib/url';
 
 	type State = 'delete' | 'loading' | 'deleted' | 'error';
 	let state: State = 'delete';
 	let apiKey = '';
 	async function submit() {
+		const source = getSourceURL();
+		const url = source === null ? serverURL : source;
+
 		setState('loading');
-		const response = await fetch(`${serverURL}/api/delete/${apiKey}`);
+
+		const response = await fetch(`${url}/api/delete/${apiKey}`);
 
 		if (response.status === 200) {
 			setState('deleted');
