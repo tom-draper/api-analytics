@@ -329,7 +329,7 @@
 		refreshData();
 	}
 
-	export let userID: string, demo: boolean;
+	export let location: string, userID: string, demo: boolean;
 </script>
 
 {#if periodData && data.length > 0}

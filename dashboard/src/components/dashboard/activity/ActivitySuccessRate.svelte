@@ -1,14 +1,20 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { periodToDays } from '../../../lib/period';
 	import type { Period } from '../../../lib/settings';
 	import { ColumnIndex } from '../../../lib/consts';
 
 	function daysAgo(date: Date): number {
 		const now = new Date();
-		return Math.floor(
-			(now.getTime() - date.getTime()) / (24 * 60 * 60 * 1000),
+		// Calculate the difference in milliseconds
+		const differenceInMilliseconds = now.getTime() - date.getTime();
+
+		// Convert the difference to days
+		const millisecondsPerDay = 24 * 60 * 60 * 1000;
+		const differenceInDays = Math.floor(
+			differenceInMilliseconds / millisecondsPerDay,
 		);
+
+		return differenceInDays;
 	}
 
 	function daysAgoTime(time: number): number {
@@ -31,7 +37,7 @@
 		{ total: number; successful: number }
 	>;
 
-	function setSuccessRate() {
+	function setSuccessRate(data: RequestsData) {
 		const success: NumberSuccessCounter = new Map();
 		let minDate = new Date(8640000000000000);
 		for (let i = 0; i < data.length; i++) {
@@ -82,6 +88,8 @@
 				days = periodToDays(period);
 			}
 
+			days = Math.min(days, 500); // Limit to 500 days
+
 			successArr = new Array(days).fill(-0.1); // -0.1 -> 0
 			for (const time of success.keys()) {
 				const idx = daysAgoTime(time);
@@ -93,14 +101,14 @@
 		successRate = successArr;
 	}
 
-	function build() {
-		setSuccessRate();
+	function build(data: RequestsData) {
+		setSuccessRate(data);
 	}
 
 	let successRate: number[];
 
 	$: if (data) {
-		build();
+		build(data);
 	}
 
 	export let data: RequestsData, period: Period;
