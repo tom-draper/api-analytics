@@ -8,7 +8,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func getDatabaseUrl() string {
+func getDatabaseURL() string {
 	err := godotenv.Load(".env")
 	if err != nil {
 		panic(err)
@@ -19,7 +19,7 @@ func getDatabaseUrl() string {
 }
 
 func NewConnection() *pgx.Conn {
-	url := getDatabaseUrl()
+	url := getDatabaseURL()
 	conn, err := pgx.Connect(context.Background(), url)
 	if err != nil {
 		panic(err)

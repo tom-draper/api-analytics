@@ -187,7 +187,7 @@ func RequestsColumnSize() (requestsColumnSize, error) {
 	defer conn.Close(context.Background())
 
 	var size requestsColumnSize
-	query := "SELECT pg_size_pretty(sum(pg_column_size(request_id))) AS request_id, pg_size_pretty(sum(pg_column_size(api_key))) AS api_key, pg_size_pretty(sum(pg_column_size(path))) AS path, pg_size_pretty(sum(pg_column_size(hostname))) AS hostname, pg_size_pretty(sum(pg_column_size(ip_address))) AS ip_address, pg_size_pretty(sum(pg_column_size(location))) AS location, pg_size_pretty(sum(pg_column_size(user_agent))) AS user_agent, pg_size_pretty(sum(pg_column_size(method))) AS method, pg_size_pretty(sum(pg_column_size(status))) AS status, pg_size_pretty(sum(pg_column_size(response_time))) AS response_time, pg_size_pretty(sum(pg_column_size(framework))) AS framework, pg_size_pretty(sum(pg_column_size(created_at))) AS created_at FROM requests;"
+	query := "SELECT pg_size_pretty(sum(pg_column_size(request_id))) AS request_id, pg_size_pretty(sum(pg_column_size(api_key))) AS api_key, pg_size_pretty(sum(pg_column_size(path))) AS path, pg_size_pretty(sum(pg_column_size(hostname))) AS hostname, pg_size_pretty(sum(pg_column_size(ip_address))) AS ip_address, pg_size_pretty(sum(pg_column_size(location))) AS location, pg_size_pretty(sum(pg_column_size(user_agent_id))) AS user_agent_id, pg_size_pretty(sum(pg_column_size(method))) AS method, pg_size_pretty(sum(pg_column_size(status))) AS status, pg_size_pretty(sum(pg_column_size(response_time))) AS response_time, pg_size_pretty(sum(pg_column_size(framework))) AS framework, pg_size_pretty(sum(pg_column_size(created_at))) AS created_at FROM requests;"
 	err := conn.QueryRow(context.Background(), query).Scan(&size.RequestID, &size.APIKey, &size.Path, &size.Hostname, &size.IPAddress, &size.Location, &size.UserAgent, &size.Method, &size.Status, &size.ResponseTime, &size.Framework, &size.CreatedAt)
 	if err != nil {
 		return requestsColumnSize{}, err
@@ -203,8 +203,8 @@ func columnValuesCount[T string | int](column string) ([]struct {
 	conn := database.NewConnection()
 	defer conn.Close(context.Background())
 
-	query := fmt.Sprintf("SELECT '%s', COUNT(*) AS count FROM requests GROUP BY '%s' ORDER BY count DESC;", column, column)
-	rows, err := conn.Query(context.Background(), query)
+	query := "SELECT $1, COUNT(*) AS count FROM requests GROUP BY $2 ORDER BY count DESC;"
+	rows, err := conn.Query(context.Background(), query, column, column)
 	if err != nil {
 		return nil, err
 	}
