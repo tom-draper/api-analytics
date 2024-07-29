@@ -10,7 +10,7 @@ require (
 
 require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
-	github.com/jackc/pgservicefile v0.0.0-20231201235250-de7065d80cb9 // indirect
-	golang.org/x/crypto v0.23.0 // indirect
-	golang.org/x/text v0.15.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
+	golang.org/x/crypto v0.25.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 )
