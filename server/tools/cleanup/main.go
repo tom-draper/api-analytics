@@ -11,7 +11,7 @@ import (
 	"github.com/tom-draper/api-analytics/server/tools/usage"
 )
 
-const requestsLimit int = 2_000_000
+const requestsLimit int = 1_500_000
 const userExpiry time.Duration = time.Hour * 24 * 30 * 6
 
 func deleteOldestRequests(apiKey string, count int) error {
@@ -57,10 +57,7 @@ func deleteExpiredUnusedUsers() {
 	fmt.Printf("%d users found\n", len(users))
 	for _, user := range users {
 		if time.Since(user.CreatedAt) > userExpiry {
-			err := database.DeleteUser(user.APIKey)
-			if err != nil {
-				panic(err)
-			}
+			deleteUser(user.APIKey)
 			fmt.Printf("%s: unused user expired", user.APIKey)
 		}
 	}
@@ -75,10 +72,7 @@ func deleteExpiredRetiredUsers() {
 	fmt.Printf("%d users found\n", len(users))
 	for _, user := range users {
 		if time.Since(user.CreatedAt) > userExpiry {
-			err := database.DeleteUser(user.APIKey)
-			if err != nil {
-				panic(err)
-			}
+			deleteUser(user.APIKey)
 			fmt.Printf("%s: retired user expired", user.APIKey)
 		}
 	}

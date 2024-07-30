@@ -1,7 +1,7 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 	"math/rand"
 	"net"
@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/lib/pq"
+	"github.com/jackc/pgx/v5"
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
@@ -44,9 +44,9 @@ func ping(client http.Client, url string, secure bool, ping bool) (int, time.Dur
 	return response.StatusCode, elapsed, nil
 }
 
-func getMonitoredURLs(db *sql.DB) []database.MonitorRow {
+func getMonitoredURLs(conn *pgx.Conn) []database.MonitorRow {
 	query := "SELECT * FROM monitor;"
-	rows, err := db.Query(query)
+	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
 		panic(err)
 	}
@@ -64,15 +64,15 @@ func getMonitoredURLs(db *sql.DB) []database.MonitorRow {
 	return monitors
 }
 
-func deleteExpiredPings(db *sql.DB) {
+func deleteExpiredPings(conn *pgx.Conn) {
 	query := fmt.Sprintf("DELETE FROM pings WHERE created_at < '%s';", time.Now().Add(-60*24*time.Hour).UTC().Format("2006-01-02T15:04:05-0700"))
-	_, err := db.Query(query)
+	_, err := conn.Exec(context.Background(), query)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func uploadPings(pings []database.PingsRow, db *sql.DB) {
+func uploadPings(pings []database.PingsRow, conn *pgx.Conn) {
 	var query strings.Builder
 	query.WriteString("INSERT INTO pings (api_key, url, response_time, status, created_at) VALUES")
 	for i, ping := range pings {
@@ -83,7 +83,7 @@ func uploadPings(pings []database.PingsRow, db *sql.DB) {
 	}
 	query.WriteString(";")
 
-	_, err := db.Query(query.String())
+	_, err := conn.Exec(context.Background(), query.String())
 	if err != nil {
 		panic(err)
 	}
@@ -128,14 +128,15 @@ func getClient() http.Client {
 }
 
 func main() {
-	db := database.OpenDBConnection()
+	conn := database.NewConnection()
+	defer conn.Close(context.Background())
 
-	monitored := getMonitoredURLs(db)
+	monitored := getMonitoredURLs(conn)
 	// Shuffle URLs to ping to avoid a page looking consistently slow or fast
 	// due to cold starts or caching
 	shuffle(monitored)
 
 	pings := pingMonitored(monitored)
-	uploadPings(pings, db)
-	deleteExpiredPings(db)
+	uploadPings(pings, conn)
+	deleteExpiredPings(conn)
 }

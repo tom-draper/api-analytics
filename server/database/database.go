@@ -100,39 +100,3 @@ func OpenDBConnectionNamed(database string) *sql.DB {
 		return openDBConnection(database, dbUsername, dbPassword)
 	}
 }
-
-func DeleteUser(apiKey string) error {
-	db := OpenDBConnection()
-	defer db.Close()
-
-	query := "DELETE FROM users WHERE api_key = $1;"
-	_, err := db.Query(query, apiKey)
-	return err
-}
-
-func DeleteRequests(apiKey string) error {
-	db := OpenDBConnection()
-	defer db.Close()
-
-	query := "DELETE FROM requests WHERE api_key = $1;"
-	_, err := db.Query(query, apiKey)
-	return err
-}
-
-func DeleteMonitors(apiKey string) error {
-	db := OpenDBConnection()
-	defer db.Close()
-
-	query := "DELETE FROM monitor WHERE api_key = $1;"
-	_, err := db.Query(query, apiKey)
-	return err
-}
-
-func DeletePings(apiKey string) error {
-	db := OpenDBConnection()
-	defer db.Close()
-
-	query := "DELETE FROM pings WHERE api_key = $1;"
-	_, err := db.Query(query, apiKey)
-	return err
-}
