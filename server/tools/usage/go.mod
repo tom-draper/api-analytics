@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/fatih/color v1.17.0
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20240704162004-59effaf2e7c7
+	github.com/tom-draper/api-analytics/server/database v0.0.0-20240729195836-bf20421d8f0b
 	golang.org/x/text v0.16.0
 )
 

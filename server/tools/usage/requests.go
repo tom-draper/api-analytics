@@ -69,7 +69,7 @@ func Requests(interval string) ([]database.RequestRow, error) {
 	conn := database.NewConnection()
 	defer conn.Close(context.Background())
 
-	query := "SELECT request_id, api_key, path, hostname, ip_address, location, user_agent, method, status, response_time, framework, created_at FROM requests"
+	query := "SELECT request_id, api_key, path, hostname, ip_address, location, user_agent_id, method, status, response_time, framework, created_at FROM requests"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
@@ -84,7 +84,7 @@ func Requests(interval string) ([]database.RequestRow, error) {
 	var requests []database.RequestRow
 	for rows.Next() {
 		var request database.RequestRow
-		err := rows.Scan(&request.RequestID, &request.APIKey, &request.Path, &request.Hostname, &request.IPAddress, &request.Location, &request.UserAgent, &request.Method, &request.Status, &request.ResponseTime, &request.Framework, &request.CreatedAt)
+		err := rows.Scan(&request.RequestID, &request.APIKey, &request.Path, &request.Hostname, &request.IPAddress, &request.Location, &request.UserAgentID, &request.Method, &request.Status, &request.ResponseTime, &request.Framework, &request.CreatedAt)
 		if err == nil {
 			requests = append(requests, request)
 		}

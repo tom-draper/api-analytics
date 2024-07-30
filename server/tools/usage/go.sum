@@ -26,6 +26,8 @@ github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKsk=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20240704162004-59effaf2e7c7 h1:ph7LbHVL3T5vX44A1NyfWvDiZnAA1GNXfbR7OcTe+1I=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20240704162004-59effaf2e7c7/go.mod h1:mbyZMskXVfyfVRBqbTAn9BxtFxZlcTVwxDtyE8IV8Js=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20240729195836-bf20421d8f0b h1:W9xOO/a1QJgnBAvcTRZsepqylfnJRjHMyrCC2L2MdYY=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20240729195836-bf20421d8f0b/go.mod h1:ybtPh/jbyZO4It1sw3BmXduLkCLnlwFXSkXu9Lv2a+Q=
 golang.org/x/crypto v0.25.0 h1:ypSNr+bnYL2YhwoMt2zPxHFmbAN1KZs/njMG3hxUp30=
 golang.org/x/crypto v0.25.0/go.mod h1:T+wALwcMOSE0kXgUAnPAHqTLW+XHgcELELW8VaDgm/M=
 golang.org/x/sync v0.7.0 h1:YsImfSBoP9QPYL0xyKJPq0gcaJdG3rInoqxTWbfQu9M=
