@@ -1,7 +1,8 @@
 import logging
 import threading
 from datetime import datetime
-from typing import Dict, List
+from types import NoneType
+from typing import Dict, List, Union
 
 import requests
 
@@ -21,15 +22,15 @@ def log_request(
     privacy_level: int,
     server_url: str,
 ):
-    if api_key == "" or api_key is None:
-        return
-
     logger.debug(f"Logging request: {request_data}")
+    if api_key == "" or api_key is None:
+        logging.debug("Aborting log request: API key is not set.")
+        return
 
     global _requests, _last_posted
     _requests.append(request_data)
     now = datetime.now()
-    if (now - _last_posted).total_seconds() > 5.0:
+    if (now - _last_posted).total_seconds() > 60.0:
         threading.Thread(
             target=_post_requests,
             args=(api_key, _requests, framework, privacy_level, server_url),
@@ -47,6 +48,10 @@ def _post_requests(
 ):
     url = _endpoint_url(server_url)
     logger.debug(f"Posting {len(requests_data)} cached requests to server: {url}")
+    if url is None:
+        logger.debug("Aborting post to server: Server URL is not set.")
+        return
+
     response = requests.post(
         url,
         json={
@@ -60,7 +65,7 @@ def _post_requests(
     logger.debug(f"Response from server ({response.status_code}): {response.text}")
 
 
-def _endpoint_url(server_url: str):
+def _endpoint_url(server_url: Union[str, NoneType]):
     if server_url is None or server_url == "":
         return server_url
     elif server_url[-1] == "/":
