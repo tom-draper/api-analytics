@@ -47,7 +47,7 @@ def _post_requests(
     server_url: str,
 ):
     url = _endpoint_url(server_url)
-    logger.debug(f"Posting {len(requests_data)} cached requests to server: {url}")
+    logger.debug(f"Posting {len(requests_data)} logged requests to server: {url}")
     if url is None:
         logger.debug("Aborting post to server: Server URL is not set.")
         return

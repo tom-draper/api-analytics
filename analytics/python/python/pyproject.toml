@@ -19,15 +19,15 @@ license = {file = "LICENSE"}
 name = "api-analytics"
 readme = "README.md"
 requires-python = ">=3.6"
-version = "1.2.3"
+version = "1.2.4"
 
 [project.optional-dependencies]
+build = ["build", "twine"]
+dev = ["pytest"]
 django = ["Django"]
 fastapi = ["fastapi"]
 flask = ["Flask"]
 tornado = ["tornado"]
-build = ["build", "twine"]
-dev = ["pytest"]
 
 [project.urls]
 repository = "https://github.com/tom-draper/api-analytics"
