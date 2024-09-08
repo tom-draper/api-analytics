@@ -25,7 +25,6 @@
 	import { ColumnIndex, columns, serverURL } from '../lib/consts';
 	import Error from '../components/dashboard/Error.svelte';
 	import TopUsers from '../components/dashboard/TopUsers.svelte';
-	import { get } from 'svelte/store';
 
 	function allTimePeriod(_: Date) {
 		return true;
@@ -169,7 +168,7 @@
 	async function fetchData(): Promise<DashboardData> {
 		userID = formatUUID(userID);
 		try {
-			const response = await fetch(`${serverURL}/api/requests/${userID}`);
+			const response = await fetch(`${serverURL}/api/requests/${userID}/1`);
 			if (response.status === 200) {
 				return await response.json();
 			} else {
@@ -211,19 +210,27 @@
 	let loading = true;
 	let fetchFailed = false;
 	let endpointsRendered = false;
-	const pageSize = 250_000;
+	const pageSize = 200_000;
 	onMount(async () => {
 		const dashboardData = await getDashboardData();
 		data = dashboardData.requests;
 		userAgents = dashboardData.user_agents;
 
-		loading = false;
-		// if (data.length === pageSize) {
-		// 	// Fetch page 2 and onwards if initial fetch didn't get all data
-		// 	fetchAdditionalPages(2);
-		// } else {
-		// 	fetching = false;
+		loading = true;
+		if (data.length === pageSize) {
+			// Fetch page 2 and onwards if initial fetch didn't get all data
+			fetchAdditionalPages(2);
+		} else {
+			loading = false;
+		}
+		// loading = true;
+		// let fetchAdditionalPages = data.length === pageSize;
+		// let page = 2;
+		// while (fetchAdditionalPages) {
+		// 	fetchAdditionalPages = await fetchPage(page);
+		// 	page++;
 		// }
+		// loading = false;
 
 		setPeriod(settings.period);
 		setHostnames();
@@ -243,6 +250,7 @@
 		try {
 			const response = await fetch(
 				`${serverURL}/api/requests/${userID}/${page}`,
+				{ signal: AbortSignal.timeout(120000) }
 			);
 			if (response.status !== 200) {
 				loading = false;
@@ -258,6 +266,7 @@
 			userAgents = { ...userAgents, ...json.user_agents };
 
 			parseDates(json.requests);
+
 			json.requests?.sort((a, b) => {
 				return (
 					a[ColumnIndex.CreatedAt].getTime() -
@@ -266,25 +275,28 @@
 			});
 
 			const mostRecent =
-				json.requests[json.requests.length - 1].CreatedAt;
+				json.requests[json.requests.length - 1][ColumnIndex.CreatedAt];
 			if (dateInPeriod(mostRecent, settings.period)) {
-				data.push(...json.requests);
-			} else {
 				// Trigger dashboard re-render
-				data = [...data, ...json.requests];
+				data = data.concat(json.requests);
+			} else {
+				Object.assign(data, data.concat(json.requests));
 			}
 
 			setPeriod(settings.period);
 			setHostnames();
 
+			console.log(data);
+
 			if (json.requests.length === pageSize) {
-				fetchAdditionalPages(page + 1);
+				await fetchAdditionalPages(page + 1);
 			} else {
 				loading = false;
 			}
 		} catch (e) {
 			console.log(e);
-			loading = false;
+			loading = false
+			return;
 		}
 	}
 
@@ -500,10 +512,6 @@
 	.dropdown-container {
 		margin-right: 10px;
 	}
-
-	/* button {
-		font-family: 'Geist' !important;
-	} */
 
 	.donate-link {
 		color: rgb(73, 73, 73);

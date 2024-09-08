@@ -211,8 +211,9 @@
 	}
 	.add-new-text {
 		display: flex;
-		font-size: 2em;
 		justify-content: center;
+		font-family: 'Noto Sans' !important;
+		font-size: 1.8em;
 	}
 	.active,
 	.active:hover {

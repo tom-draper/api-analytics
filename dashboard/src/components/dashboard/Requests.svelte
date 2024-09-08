@@ -191,6 +191,7 @@
 	button {
 		font-size: unset;
 		font-family: unset;
+		font-family: 'Noto Sans' !important;
 	}
 	.arrow {
 		height: 11px;

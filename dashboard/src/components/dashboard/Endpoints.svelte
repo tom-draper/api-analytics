@@ -126,7 +126,7 @@
 				class:visible={targetPath !== null}
 				on:click={() => {
 					setTargetEndpoint(null, null);
-				}}>Cancel</button
+				}}>Clear</button
 			>
 			<button
 				class:active={activeBtn === 'all'}
