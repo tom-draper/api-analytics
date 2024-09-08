@@ -104,7 +104,7 @@ func storeNewUserAgents(userAgents map[string]struct{}) {
 	}
 }
 
-func getUserAgentIDs(userAgents map[string]struct{}) map[string]int16 {
+func getUserAgentIDs(userAgents map[string]struct{}) map[string]int {
 	var query strings.Builder
 	query.WriteString("SELECT user_agent, id FROM user_agents WHERE user_agent IN (")
 	arguments := make([]any, len(userAgents))
@@ -119,7 +119,7 @@ func getUserAgentIDs(userAgents map[string]struct{}) map[string]int16 {
 	}
 	query.WriteString(");")
 
-	ids := make(map[string]int16)
+	ids := make(map[string]int)
 	conn := database.NewConnection()
 	rows, err := conn.Query(context.Background(), query.String(), arguments...)
 	conn.Close(context.Background())
@@ -129,7 +129,7 @@ func getUserAgentIDs(userAgents map[string]struct{}) map[string]int16 {
 	}
 	for rows.Next() {
 		var userAgent string
-		var id int16
+		var id int
 		err := rows.Scan(&userAgent, &id)
 		if err != nil {
 			log.LogToFile(err.Error())
@@ -211,13 +211,14 @@ func logRequestHandler() gin.HandlerFunc {
 		}
 
 		var query strings.Builder
-		query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_agent, status, response_time, method, framework, location, user_id, created_at, user_agent_id) VALUES ")
+		query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, status, response_time, method, framework, location, user_id, created_at, user_agent_id) VALUES ")
 		arguments := make([]any, 0)
 		inserted := 0
-		userAgents := map[string]struct{}{}
+		userAgents := make([]string, 0)
+		uniqueUserAgents := map[string]struct{}{}
 		badUserAgents := map[string]struct{}{}
 		for _, request := range payload.Requests {
-			// Temporary 1000 request per minute limit
+			// Temporary request per minute limit
 			if inserted >= maxInsert {
 				break
 			}
@@ -231,6 +232,12 @@ func logRequestHandler() gin.HandlerFunc {
 			if payload.PrivacyLevel > P1 {
 				// Client IP address discarded for privacy level P2 and P3
 				request.IPAddress = ""
+			}
+			var ipAddress any
+			if request.IPAddress == "" {
+				ipAddress = nil
+			} else {
+				ipAddress = request.IPAddress
 			}
 
 			method, ok := methodID[request.Method]
@@ -276,13 +283,15 @@ func logRequestHandler() gin.HandlerFunc {
 			}
 
 			// Register user agent to be stored in the database
-			if _, ok := userAgents[request.UserAgent]; !ok {
-				userAgents[request.UserAgent] = struct{}{}
+			if _, ok := uniqueUserAgents[request.UserAgent]; !ok {
+				uniqueUserAgents[request.UserAgent] = struct{}{}
 			}
+			// Temp store for user agents in each row for conversion to user agent IDs
+			userAgents = append(userAgents, request.UserAgent)
 
 			numArgs := len(arguments)
 			query.WriteString(
-				fmt.Sprintf("($%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d)",
+				fmt.Sprintf("($%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d)",
 					numArgs+1,
 					numArgs+2,
 					numArgs+3,
@@ -294,16 +303,14 @@ func logRequestHandler() gin.HandlerFunc {
 					numArgs+9,
 					numArgs+10,
 					numArgs+11,
-					numArgs+12,
-					numArgs+13),
+					numArgs+12),
 			)
 			arguments = append(
 				arguments,
 				payload.APIKey,
 				request.Path,
 				request.Hostname,
-				request.IPAddress,
-				request.UserAgent,
+				ipAddress,
 				request.Status,
 				request.ResponseTime,
 				method,
@@ -324,15 +331,14 @@ func logRequestHandler() gin.HandlerFunc {
 
 		query.WriteString(";")
 
-		// Store any new user agents in the database
-		storeNewUserAgents(userAgents)
+		// Store any new user agents found
+		storeNewUserAgents(uniqueUserAgents)
 		// Get associated user IDs for user agents
-		userAgentIDs := getUserAgentIDs(userAgents)
+		userAgentIDs := getUserAgentIDs(uniqueUserAgents)
 		// Insert user agent IDs into arguments
-		for i := 0; i < len(arguments); i += 13 {
-			userAgent := arguments[i+4].(string)
+		for i, userAgent := range userAgents {
 			if id, ok := userAgentIDs[userAgent]; ok {
-				arguments[i+12] = id
+				arguments[(i*12)+11] = id
 			}
 		}
 
@@ -354,10 +360,10 @@ func logRequestHandler() gin.HandlerFunc {
 		// Log any bad user agents found
 		if len(badUserAgents) > 0 {
 			var msg bytes.Buffer
-			i := 0
+			index := 0
 			for userAgent := range badUserAgents {
-				msg.WriteString(fmt.Sprintf("[%d] bad user agent: %s\n", i, userAgent))
-				i++
+				msg.WriteString(fmt.Sprintf("[%d] bad user agent: %s\n", index, userAgent))
+				index++
 			}
 			log.LogToFile(msg.String())
 		}

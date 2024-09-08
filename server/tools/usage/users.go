@@ -194,28 +194,30 @@ func DisplayUserTimes(users []UserTime) {
 }
 
 func UnusedUsers() ([]UserTime, error) {
-	db := database.OpenDBConnection()
-	defer db.Close()
-
-	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM users u WHERE NOT EXISTS (SELECT FROM requests WHERE api_key = u.api_key) ORDER BY created_at;"
-	rows, err := db.Query(query)
+	usersRequests, err := UnusedUsersRequests()
 	if err != nil {
 		return nil, err
 	}
 
-	var users []UserTime
-	for rows.Next() {
-		user := new(UserTime)
-		err := rows.Scan(&user.APIKey, &user.CreatedAt, &user.Days)
-		if err == nil {
-			users = append(users, *user)
-		}
+	usersMonitors, err := UnusedUsersMonitors()
+	if err != nil {
+		return nil, err
 	}
 
+	// Combine users with both no requests and users with no monitors
+	users := make([]UserTime, 0)
+	for _, user := range usersMonitors {
+		for _, userRequests := range usersRequests {
+			if user.APIKey == userRequests.APIKey {
+				users = append(users, user)
+				continue
+			}
+		}
+	}
 	return users, nil
 }
 
-func UnusedUsersNew() ([]UserTime, error) {
+func UnusedUsersRequests() ([]UserTime, error) {
 	conn := database.NewConnection()
 	defer conn.Close(context.Background())
 
@@ -238,15 +240,16 @@ func UnusedUsersNew() ([]UserTime, error) {
 	return users, nil
 }
 
-func SinceLastRequestUsers() ([]UserTime, error) {
-	db := database.OpenDBConnection()
-	defer db.Close()
+func UnusedUsersMonitors() ([]UserTime, error) {
+	conn := database.NewConnection()
+	defer conn.Close(context.Background())
 
-	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM (SELECT DISTINCT ON (api_key) api_key, created_at FROM requests ORDER BY api_key, created_at DESC) AS derived_table ORDER BY created_at;"
-	rows, err := db.Query(query)
+	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM users u WHERE NOT EXISTS (SELECT FROM monitors WHERE api_key = u.api_key) ORDER BY created_at;"
+	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var users []UserTime
 	for rows.Next() {
@@ -260,7 +263,7 @@ func SinceLastRequestUsers() ([]UserTime, error) {
 	return users, nil
 }
 
-func SinceLastRequestUsersNew() ([]UserTime, error) {
+func SinceLastRequestUsers() ([]UserTime, error) {
 	conn := database.NewConnection()
 	defer conn.Close(context.Background())
 

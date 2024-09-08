@@ -8,12 +8,25 @@ import (
 )
 
 type Config struct {
+	PrivacyLevel int
+	ServerURL    string
 	GetPath      func(c echo.Context) string
 	GetHostname  func(c echo.Context) string
 	GetUserAgent func(c echo.Context) string
 	GetIPAddress func(c echo.Context) string
 	GetUserID    func(c echo.Context) string
-	PrivacyLevel int
+}
+
+func NewConfig() *Config {
+	return &Config{
+		PrivacyLevel: 0,
+		ServerURL: core.DefaultServerURL,
+		GetPath: GetPath,
+		GetHostname: GetHostname,
+		GetUserAgent: GetUserAgent,
+		GetIPAddress: GetIPAddress,
+		GetUserID: GetUserID
+	}
 }
 
 func Analytics(apiKey string) echo.MiddlewareFunc {
@@ -38,7 +51,7 @@ func AnalyticsWithConfig(apiKey string, config *Config) echo.MiddlewareFunc {
 				CreatedAt:    start.Format(time.RFC3339),
 			}
 
-			core.LogRequest(apiKey, data, "Echo", config.PrivacyLevel)
+			core.LogRequest(apiKey, data, "Echo", config.PrivacyLevel, config.ServerURL)
 			return err
 		}
 	}
@@ -48,24 +61,25 @@ func getHostname(c echo.Context, config *Config) string {
 	if config.GetHostname != nil {
 		return config.GetHostname(c)
 	}
-	return c.Request().Host
+	return GetHostname(c)
 }
 
 func getPath(c echo.Context, config *Config) string {
 	if config.GetPath != nil {
 		return config.GetPath(c)
 	}
-	return c.Request().URL.Path
+	return GetPath(c)
 }
 
 func getUserAgent(c echo.Context, config *Config) string {
 	if config.GetUserAgent != nil {
 		return config.GetUserAgent(c)
 	}
-	return c.Request().UserAgent()
+	return GetUserAgent(c)
 }
 
 func getIPAddress(c echo.Context, config *Config) string {
+	// IP address never sent to the server for privacy level 2 and above
 	if config.PrivacyLevel >= 2 {
 		return ""
 	}
@@ -73,12 +87,32 @@ func getIPAddress(c echo.Context, config *Config) string {
 	if config.GetIPAddress != nil {
 		return config.GetIPAddress(c)
 	}
-	return c.RealIP()
+	return GetIPAddress(c)
 }
 
 func getUserID(c echo.Context, config *Config) string {
 	if config.GetUserID != nil {
 		return config.GetUserID(c)
 	}
+	return GetUserID(c)
+}
+
+func GetHostname(c echo.Context) string {
+	return c.Request().Host
+}
+
+func GetPath(c echo.Context) string {
+	return c.Request().URL.Path
+}
+
+func GetUserAgent(c echo.Context) string {
+	return c.Request().UserAgent()
+}
+
+func GetIPAddress(c echo.Context) string {
+	return c.RealIP()
+}
+
+func GetUserID(c echo.Context) string {
 	return ""
 }

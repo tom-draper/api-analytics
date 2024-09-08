@@ -1,25 +1,25 @@
 type FrameworkExamples = {
-    [framework: string]: {
-        install: string
-        codeFile?: string
-        example: string
-    }
-}
+	[framework: string]: {
+		install: string;
+		codeFile?: string;
+		example: string;
+	};
+};
 
 const frameworkExamples: FrameworkExamples = {
-    Django: {
-        install: 'pip install api-analytics',
-        codeFile: 'settings.py',
-        example: `ANALYTICS_API_KEY = <API-KEY>
+	Django: {
+		install: 'pip install api-analytics',
+		codeFile: 'settings.py',
+		example: `ANALYTICS_API_KEY = <API-KEY>
 
 MIDDLEWARE = [
     'api_analytics.django.Analytics',
     ...
 ]`,
-    },
-    Flask: {
-        install: 'pip install api-analytics',
-        example: `from flask import Flask
+	},
+	Flask: {
+		install: 'pip install api-analytics',
+		example: `from flask import Flask
 from api_analytics.flask import add_middleware
 
 app = Flask(__name__)
@@ -31,10 +31,10 @@ def root():
 
 if __name__ == '__main__':
     app.run()`,
-    },
-    FastAPI: {
-        install: 'pip install fastapi-analytics',
-        example: `import uvicorn
+	},
+	FastAPI: {
+		install: 'pip install fastapi-analytics',
+		example: `import uvicorn
 from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
 
@@ -47,10 +47,10 @@ async def root():
 
 if __name__ == '__main__':
     uvicorn.run('app:app', reload=True)`,
-    },
-    Tornado: {
-        install: 'pip install tornado-analytics',
-        example: `import asyncio
+	},
+	Tornado: {
+		install: 'pip install tornado-analytics',
+		example: `import asyncio
 from tornado.web import Application
 from api_analytics.tornado import Analytics
 
@@ -71,10 +71,10 @@ if __name__ == '__main__':
     app = make_app()
     app.listen(8080)
     IOLoop.instance().start()`,
-    },
-    Express: {
-        install: 'npm install node-api-analytics',
-        example: `import express from 'express';
+	},
+	Express: {
+		install: 'npm install node-api-analytics',
+		example: `import express from 'express';
 import { expressAnalytics } from 'node-api-analytics';
 
 const app = express();
@@ -88,10 +88,10 @@ app.get('/', (req, res) => {
 app.listen(8080, () => {
     console.log('Server listening at http://localhost:8080');
 })`,
-    },
-    Fastify: {
-        install: 'npm install node-api-analytics',
-        example: `import Fastify from 'fastify';
+	},
+	Fastify: {
+		install: 'npm install node-api-analytics',
+		example: `import Fastify from 'fastify';
 import { fastifyAnalytics } from 'node-api-analytics';
 
 const fastify = Fastify();
@@ -109,10 +109,10 @@ fastify.listen({ port: 8080 }, function (err, address) {
         process.exit(1);
     }
 })`,
-    },
-    Koa: {
-        install: 'npm install node-api-analytics',
-        example: `import Koa from "koa";
+	},
+	Koa: {
+		install: 'npm install node-api-analytics',
+		example: `import Koa from "koa";
 import { koaAnalytics } from 'node-api-analytics';
 
 const app = new Koa();
@@ -126,10 +126,11 @@ app.use((ctx) => {
 app.listen(8080, () =>
     console.log('Server listening at https://localhost:8080')
 ); `,
-    },
-    Gin: {
-        install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/gin',
-        example: `package main
+	},
+	Gin: {
+		install:
+			'go get -u github.com/tom-draper/api-analytics/analytics/go/gin',
+		example: `package main
 
 import(
     "net/http"
@@ -150,10 +151,11 @@ func main() {
     router.GET("/", root)
     router.Run(":8080")
 }`,
-    },
-    Echo: {
-        install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/echo',
-        example: `package main
+	},
+	Echo: {
+		install:
+			'go get -u github.com/tom-draper/api-analytics/analytics/go/echo',
+		example: `package main
 
 import (
     "net/http"
@@ -174,10 +176,11 @@ func main() {
     router.GET("/", root)
     router.Start(":8080")
 }`,
-    },
-    Fiber: {
-        install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/fiber',
-        example: `package main
+	},
+	Fiber: {
+		install:
+			'go get -u github.com/tom-draper/api-analytics/analytics/go/fiber',
+		example: `package main
 
 import (
     "github.com/gofiber/fiber/v2"
@@ -197,10 +200,11 @@ func main() {
     app.Get("/", root)
     app.Listen(":8080")
 }`,
-    },
-    Chi: {
-        install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/chi',
-        example: `package main
+	},
+	Chi: {
+		install:
+			'go get -u github.com/tom-draper/api-analytics/analytics/go/chi',
+		example: `package main
 
 import (
     "net/http"
@@ -223,10 +227,10 @@ func main() {
     router.GET("/", root)
     router.Run(":8080")
 }`,
-    },
-    Actix: {
-        install: 'cargo add actix-analytics',
-        example: `use actix_web::{get, web, App, HttpServer, Responder, Result};
+	},
+	Actix: {
+		install: 'cargo add actix-analytics',
+		example: `use actix_web::{get, web, App, HttpServer, Responder, Result};
 use serde::Serialize;
 use actix_analytics::Analytics;
 
@@ -254,10 +258,10 @@ async fn main() -> std::io::Result<()> {
     .run()
     .await
 }`,
-    },
-    Axum: {
-        install: 'cargo add axum-analytics',
-        example: `use axum::{
+	},
+	Axum: {
+		install: 'cargo add axum-analytics',
+		example: `use axum::{
     routing::get,
     Json, Router,
 };
@@ -290,10 +294,10 @@ async fn main() {
         .await
         .unwrap();
 }`,
-    },
-    Rocket: {
-        install: 'cargo add rocket-analytics',
-        example: `#[macro_use]
+	},
+	Rocket: {
+		install: 'cargo add rocket-analytics',
+		example: `#[macro_use]
 extern crate rocket;
 use rocket::serde::json::Json;
 use serde::Serialize;
@@ -318,11 +322,11 @@ fn rocket() -> _ {
         .mount("/", routes![root])
         .attach(Analytics::new(<API-KEY>))  // Add middleware
 }`,
-    },
-    Rails: {
-        install: 'gem install api_analytics',
-        codeFile: 'config/application.rb',
-        example: `require 'rails'
+	},
+	Rails: {
+		install: 'gem install api_analytics',
+		codeFile: 'config/application.rb',
+		example: `require 'rails'
 require 'api_analytics'
 
 Bundler.require(*Rails.groups)
@@ -335,10 +339,10 @@ module RailsMiddleware
     config.middleware.use ::Analytics::Rails, <API-KEY> # Add middleware
   end
 end`,
-    },
-    Sinatra: {
-        install: 'gem install api_analytics',
-        example: `require 'sinatra'
+	},
+	Sinatra: {
+		install: 'gem install api_analytics',
+		example: `require 'sinatra'
 require 'api_analytics'
 
 use Analytics::Sinatra, <API-KEY> # Add middleware
@@ -350,18 +354,18 @@ end
 get '/' do
     {message: 'Hello, World!'}.to_json
 end`,
-    },
-    Laravel: {
-        install: 'coming soon',
-        codeFile: 'app/Http/Kernel.php',
-        example: `protected $middleware = [
+	},
+	Laravel: {
+		install: 'coming soon',
+		codeFile: 'app/Http/Kernel.php',
+		example: `protected $middleware = [
     \\App\\Http\\Middleware\\Analytics::class,
     ...
 ]`,
-    },
-    "ASP.NET Core": {
-        install: "dotnet add package APIAnalytics.AspNetCore",
-        example: `using analytics;
+	},
+	'ASP.NET Core': {
+		install: 'dotnet add package APIAnalytics.AspNetCore',
+		example: `using analytics;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -375,8 +379,8 @@ app.MapGet("/", () =>
     return Results.Ok(new OkObjectResult(new { message = "Hello, World!" }));
 });
 
-app.Run();`
-    },
-}
+app.Run();`,
+	},
+};
 
-export default frameworkExamples
+export default frameworkExamples;

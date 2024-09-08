@@ -30,12 +30,25 @@ func (rw *responseWriter) WriteHeader(code int) {
 }
 
 type Config struct {
+	PrivacyLevel int
+	ServerURL    string
 	GetPath      func(r *http.Request) string
 	GetHostname  func(r *http.Request) string
 	GetUserAgent func(r *http.Request) string
 	GetIPAddress func(r *http.Request) string
 	GetUserID    func(r *http.Request) string
-	PrivacyLevel int
+}
+
+func NewConfig() *Config {
+	return &Config{
+		PrivacyLevel: 0,
+		ServerURL: core.DefaultServerURL,
+		GetPath: GetPath,
+		GetHostname: GetHostname,
+		GetUserAgent: GetUserAgent,
+		GetIPAddress: GetIPAddress,
+		GetUserID: GetUserID
+	}
 }
 
 func Analytics(apiKey string) func(next http.Handler) http.Handler {
@@ -69,7 +82,7 @@ func AnalyticsWithConfig(apiKey string, config *Config) func(next http.Handler) 
 				CreatedAt:    start.Format(time.RFC3339),
 			}
 
-			core.LogRequest(apiKey, data, "Chi", config.PrivacyLevel)
+			core.LogRequest(apiKey, data, "Chi", config.PrivacyLevel, config.ServerURL)
 		})
 	}
 }
@@ -78,24 +91,25 @@ func getHostname(r *http.Request, config *Config) string {
 	if config.GetHostname != nil {
 		return config.GetHostname(r)
 	}
-	return r.Host
+	return GetHostname(r)
 }
 
 func getPath(r *http.Request, config *Config) string {
 	if config.GetPath != nil {
 		return config.GetPath(r)
 	}
-	return r.URL.Path
+	return GetPath(r)
 }
 
 func getUserAgent(r *http.Request, config *Config) string {
 	if config.GetUserAgent != nil {
 		return config.GetUserAgent(r)
 	}
-	return r.UserAgent()
+	return GetUserAgent(r)
 }
 
 func getIPAddress(r *http.Request, config *Config) string {
+	// IP address never sent to the server for privacy level 2 and above
 	if config.PrivacyLevel >= 2 {
 		return ""
 	}
@@ -103,13 +117,33 @@ func getIPAddress(r *http.Request, config *Config) string {
 	if config.GetIPAddress != nil {
 		return config.GetIPAddress(r)
 	}
-	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
-	return ip
+	return GetIPAddress(r)
 }
 
 func getUserID(r *http.Request, config *Config) string {
 	if config.GetUserID != nil {
 		return config.GetUserID(r)
 	}
+	return GetUserID(r)
+}
+
+func GetHostname(r *http.Request) string {
+	return r.Host
+}
+
+func GetPath(r *http.Request) string {
+	return r.URL.Path
+}
+
+func GetUserAgent(r *http.Request) string {
+	return r.UserAgent()
+}
+
+func GetIPAddress(r *http.Request) string {
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	return ip
+}
+
+func GetUserID(r *http.Request) string {
 	return ""
 }

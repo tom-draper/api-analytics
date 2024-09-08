@@ -19,6 +19,7 @@ struct RequestData {
     method: String,
     response_time: u32,
     status: u16,
+    user_id: String,
     created_at: String,
 }
 
@@ -31,6 +32,7 @@ impl RequestData {
         method: String,
         response_time: u32,
         status: u16,
+        user_id: String,
         created_at: String,
     ) -> Self {
         Self {
@@ -41,52 +43,118 @@ impl RequestData {
             method,
             response_time,
             status,
+            user_id,
             created_at,
         }
     }
 }
 
-type StringMapper = dyn for<'a, 'r> Fn(&'r Request<'a>, &'r Response) -> String + Send + Sync;
+type StringMapper = dyn for<'a> Fn(&Request<'a>) -> String + Send + Sync;
 
-#[derive(Default)]
-struct Mappers {
-    hostname: Option<Box<StringMapper>>,
-    ip_address: Option<Box<StringMapper>>,
-    path: Option<Box<StringMapper>>,
+struct Config {
+    privacy_level: i32,
+    server_url: String,
+    get_hostname: Box<StringMapper>,
+    get_ip_address: Box<StringMapper>,
+    get_path: Box<StringMapper>,
+    get_user_agent: Box<StringMapper>,
+    get_user_id: Box<StringMapper>,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            privacy_level: 0,
+            server_url: String::from("https://www.apianalytics-server.com/"),
+            get_hostname: Box::new(get_hostname),
+            get_ip_address: Box::new(get_ip_address),
+            get_path: Box::new(get_path),
+            get_user_agent: Box::new(get_user_agent),
+            get_user_id: Box::new(get_user_id),
+        }
+    }
+}
+
+fn get_hostname(req: &Request) -> String {
+    req.host().unwrap().to_string()
+}
+
+fn get_ip_address(req: &Request) -> String {
+    req.client_ip().unwrap().to_string()
+}
+
+fn get_path(req: &Request) -> String {
+    req.uri().path().to_string()
+}
+
+fn get_user_agent(req: &Request) -> String {
+    req.headers()
+        .get_one("User-Agent")
+        .unwrap_or_default()
+        .to_owned()
+}
+
+fn get_user_id(_req: &Request) -> String {
+    String::new()
 }
 
 #[derive(Default)]
 pub struct Analytics {
     api_key: String,
-    mappers: Mappers,
+    config: Config,
 }
 
 impl Analytics {
     pub fn new(api_key: String) -> Self {
-        Self { api_key, mappers: Default::default() }
+        Self {
+            api_key,
+            config: Config::default(),
+        }
+    }
+
+    pub fn with_privacy_level(mut self, privacy_level: i32) -> Self {
+        self.config.privacy_level = privacy_level;
+        self
+    }
+
+    pub fn with_server_url(mut self, server_url: String) -> Self {
+        if server_url.ends_with("/") {
+            self.config.server_url = server_url;
+        } else {
+            self.config.server_url = server_url + "/";
+        }
+        self
     }
 
     pub fn with_hostname_mapper<F>(mut self, mapper: F) -> Self
-    where 
-        F: for<'a, 'r> Fn(&'r Request<'a>, &'r Response) -> String + Send + Sync + 'static
+    where
+        F: for<'a> Fn(&Request<'a>) -> String + Send + Sync + 'static,
     {
-        self.mappers.hostname = Some(Box::new(mapper));
+        self.config.get_hostname = Box::new(mapper);
         self
     }
 
     pub fn with_ip_address_mapper<F>(mut self, mapper: F) -> Self
-    where 
-        F: for<'a, 'r> Fn(&'r Request<'a>, &'r Response) -> String + Send + Sync + 'static
+    where
+        F: for<'a> Fn(&Request<'a>) -> String + Send + Sync + 'static,
     {
-        self.mappers.ip_address = Some(Box::new(mapper));
+        self.config.get_ip_address = Box::new(mapper);
         self
     }
 
     pub fn with_path_mapper<F>(mut self, mapper: F) -> Self
-    where 
-        F: for<'a, 'r> Fn(&'r Request<'a>, &'r Response) -> String + Send + Sync + 'static
+    where
+        F: for<'a> Fn(&Request<'a>) -> String + Send + Sync + 'static,
     {
-        self.mappers.path = Some(Box::new(mapper));
+        self.config.get_path = Box::new(mapper);
+        self
+    }
+
+    pub fn with_user_agent_mapper<F>(mut self, mapper: F) -> Self
+    where
+        F: for<'a> Fn(&Request<'a>) -> String + Send + Sync + 'static,
+    {
+        self.config.get_user_agent = Box::new(mapper);
         self
     }
 }
@@ -104,31 +172,38 @@ struct Payload {
     api_key: String,
     requests: Vec<RequestData>,
     framework: String,
+    privacy_level: i32,
 }
 
 impl Payload {
-    pub fn new(api_key: String, requests: Vec<RequestData>) -> Self {
+    pub fn new(api_key: String, requests: Vec<RequestData>, privacy_level: i32) -> Self {
         Self {
             api_key,
             requests,
             framework: String::from("Rocket"),
+            privacy_level,
         }
     }
 }
 
-fn post_requests(data: Payload) {
+fn post_requests(data: Payload, server_url: String) {
     let _ = Client::new()
-        .post("https://www.apianalytics-server.com/api/log-request")
+        .post(server_url + "api/log-request")
         .json(&data)
         .send();
 }
 
-fn log_request(api_key: &str, request_data: RequestData) {
+fn log_request(api_key: &str, request_data: RequestData, config: &Config) {
     REQUESTS.lock().unwrap().push(request_data);
     if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > 60.0 {
-        let payload = Payload::new(api_key.to_string(), REQUESTS.lock().unwrap().to_vec());
+        let payload = Payload::new(
+            api_key.to_string(),
+            REQUESTS.lock().unwrap().to_vec(),
+            config.privacy_level,
+        );
+        let server_url = config.server_url.to_owned();
         REQUESTS.lock().unwrap().clear();
-        spawn(|| post_requests(payload));
+        spawn(|| post_requests(payload, server_url));
         *LAST_POSTED.lock().unwrap() = Instant::now();
     }
 }
@@ -141,21 +216,19 @@ impl Fairing for Analytics {
             kind: Kind::Request | Kind::Response,
         }
     }
+
     async fn on_request(&self, req: &mut Request<'_>, _data: &mut Data<'_>) {
         req.local_cache(|| Start::<Option<Instant>>(Some(Instant::now())));
     }
 
     async fn on_response<'r>(&self, req: &'r Request<'_>, res: &mut Response<'r>) {
         let start = &req.local_cache(|| Start::<Option<Instant>>(None)).0;
-        let hostname = self.mappers.hostname.as_ref().map(|m| m(req, res)).unwrap_or_else(|| req.host().unwrap().to_string());
-        let ip_address = self.mappers.ip_address.as_ref().map(|m| m(req, res)).unwrap_or_else(|| req.client_ip().unwrap().to_string());
+        let hostname = (self.config.get_hostname)(req);
+        let ip_address = (self.config.get_ip_address)(req);
         let method = req.method().to_string();
-        let user_agent = req
-            .headers()
-            .get_one("User-Agent")
-            .unwrap_or_default()
-            .to_owned();
-        let path = self.mappers.path.as_ref().map(|m| m(req, res)).unwrap_or_else(|| req.uri().path().to_string());
+        let user_agent = (self.config.get_user_agent)(req);
+        let path = (self.config.get_path)(req);
+        let user_id = (self.config.get_user_id)(req);
 
         let request_data = RequestData::new(
             hostname,
@@ -165,10 +238,11 @@ impl Fairing for Analytics {
             method,
             start.unwrap().elapsed().as_millis() as u32,
             res.status().code,
+            user_id,
             Utc::now().to_rfc3339(),
         );
 
-        log_request(&self.api_key, request_data);
+        log_request(&self.api_key, request_data, &self.config);
     }
 }
 

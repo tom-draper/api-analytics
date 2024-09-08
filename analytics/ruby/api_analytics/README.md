@@ -1,16 +1,18 @@
 # API Analytics
 
-A lightweight API analytics solution, complete with a dashboard.
+A free and lightweight API analytics solution, complete with a dashboard.
 
 ## Getting Started
 
 ### 1. Generate an API key
 
-Head to https://apianalytics.dev/generate to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It's also required in order to view your API analytics dashboard.
+Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It's also required in order to access your API analytics dashboard and data.
 
 ### 2. Add middleware to your API
 
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on the performance of your API.
+
+[![Gem version](https://img.shields.io/gem/v/api_analytics)](https://rubygems.org/gems/api_analytics)
 
 ```bash
 gem install api_analytics
@@ -55,24 +57,24 @@ end
 
 ### 3. View your analytics
 
-Your API will now log and store incoming request data on all valid routes. Your logged data can be viewed using two methods:
+Your API will now log and store incoming request data on all routes. Your logged data can be viewed using two methods:
 
-1. Through visualizations and statistics on our dashboard
-2. Accessed directly via our data API
+1. Through visualizations and statistics on the dashboard
+2. Accessed directly via the data API
 
-You can use the same API key across multiple APIs, but all your data will appear in the same dashboard. We recommend generating a new API key for each additional API server you want analytics for.
+You can use the same API key across multiple APIs, but all of your data will appear in the same dashboard. We recommend generating a new API key for each additional API server you want analytics for.
 
 #### Dashboard
 
-Head to https://apianalytics.dev/dashboard and paste in your API key to access your dashboard.
+Head to [apianalytics.dev/dashboard](https://apianalytics.dev/dashboard) and paste in your API key to access your dashboard.
 
-Demo: https://apianalytics.dev/dashboard/demo
+Demo: [apianalytics.dev/dashboard/demo](https://apianalytics.dev/dashboard/demo)
 
-![Dashboard](https://user-images.githubusercontent.com/41476809/211800529-a84a0aa3-70c9-47d4-aa0d-7f9bbd3bc9b5.png)
+![dashboard](https://user-images.githubusercontent.com/41476809/272061832-74ba4146-f4b3-4c05-b759-3946f4deb9de.png)
 
 #### Data API
 
-Logged data for all requests can be accessed via our REST API. Simply send a GET request to `https://apianalytics-server.com/api/data` with your API key set as `X-AUTH-TOKEN` in headers.
+Logged data for all requests can be accessed via our REST API. Simply send a GET request to `https://apianalytics-server.com/api/data` with your API key set as `X-AUTH-TOKEN` in the headers.
 
 ##### Python
 
@@ -107,39 +109,57 @@ fetch("https://apianalytics-server.com/api/data", {
 curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 ```
 
-## Monitoring (coming soon)
+##### Parameters
 
-Opt-in active API monitoring is coming soon. Our servers will regularly ping your API endpoints to monitor uptime and response time. Optional email alerts to notify you when your endpoints are down can be subscribed to.
+You can filter your data by providing URL parameters in your request.
 
-![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)
+- `page` - the page number, with a max page size of 50,000 (defaults to 1)
+- `date` - the exact day the requests occurred on (`YYYY-MM-DD`)
+- `dateFrom` - a lower bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `dateTo` - a upper bound of a date range the requests occurred in (`YYYY-MM-DD`)
+- `hostname` - the hostname of your service
+- `ipAddress` - the IP address of the client
+- `status` - the status code of the response
+- `location` - a two-character location code of the client
+- `user_id` - a custom user identifier (only relevant if a `get_user_id` mapper function has been set)
+
+Example:
+
+```bash
+curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&user_id=b56cbd92-1168-4d7b-8d94-0418da207908
+```
 
 ## Data and Security
 
 All data is stored securely in compliance with The EU General Data Protection Regulation (GDPR).
 
 For any given request to your API, data recorded is limited to:
- - Path requested by client
- - Client IP address
- - Client operating system
- - Client browser
- - Request method (GET, POST, PUT, etc.)
- - Time of request
- - Status code
- - Response time
- - API hostname
- - API framework (FastAPI, Flask, Express etc.)
 
-Data collected is only ever used to populate your analytics dashboard. All data stored is anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
+- Path requested by client
+- Client IP address
+- Client operating system
+- Client browser
+- Request method (GET, POST, PUT, etc.)
+- Time of request
+- Status code
+- Response time
+- API hostname
+- API framework (FastAPI, Flask, Express etc.)
 
-### Delete Data
+Data collected is only ever used to populate your analytics dashboard. All stored data is pseudo-anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
 
-At any time, you can delete all stored data associated with your API key by going to https://apianalytics.dev/delete and entering your API key.
+### Data Deletion
 
-API keys and their associated API request data are scheduled be deleted after 1 year of inactivity.
+At any time you can delete all stored data associated with your API key by going to [apianalytics.dev/delete](https://apianalytics.dev/delete) and entering your API key.
 
-## Development
+API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity.
 
-This project is still in the early stages of development and bugs are to be expected.
+## Monitoring
+
+Active API monitoring can be set up by heading to [apianalytics.dev/monitoring](https://apianalytics.dev/monitoring) to enter your API key. Our servers will regularly ping chosen API endpoints to monitor uptime and response time. 
+<!-- Optional email alerts when your endpoints are down can be subscribed to. -->
+
+![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)
 
 ## Contributions
 
@@ -151,3 +171,9 @@ Contributions, issues and feature requests are welcome.
 - Push to the branch (`git push origin my-new-feature`)
 - Create a new Pull Request
 
+---
+
+If you find value in my work consider supporting me.
+
+Buy Me a Coffee: https://www.buymeacoffee.com/tomdraper<br>
+PayPal: https://www.paypal.com/paypalme/tomdraper
