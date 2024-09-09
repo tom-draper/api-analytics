@@ -17,7 +17,7 @@
 		};
 	}
 
-	function bars() {
+	function bars(data: RequestsData) {
 		const responseTimes = Array(24).fill(0);
 
 		for (let i = 0; i < data.length; i++) {
@@ -56,9 +56,9 @@
 		];
 	}
 
-	function buildPlotData() {
+	function buildPlotData(data: RequestsData) {
 		return {
-			data: bars(),
+			data: bars(data),
 			layout: defaultLayout(),
 			config: {
 				responsive: true,
@@ -68,8 +68,8 @@
 		};
 	}
 
-	function genPlot() {
-		const plotData = buildPlotData();
+	function genPlot(data: RequestsData) {
+		const plotData = buildPlotData(data);
 		//@ts-ignore
 		new Plotly.newPlot(
 			plotDiv,
@@ -80,12 +80,11 @@
 	}
 
 	let plotDiv: HTMLDivElement;
-	let mounted = false;
-	onMount(() => {
-		mounted = true;
-	});
 
-	$: data && mounted && genPlot();
+	$: if (plotDiv && data) {
+		genPlot(data);
+	}
+
 	export let data: RequestsData;
 </script>
 

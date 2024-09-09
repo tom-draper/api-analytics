@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { ColumnIndex } from '../../lib/consts';
 
 	function successRatePlotLayout() {
@@ -25,7 +24,7 @@
 		};
 	}
 
-	function lines() {
+	function lines(data: RequestsData) {
 		const n = 5;
 		const x = [...Array(n).keys()];
 		const y = Array(n).fill(0);
@@ -53,9 +52,9 @@
 		];
 	}
 
-	function successRatePlotData() {
+	function successRatePlotData(data: RequestsData) {
 		return {
-			data: lines(),
+			data: lines(data),
 			layout: successRatePlotLayout(),
 			config: {
 				responsive: true,
@@ -65,8 +64,8 @@
 		};
 	}
 
-	function genPlot() {
-		const plotData = successRatePlotData();
+	function genPlot(data: RequestsData) {
+		const plotData = successRatePlotData(data);
 		//@ts-ignore
 		new Plotly.newPlot(
 			plotDiv,
@@ -76,34 +75,37 @@
 		);
 	}
 
-	function build() {
-		let totalRequests = 0;
-		let successfulRequests = 0;
+	function build(data: RequestsData) {
+		const requests = {
+			total: 0,
+			successful: 0,
+		}
+
 		for (let i = 0; i < data.length; i++) {
 			if (
 				data[i][ColumnIndex.Status] >= 200 &&
 				data[i][ColumnIndex.Status] <= 299
 			) {
-				successfulRequests++;
+				requests.successful++;
 			}
-			totalRequests++;
+			requests.total++;
 		}
-		if (totalRequests > 0) {
-			successRate = (successfulRequests / totalRequests) * 100;
+
+		if (requests.total > 0) {
+			successRate = (requests.successful / requests.total) * 100;
 		} else {
 			successRate = 100;
 		}
-		genPlot();
+
+		genPlot(data);
 	}
 
 	let plotDiv: HTMLDivElement;
 	let successRate: number;
-	let mounted = false;
-	onMount(() => {
-		mounted = true;
-	});
 
-	$: data && mounted && build();
+	$: if (plotDiv && data) {
+		build(data);
+	}
 
 	export let data: RequestsData;
 </script>

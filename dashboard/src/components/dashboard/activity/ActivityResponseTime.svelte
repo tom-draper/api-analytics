@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { periodToDays } from '../../../lib/period';
 	import type { Period } from '../../../lib/settings';
 	import { initFreqMap } from '../../../lib/activity';
@@ -131,12 +130,10 @@
 	}
 
 	let plotDiv: HTMLDivElement;
-	let mounted = false;
-	onMount(() => {
-		mounted = true;
-	});
 
-	$: data && mounted && genPlot(data, period);
+	$: if (plotDiv && data) {
+		genPlot(data, period);
+	}
 
 	export let data: RequestsData, period: Period;
 </script>

@@ -71,17 +71,15 @@
 		const freq = endpointFreq();
 
 		// Convert object to list
-		const freqArr: MapValue<EndpointFreq>[] = new Array(freq.size);
+		const freqArr: MapValue<EndpointFreq>[] = [];
 		maxCount = 0;
-		let i = 0;
 		for (const value of freq.values()) {
 			if (statusMatch(value.status)) {
-				freqArr[i] = value;
+				freqArr.push(value);
 				if (value.count > maxCount) {
 					maxCount = value.count;
 				}
 			}
-			i++;
 		}
 
 		// Sort by count

@@ -72,6 +72,7 @@
 		padding: 5px 15px 5px 9px;
 		cursor: pointer;
 		display: flex;
+		pointer-events: all;
 	}
 	.options {
 		display: flex;
@@ -103,11 +104,11 @@
 		border-radius: 4px 4px 0 0;
 	}
 	.inner {
-		/* position: absolute; */
 		z-index: 9;
 		display: flex;
 		width: inherit;
 		flex-direction: column;
+		pointer-events: none;
 	}
 	svg {
 		width: 16px;
