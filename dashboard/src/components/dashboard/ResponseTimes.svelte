@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { ColumnIndex } from '../../lib/consts';
 
 	/* Parameter `arr` assumed sorted. */
@@ -15,7 +14,7 @@
 		return 0;
 	}
 
-	function build() {
+	function build(data: RequestsData) {
 		const responseTimes: number[] = new Array(data.length);
 		for (let i = 0; i < data.length; i++) {
 			responseTimes[i] = data[i][ColumnIndex.ResponseTime];
@@ -121,12 +120,10 @@
 	let LQ: number;
 	let UQ: number;
 	let plotDiv: HTMLDivElement;
-	let mounted = false;
-	onMount(() => {
-		mounted = true;
-	});
 
-	$: data && mounted && build();
+	$: if (plotDiv && data) {
+		build(data);
+	}
 
 	export let data: RequestsData;
 </script>

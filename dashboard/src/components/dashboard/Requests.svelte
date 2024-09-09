@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { periodToDays } from '../../lib/period';
 	import type { Period } from '../../lib/settings';
 	import { ColumnIndex } from '../../lib/consts';
@@ -27,7 +26,7 @@
 		};
 	}
 
-	function lines() {
+	function lines(data: RequestsData) {
 		const n = 5;
 		const x = [...Array(n).keys()];
 		const y = Array(n).fill(0);
@@ -43,6 +42,7 @@
 				y[idx] += 1;
 			}
 		}
+
 		return [
 			{
 				x: x,
@@ -57,9 +57,9 @@
 		];
 	}
 
-	function requestsPlotData() {
+	function requestsPlotData(data: RequestsData) {
 		return {
-			data: lines(),
+			data: lines(data),
 			layout: requestsPlotLayout(),
 			config: {
 				responsive: true,
@@ -69,8 +69,8 @@
 		};
 	}
 
-	function genPlot() {
-		const plotData = requestsPlotData();
+	function genPlot(data: RequestsData) {
+		const plotData = requestsPlotData(data);
 		//@ts-ignore
 		new Plotly.newPlot(
 			plotDiv,
@@ -80,14 +80,14 @@
 		);
 	}
 
-	function getPercentageChange() {
+	function getPercentageChange(data: RequestsData) {
 		if (prevData.length == 0) {
 			return null;
 		}
 		return (data.length / prevData.length) * 100 - 100;
 	}
 
-	function getRequestsPerHour() {
+	function getRequestsPerHour(data: RequestsData) {
 		if (data.length > 0) {
 			const days = periodToDays(period);
 			if (days != null) {
@@ -101,22 +101,20 @@
 		perHour = !perHour;
 	}
 
-	function build() {
-		percentageChange = getPercentageChange();
-		requestsPerHour = getRequestsPerHour();
-		genPlot();
+	function build(data: RequestsData) {
+		percentageChange = getPercentageChange(data);
+		requestsPerHour = getRequestsPerHour(data);
+		genPlot(data);
 	}
 
 	let plotDiv: HTMLDivElement;
 	let requestsPerHour: string;
 	let perHour = false;
 	let percentageChange: number;
-	let mounted = false;
-	onMount(() => {
-		mounted = true;
-	});
 
-	$: data && mounted && build();
+	$: if (plotDiv && data) {
+		build(data);
+	}
 
 	export let data: RequestsData, prevData: RequestsData, period: Period;
 </script>

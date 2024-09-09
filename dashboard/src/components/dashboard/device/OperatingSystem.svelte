@@ -1,63 +1,72 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { cachedFunction } from '../../../lib/cache';
+	import {
+		type Candidate,
+		maintainCandidates,
+	} from '../../../lib/candidates';
 	import { ColumnIndex, graphColors } from '../../../lib/consts';
 
-	function getOS(userAgent: string): string {
+		const osCandidates: Candidate[] = [
+		{ name: 'Windows 3.11', regex: /Win16/, matches: 0 },
+		{
+			name: 'Windows 95',
+			regex: /(Windows 95)|(Win95)|(Windows_95)/,
+			matches: 0,
+		},
+		{ name: 'Windows 98', regex: /(Windows 98)|(Win98)/, matches: 0 },
+		{
+			name: 'Windows 2000',
+			regex: /(Windows NT 5.0)|(Windows 2000)/,
+			matches: 0,
+		},
+		{
+			name: 'Windows XP',
+			regex: /(Windows NT 5.1)|(Windows XP)/,
+			matches: 0,
+		},
+		{ name: 'Windows Server 2003', regex: /(Windows NT 5.2)/, matches: 0 },
+		{ name: 'Windows Vista', regex: /(Windows NT 6.0)/, matches: 0 },
+		{ name: 'Windows 7', regex: /(Windows NT 6.1)/, matches: 0 },
+		{ name: 'Windows 8', regex: /(Windows NT 6.2)/, matches: 0 },
+		{ name: 'Windows 10/11', regex: /(Windows NT 10.0)/, matches: 0 },
+		{
+			name: 'Windows NT 4.0',
+			regex: /(Windows NT 4.0)|(WinNT4.0)|(WinNT)|(Windows NT)/,
+			matches: 0,
+		},
+		{ name: 'Windows ME', regex: /Windows ME/, matches: 0 },
+		{ name: 'OpenBSD', regex: /OpenBSD/, matches: 0 },
+		{ name: 'SunOS', regex: /SunOS/, matches: 0 },
+		{ name: 'Android', regex: /Android/, matches: 0 },
+		{ name: 'Linux', regex: /(Linux)|(X11)/, matches: 0 },
+		{ name: 'MacOS', regex: /(Mac_PowerPC)|(Macintosh)/, matches: 0 },
+		{ name: 'QNX', regex: /QNX/, matches: 0 },
+		{ name: 'iOS', regex: /iPhone OS/, matches: 0 },
+		{ name: 'BeOS', regex: /BeOS/, matches: 0 },
+		{ name: 'OS/2', regex: /OS\/2/, matches: 0 },
+		{
+			name: 'Search Bot',
+			regex: /(APIs-Google)|(AdsBot)|(nuhk)|(Googlebot)|(Storebot)|(Google-Site-Verification)|(Mediapartners)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves\/Teoma)|(ia_archiver)/,
+			matches: 0,
+		},
+	];
+
+	function getOS(userAgent: string | null): string {
 		if (userAgent === null) {
 			return 'Unknown';
-		} else if (userAgent.match(/Win16/)) {
-			return 'Windows 3.11';
-		} else if (userAgent.match(/(Windows 95)|(Win95)|(Windows_95)/)) {
-			return 'Windows 95';
-		} else if (userAgent.match(/(Windows 98)|(Win98)/)) {
-			return 'Windows 98';
-		} else if (userAgent.match(/(Windows NT 5.0)|(Windows 2000)/)) {
-			return 'Windows 2000';
-		} else if (userAgent.match(/(Windows NT 5.1)|(Windows XP)/)) {
-			return 'Windows XP';
-		} else if (userAgent.match(/(Windows NT 5.2)/)) {
-			return 'Windows Server 2003';
-		} else if (userAgent.match(/(Windows NT 6.0)/)) {
-			return 'Windows Vista';
-		} else if (userAgent.match(/(Windows NT 6.1)/)) {
-			return 'Windows 7';
-		} else if (userAgent.match(/(Windows NT 6.2)/)) {
-			return 'Windows 8';
-		} else if (userAgent.match(/(Windows NT 10.0)/)) {
-			return 'Windows 10/11';
-		} else if (
-			userAgent.match(/(Windows NT 4.0)|(WinNT4.0)|(WinNT)|(Windows NT)/)
-		) {
-			return 'Windows NT 4.0';
-		} else if (userAgent.match(/Windows ME/)) {
-			return 'Windows ME';
-		} else if (userAgent.match(/OpenBSD/)) {
-			return 'OpenBSE';
-		} else if (userAgent.match(/SunOS/)) {
-			return 'SunOS';
-		} else if (userAgent.match(/Android/)) {
-			return 'Android';
-		} else if (userAgent.match(/(Linux)|(X11)/)) {
-			return 'Linux';
-		} else if (userAgent.match(/(Mac_PowerPC)|(Macintosh)/)) {
-			return 'MacOS';
-		} else if (userAgent.match(/QNX/)) {
-			return 'QNX';
-		} else if (userAgent.match(/iPhone OS/)) {
-			return 'iOS';
-		} else if (userAgent.match(/BeOS/)) {
-			return 'BeOS';
-		} else if (userAgent.match(/OS\/2/)) {
-			return 'OS/2';
-		} else if (
-			userAgent.match(
-				/(APIs-Google)|(AdsBot)|(nuhk)|(Googlebot)|(Storebot)|(Google-Site-Verification)|(Mediapartners)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves\/Teoma)|(ia_archiver)/,
-			)
-		) {
-			return 'Search Bot';
-		} else {
-			return 'Unknown';
 		}
+
+		for (let i = 0; i < osCandidates.length; i++) {
+			const candidate = osCandidates[i];
+			if (userAgent.match(candidate.regex)) {
+				candidate.matches++;
+				// Ensure osCandidates remains sorted by matches desc for future hits
+				maintainCandidates(i, osCandidates);
+				return candidate.name;
+			}
+		}
+
+		return 'Other';
 	}
 
 	function osPlotLayout() {
@@ -87,26 +96,30 @@
 		};
 	}
 
-	function pieChart() {
+	function plotData(data: RequestsData) {
 		const osCount: ValueCount = {};
+		const osGetter = cachedFunction(getOS);
 		for (let i = 0; i < data.length; i++) {
 			const userAgent = getUserAgent(data[i][ColumnIndex.UserAgent]);
-			const os = getOS(userAgent);
+			const os = osGetter(userAgent);
 			if (os in osCount) {
-				osCount[os]++
+				osCount[os]++;
 			} else {
-				osCount[os] = 1
+				osCount[os] = 1;
 			}
 		}
 
-		const oss = new Array(Object.keys(osCount).length);
-		const counts = new Array(Object.keys(osCount).length);
+		const dataPoints = Object.entries(osCount).sort((a, b) => b[1] - a[1]);
+
+		const oss = new Array(dataPoints.length);
+		const counts = new Array(dataPoints.length);
 		let i = 0;
-		for (const [os, count] of Object.entries(osCount)) {
+		for (const [os, count] of dataPoints) {
 			oss[i] = os;
 			counts[i] = count;
 			i++;
 		}
+
 		return [
 			{
 				values: counts,
@@ -119,9 +132,9 @@
 		];
 	}
 
-	function osPlotData() {
+	function getPlotData(data: RequestsData) {
 		return {
-			data: pieChart(),
+			data: plotData(data),
 			layout: osPlotLayout(),
 			config: {
 				responsive: true,
@@ -131,8 +144,8 @@
 		};
 	}
 
-	function genPlot() {
-		const plotData = osPlotData();
+	function genPlot(data: RequestsData) {
+		const plotData = getPlotData(data);
 		//@ts-ignore
 		new Plotly.newPlot(
 			plotDiv,
@@ -143,12 +156,10 @@
 	}
 
 	let plotDiv: HTMLDivElement;
-	let mounted = false;
-	onMount(() => {
-		mounted = true;
-	});
 
-	$: data && mounted && genPlot();
+	$: if (plotDiv && data) {
+		genPlot(data);
+	}
 
 	export let data: RequestsData, getUserAgent: (id: number) => string;
 </script>

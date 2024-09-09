@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { ColumnIndex } from '../../lib/consts';
 
 	function getFlagEmoji(countryCode: string) {
@@ -17,7 +16,7 @@
 
 	type LocationBar = { location: string; frequency: number; height: number };
 
-	function build() {
+	function getLocationBars(data: RequestsData): LocationBar[] {
 		let max = 0;
 		const locationsFreq: ValueCount = {};
 		for (let i = 0; i < data.length; i++) {
@@ -47,16 +46,18 @@
 				return b.frequency - a.frequency;
 			});
 
-		locations = locationBars;
+		return locationBars;
+	}
+
+	function build(data: RequestsData) {
+		locations = getLocationBars(data);
 	}
 
 	let locations: LocationBar[] = [];
-	let mounted = false;
-	onMount(() => {
-		mounted = true;
-	});
 
-	$: data && mounted && build();
+	$: if (data) {
+		build(data);
+	}
 
 	export let data: RequestsData, targetLocation: string;
 </script>
