@@ -36,7 +36,7 @@
 		}
 
 		const totalUsers = Object.keys(users).length;
-		const topUserRequestsCount = getTopUserRequestsCount(users)
+		const topUserRequestsCount = getTopUserRequestsCount(users);
 		if (totalUsers < 10 || topUserRequestsCount <= 1) {
 			topUsers = null;
 			return;

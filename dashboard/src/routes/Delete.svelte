@@ -2,6 +2,7 @@
 	import { serverURL } from '../lib/consts';
 
 	type State = 'delete' | 'loading' | 'deleted' | 'error';
+
 	let state: State = 'delete';
 	let apiKey = '';
 	async function submit() {
