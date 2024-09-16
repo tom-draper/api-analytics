@@ -27,6 +27,7 @@
 
 	let input: HTMLInputElement;
 	const hideOptions: boolean = true;
+
 	export let items: Set<string>, placeholder: string;
 </script>
 

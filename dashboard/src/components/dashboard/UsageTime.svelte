@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { ColumnIndex } from '../../lib/consts';
 
-	function defaultLayout() {
+	function getLayout() {
 		return {
 			font: { size: 12 },
 			paper_bgcolor: 'transparent',
@@ -59,7 +58,7 @@
 	function buildPlotData(data: RequestsData) {
 		return {
 			data: bars(data),
-			layout: defaultLayout(),
+			layout: getLayout(),
 			config: {
 				responsive: true,
 				showSendToCloud: false,

@@ -182,6 +182,7 @@
 		}
 		.export-csv {
 			top: 1.5em;
+			right: 2em;
 		}
 	}
 </style>

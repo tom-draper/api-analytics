@@ -30,12 +30,12 @@
 		return true;
 	}
 
-	function setData() {
+	function getPeriodData() {
 		const inRange = getInRange();
 		const inPrevRange = getInPrevRange();
 
-		const dataSubset = [];
-		const prevDataSubset = [];
+		const current = [];
+		const previous = [];
 		for (let i = 0; i < data.length; i++) {
 			// Created inverted version of the if statement to reduce nesting
 			const request = data[i];
@@ -56,15 +56,19 @@
 			) {
 				const date = request[ColumnIndex.CreatedAt];
 				if (inRange(date)) {
-					dataSubset.push(request);
+					current.push(request);
 				} else if (inPrevRange(date)) {
-					prevDataSubset.push(request);
+					previous.push(request);
 				}
 			}
 		}
 
-		periodData = dataSubset;
-		prevPeriodData = prevDataSubset;
+		return { current, previous };
+	}
+
+	function setPeriodData() {
+		periodData = getPeriodData();
+		changingPeriod = false;
 	}
 
 	function getInRange() {
@@ -91,7 +95,7 @@
 		return inPrevRange;
 	}
 
-	function isHiddenEndpoint(endpoint: string): boolean {
+	function isHiddenEndpoint(endpoint: string) {
 		const firstChar = endpoint.charAt(0);
 		const lastChar = endpoint.charAt(endpoint.length - 1);
 		return (
@@ -108,7 +112,7 @@
 		);
 	}
 
-	function wildCardMatch(endpoint: string): boolean {
+	function wildCardMatch(endpoint: string) {
 		if (endpoint.charAt(endpoint.length - 1) !== '/') {
 			endpoint = endpoint + '/';
 		}
@@ -168,8 +172,10 @@
 	async function fetchData(): Promise<DashboardData> {
 		userID = formatUUID(userID);
 		try {
-			const response = await fetch(`${serverURL}/api/requests/${userID}/1`);
-			if (response.status === 200) {
+			const response = await fetch(
+				`${serverURL}/api/requests/${userID}/1`,
+			);
+			if (response.ok && response.status === 200) {
 				return await response.json();
 			} else {
 				fetchFailed = true;
@@ -187,6 +193,15 @@
 		}
 	}
 
+	function sortByTime(data: RequestsData) {
+		data.sort((a, b) => {
+			return (
+				a[ColumnIndex.CreatedAt].getTime() -
+				b[ColumnIndex.CreatedAt].getTime()
+			);
+		});
+	}
+
 	let data: RequestsData;
 	let userAgents: UserAgents;
 	let settings: DashboardSettings = initSettings();
@@ -197,8 +212,11 @@
 		style: 'error',
 		show: false,
 	};
-	let periodData: RequestsData;
-	let prevPeriodData: RequestsData;
+	let periodData: {
+		current: RequestsData;
+		previous: RequestsData;
+	};
+	let changingPeriod: boolean = false;
 	const timePeriods: Period[] = [
 		'24 hours',
 		'Week',
@@ -207,50 +225,36 @@
 		'Year',
 		'All time',
 	];
-	let loading = true;
-	let fetchFailed = false;
-	let endpointsRendered = false;
+	let loading: boolean = true;
+	let fetchFailed: boolean = false;
+	let endpointsRendered: boolean = false;
 	const pageSize = 200_000;
 	onMount(async () => {
-		const dashboardData = await getDashboardData();
-		data = dashboardData.requests;
-		userAgents = dashboardData.user_agents;
-
-		loading = true;
+		({requests: data, user_agents: userAgents} = await getDashboardData());
+		
+		// loading = true;
 		if (data.length === pageSize) {
 			// Fetch page 2 and onwards if initial fetch didn't get all data
-			fetchAdditionalPages(2);
+			fetchAdditionalPage(2);
 		} else {
 			loading = false;
 		}
-		// loading = true;
-		// let fetchAdditionalPages = data.length === pageSize;
-		// let page = 2;
-		// while (fetchAdditionalPages) {
-		// 	fetchAdditionalPages = await fetchPage(page);
-		// 	page++;
-		// }
-		// loading = false;
 
 		setPeriod(settings.period);
 		setHostnames();
 		parseDates(data);
+		sortByTime(data);
 
-		data?.sort((a, b) => {
-			return (
-				a[ColumnIndex.CreatedAt].getTime() -
-				b[ColumnIndex.CreatedAt].getTime()
-			);
-		});
+		setPeriodData();
 
 		console.log(data);
 	});
 
-	async function fetchAdditionalPages(page: number) {
+	async function fetchAdditionalPage(page: number) {
 		try {
 			const response = await fetch(
 				`${serverURL}/api/requests/${userID}/${page}`,
-				{ signal: AbortSignal.timeout(120000) }
+				{ signal: AbortSignal.timeout(180000) },
 			);
 			if (response.status !== 200) {
 				loading = false;
@@ -283,35 +287,40 @@
 				Object.assign(data, data.concat(json.requests));
 			}
 
-			setPeriod(settings.period);
+			// setPeriod(settings.period);
 			setHostnames();
 
 			console.log(data);
 
 			if (json.requests.length === pageSize) {
-				await fetchAdditionalPages(page + 1);
+				await fetchAdditionalPage(page + 1);
 			} else {
 				loading = false;
 			}
 		} catch (e) {
 			console.log(e);
-			loading = false
-			return;
+			loading = false;
 		}
 	}
 
 	async function getDashboardData() {
+		let data: DashboardData;
 		if (demo) {
-			return genDemoData();
+			data = genDemoData();
+		} else {
+			data = await fetchData();
 		}
-		return await fetchData();
+		return data;
 	}
 
-	function getUserAgent(id: number): string {
+	function getUserAgent(id: number) {
+		let userAgent: string;
 		if (id in userAgents) {
-			return userAgents[id];
+			userAgent = userAgents[id];
+		} else {
+			userAgent = '';
 		}
-		return '';
+		return userAgent;
 	}
 
 	function refreshData() {
@@ -319,15 +328,13 @@
 			return;
 		}
 
-		setData();
+		setPeriodData();
 	}
 
-	// If target path/location changes or is reset, refresh data with this filter change
+	// If target path/location is changed or reset, refresh data with this new filter
 	$: if (
-		settings.targetEndpoint.path === null ||
-		settings.targetEndpoint.path ||
-		settings.targetLocation === null ||
-		settings.targetLocation
+		settings.targetEndpoint.path !== undefined &&
+		settings.targetLocation !== undefined
 	) {
 		refreshData();
 	}
@@ -381,40 +388,40 @@
 			<div class="left">
 				<div class="row">
 					<Logo bind:loading />
-					<SuccessRate data={periodData} />
+					<SuccessRate data={periodData.current} />
 				</div>
 				<div class="row">
 					<Requests
-						data={periodData}
-						prevData={prevPeriodData}
+						data={periodData.current}
+						prevData={periodData.previous}
 						period={settings.period}
 					/>
 					<Users
-						data={periodData}
-						prevData={prevPeriodData}
+						data={periodData.current}
+						prevData={periodData.previous}
 						period={settings.period}
 					/>
 				</div>
-				<ResponseTimes data={periodData} />
+				<ResponseTimes data={periodData.current} />
 				<Endpoints
-					data={periodData}
+					data={periodData.current}
 					bind:targetPath={settings.targetEndpoint.path}
 					bind:targetStatus={settings.targetEndpoint.status}
 					bind:endpointsRendered
 				/>
-				<Version data={periodData} bind:endpointsRendered />
+				<Version data={periodData.current} bind:endpointsRendered />
 			</div>
 			<div class="right">
-				<Activity data={periodData} period={settings.period} />
+				<Activity data={periodData.current} period={settings.period} />
 				<div class="grid-row">
 					<Location
-						data={periodData}
+						data={periodData.current}
 						bind:targetLocation={settings.targetLocation}
 					/>
-					<Device data={periodData} {getUserAgent} />
+					<Device data={periodData.current} {getUserAgent} />
 				</div>
-				<UsageTime data={periodData} />
-				<TopUsers data={periodData} />
+				<UsageTime data={periodData.current} />
+				<TopUsers data={periodData.current} />
 			</div>
 		</div>
 	</div>
@@ -433,7 +440,7 @@
 	bind:show={showSettings}
 	bind:settings
 	exportCSV={() => {
-		exportCSV(periodData, columns, userAgents);
+		exportCSV(periodData.current, columns, userAgents);
 	}}
 />
 <Notification state={notification} />
@@ -473,7 +480,6 @@
 	.button-nav {
 		margin: 2.5em 2em 0;
 		display: flex;
-		/* font-family: 'Geist'; */
 	}
 	.time-period {
 		display: flex;
@@ -489,10 +495,49 @@
 		color: var(--dim-text);
 		cursor: pointer;
 	}
+	.time-period-btn:hover {
+		background: #161616;
+	}
 	.time-period-btn-active {
 		background: var(--highlight);
 		color: black;
 	}
+
+	.time-period-loading {
+		background-position: 0% 0%;
+		transition: background 0.5s ease-in-out;
+		animation: gradient-shift 3s linear infinite;
+		background: linear-gradient(
+			90deg,
+			var(--background),
+			var(--highlight),
+			var(--background)
+		);
+		/* Define the gradient with a narrow highlight in the middle */
+		background: linear-gradient(
+			90deg,
+			var(--background) 0%,
+			/* Background color starts */ var(--background) 40%,
+			/* Background color until 45% */ var(--highlight) 50%,
+			/* Highlight in the middle (thin) */ var(--background) 60%,
+			/* Background color resumes */ var(--background) 100%
+				/* Background color to the end */
+		);
+		/* transition: background 0.5s ease-in-out; */
+		animation: gradient-shift 2s linear infinite;
+		background-size: 180%; /* Set larger background size for smooth animation */
+	}
+
+	@keyframes gradient-shift {
+		0%,
+		100% {
+			background-position: 0% 50%; /* Start at the left */
+		}
+		50% {
+			background-position: 100% 50%; /* End at the right */
+		}
+	}
+
 	.settings {
 		background: transparent;
 		outline: none;
