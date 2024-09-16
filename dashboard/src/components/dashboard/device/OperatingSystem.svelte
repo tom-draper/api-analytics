@@ -6,7 +6,7 @@
 	} from '../../../lib/candidates';
 	import { ColumnIndex, graphColors } from '../../../lib/consts';
 
-		const osCandidates: Candidate[] = [
+	const osCandidates: Candidate[] = [
 		{ name: 'Windows 3.11', regex: /Win16/, matches: 0 },
 		{
 			name: 'Windows 95',

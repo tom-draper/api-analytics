@@ -11,7 +11,7 @@
 </script>
 
 <div class="dropdown" id="dropdown">
-	<div class="inner">
+	<div class="inner" class:no-click={hideOptions}>
 		<button
 			class="current"
 			class:square-bottom={!hideOptions}
@@ -94,6 +94,10 @@
 		text-align: left;
 		cursor: pointer;
 	}
+	.option:hover,
+	.current:hover {
+		background: #161616;
+	}
 	.hidden {
 		visibility: hidden;
 	}
@@ -108,6 +112,8 @@
 		display: flex;
 		width: inherit;
 		flex-direction: column;
+	}
+	.no-click {
 		pointer-events: none;
 	}
 	svg {

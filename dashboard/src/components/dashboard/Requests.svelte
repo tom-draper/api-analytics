@@ -81,20 +81,24 @@
 	}
 
 	function getPercentageChange(data: RequestsData) {
+		let percentageChange: number | null;
 		if (prevData.length == 0) {
-			return null;
+			percentageChange = null;
+		} else {
+			percentageChange = (data.length / prevData.length) * 100 - 100;
 		}
-		return (data.length / prevData.length) * 100 - 100;
+		return percentageChange;
 	}
 
 	function getRequestsPerHour(data: RequestsData) {
+		let requestsPerHour: number = 0;
 		if (data.length > 0) {
 			const days = periodToDays(period);
 			if (days != null) {
-				return (data.length / (24 * days)).toFixed(2);
+				requestsPerHour = data.length / (24 * days);
 			}
 		}
-		return '0';
+		return requestsPerHour;
 	}
 
 	function togglePeriod() {
@@ -108,9 +112,9 @@
 	}
 
 	let plotDiv: HTMLDivElement;
-	let requestsPerHour: string;
-	let perHour = false;
+	let requestsPerHour: number;
 	let percentageChange: number;
+	let perHour = false;
 
 	$: if (plotDiv && data) {
 		build(data);
@@ -125,7 +129,7 @@
 			Requests <span class="per-hour">/ hour</span>
 		</div>
 		{#if requestsPerHour}
-			<div class="value">{requestsPerHour}</div>
+			<div class="value">{requestsPerHour.toFixed(2)}</div>
 		{/if}
 	{:else}
 		{#if percentageChange}

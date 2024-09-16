@@ -79,7 +79,7 @@
 		const requests = {
 			total: 0,
 			successful: 0,
-		}
+		};
 
 		for (let i = 0; i < data.length; i++) {
 			if (

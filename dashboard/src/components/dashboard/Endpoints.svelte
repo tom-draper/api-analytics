@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { ColumnIndex } from '../../lib/consts';
 
 	// Integer to method string mapping used by server
@@ -22,8 +21,8 @@
 
 	type MapValue<A> = A extends Map<unknown, infer V> ? V : never;
 
-	function endpointFreq(): EndpointFreq {
-		const freq = new Map();
+	function endpointFreq() {
+		const freq: EndpointFreq = new Map();
 		for (let i = 0; i < data.length; i++) {
 			// Create groups of endpoints by path + status
 			const endpointID = `${data[i][ColumnIndex.Path]}${data[i][ColumnIndex.Status]}`;
@@ -39,7 +38,7 @@
 		return freq;
 	}
 
-	function statusMatch(status: number): boolean {
+	function statusMatch(status: number) {
 		return (
 			activeBtn === 'all' ||
 			(activeBtn === 'success' && status >= 200 && status <= 299) ||
@@ -66,13 +65,12 @@
 		}
 	}
 
-	function build() {
-		endpointsRendered = false;
+	function getEndpoints() {
 		const freq = endpointFreq();
 
 		// Convert object to list
 		const freqArr: MapValue<EndpointFreq>[] = [];
-		maxCount = 0;
+		let maxCount = 0;
 		for (const value of freq.values()) {
 			if (statusMatch(value.status)) {
 				freqArr.push(value);
@@ -82,17 +80,24 @@
 			}
 		}
 
-		// Sort by count
 		freqArr.sort((a, b) => {
 			return b.count - a.count;
 		});
-		endpoints = freqArr.slice(0, 50);
+
+		return {
+			endpoints: freqArr.slice(0, 50),
+			maxCount: maxCount
+		}
+	}
+
+	function build() {
+		endpointsRendered = false;
+		({endpoints: endpoints, maxCount: maxCount} = getEndpoints());
 		endpointsRendered = true;
 	}
 
 	function setBtn(value: typeof activeBtn) {
 		activeBtn = value;
-		build();
 	}
 
 	let endpoints: {
@@ -101,13 +106,11 @@
 		count: number;
 	}[];
 	let maxCount: number;
-	let mounted = false;
 	let activeBtn: 'all' | 'success' | 'client' | 'server' = 'all';
-	onMount(() => {
-		mounted = true;
-	});
 
-	$: data && mounted && build();
+	$: if (data && activeBtn) {
+		build();
+	}
 
 	export let data: RequestsData,
 		targetPath: string,
@@ -217,6 +220,9 @@
 		cursor: pointer;
 		padding: 2px 6px;
 		margin-left: 5px;
+	}
+	button:hover {
+		background: rgb(88, 88, 88);
 	}
 	.endpoints {
 		margin: 0.9em 20px 0.6em;

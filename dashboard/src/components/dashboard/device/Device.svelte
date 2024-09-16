@@ -80,6 +80,9 @@
 		padding: 2px 6px;
 		margin-left: 5px;
 	}
+	button:hover {
+		background: rgb(88, 88, 88);
+	}
 	@media screen and (max-width: 1600px) {
 		.card {
 			margin: 0 0 2em;
