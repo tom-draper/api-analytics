@@ -176,7 +176,8 @@
 				`${serverURL}/api/requests/${userID}/1`,
 			);
 			if (response.ok && response.status === 200) {
-				return await response.json();
+				const data = await response.json();
+				return data;
 			} else {
 				fetchFailed = true;
 			}
