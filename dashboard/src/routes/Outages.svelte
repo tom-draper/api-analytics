@@ -3,7 +3,7 @@
 
 </script>
 
-<div class="outages-container">
+<div class="info-page-container">
 	<h1>Outages</h1>
 
 	<table>
@@ -19,14 +19,6 @@
 <Footer />
 
 <style scoped>
-	.outages-container {
-		max-width: 800px;
-		margin: auto;
-		padding: 4em 2em;
-		text-align: left;
-		color: white;
-		font-family: 'Noto Sans' sans-serif;
-	}
 	h1 {
 		margin: 1.2em 0 !important;
 	}

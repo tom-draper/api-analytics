@@ -2,10 +2,10 @@
 	import Footer from '../components/Footer.svelte';
 </script>
 
-<div class="privacy-policy-container">
+<div class="info-page-container">
 	<h1>Privacy Policy</h1>
 
-	<div>Last updated: 2024-09-16</div>
+	<div class="last-updated">Last updated: 2024-09-20</div>
 
 	<p>
 		API Analytics ("we," "us," or "our") is committed to protecting the
@@ -44,31 +44,31 @@
 	<h3>Personal Information</h3>
 
 	<p>
-		Unless opted out, log data may contain personal information such as IP
-		addresses.
+		Unless opted out, request data logged by your API when using the Service
+		may contain personal information such as IP addresses.
 	</p>
 
 	<p>
-		Client IP address collection from each incoming request to your API may
-		be disabled by setting the privacy level to a value of 1 (discard IP
-		address after use) or 2 (client IP is never accessed) within the API
-		Analytics middleware configuration. By default, the privacy level is set
-		to 0, and IP addresses will be collected and stored.
+		Client IP address access and storage from each incoming request to your
+		API may be disabled by setting the privacy level to a value of 1
+		(discard IP address after use) or 2 (client IP is never accessed) within
+		the API Analytics middleware configuration. By default, the privacy
+		level is set to 0, and IP addresses will be collected and stored.
 	</p>
 
 	<p>
-		An optional custom user ID field can be used to store an additional
-		field of information related to a request. The functionality for data
-		capture for this field is defined by the user within the API Analytics
-		middleware configuration.
+		An optional custom user ID field can be set up to store an additional
+		piece of information related to a request. The mechanism for data
+		capture for this field in particular is defined entirely by the user
+		within the API Analytics middleware configuration.
 	</p>
 
 	<p>
-		User account creation for API Analytics is achieved through a generation
-		of a unique API key. This API key is required in order to log API
-		requests with the Service, access your dashboard or raw data from the
-		API. Should you lose your API key, you will have no method to access
-		your associated data.
+		User account creation for API Analytics is achieved solely through
+		generation of a unique API key (UUID). This API key is required in order
+		to log API requests with the Service, access your dashboard or raw data
+		from our API. Should you lose your API key, you will have no method to
+		access your associated data.
 	</p>
 
 	<h2>2. How We Use Information</h2>
@@ -104,15 +104,15 @@
 
 	<p>
 		Every user account created along with all associated account data is
-		scheduled to be deleted automatically after a period of inactivity. This
+		scheduled to be deleted after a period of inactivity. This
 		is triggered when one of the two following conditions are met:
 	</p>
 	<ul>
 		<li>
-			6 months after the most recent access to the API Analytics dashboard
+			6 months have elapsed after the most recent access to the API Analytics dashboard
 			or data API, OR
 		</li>
-		<li>3 months after the most recent logged request</li>
+		<li>3 months have elapsed after the most recent logged request</li>
 	</ul>
 
 	<h2>5. Data Security</h2>
@@ -135,17 +135,16 @@
 <Footer />
 
 <style scoped>
-	.privacy-policy-container {
-		max-width: 800px;
-		margin: auto;
-		padding: 4em 2em;
-		text-align: left;
-		color: white;
-		font-family: 'Noto Sans' sans-serif;
+	.info-page-container {
+		color: #c3c3c3;
 	}
 	p {
 		margin: 0;
 		padding: 1em 0;
+		color: #c3c3c3;
+	}
+	.last-updated {
+		color: #707070;
 	}
 
 	ul {
