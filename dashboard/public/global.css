@@ -173,6 +173,22 @@ button {
   display: none;
 }
 
+.info-page-container {
+  max-width: 800px;
+  margin: auto;
+  padding: 4em 2em;
+  text-align: left;
+  color: white;
+  font-family: 'Noto Sans' sans-serif;
+}
+
+.answer > a {
+  color: var(--highlight);
+}
+.answer > a:hover {
+  color: white;
+}
+
 /* Spinner */
 .spinner {
   display: grid;
