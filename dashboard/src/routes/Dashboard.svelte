@@ -25,6 +25,7 @@
 	import { ColumnIndex, columns, serverURL } from '../lib/consts';
 	import Error from '../components/dashboard/Error.svelte';
 	import TopUsers from '../components/dashboard/TopUsers.svelte';
+	import { getSourceURL } from '../lib/url';
 
 	function allTimePeriod(_: Date) {
 		return true;
@@ -170,10 +171,15 @@
 	}
 
 	async function fetchData(): Promise<DashboardData> {
+		const source = getSourceURL();
+		const url = source === null ? serverURL : source;
+
+		console.log(url);
+
 		userID = formatUUID(userID);
 		try {
 			const response = await fetch(
-				`${serverURL}/api/requests/${userID}/1`,
+				`${url}/api/requests/${userID}/1`,
 			);
 			if (response.ok && response.status === 200) {
 				const data = await response.json();
@@ -253,8 +259,11 @@
 
 	async function fetchAdditionalPage(page: number) {
 		try {
+			const source = getSourceURL();
+			const url = source === null ? serverURL : source;
+
 			const response = await fetch(
-				`${serverURL}/api/requests/${userID}/${page}`,
+				`${url}/api/requests/${userID}/${page}`,
 				{ signal: AbortSignal.timeout(180000) },
 			);
 			if (response.status !== 200) {
@@ -498,6 +507,10 @@
 	}
 	.time-period-btn:hover {
 		background: #161616;
+	}
+	.time-period-btn-active:hover {
+		background: var(--highlight);
+		color: black;
 	}
 	.time-period-btn-active {
 		background: var(--highlight);

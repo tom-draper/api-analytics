@@ -224,6 +224,15 @@
 	button:hover {
 		background: rgb(88, 88, 88);
 	}
+	.active:hover {
+		background: var(--highlight);
+	}
+	.bad-active:hover {
+		background: rgb(235, 235, 129);
+	}
+	.error-active:hover {
+		background: var(--red);
+	}
 	.endpoints {
 		margin: 0.9em 20px 0.6em;
 	}
