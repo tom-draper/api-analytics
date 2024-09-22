@@ -83,6 +83,9 @@
 	button:hover {
 		background: rgb(88, 88, 88);
 	}
+	.active:hover {
+		background: var(--highlight);
+	}
 	@media screen and (max-width: 1600px) {
 		.card {
 			margin: 0 0 2em;
