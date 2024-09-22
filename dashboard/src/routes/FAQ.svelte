@@ -96,12 +96,7 @@
 		opacity: 0.5;
 	}
 	.answer {
-		margin-bottom: 1.5em;
-	}
-	.answer {
 		padding: 2em 3rem;
-		color: #707070;
 		color: #c3c3c3;
 	}
-
 </style>

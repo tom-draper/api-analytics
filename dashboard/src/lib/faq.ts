@@ -11,7 +11,12 @@ const faq = [
     },
     {
         question: 'I have lost my API key, how can I recover it?',
-        answer: 'Your API key is the only link between you and your logged requests. We do not store any other forms of authentication such as email addresses. If you have lost your API key, please get in contact with us, we may be able to recover it for you. If you no longer access your account, your account and all associated data will be deleted after 3 months, or 6 months if your API continues to log requests.',
+        answer: 'Your API key is the only link between you and your logged requests. We do not store any other forms of authentication such as email addresses. If you have lost your API key, please get in contact with us, and we may be able to recover it for you. If do not access your dashboard or data again, your account and all associated data will be deleted after 3 months, or 6 months if your API continues to log requests.',
+        showing: false,
+    },
+    {
+        question: 'Is the service free?',
+        answer: 'Account creation is complete free. We may introduce a paid tier in the future if there is demand, but a free tier will always remain available.',
         showing: false,
     },
     {
@@ -26,7 +31,7 @@ const faq = [
     },
     {
         question: 'What are the usage limits?',
-        answer: 'In order to keep the service free, we can currently only store up to 1.5 million requests per user. When you hit this limit, old logged requests will be replaced by new requests. If you find this is not enough, we recommend using another service or waiting until our self-hosting solution is ready.',
+        answer: 'In order to keep the service free, we can currently only store up to 1.5 million requests per user. When you hit this limit, old logged requests will be replaced by new requests. If you find this is not enough, we recommend using another service or waiting until our self-hosting solution is ready. We may introduce a paid tier in the future that could support much higher usage limits if there is demand.',
         showing: false,
     },
     {
