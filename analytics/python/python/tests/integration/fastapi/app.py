@@ -30,4 +30,4 @@ async def root():
 
 
 if __name__ == "__main__":
-    uvicorn.run("fastapi_ex:app", reload=True)
+    uvicorn.run("app:app", reload=True)
