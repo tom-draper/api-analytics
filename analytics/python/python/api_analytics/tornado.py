@@ -3,7 +3,7 @@ from datetime import datetime
 from time import time
 from typing import Callable, Union
 
-from api_analytics.core import log_request, logger, DEFAULT_SERVER_URL
+from .core import log_request, logger, DEFAULT_SERVER_URL
 from tornado.httputil import HTTPServerRequest
 from tornado.web import Application, RequestHandler
 
