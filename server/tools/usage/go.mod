@@ -6,7 +6,7 @@ toolchain go1.21.4
 
 require (
 	github.com/fatih/color v1.17.0
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20241006135802-bac24d9edf28
+	github.com/tom-draper/api-analytics/server/database v0.0.0-20241006164721-fea8ceacee14
 	golang.org/x/text v0.19.0
 )
 

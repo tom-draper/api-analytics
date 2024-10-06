@@ -19,14 +19,18 @@ import (
 )
 
 func genAPIKey(c *gin.Context) {
-	connection := database.NewConnection()
+	connection, err := database.NewConnection()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
+		return
+	}
 	defer connection.Close(context.Background())
 
 	// Fetch all API request data associated with this account
 	query := "INSERT INTO users (api_key, user_id, created_at, last_accessed) VALUES (gen_random_uuid(), gen_random_uuid(), NOW(), NOW()) RETURNING api_key;"
 
 	var apiKey string
-	err := connection.QueryRow(context.Background(), query).Scan(&apiKey)
+	err = connection.QueryRow(context.Background(), query).Scan(&apiKey)
 	if err != nil {
 		log.LogToFile(fmt.Sprintf("API key generation failed - %s", err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
@@ -47,13 +51,17 @@ func getUserID(c *gin.Context) {
 		return
 	}
 
-	connection := database.NewConnection()
+	connection, err := database.NewConnection()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
+		return
+	}
 	defer connection.Close(context.Background())
 
 	// Fetch user ID corresponding with API key
 	var userID string
 	query := "SELECT user_id FROM users WHERE api_key = $1;"
-	err := connection.QueryRow(context.Background(), query, apiKey).Scan(&userID)
+	err = connection.QueryRow(context.Background(), query, apiKey).Scan(&userID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
@@ -93,7 +101,12 @@ func getRequests(c *gin.Context) {
 
 	log.LogToFile(fmt.Sprintf("id=%s: Dashboard access", userID))
 
-	connection := database.NewConnection()
+	connection, err := database.NewConnection()
+	if err != nil {
+		log.LogToFile(fmt.Sprintf("id=%s: Dashboard access failed - %s", userID, err.Error()))
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
+		return
+	}
 	defer connection.Close(context.Background())
 
 	// Fetch API key corresponding with user ID
@@ -212,7 +225,12 @@ func getPaginatedRequests(c *gin.Context) {
 
 	log.LogToFile(fmt.Sprintf("id=%s: Dashboard page %d access", userID, page))
 
-	connection := database.NewConnection()
+	connection, err := database.NewConnection()
+	if err != nil {
+		log.LogToFile(fmt.Sprintf("id=%s: Dashboard page %d access failed - %s", userID, page, err.Error()))
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
+		return
+	}
 	defer connection.Close(context.Background())
 
 	// Fetch API key corresponding with user ID
@@ -422,7 +440,12 @@ func getData(c *gin.Context) {
 	// Get any queries from url
 	queries := getQueriesFromRequest(c)
 
-	connection := database.NewConnection()
+	connection, err := database.NewConnection()
+	if err != nil {
+		log.LogToFile(fmt.Sprintf("key=%s: Data access failed - %s", apiKey, err.Error()))
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
+		return
+	}
 	defer connection.Close(context.Background())
 
 	// Fetch all API request data associated with this account
@@ -687,7 +710,11 @@ func deleteData(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 	}
 
-	connection := database.NewConnection()
+	connection, err := database.NewConnection()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
+		return
+	}
 	defer connection.Close(context.Background())
 
 	if err := deleteUserRequests(apiKey, c, connection); err != nil {
@@ -719,7 +746,11 @@ func getUserMonitor(c *gin.Context) {
 		return
 	}
 
-	connection := database.NewConnection()
+	connection, err := database.NewConnection()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
+		return
+	}
 	defer connection.Close(context.Background())
 
 	// Retreive monitors created by this user
@@ -769,7 +800,12 @@ func addUserMonitor(c *gin.Context) {
 
 	log.LogToFile(fmt.Sprintf("id=%s: Add monitor", monitor.UserID))
 
-	connection := database.NewConnection()
+	connection, err := database.NewConnection()
+	if err != nil {
+		log.LogToFile(fmt.Sprintf("id=%s: Monitor add failed - %s", monitor.UserID, err.Error()))
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
+		return
+	}
 	defer connection.Close(context.Background())
 
 	// Get API key from user ID
@@ -870,7 +906,12 @@ func deleteUserMonitor(c *gin.Context) {
 
 	log.LogToFile(fmt.Sprintf("id=%s: Delete monitor", body.UserID))
 
-	connection := database.NewConnection()
+	connection, err := database.NewConnection()
+	if err != nil {
+		log.LogToFile(fmt.Sprintf("id=%s: Monitor delete failed - %s", body.UserID, err.Error()))
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
+		return
+	}
 	defer connection.Close(context.Background())
 
 	// Get API key from user ID
@@ -927,7 +968,12 @@ func getUserPings(c *gin.Context) {
 
 	log.LogToFile(fmt.Sprintf("id=%s: Monitor access", userID))
 
-	connection := database.NewConnection()
+	connection, err := database.NewConnection()
+	if err != nil {
+		log.LogToFile(fmt.Sprintf("id=%s: Monitor access failed - %s", userID, err.Error()))
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
+		return
+	}
 	defer connection.Close(context.Background())
 
 	// Fetch user ID corresponding with API key
@@ -984,8 +1030,18 @@ func getUserPings(c *gin.Context) {
 }
 
 func checkHealth(c *gin.Context) {
-	connection := database.NewConnection()
-	err := connection.Ping(context.Background())
+	connection, err := database.NewConnection()
+	if err != nil {
+		log.LogToFile(fmt.Sprintf("Health check failed: %v", err))
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status": "unhealthy",
+			"error":  "Database connection failed",
+		})
+		return
+	}
+	defer connection.Close(context.Background())
+
+	err = connection.Ping(context.Background())
 	if err != nil {
 		log.LogToFile(fmt.Sprintf("Health check failed: %v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{

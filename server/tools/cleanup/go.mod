@@ -5,8 +5,8 @@ go 1.21
 toolchain go1.21.4
 
 require (
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20241006135802-bac24d9edf28
-	github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20241006135802-bac24d9edf28
+	github.com/tom-draper/api-analytics/server/database v0.0.0-20241006164721-fea8ceacee14
+	github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20241006192355-abba7a0336df
 )
 
 require (
