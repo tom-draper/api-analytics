@@ -20,8 +20,8 @@ http {
         listen 443 ssl;
         server_name ${DOMAIN_NAME} www.${DOMAIN_NAME};
 
-        ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
-        ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
+        ssl_certificate /etc/letsencrypt/live/${DOMAIN_NAME}/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/${DOMAIN_NAME}/privkey.pem;
 
         location / {
             root /usr/share/nginx/html;
