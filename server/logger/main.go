@@ -416,7 +416,6 @@ func logRequestHandler() gin.HandlerFunc {
 			return
 		}
 		_, err = conn.Exec(context.Background(), query.String(), arguments...)
-		conn.Close(context.Background())
 		if err != nil {
 			log.LogToFile(err.Error())
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
