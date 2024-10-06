@@ -69,8 +69,18 @@ const (
 )
 
 func checkHealth(c *gin.Context) {
-	connection := database.NewConnection()
-	err := connection.Ping(context.Background())
+	connection, err := database.NewConnection()
+	if err != nil {
+		log.LogToFile(fmt.Sprintf("Health check failed: %v", err))
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status": "unhealthy",
+			"error":  "Database connection failed",
+		})
+		return
+	}
+	defer connection.Close(context.Background())
+
+	err = connection.Ping(context.Background())
 	if err != nil {
 		log.LogToFile(fmt.Sprintf("Health check failed: %v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -124,10 +134,14 @@ func storeNewUserAgents(userAgents map[string]struct{}) error {
 
 	query.WriteString(" ON CONFLICT (user_agent) DO NOTHING;")
 
-	connection := database.NewConnection()
+	connection, err := database.NewConnection()
+	if err != nil {
+		log.LogToFile(err.Error())
+		return err
+	}
 	defer connection.Close(context.Background())
 
-	_, err := connection.Exec(context.Background(), query.String(), arguments...)
+	_, err = connection.Exec(context.Background(), query.String(), arguments...)
 	if err != nil {
 		log.LogToFile(err.Error())
 		return err
@@ -157,7 +171,11 @@ func getUserAgentIDs(userAgents map[string]struct{}) (map[string]int, error) {
 	query.WriteString(");")
 
 	ids := make(map[string]int)
-	connection := database.NewConnection()
+	connection, err := database.NewConnection()
+	if err != nil {
+		log.LogToFile(err.Error())
+		return ids, err
+	}
 	defer connection.Close(context.Background())
 
 	rows, err := connection.Query(context.Background(), query.String(), arguments...)
@@ -389,9 +407,15 @@ func logRequestHandler() gin.HandlerFunc {
 		}
 
 		// Insert logged requests into database
-		conn := database.NewConnection()
+		conn, err := database.NewConnection()
+		if err != nil {
+			log.LogToFile(err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database connection failed."})
+			return
+		}
+		defer conn.Close(context.Background())
+
 		_, err = conn.Exec(context.Background(), query.String(), arguments...)
-		conn.Close(context.Background())
 		if err != nil {
 			log.LogToFile(err.Error())
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})

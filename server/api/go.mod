@@ -10,7 +10,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/jackc/pgtype v1.14.3
 	github.com/jackc/pgx/v5 v5.7.1
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20241006135802-bac24d9edf28
+	github.com/tom-draper/api-analytics/server/database v0.0.0-20241006192355-abba7a0336df
 )
 
 require (
