@@ -29,6 +29,7 @@ services:
 
   db:
     image: postgres
+    container_name: db
     restart: always
     user: postgres
     secrets:
@@ -48,6 +49,7 @@ services:
       retries: 5
 
   api:
+    container_name: api
     build:
       context: ../api
       dockerfile: Dockerfile
@@ -57,12 +59,13 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 10s
       timeout: 5s
       retries: 3
 
   logger:
+    container_name: logger
     build:
       context: ../logger
       dockerfile: Dockerfile
@@ -72,12 +75,13 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
       interval: 10s
       timeout: 5s
       retries: 3
 
   monitor:
+    container_name: monitor
     build:
       context: ../monitor
       dockerfile: Dockerfile
