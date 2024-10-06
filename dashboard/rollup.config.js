@@ -6,8 +6,12 @@ import livereload from 'rollup-plugin-livereload';
 import terser from '@rollup/plugin-terser';
 import sveltePreprocess from 'svelte-preprocess';
 import json from '@rollup/plugin-json';
+import replace from '@rollup/plugin-replace';
+import dotenv from 'dotenv';
 
 const production = !process.env.ROLLUP_WATCH;
+
+dotenv.config(); // Load environment variables from .env file
 
 export default [
 	// Browser bundle
@@ -20,8 +24,14 @@ export default [
 			file: 'public/bundle.js',
 		},
 		plugins: [
+			replace({
+				'process.env.SERVER_URL': JSON.stringify(process.env.SERVER_URL),
+				preventAssignment: true,
+			}),
 			svelte({
-				preprocess: sveltePreprocess({ sourceMap: !production }),
+				preprocess: sveltePreprocess({
+					sourceMap: !production,
+				}),
 				dev: !production,
 				hydratable: true,
 				css: (css) => {
@@ -58,7 +68,9 @@ export default [
 		},
 		plugins: [
 			svelte({
-				preprocess: sveltePreprocess({ sourceMap: !production }),
+				preprocess: sveltePreprocess({
+					sourceMap: !production,
+				}),
 				generate: 'ssr',
 			}),
 			json(),

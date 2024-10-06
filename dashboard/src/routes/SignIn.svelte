@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { serverURL } from '../lib/consts';
+	import { getServerURL } from '../lib/url';
 
 	type State = 'sign-in' | 'loading';
 
@@ -7,8 +7,10 @@
 	let apiKey = '';
 	async function submit() {
 		setState('loading');
+
 		try {
-			const response = await fetch(`${serverURL}/api/user-id/${apiKey}`);
+			const url = getServerURL();
+			const response = await fetch(`${url}/api/user-id/${apiKey}`);
 
 			if (response.status === 200) {
 				const userID = await response.json();

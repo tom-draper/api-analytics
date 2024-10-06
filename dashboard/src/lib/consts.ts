@@ -1,4 +1,4 @@
-export const serverURL: string = 'https://www.apianalytics-server.com';
+export const SERVER_URL: string = 'https://www.apianalytics-server.com';
 
 export const columns = [
 	'ip_address',
