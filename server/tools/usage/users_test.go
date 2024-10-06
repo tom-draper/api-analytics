@@ -1,11 +1,12 @@
 package usage
 
 import (
+	"context"
 	"testing"
 )
 
 func TestUsers(t *testing.T) {
-	users, err := Users("")
+	users, err := Users(context.Background(), "")
 	if err != nil {
 		t.Error(err)
 	}
@@ -15,7 +16,7 @@ func TestUsers(t *testing.T) {
 }
 
 func TestDailyUsers(t *testing.T) {
-	users, err := DailyUsers()
+	users, err := DailyUsers(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -25,7 +26,7 @@ func TestDailyUsers(t *testing.T) {
 }
 
 func TestWeeklyUsers(t *testing.T) {
-	users, err := WeeklyUsers()
+	users, err := WeeklyUsers(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -35,7 +36,7 @@ func TestWeeklyUsers(t *testing.T) {
 }
 
 func TestMonthlyUsers(t *testing.T) {
-	users, err := MonthlyUsers()
+	users, err := MonthlyUsers(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -45,7 +46,7 @@ func TestMonthlyUsers(t *testing.T) {
 }
 
 func TestUsersCount(t *testing.T) {
-	users, err := UsersCount("")
+	users, err := UsersCount(context.Background(), "")
 	if err != nil {
 		t.Error(err)
 	}
@@ -55,7 +56,7 @@ func TestUsersCount(t *testing.T) {
 }
 
 func TestDailyUsersCount(t *testing.T) {
-	users, err := DailyUsersCount()
+	users, err := DailyUsersCount(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -65,7 +66,7 @@ func TestDailyUsersCount(t *testing.T) {
 }
 
 func TestWeeklyUsersCount(t *testing.T) {
-	users, err := WeeklyUsersCount()
+	users, err := WeeklyUsersCount(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -75,7 +76,7 @@ func TestWeeklyUsersCount(t *testing.T) {
 }
 
 func TestMonthlyUsersCount(t *testing.T) {
-	users, err := MonthlyUsersCount()
+	users, err := MonthlyUsersCount(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -85,7 +86,7 @@ func TestMonthlyUsersCount(t *testing.T) {
 }
 
 func TestTopUsers(t *testing.T) {
-	users, err := TopUsers(5)
+	users, err := TopUsers(context.Background(), 5)
 	if err != nil {
 		t.Error(err)
 	}
@@ -95,7 +96,7 @@ func TestTopUsers(t *testing.T) {
 }
 
 func TestUnusedUsers(t *testing.T) {
-	users, err := UnusedUsers()
+	users, err := UnusedUsers(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -105,7 +106,7 @@ func TestUnusedUsers(t *testing.T) {
 }
 
 func TestSinceLastRequestUsers(t *testing.T) {
-	users, err := SinceLastRequestUsers()
+	users, err := SinceLastRequestUsers(context.Background())
 	if err != nil {
 		t.Error(err)
 	}

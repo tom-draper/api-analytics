@@ -28,6 +28,7 @@ func main() {
 	handler := logRequestHandler()
 	app.POST("/api/log-request", handler)
 	app.POST("/api/requests", handler)
+	app.GET("/api/health", checkHealth)
 
 	app.Run(":8000")
 }
@@ -58,6 +59,22 @@ const (
 	P2                     // Location inferred from IP and stored, client IP address discarded
 	P3                     // Client IP address never be sent to server, optional custom user ID field is the only user identification
 )
+
+func checkHealth(c *gin.Context) {
+	connection := database.NewConnection()
+	err := connection.Ping(context.Background())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status": "unhealthy",
+			"error":  "Database connection failed",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "healthy",
+	})
+}
 
 func getCountryCode(IPAddress string) string {
 	if IPAddress == "" {

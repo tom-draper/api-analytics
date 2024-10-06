@@ -1,11 +1,12 @@
 package usage
 
 import (
+	"context"
 	"testing"
 )
 
 func TestTableSize(t *testing.T) {
-	size, err := TableSize("requests")
+	size, err := TableSize(context.Background(), "requests")
 	if err != nil {
 		t.Error(err)
 	}
@@ -15,17 +16,20 @@ func TestTableSize(t *testing.T) {
 }
 
 func TestTableColumnSize(t *testing.T) {
-	size, err := TableColumnSize("requests", "api_key")
+	totalSize, tableSize, percentage, err := TableColumnSize(context.Background(), "requests", "api_key")
 	if err != nil {
 		t.Error(err)
 	}
-	if size == "" {
+	if totalSize == "" || tableSize == "" {
 		t.Error("database column size is blank")
+	}
+	if percentage == 0 {
+		t.Error("database column size percentage is 0")
 	}
 }
 
 func TestDatabaseConnections(t *testing.T) {
-	connections, err := DatabaseConnections()
+	connections, err := DatabaseConnections(context.Background())
 	if err != nil {
 		t.Error(connections)
 	}

@@ -3,41 +3,49 @@ package usage
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
-func HourlyMonitorsCount() (int, error) {
-	return MonitorsCount("1 hour")
+type MonitorRow struct {
+	APIKey    string    `json:"api_key"`
+	URL       string    `json:"url"`
+	Secure    bool      `json:"secure"`
+	Ping      bool      `json:"ping"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
-func DailyMonitorsCount() (int, error) {
-	return MonitorsCount("24 hours")
+func HourlyMonitorsCount(ctx context.Context) (int, error) {
+	return MonitorsCount(ctx, hourly)
 }
 
-func WeeklyMonitorsCount() (int, error) {
-	return MonitorsCount("7 days")
+func DailyMonitorsCount(ctx context.Context) (int, error) {
+	return MonitorsCount(ctx, daily)
 }
 
-func MonthlyMonitorsCount() (int, error) {
-	return MonitorsCount("30 days")
+func WeeklyMonitorsCount(ctx context.Context) (int, error) {
+	return MonitorsCount(ctx, weekly)
 }
 
-func TotalMonitorsCount() (int, error) {
-	return MonitorsCount("")
+func MonthlyMonitorsCount(ctx context.Context) (int, error) {
+	return MonitorsCount(ctx, monthly)
 }
 
-func MonitorsCount(interval string) (int, error) {
+func TotalMonitorsCount(ctx context.Context) (int, error) {
+	return MonitorsCount(ctx, "")
+}
+
+func MonitorsCount(ctx context.Context, interval string) (int, error) {
 	conn := database.NewConnection()
-	defer conn.Close(context.Background())
+	defer conn.Close(ctx)
 
 	var count int
 	query := "SELECT COUNT(*) FROM monitor"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
-	query += ";"
-	err := conn.QueryRow(context.Background(), query).Scan(&count)
+	err := conn.QueryRow(ctx, query).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -45,83 +53,86 @@ func MonitorsCount(interval string) (int, error) {
 	return count, nil
 }
 
-func HourlyMonitors() ([]database.MonitorRow, error) {
-	return Monitors("1 hour")
+func HourlyMonitors(ctx context.Context) ([]MonitorRow, error) {
+	return Monitors(ctx, hourly)
 }
 
-func DailyMonitors() ([]database.MonitorRow, error) {
-	return Monitors("24 hours")
+func DailyMonitors(ctx context.Context) ([]MonitorRow, error) {
+	return Monitors(ctx, daily)
 }
 
-func WeeklyMonitors() ([]database.MonitorRow, error) {
-	return Monitors("7 days")
+func WeeklyMonitors(ctx context.Context) ([]MonitorRow, error) {
+	return Monitors(ctx, weekly)
 }
 
-func MonthlyMonitors() ([]database.MonitorRow, error) {
-	return Monitors("30 days")
+func MonthlyMonitors(ctx context.Context) ([]MonitorRow, error) {
+	return Monitors(ctx, monthly)
 }
 
-func TotalMonitors() ([]database.MonitorRow, error) {
-	return Monitors("")
+func TotalMonitors(ctx context.Context) ([]MonitorRow, error) {
+	return Monitors(ctx, "")
 }
 
-func Monitors(interval string) ([]database.MonitorRow, error) {
+func Monitors(ctx context.Context, interval string) ([]MonitorRow, error) {
 	conn := database.NewConnection()
-	defer conn.Close(context.Background())
+	defer conn.Close(ctx)
 
 	query := "SELECT api_key, url, secure, ping, created_at FROM monitor"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
 	query += " ORDER BY created_at;"
-	rows, err := conn.Query(context.Background(), query)
+	rows, err := conn.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var monitors []database.MonitorRow
+	var monitors []MonitorRow
 	for rows.Next() {
-		var monitor database.MonitorRow
-		err := rows.Scan(&monitor.APIKey, &monitor.URL, &monitor.Secure, &monitor.Ping, &monitor.CreatedAt)
-		if err == nil {
-			monitors = append(monitors, monitor)
+		var monitor MonitorRow
+		if err := rows.Scan(&monitor.APIKey, &monitor.URL, &monitor.Secure, &monitor.Ping, &monitor.CreatedAt); err != nil {
+			return nil, err // Return error instead of silently continuing
 		}
+		monitors = append(monitors, monitor)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return monitors, nil
 }
 
-func HourlyUserMonitors() ([]UserCount, error) {
-	return UserMonitors("1 hour")
+func HourlyUserMonitors(ctx context.Context) ([]UserCount, error) {
+	return UserMonitors(ctx, hourly)
 }
 
-func DailyUserMonitors() ([]UserCount, error) {
-	return UserMonitors("24 hours")
+func DailyUserMonitors(ctx context.Context) ([]UserCount, error) {
+	return UserMonitors(ctx, daily)
 }
 
-func WeeklyUserMonitors() ([]UserCount, error) {
-	return UserMonitors("7 days")
+func WeeklyUserMonitors(ctx context.Context) ([]UserCount, error) {
+	return UserMonitors(ctx, weekly)
 }
 
-func MonthlyUserMonitors() ([]UserCount, error) {
-	return UserMonitors("30 days")
+func MonthlyUserMonitors(ctx context.Context) ([]UserCount, error) {
+	return UserMonitors(ctx, monthly)
 }
 
-func TotalUserMonitors() ([]UserCount, error) {
-	return UserMonitors("")
+func TotalUserMonitors(ctx context.Context) ([]UserCount, error) {
+	return UserMonitors(ctx, "")
 }
 
-func UserMonitors(interval string) ([]UserCount, error) {
+func UserMonitors(ctx context.Context, interval string) ([]UserCount, error) {
 	conn := database.NewConnection()
-	defer conn.Close(context.Background())
+	defer conn.Close(ctx)
 
 	query := "SELECT api_key, COUNT(*) AS count FROM monitor"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
 	query += " GROUP BY api_key ORDER BY count DESC;"
-	rows, err := conn.Query(context.Background(), query)
+	rows, err := conn.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -129,11 +140,14 @@ func UserMonitors(interval string) ([]UserCount, error) {
 
 	var monitors []UserCount
 	for rows.Next() {
-		userMonitors := new(UserCount)
-		err := rows.Scan(&userMonitors.APIKey, &userMonitors.Count)
-		if err == nil {
-			monitors = append(monitors, *userMonitors)
+		var userMonitors UserCount
+		if err := rows.Scan(&userMonitors.APIKey, &userMonitors.Count); err != nil {
+			return nil, err // Return error instead of silently continuing
 		}
+		monitors = append(monitors, userMonitors)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return monitors, nil

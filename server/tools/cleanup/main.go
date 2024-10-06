@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"log"
+
 	"github.com/tom-draper/api-analytics/server/database"
 	"github.com/tom-draper/api-analytics/server/tools/usage"
 )
@@ -21,25 +23,23 @@ func deleteOldestRequests(apiKey string, count int) error {
 	query := "DELETE FROM requests WHERE request_id = any(array(SELECT request_id from requests WHERE api_key = $1 ORDER BY created_at LIMIT $2));"
 
 	_, err := conn.Exec(context.Background(), query, apiKey, count)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func deleteExpiredRequests() {
 	users, err := usage.UserRequestsOverLimit(requestsLimit)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to fetch users over limit: %v", err) // Use log for error handling
 	}
 
-	fmt.Printf("%d users found\n", len(users))
+	log.Printf("%d users found\n", len(users))
 	for _, user := range users {
 		err = deleteOldestRequests(user.APIKey, user.Count-requestsLimit)
 		if err != nil {
-			panic(err)
+			log.Printf("Error deleting requests for user %s: %v", user.APIKey, err)
+			continue // Don't panic, just log the error and continue
 		}
-		fmt.Printf("%s: %d requests deleted\n", user.APIKey, user.Count-requestsLimit)
+		log.Printf("%s: %d requests deleted\n", user.APIKey, user.Count-requestsLimit)
 	}
 }
 
@@ -51,14 +51,13 @@ func deleteExpiredUsers() {
 func deleteExpiredUnusedUsers() {
 	users, err := usage.UnusedUsers()
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to fetch unused users: %v", err)
 	}
 
-	fmt.Printf("%d users found\n", len(users))
+	log.Printf("%d unused users found\n", len(users))
 	for _, user := range users {
 		if time.Since(user.CreatedAt) > userExpiry {
 			deleteUser(user.APIKey)
-			fmt.Printf("%s: unused user expired", user.APIKey)
 		}
 	}
 }
@@ -66,53 +65,60 @@ func deleteExpiredUnusedUsers() {
 func deleteExpiredRetiredUsers() {
 	users, err := usage.SinceLastRequestUsers()
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to fetch retired users: %v", err)
 	}
 
-	fmt.Printf("%d users found\n", len(users))
+	log.Printf("%d retired users found\n", len(users))
 	for _, user := range users {
 		if time.Since(user.CreatedAt) > userExpiry {
 			deleteUser(user.APIKey)
-			fmt.Printf("%s: retired user expired", user.APIKey)
 		}
 	}
 }
 
 func deleteUser(apiKey string) {
-	fmt.Println("Delete API key '%s' from the database? Y/n", apiKey)
+	fmt.Printf("Delete API key '%s' from the database? (Y/n): ", apiKey)
 	var response string
 	_, err := fmt.Scanln(&response)
 	if err != nil {
-		panic(err)
+		log.Printf("Error reading input: %v", err)
+		return
 	}
 	response = strings.ToLower(response)
 	if response != "y" && response != "yes" {
-		fmt.Println("User deletion cancelled.")
+		log.Println("User deletion cancelled.")
 		return
 	}
 
 	err = database.DeleteUser(apiKey)
 	if err != nil {
-		panic(err)
+		log.Printf("Failed to delete user from 'users' table: %v", err)
+		return
 	}
-	fmt.Println("User from table 'users'.")
+	log.Println("User deleted from table 'users'.")
+
 	err = database.DeleteRequests(apiKey)
 	if err != nil {
-		panic(err)
+		log.Printf("Failed to delete user from 'requests' table: %v", err)
+		return
 	}
-	fmt.Println("User from table 'requests'.")
+	log.Println("User deleted from table 'requests'.")
+
 	err = database.DeleteMonitors(apiKey)
 	if err != nil {
-		panic(err)
+		log.Printf("Failed to delete user from 'monitors' table: %v", err)
+		return
 	}
-	fmt.Println("User from table 'monitors'.")
+	log.Println("User deleted from table 'monitors'.")
+
 	err = database.DeletePings(apiKey)
 	if err != nil {
-		panic(err)
+		log.Printf("Failed to delete user from 'pings' table: %v", err)
+		return
 	}
-	fmt.Println("User from table 'pings'.")
+	log.Println("User deleted from table 'pings'.")
 
-	fmt.Println("User deletion successful.")
+	log.Println("User deletion successful.")
 }
 
 type Options struct {
@@ -124,12 +130,15 @@ type Options struct {
 func getOptions() Options {
 	options := Options{}
 	for i, arg := range os.Args {
-		if arg == "--users" {
+		switch arg {
+		case "--users":
 			options.users = true
-		} else if arg == "--help" {
+		case "--help":
 			options.help = true
-		} else if i > 0 && os.Args[i-1] == "--target-user" {
-			options.targetUser = arg
+		case "--target-user":
+			if i+1 < len(os.Args) {
+				options.targetUser = os.Args[i+1]
+			}
 		}
 	}
 	return options
@@ -143,12 +152,15 @@ func main() {
 	options := getOptions()
 	if options.help {
 		displayHelp()
-	} else if options.targetUser != "" {
-		deleteUser(options.targetUser)
-	} else {
-		if options.users {
-			deleteExpiredUsers()
-		}
-		deleteExpiredRequests()
+		return
 	}
+	if options.targetUser != "" {
+		deleteUser(options.targetUser)
+		return
+	}
+
+	if options.users {
+		deleteExpiredUsers()
+	}
+	deleteExpiredRequests()
 }

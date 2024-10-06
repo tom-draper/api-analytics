@@ -1,12 +1,13 @@
 package usage
 
 import (
+	"context"
 	"log"
 	"testing"
 )
 
 func TestRequests(t *testing.T) {
-	requests, err := Requests("")
+	requests, err := Requests(context.Background(), "")
 	if err != nil {
 		t.Error(err)
 	}
@@ -16,7 +17,7 @@ func TestRequests(t *testing.T) {
 }
 
 func TestDailyRequests(t *testing.T) {
-	requests, err := DailyRequests()
+	requests, err := DailyRequests(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -26,7 +27,7 @@ func TestDailyRequests(t *testing.T) {
 }
 
 func TestWeeklyRequests(t *testing.T) {
-	requests, err := WeeklyRequests()
+	requests, err := WeeklyRequests(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -36,7 +37,7 @@ func TestWeeklyRequests(t *testing.T) {
 }
 
 func TestMonthlyRequests(t *testing.T) {
-	requests, err := MonthlyRequests()
+	requests, err := MonthlyRequests(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -46,7 +47,7 @@ func TestMonthlyRequests(t *testing.T) {
 }
 
 func TestRequestsCount(t *testing.T) {
-	requests, err := RequestsCount("")
+	requests, err := RequestsCount(context.Background(), "")
 	if err != nil {
 		t.Error(err)
 	}
@@ -56,7 +57,7 @@ func TestRequestsCount(t *testing.T) {
 }
 
 func TestDailyRequestsCount(t *testing.T) {
-	requests, err := DailyRequestsCount()
+	requests, err := DailyRequestsCount(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -66,7 +67,7 @@ func TestDailyRequestsCount(t *testing.T) {
 }
 
 func TestWeeklyRequestsCount(t *testing.T) {
-	requests, err := WeeklyRequestsCount()
+	requests, err := WeeklyRequestsCount(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -76,7 +77,7 @@ func TestWeeklyRequestsCount(t *testing.T) {
 }
 
 func TestMonthlyRequestsCount(t *testing.T) {
-	requests, err := MonthlyRequestsCount()
+	requests, err := MonthlyRequestsCount(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -86,7 +87,7 @@ func TestMonthlyRequestsCount(t *testing.T) {
 }
 
 func TestUserRequests(t *testing.T) {
-	requests, err := UserRequests("")
+	requests, err := UserRequests(context.Background(), "")
 	if err != nil {
 		t.Error(err)
 	}
@@ -96,7 +97,7 @@ func TestUserRequests(t *testing.T) {
 }
 
 func TestUserRequestsCount(t *testing.T) {
-	requests, err := DailyUserRequests()
+	requests, err := DailyUserRequests(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -106,7 +107,7 @@ func TestUserRequestsCount(t *testing.T) {
 }
 
 func TestWeeklyUserRequests(t *testing.T) {
-	requests, err := WeeklyUserRequests()
+	requests, err := WeeklyUserRequests(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -116,7 +117,7 @@ func TestWeeklyUserRequests(t *testing.T) {
 }
 
 func TestMonthlyUserRequests(t *testing.T) {
-	requests, err := MonthlyUserRequests()
+	requests, err := MonthlyUserRequests(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -126,7 +127,7 @@ func TestMonthlyUserRequests(t *testing.T) {
 }
 
 func TestTopFrameworks(t *testing.T) {
-	frameworks, err := TopFrameworks()
+	frameworks, err := TopFrameworks(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -139,7 +140,7 @@ func TestTopFrameworks(t *testing.T) {
 }
 
 func TestTopUserAgents(t *testing.T) {
-	userAgents, err := TopUserAgents()
+	userAgents, err := TopUserAgents(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -152,7 +153,7 @@ func TestTopUserAgents(t *testing.T) {
 }
 
 func TestTopIPAddresses(t *testing.T) {
-	ipAddresses, err := TopIPAddresses()
+	ipAddresses, err := TopIPAddresses(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -165,7 +166,7 @@ func TestTopIPAddresses(t *testing.T) {
 }
 
 func TestLocations(t *testing.T) {
-	locations, err := TopLocations()
+	locations, err := TopLocations(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -178,7 +179,7 @@ func TestLocations(t *testing.T) {
 }
 
 func TestAvgResponseTime(t *testing.T) {
-	avgResponseTime, err := AvgResponseTime()
+	avgResponseTime, err := AvgResponseTime(context.Background())
 	if err != nil {
 		t.Error(err)
 	}

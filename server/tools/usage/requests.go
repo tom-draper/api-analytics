@@ -2,42 +2,59 @@ package usage
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
-func HourlyRequestsCount() (int, error) {
-	return RequestsCount("1 hour")
+type RequestRow struct {
+	RequestID    int            `json:"request_id"`
+	APIKey       string         `json:"api_key"`
+	Path         string         `json:"path"`
+	Hostname     sql.NullString `json:"hostname"`
+	IPAddress    sql.NullString `json:"ip_address"`
+	Location     sql.NullString `json:"location"`
+	UserAgentID  sql.NullInt64  `json:"user_agent_id"`
+	Method       int16          `json:"method"`
+	Status       int16          `json:"status"`
+	ResponseTime int16          `json:"response_time"`
+	Framework    int16          `json:"framework"`
+	CreatedAt    time.Time      `json:"created_at"`
 }
 
-func DailyRequestsCount() (int, error) {
-	return RequestsCount("24 hours")
+func HourlyRequestsCount(ctx context.Context) (int, error) {
+	return RequestsCount(ctx, hourly)
 }
 
-func WeeklyRequestsCount() (int, error) {
-	return RequestsCount("7 days")
+func DailyRequestsCount(ctx context.Context) (int, error) {
+	return RequestsCount(ctx, daily)
 }
 
-func MonthlyRequestsCount() (int, error) {
-	return RequestsCount("30 days")
+func WeeklyRequestsCount(ctx context.Context) (int, error) {
+	return RequestsCount(ctx, weekly)
 }
 
-func TotalRequestsCount() (int, error) {
-	return RequestsCount("")
+func MonthlyRequestsCount(ctx context.Context) (int, error) {
+	return RequestsCount(ctx, monthly)
 }
 
-func RequestsCount(interval string) (int, error) {
+func TotalRequestsCount(ctx context.Context) (int, error) {
+	return RequestsCount(ctx, "")
+}
+
+func RequestsCount(ctx context.Context, interval string) (int, error) {
 	conn := database.NewConnection()
-	defer conn.Close(context.Background())
+	defer conn.Close(ctx)
 
 	var count int
 	query := "SELECT COUNT(*) FROM requests"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
-	query += ";"
-	err := conn.QueryRow(context.Background(), query).Scan(&count)
+
+	err := conn.QueryRow(ctx, query).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -45,29 +62,29 @@ func RequestsCount(interval string) (int, error) {
 	return count, nil
 }
 
-func HourlyRequests() ([]database.RequestRow, error) {
-	return Requests("1 hour")
+func HourlyRequests(ctx context.Context) ([]RequestRow, error) {
+	return Requests(ctx, hourly)
 }
 
-func DailyRequests() ([]database.RequestRow, error) {
-	return Requests("24 hours")
+func DailyRequests(ctx context.Context) ([]RequestRow, error) {
+	return Requests(ctx, daily)
 }
 
-func WeeklyRequests() ([]database.RequestRow, error) {
-	return Requests("7 days")
+func WeeklyRequests(ctx context.Context) ([]RequestRow, error) {
+	return Requests(ctx, weekly)
 }
 
-func MonthlyRequests() ([]database.RequestRow, error) {
-	return Requests("30 days")
+func MonthlyRequests(ctx context.Context) ([]RequestRow, error) {
+	return Requests(ctx, monthly)
 }
 
-func TotalRequests() ([]database.RequestRow, error) {
-	return Requests("")
+func TotalRequests(ctx context.Context) ([]RequestRow, error) {
+	return Requests(ctx, "")
 }
 
-func Requests(interval string) ([]database.RequestRow, error) {
+func Requests(ctx context.Context, interval string) ([]RequestRow, error) {
 	conn := database.NewConnection()
-	defer conn.Close(context.Background())
+	defer conn.Close(ctx)
 
 	query := "SELECT request_id, api_key, path, hostname, ip_address, location, user_agent_id, method, status, response_time, framework, created_at FROM requests"
 	if interval != "" {
@@ -75,54 +92,58 @@ func Requests(interval string) ([]database.RequestRow, error) {
 	}
 	query += ";"
 
-	rows, err := conn.Query(context.Background(), query)
+	rows, err := conn.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var requests []database.RequestRow
+	var requests []RequestRow
 	for rows.Next() {
-		var request database.RequestRow
-		err := rows.Scan(&request.RequestID, &request.APIKey, &request.Path, &request.Hostname, &request.IPAddress, &request.Location, &request.UserAgentID, &request.Method, &request.Status, &request.ResponseTime, &request.Framework, &request.CreatedAt)
-		if err == nil {
-			requests = append(requests, request)
+		var request RequestRow
+		if err := rows.Scan(&request.RequestID, &request.APIKey, &request.Path, &request.Hostname, &request.IPAddress, &request.Location, &request.UserAgentID, &request.Method, &request.Status, &request.ResponseTime, &request.Framework, &request.CreatedAt); err != nil {
+			return nil, err // Return the error if scanning fails
 		}
+		requests = append(requests, request)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err // Check for any errors during iteration
 	}
 
 	return requests, nil
 }
 
-func HourlyUserRequests() ([]UserCount, error) {
-	return UserRequests("1 hour")
+func HourlyUserRequests(ctx context.Context) ([]UserCount, error) {
+	return UserRequests(ctx, hourly)
 }
 
-func DailyUserRequests() ([]UserCount, error) {
-	return UserRequests("24 hours")
+func DailyUserRequests(ctx context.Context) ([]UserCount, error) {
+	return UserRequests(ctx, daily)
 }
 
-func WeeklyUserRequests() ([]UserCount, error) {
-	return UserRequests("7 days")
+func WeeklyUserRequests(ctx context.Context) ([]UserCount, error) {
+	return UserRequests(ctx, weekly)
 }
 
-func MonthlyUserRequests() ([]UserCount, error) {
-	return UserRequests("30 days")
+func MonthlyUserRequests(ctx context.Context) ([]UserCount, error) {
+	return UserRequests(ctx, monthly)
 }
 
-func TotalUserRequests() ([]UserCount, error) {
-	return UserRequests("")
+func TotalUserRequests(ctx context.Context) ([]UserCount, error) {
+	return UserRequests(ctx, "")
 }
 
-func UserRequests(interval string) ([]UserCount, error) {
+func UserRequests(ctx context.Context, interval string) ([]UserCount, error) {
 	conn := database.NewConnection()
-	defer conn.Close(context.Background())
+	defer conn.Close(ctx)
 
 	query := "SELECT api_key, COUNT(*) as count FROM requests"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
 	query += " GROUP BY api_key ORDER BY count;"
-	rows, err := conn.Query(context.Background(), query)
+
+	rows, err := conn.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -130,22 +151,25 @@ func UserRequests(interval string) ([]UserCount, error) {
 
 	var requests []UserCount
 	for rows.Next() {
-		userRequests := new(UserCount)
-		err := rows.Scan(&userRequests.APIKey, &userRequests.Count)
-		if err == nil {
-			requests = append(requests, *userRequests)
+		var userRequests UserCount
+		if err := rows.Scan(&userRequests.APIKey, &userRequests.Count); err != nil {
+			return nil, err
 		}
+		requests = append(requests, userRequests)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return requests, nil
 }
 
-func UserRequestsOverLimit(limit int) ([]UserCount, error) {
+func UserRequestsOverLimit(ctx context.Context, limit int) ([]UserCount, error) {
 	conn := database.NewConnection()
-	defer conn.Close(context.Background())
+	defer conn.Close(ctx)
 
-	query := "SELECT * FROM (SELECT api_key, COUNT(*) as count FROM requests GROUP BY api_key) as derived_table WHERE count > $1 ORDER BY count;"
-	rows, err := conn.Query(context.Background(), query, limit)
+	query := "SELECT api_key, COUNT(*) as count FROM requests GROUP BY api_key HAVING COUNT(*) > $1 ORDER BY count;"
+	rows, err := conn.Query(ctx, query, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -153,17 +177,20 @@ func UserRequestsOverLimit(limit int) ([]UserCount, error) {
 
 	var requests []UserCount
 	for rows.Next() {
-		userRequests := new(UserCount)
-		err := rows.Scan(&userRequests.APIKey, &userRequests.Count)
-		if err == nil {
-			requests = append(requests, *userRequests)
+		var userRequests UserCount
+		if err := rows.Scan(&userRequests.APIKey, &userRequests.Count); err != nil {
+			return nil, err
 		}
+		requests = append(requests, userRequests)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return requests, nil
 }
 
-type requestsColumnSize struct {
+type RequestsColumnSizes struct {
 	RequestID    string `json:"request_id"`
 	APIKey       string `json:"api_key"`
 	Path         string `json:"path"`
@@ -178,91 +205,94 @@ type requestsColumnSize struct {
 	CreatedAt    string `json:"created_at"`
 }
 
-func (r requestsColumnSize) Display() {
-	fmt.Printf("request_id: %s\napi_key: %s\npath: %s\nhostname: %s\nip_address: %s\nlocation: %s\nuser_agent: %s\nmethod: %s\nstatus: %s\nresponse_time: %s\nframework: %s\ncreated_at: %s\n", r.RequestID, r.APIKey, r.Path, r.Hostname, r.IPAddress, r.Location, r.UserAgent, r.Method, r.Status, r.ResponseTime, r.Framework, r.CreatedAt)
+func (r RequestsColumnSizes) Display() {
+	fmt.Printf("request_id: %s\napi_key: %s\npath: %s\nhostname: %s\nip_address: %s\nlocation: %s\nuser_agent: %s\nmethod: %s\nstatus: %s\nresponse_time: %s\nframework: %s\ncreated_at: %s\n",
+		r.RequestID, r.APIKey, r.Path, r.Hostname, r.IPAddress, r.Location, r.UserAgent, r.Method, r.Status, r.ResponseTime, r.Framework, r.CreatedAt)
 }
 
-func RequestsColumnSize() (requestsColumnSize, error) {
+func RequestsColumnSize(ctx context.Context) (RequestsColumnSizes, error) {
 	conn := database.NewConnection()
-	defer conn.Close(context.Background())
+	defer conn.Close(ctx)
 
-	var size requestsColumnSize
-	query := "SELECT pg_size_pretty(sum(pg_column_size(request_id))) AS request_id, pg_size_pretty(sum(pg_column_size(api_key))) AS api_key, pg_size_pretty(sum(pg_column_size(path))) AS path, pg_size_pretty(sum(pg_column_size(hostname))) AS hostname, pg_size_pretty(sum(pg_column_size(ip_address))) AS ip_address, pg_size_pretty(sum(pg_column_size(location))) AS location, pg_size_pretty(sum(pg_column_size(user_agent_id))) AS user_agent_id, pg_size_pretty(sum(pg_column_size(method))) AS method, pg_size_pretty(sum(pg_column_size(status))) AS status, pg_size_pretty(sum(pg_column_size(response_time))) AS response_time, pg_size_pretty(sum(pg_column_size(framework))) AS framework, pg_size_pretty(sum(pg_column_size(created_at))) AS created_at FROM requests;"
-	err := conn.QueryRow(context.Background(), query).Scan(&size.RequestID, &size.APIKey, &size.Path, &size.Hostname, &size.IPAddress, &size.Location, &size.UserAgent, &size.Method, &size.Status, &size.ResponseTime, &size.Framework, &size.CreatedAt)
+	var size RequestsColumnSizes
+	query := `
+		SELECT 
+			pg_size_pretty(sum(pg_column_size(request_id))) AS request_id, 
+			pg_size_pretty(sum(pg_column_size(api_key))) AS api_key, 
+			pg_size_pretty(sum(pg_column_size(path))) AS path, 
+			pg_size_pretty(sum(pg_column_size(hostname))) AS hostname, 
+			pg_size_pretty(sum(pg_column_size(ip_address))) AS ip_address, 
+			pg_size_pretty(sum(pg_column_size(location))) AS location, 
+			pg_size_pretty(sum(pg_column_size(user_agent_id))) AS user_agent_id, 
+			pg_size_pretty(sum(pg_column_size(method))) AS method, 
+			pg_size_pretty(sum(pg_column_size(status))) AS status, 
+			pg_size_pretty(sum(pg_column_size(response_time))) AS response_time, 
+			pg_size_pretty(sum(pg_column_size(framework))) AS framework, 
+			pg_size_pretty(sum(pg_column_size(created_at))) AS created_at 
+		FROM requests;`
+
+	err := conn.QueryRow(ctx, query).Scan(&size.RequestID, &size.APIKey, &size.Path, &size.Hostname, &size.IPAddress, &size.Location, &size.UserAgent, &size.Method, &size.Status, &size.ResponseTime, &size.Framework, &size.CreatedAt)
 	if err != nil {
-		return requestsColumnSize{}, err
+		return RequestsColumnSizes{}, err
 	}
 
-	return size, err
+	return size, nil
 }
 
-func columnValuesCount[T string | int](column string) ([]struct {
+type ColumnValueCount[T any] struct {
 	Value T
 	Count int
-}, error) {
-	conn := database.NewConnection()
-	defer conn.Close(context.Background())
+}
 
-	query := "SELECT $1, COUNT(*) AS count FROM requests GROUP BY $2 ORDER BY count DESC;"
-	rows, err := conn.Query(context.Background(), query, column, column)
+func ColumnValuesCount[T any](ctx context.Context, column string) ([]ColumnValueCount[T], error) {
+	conn := database.NewConnection()
+	defer conn.Close(ctx)
+
+	query := fmt.Sprintf("SELECT %s, COUNT(*) AS count FROM requests GROUP BY %s ORDER BY count DESC;", column, column)
+	rows, err := conn.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var count []struct {
-		Value T
-		Count int
-	}
+	var counts []ColumnValueCount[T]
 	for rows.Next() {
-		var userAgent struct {
-			Value T
-			Count int
+		var count ColumnValueCount[T]
+		if err := rows.Scan(&count.Value, &count.Count); err != nil {
+			return nil, err
 		}
-		err := rows.Scan(&userAgent.Value, &userAgent.Count)
-		if err == nil {
-			count = append(count, userAgent)
-		}
+		counts = append(counts, count)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
-	return count, nil
+	return counts, nil
 }
 
-func TopFrameworks() ([]struct {
-	Value int
-	Count int
-}, error) {
-	return columnValuesCount[int]("framework")
+func TopFrameworks(ctx context.Context) ([]ColumnValueCount[int], error) {
+	return ColumnValuesCount[int](ctx, "framework")
 }
 
-func TopUserAgents() ([]struct {
-	Value string
-	Count int
-}, error) {
-	return columnValuesCount[string]("user_agent")
+func TopUserAgents(ctx context.Context) ([]ColumnValueCount[string], error) {
+	return ColumnValuesCount[string](ctx, "user_agent")
 }
 
-func TopIPAddresses() ([]struct {
-	Value string
-	Count int
-}, error) {
-	return columnValuesCount[string]("ip_address")
+func TopIPAddresses(ctx context.Context) ([]ColumnValueCount[string], error) {
+	return ColumnValuesCount[string](ctx, "ip_address")
 }
 
-func TopLocations() ([]struct {
-	Value string
-	Count int
-}, error) {
-	return columnValuesCount[string]("location")
+func TopLocations(ctx context.Context) ([]ColumnValueCount[string], error) {
+	return ColumnValuesCount[string](ctx, "location")
 }
 
-func AvgResponseTime() (float64, error) {
+func AvgResponseTime(ctx context.Context) (float64, error) {
 	conn := database.NewConnection()
-	defer conn.Close(context.Background())
+	defer conn.Close(ctx)
 
 	var avg float64
 	query := "SELECT AVG(response_time) FROM requests;"
-	err := conn.QueryRow(context.Background(), query).Scan(&avg)
+	err := conn.QueryRow(ctx, query).Scan(&avg)
 	if err != nil {
 		return 0.0, err
 	}

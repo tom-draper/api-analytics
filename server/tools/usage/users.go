@@ -9,37 +9,43 @@ import (
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
-func HourlyUsersCount() (int, error) {
-	return UsersCount("1 hour")
+type UserRow struct {
+	UserID    string    `json:"user_id"`
+	APIKey    string    `json:"api_key"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
-func DailyUsersCount() (int, error) {
-	return UsersCount("24 hours")
+func HourlyUsersCount(ctx context.Context) (int, error) {
+	return UsersCount(ctx, "1 hour")
 }
 
-func WeeklyUsersCount() (int, error) {
-	return UsersCount("7 days")
+func DailyUsersCount(ctx context.Context) (int, error) {
+	return UsersCount(ctx, "24 hours")
 }
 
-func MonthlyUsersCount() (int, error) {
-	return UsersCount("30 days")
+func WeeklyUsersCount(ctx context.Context) (int, error) {
+	return UsersCount(ctx, "7 days")
 }
 
-func TotalUsersCount() (int, error) {
-	return UsersCount("")
+func MonthlyUsersCount(ctx context.Context) (int, error) {
+	return UsersCount(ctx, "30 days")
 }
 
-func UsersCount(interval string) (int, error) {
+func TotalUsersCount(ctx context.Context) (int, error) {
+	return UsersCount(ctx, "")
+}
+
+func UsersCount(ctx context.Context, interval string) (int, error) {
 	conn := database.NewConnection()
-	defer conn.Close(context.Background())
+	defer conn.Close(ctx)
 
 	var count int
 	query := "SELECT COUNT(*) FROM users"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
-	query += ";"
-	err := conn.QueryRow(context.Background(), query).Scan(&count)
+
+	err := conn.QueryRow(ctx, query).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -47,48 +53,48 @@ func UsersCount(interval string) (int, error) {
 	return count, nil
 }
 
-func HourlyUsers() ([]database.UserRow, error) {
-	return Users("1 hour")
+func HourlyUsers(ctx context.Context) ([]UserRow, error) {
+	return Users(ctx, "1 hour")
 }
 
-func DailyUsers() ([]database.UserRow, error) {
-	return Users("24 hours")
+func DailyUsers(ctx context.Context) ([]UserRow, error) {
+	return Users(ctx, "24 hours")
 }
 
-func WeeklyUsers() ([]database.UserRow, error) {
-	return Users("7 days")
+func WeeklyUsers(ctx context.Context) ([]UserRow, error) {
+	return Users(ctx, "7 days")
 }
 
-func MonthlyUsers() ([]database.UserRow, error) {
-	return Users("30 days")
+func MonthlyUsers(ctx context.Context) ([]UserRow, error) {
+	return Users(ctx, "30 days")
 }
 
-func TotalUsers() ([]database.UserRow, error) {
-	return Users("")
+func TotalUsers(ctx context.Context) ([]UserRow, error) {
+	return Users(ctx, "")
 }
 
-func Users(interval string) ([]database.UserRow, error) {
+func Users(ctx context.Context, interval string) ([]UserRow, error) {
 	conn := database.NewConnection()
-	defer conn.Close(context.Background())
+	defer conn.Close(ctx)
 
 	query := "SELECT api_key, user_id, created_at FROM users"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
-	query += ";"
-	rows, err := conn.Query(context.Background(), query)
+
+	rows, err := conn.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var users []database.UserRow
+	var users []UserRow
 	for rows.Next() {
-		user := new(database.UserRow)
-		err := rows.Scan(&user.APIKey, &user.UserID, &user.CreatedAt)
-		if err == nil {
-			users = append(users, *user)
+		var user UserRow
+		if err := rows.Scan(&user.APIKey, &user.UserID, &user.CreatedAt); err != nil {
+			return nil, err
 		}
+		users = append(users, user)
 	}
 
 	return users, nil
@@ -120,12 +126,20 @@ func DisplayUsers(users []User) {
 	}
 }
 
-func TopUsers(n int) ([]User, error) {
+func TopUsers(ctx context.Context, n int) ([]User, error) {
 	conn := database.NewConnection()
-	defer conn.Close(context.Background())
+	defer conn.Close(ctx)
 
-	query := fmt.Sprintf("SELECT requests.api_key, users.created_at, COUNT(*) AS total_requests FROM requests left join users on users.api_key = requests.api_key GROUP BY requests.api_key, users.created_at ORDER BY total_requests DESC LIMIT '%d'", n)
-	rows, err := conn.Query(context.Background(), query)
+	query := `
+		SELECT requests.api_key, users.created_at, COUNT(*) AS total_requests,
+		       COALESCE(SUM(CASE WHEN DATE(created_at) = CURRENT_DATE THEN 1 ELSE 0 END), 0) AS daily_requests,
+		       COALESCE(SUM(CASE WHEN DATE(created_at) >= CURRENT_DATE - INTERVAL '7 days' THEN 1 ELSE 0 END), 0) AS weekly_requests
+		FROM requests
+		LEFT JOIN users ON users.api_key = requests.api_key
+		GROUP BY requests.api_key, users.created_at
+		ORDER BY total_requests DESC
+		LIMIT $1;`
+	rows, err := conn.Query(ctx, query, n)
 	if err != nil {
 		return nil, err
 	}
@@ -133,37 +147,11 @@ func TopUsers(n int) ([]User, error) {
 
 	var users []User
 	for rows.Next() {
-		user := new(User)
-		err := rows.Scan(&user.APIKey, &user.CreatedAt, &user.TotalRequests)
-		if err == nil {
-			users = append(users, *user)
+		var user User
+		if err := rows.Scan(&user.APIKey, &user.CreatedAt, &user.TotalRequests, &user.DailyRequests, &user.WeeklyRequests); err != nil {
+			return nil, err
 		}
-	}
-
-	// Add daily requests for each top user
-	dailyRequests, err := DailyUserRequests()
-	if err != nil {
-		return nil, err
-	}
-	for _, userRequests := range dailyRequests {
-		for i, r := range users {
-			if userRequests.APIKey == r.APIKey {
-				users[i].DailyRequests = userRequests.Count
-			}
-		}
-	}
-
-	// Add weekly requests for each top user
-	weeklyRequests, err := WeeklyUserRequests()
-	if err != nil {
-		return nil, err
-	}
-	for _, userRequests := range weeklyRequests {
-		for i, r := range users {
-			if userRequests.APIKey == r.APIKey {
-				users[i].WeeklyRequests = userRequests.Count
-			}
-		}
+		users = append(users, user)
 	}
 
 	return users, nil
@@ -178,11 +166,14 @@ type UserTime struct {
 func (user UserTime) Display(rank int) {
 	format := "[%d] %s %s (%s)\n"
 	timeFormat := "2006-01-02 15:04:05"
-	if time.Since(user.CreatedAt) > time.Hour*24*30*6 {
+	daysSince := time.Since(user.CreatedAt)
+
+	switch {
+	case daysSince > time.Hour*24*30*6:
 		color.Red(format, rank, user.APIKey, user.CreatedAt.Format(timeFormat), user.Days)
-	} else if time.Since(user.CreatedAt) > time.Hour*24*30*3 {
+	case daysSince > time.Hour*24*30*3:
 		color.Yellow(format, rank, user.APIKey, user.CreatedAt.Format(timeFormat), user.Days)
-	} else {
+	default:
 		fmt.Printf(format, rank, user.APIKey, user.CreatedAt.Format(timeFormat), user.Days)
 	}
 }
@@ -193,36 +184,37 @@ func DisplayUserTimes(users []UserTime) {
 	}
 }
 
-func UnusedUsers() ([]UserTime, error) {
-	usersRequests, err := UnusedUsersRequests()
+func UnusedUsers(ctx context.Context) ([]UserTime, error) {
+	usersRequests, err := UnusedUsersRequests(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	usersMonitors, err := UnusedUsersMonitors()
+	usersMonitors, err := UnusedUsersMonitors(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// Combine users with both no requests and users with no monitors
 	users := make([]UserTime, 0)
+	userMap := make(map[string]bool)
 	for _, user := range usersMonitors {
-		for _, userRequests := range usersRequests {
-			if user.APIKey == userRequests.APIKey {
-				users = append(users, user)
-				continue
-			}
+		userMap[user.APIKey] = true
+	}
+	for _, userRequests := range usersRequests {
+		if userMap[userRequests.APIKey] {
+			users = append(users, userRequests)
 		}
 	}
+
 	return users, nil
 }
 
-func UnusedUsersRequests() ([]UserTime, error) {
+func UnusedUsersRequests(ctx context.Context) ([]UserTime, error) {
 	conn := database.NewConnection()
-	defer conn.Close(context.Background())
+	defer conn.Close(ctx)
 
 	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM users u WHERE NOT EXISTS (SELECT FROM requests WHERE api_key = u.api_key) ORDER BY created_at;"
-	rows, err := conn.Query(context.Background(), query)
+	rows, err := conn.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -230,22 +222,22 @@ func UnusedUsersRequests() ([]UserTime, error) {
 
 	var users []UserTime
 	for rows.Next() {
-		user := new(UserTime)
-		err := rows.Scan(&user.APIKey, &user.CreatedAt, &user.Days)
-		if err == nil {
-			users = append(users, *user)
+		var user UserTime
+		if err := rows.Scan(&user.APIKey, &user.CreatedAt, &user.Days); err != nil {
+			return nil, err
 		}
+		users = append(users, user)
 	}
 
 	return users, nil
 }
 
-func UnusedUsersMonitors() ([]UserTime, error) {
+func UnusedUsersMonitors(ctx context.Context) ([]UserTime, error) {
 	conn := database.NewConnection()
-	defer conn.Close(context.Background())
+	defer conn.Close(ctx)
 
 	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM users u WHERE NOT EXISTS (SELECT FROM monitors WHERE api_key = u.api_key) ORDER BY created_at;"
-	rows, err := conn.Query(context.Background(), query)
+	rows, err := conn.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -253,22 +245,22 @@ func UnusedUsersMonitors() ([]UserTime, error) {
 
 	var users []UserTime
 	for rows.Next() {
-		user := new(UserTime)
-		err := rows.Scan(&user.APIKey, &user.CreatedAt, &user.Days)
-		if err == nil {
-			users = append(users, *user)
+		var user UserTime
+		if err := rows.Scan(&user.APIKey, &user.CreatedAt, &user.Days); err != nil {
+			return nil, err
 		}
+		users = append(users, user)
 	}
 
 	return users, nil
 }
 
-func SinceLastRequestUsers() ([]UserTime, error) {
+func SinceLastRequestUsers(ctx context.Context) ([]UserTime, error) {
 	conn := database.NewConnection()
-	defer conn.Close(context.Background())
+	defer conn.Close(ctx)
 
 	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM (SELECT DISTINCT ON (api_key) api_key, created_at FROM requests ORDER BY api_key, created_at DESC) AS derived_table ORDER BY created_at;"
-	rows, err := conn.Query(context.Background(), query)
+	rows, err := conn.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -276,11 +268,11 @@ func SinceLastRequestUsers() ([]UserTime, error) {
 
 	var users []UserTime
 	for rows.Next() {
-		user := new(UserTime)
-		err := rows.Scan(&user.APIKey, &user.CreatedAt, &user.Days)
-		if err == nil {
-			users = append(users, *user)
+		var user UserTime
+		if err := rows.Scan(&user.APIKey, &user.CreatedAt, &user.Days); err != nil {
+			return nil, err
 		}
+		users = append(users, user)
 	}
 
 	return users, nil
