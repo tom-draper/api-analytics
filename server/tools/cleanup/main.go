@@ -27,7 +27,7 @@ func deleteOldestRequests(apiKey string, count int) error {
 }
 
 func deleteExpiredRequests() {
-	users, err := usage.UserRequestsOverLimit(requestsLimit)
+	users, err := usage.UserRequestsOverLimit(context.Background(), requestsLimit)
 	if err != nil {
 		log.Fatalf("Failed to fetch users over limit: %v", err) // Use log for error handling
 	}
@@ -49,7 +49,7 @@ func deleteExpiredUsers() {
 }
 
 func deleteExpiredUnusedUsers() {
-	users, err := usage.UnusedUsers()
+	users, err := usage.UnusedUsers(context.Background())
 	if err != nil {
 		log.Fatalf("Failed to fetch unused users: %v", err)
 	}
@@ -63,7 +63,7 @@ func deleteExpiredUnusedUsers() {
 }
 
 func deleteExpiredRetiredUsers() {
-	users, err := usage.SinceLastRequestUsers()
+	users, err := usage.SinceLastRequestUsers(context.Background())
 	if err != nil {
 		log.Fatalf("Failed to fetch retired users: %v", err)
 	}

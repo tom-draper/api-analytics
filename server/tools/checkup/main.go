@@ -27,19 +27,19 @@ func emailBody(users []usage.UserRow, requests []usage.UserCount, monitors []usa
 }
 
 func emailCheckup(ctx context.Context) {
-	users, err := usage.DailyUsers()
+	users, err := usage.DailyUsers(context.Background())
 	handleError(err)
 
-	requests, err := usage.DailyUserRequests()
+	requests, err := usage.DailyUserRequests(context.Background())
 	handleError(err)
 
-	monitors, err := usage.DailyUserMonitors()
+	monitors, err := usage.DailyUserMonitors(context.Background())
 	handleError(err)
 
-	size, err := usage.TableSize("requests")
+	size, err := usage.TableSize(context.Background(), "requests")
 	handleError(err)
 
-	connections, err := usage.DatabaseConnections()
+	connections, err := usage.DatabaseConnections(context.Background())
 	handleError(err)
 
 	body := emailBody(users, requests, monitors, size, connections)
@@ -135,11 +135,11 @@ func displayDatabaseStats() {
 	p := message.NewPrinter(language.English)
 	printBanner("Database")
 
-	connections, err := usage.DatabaseConnections()
+	connections, err := usage.DatabaseConnections(context.Background())
 	handleError(err)
 	p.Println("Active database connections:", connections)
 
-	size, err := usage.TableSize("requests")
+	size, err := usage.TableSize(context.Background(), "requests")
 	handleError(err)
 	p.Println("Database size:", size)
 }
@@ -150,7 +150,7 @@ func displayLastHour() {
 
 	hourlyStats := []struct {
 		label string
-		count func() (int, error)
+		count func(context.Context) (int, error)
 	}{
 		{"Users", usage.HourlyUsersCount},
 		{"Requests", usage.HourlyRequestsCount},
@@ -158,7 +158,7 @@ func displayLastHour() {
 	}
 
 	for _, stat := range hourlyStats {
-		count, err := stat.count()
+		count, err := stat.count(context.Background())
 		handleError(err)
 		p.Println(stat.label+":", count)
 	}
@@ -170,7 +170,7 @@ func displayLast24Hours() {
 
 	dailyStats := []struct {
 		label string
-		count func() (int, error)
+		count func(context.Context) (int, error)
 	}{
 		{"Users", usage.DailyUsersCount},
 		{"Requests", usage.DailyRequestsCount},
@@ -178,7 +178,7 @@ func displayLast24Hours() {
 	}
 
 	for _, stat := range dailyStats {
-		count, err := stat.count()
+		count, err := stat.count(context.Background())
 		handleError(err)
 		p.Println(stat.label+":", count)
 	}
@@ -190,7 +190,7 @@ func displayLastWeek() {
 
 	weeklyStats := []struct {
 		label string
-		count func() (int, error)
+		count func(context.Context) (int, error)
 	}{
 		{"Users", usage.WeeklyUsersCount},
 		{"Requests", usage.WeeklyRequestsCount},
@@ -198,7 +198,7 @@ func displayLastWeek() {
 	}
 
 	for _, stat := range weeklyStats {
-		count, err := stat.count()
+		count, err := stat.count(context.Background())
 		handleError(err)
 		p.Println(stat.label+":", count)
 	}
@@ -207,7 +207,7 @@ func displayLastWeek() {
 func displayDatabaseCheckup() {
 	displayDatabaseStats()
 	p := message.NewPrinter(language.English)
-	totalRequests, err := usage.RequestsCount("")
+	totalRequests, err := usage.RequestsCount(context.Background(), "")
 	if err != nil {
 		handleError(err)
 	}
@@ -217,7 +217,7 @@ func displayDatabaseCheckup() {
 
 func displayDatabaseTableStats() {
 	printBanner("Requests Fields")
-	columnSize, err := usage.RequestsColumnSize()
+	columnSize, err := usage.RequestsColumnSize(context.Background())
 	if err != nil {
 		handleError(err)
 	}
@@ -236,7 +236,7 @@ func displayTotal() {
 
 	totalStats := []struct {
 		label string
-		count func(string) (int, error)
+		count func(context.Context, string) (int, error)
 	}{
 		{"Users", usage.UsersCount},
 		{"Requests", usage.RequestsCount},
@@ -244,7 +244,7 @@ func displayTotal() {
 	}
 
 	for _, stat := range totalStats {
-		count, err := stat.count("")
+		count, err := stat.count(context.Background(), "")
 		handleError(err)
 		p.Println(stat.label+":", count)
 	}
@@ -252,21 +252,21 @@ func displayTotal() {
 
 func displayTopUsers() {
 	printBanner("Top Users")
-	topUsers, err := usage.TopUsers(10)
+	topUsers, err := usage.TopUsers(context.Background(), 10)
 	handleError(err)
 	usage.DisplayUsers(topUsers)
 }
 
 func displayUnusedUsers() {
 	printBanner("Unused Users")
-	unusedUsers, err := usage.UnusedUsers()
+	unusedUsers, err := usage.UnusedUsers(context.Background())
 	handleError(err)
 	usage.DisplayUserTimes(unusedUsers)
 }
 
 func displayUsersSinceLastRequest() {
 	printBanner("Users Since Last Request")
-	sinceLastRequestUsers, err := usage.SinceLastRequestUsers()
+	sinceLastRequestUsers, err := usage.SinceLastRequestUsers(context.Background())
 	handleError(err)
 	usage.DisplayUserTimes(sinceLastRequestUsers)
 }
@@ -277,7 +277,7 @@ func displayMonitorsCheckup() {
 
 func displayMonitors() {
 	printBanner("Monitors")
-	monitors, err := usage.TotalMonitors()
+	monitors, err := usage.TotalMonitors(context.Background())
 	handleError(err)
 
 	for i, monitor := range monitors {
