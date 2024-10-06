@@ -35,4 +35,4 @@ repository = "https://github.com/tom-draper/api-analytics"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = "."
-python_files = "test_f*.py"
+python_files = "test*.py"

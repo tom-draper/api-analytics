@@ -2,7 +2,7 @@ import subprocess
 import time
 
 import pytest
-import requests
+from utils import valid_alt_log_speed, valid_response, valid_log, valid_speed
 
 APP_DIR = "./tests/integration/flask"
 HOST = "127.0.0.1"
@@ -28,38 +28,18 @@ def start_server():
 
 
 def test_response():
-    response = requests.get(BASE_URL)
-    assert response.status_code == 200
-    assert response.json() == {"message": "Hello World!"}
+    valid_response(BASE_URL)
 
 
 def test_speed():
-    response_times = [timed_request() for _ in range(100)]
-    average_response_time = sum(response_times) / len(response_times)
-    print(f"Average response time: {average_response_time*1000:.4f} ms")
-    assert average_response_time < 0.01
+    valid_speed(BASE_URL, 'flask')
 
 
-def timed_request():
-    start = time.time()
-    _ = requests.get(BASE_URL)
-    end = time.time()
-    return end - start
+def test_alt_log_speed():
+    valid_alt_log_speed(BASE_URL, 'flask')
 
 
+@pytest.mark.full
 def test_log():
-    response = requests.get(BASE_URL)
-    assert response.status_code == 200
-    assert response.json() == {"message": "Hello World!"}
+    valid_log(BASE_URL)
 
-    time.sleep(5)
-
-    response = requests.get(BASE_URL)
-    assert response.status_code == 200
-    assert response.json() == {"message": "Hello World!"}
-
-    time.sleep(60)
-
-    response = requests.get(BASE_URL)
-    assert response.status_code == 200
-    assert response.json() == {"message": "Hello World!"}
