@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { NotificationState } from '../../lib/notification';
+	import { getServerURL } from '../../lib/url';
 	import Dropdown from '../dashboard/Dropdown.svelte';
 
 	function triggerNotificationMessage(
@@ -22,7 +23,7 @@
 	}
 
 	async function postMonitor() {
-		if (url == null) {
+		if (monitorURL == null) {
 			triggerNotificationMessage('URL is blank.');
 			return;
 		} else if (monitorCount >= 3) {
@@ -32,15 +33,16 @@
 
 		try {
 			const secure = urlPrefix === 'https';
-			const fullURL = getFullURL(url, secure);
+			const fullURL = getFullURL(monitorURL, secure);
+			const serverURL = getServerURL();
 			const response = await fetch(
-				`https://www.apianalytics-server.com/api/monitor/add`,
+				`${serverURL}/api/monitor/add`,
 				{
 					method: 'POST',
 					headers: {},
 					body: JSON.stringify({
 						user_id: userID,
-						url: getFullURL(url, secure),
+						url: getFullURL(monitorURL, secure),
 						ping: true,
 						secure: secure,
 					}),
@@ -61,7 +63,7 @@
 		}
 	}
 
-	let url: string;
+	let monitorURL: string;
 	const options = ['https', 'http'];
 	let urlPrefix = options[0];
 
@@ -85,7 +87,7 @@
 			<input
 				type="text"
 				placeholder="www.example.com/endpoint/"
-				bind:value={url}
+				bind:value={monitorURL}
 			/>
 			<button class="add" on:click={postMonitor}>Add</button>
 		</div>

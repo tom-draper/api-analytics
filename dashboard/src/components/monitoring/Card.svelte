@@ -2,6 +2,7 @@
 	import ResponseTime from './ResponseTime.svelte';
 	import { periodToMarkers } from '../../lib/period';
 	import type { NotificationState } from '../../lib/notification';
+	import { getServerURL } from '../../lib/url';
 
 	function triggerNotificationMessage(
 		message: string,
@@ -17,8 +18,9 @@
 
 	async function deleteMonitor() {
 		try {
+			const url = getServerURL();
 			const response = await fetch(
-				'https://www.apianalytics-server.com/api/monitor/delete',
+				`${url}/api/monitor/delete`,
 				{
 					method: 'POST',
 					headers: {},
