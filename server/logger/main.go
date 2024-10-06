@@ -80,6 +80,7 @@ const (
 func checkHealth(c *gin.Context) {
 	connection, err := database.NewConnection()
 	if err != nil {
+		log.LogToFile(fmt.Sprintf("Health check failed: %v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status": "unhealthy",
 			"error":  "Database connection failed",
@@ -206,7 +207,7 @@ func getUserAgentIDs(userAgents map[string]struct{}) (map[string]int, error) {
 	conn, err := database.NewConnection()
 	if err != nil {
 		log.LogToFile(err.Error())
-		return ids
+		return ids, err
 	}
 	rows, err := conn.Query(context.Background(), query.String(), arguments...)
 	conn.Close(context.Background())

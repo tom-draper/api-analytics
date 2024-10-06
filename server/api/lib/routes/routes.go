@@ -1116,6 +1116,7 @@ func getUserPings(c *gin.Context) {
 func checkHealth(c *gin.Context) {
 	connection, err := database.NewConnection()
 	if err != nil {
+		log.LogToFile(fmt.Sprintf("Health check failed: %v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status": "unhealthy",
 			"error":  "Database connection failed",
