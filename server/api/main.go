@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"time"
+	"fmt"
 
 	"github.com/tom-draper/api-analytics/server/api/lib/log"
 	"github.com/tom-draper/api-analytics/server/api/lib/routes"
@@ -22,6 +23,12 @@ func errorHandler(c *gin.Context, info ratelimit.Info) {
 }
 
 func main() {
+	defer func() {
+		if err := recover(); err != nil {
+			log.LogToFile(fmt.Sprintf("Application crashed: %v", err))
+		}
+	}()
+
 	log.LogToFile("Starting api...")
 
 	err := database.LoadConfig()
@@ -50,5 +57,7 @@ func main() {
 
 	routes.RegisterRouter(r)
 
-	app.Run(":3000")
+	if err := app.Run(":3000"); err != nil {
+		log.LogToFile(fmt.Sprintf("Failed to run server: %v", err))
+	}
 }

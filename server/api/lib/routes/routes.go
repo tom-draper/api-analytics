@@ -1044,6 +1044,7 @@ func checkHealth(c *gin.Context) {
 	}
 	err = connection.Ping(context.Background())
 	if err != nil {
+		log.LogToFile(fmt.Sprintf("Health check failed: %v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status": "unhealthy",
 			"error":  "Database connection failed",

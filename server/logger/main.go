@@ -18,6 +18,12 @@ import (
 )
 
 func main() {
+	defer func() {
+		if err := recover(); err != nil {
+			log.LogToFile(fmt.Sprintf("Application crashed: %v", err))
+		}
+	}()
+
 	log.LogToFile("Starting logger...")
 
 	err := database.LoadConfig()
@@ -36,7 +42,9 @@ func main() {
 	app.POST("/api/requests", handler)
 	app.GET("/api/health", checkHealth)
 
-	app.Run(":8000")
+	if err := app.Run(":8000"); err != nil {
+		log.LogToFile(fmt.Sprintf("Failed to run server: %v", err))
+	}
 }
 
 type RequestData struct {
@@ -78,6 +86,7 @@ func checkHealth(c *gin.Context) {
 
 	err = connection.Ping(context.Background())
 	if err != nil {
+		log.LogToFile(fmt.Sprintf("Health check failed: %v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status": "unhealthy",
 			"error":  "Database connection failed",
@@ -112,11 +121,12 @@ func getCountryCode(IPAddress string) string {
 	return location
 }
 
-func storeNewUserAgents(userAgents map[string]struct{}) {
+func storeNewUserAgents(userAgents map[string]struct{}) error {
 	var query strings.Builder
 	query.WriteString("INSERT INTO user_agents (user_agent) VALUES ")
 	arguments := make([]any, len(userAgents))
 	i := 0
+
 	for userAgent := range userAgents {
 		query.WriteString(fmt.Sprintf("($%d)", i+1))
 		if i < len(userAgents)-1 {
@@ -125,6 +135,7 @@ func storeNewUserAgents(userAgents map[string]struct{}) {
 		arguments[i] = userAgent
 		i++
 	}
+
 	query.WriteString(" ON CONFLICT (user_agent) DO NOTHING;")
 
 	conn, err := database.NewConnection()
@@ -136,14 +147,22 @@ func storeNewUserAgents(userAgents map[string]struct{}) {
 	conn.Close(context.Background())
 	if err != nil {
 		log.LogToFile(err.Error())
+		return err
 	}
+
+	return nil
 }
 
-func getUserAgentIDs(userAgents map[string]struct{}) map[string]int {
+func getUserAgentIDs(userAgents map[string]struct{}) (map[string]int, error) {
+	if len(userAgents) == 0 {
+		return make(map[string]int), nil
+	}
+
 	var query strings.Builder
 	query.WriteString("SELECT user_agent, id FROM user_agents WHERE user_agent IN (")
 	arguments := make([]any, len(userAgents))
 	i := 0
+
 	for userAgent := range userAgents {
 		query.WriteString(fmt.Sprintf("$%d", i+1))
 		if i < len(userAgents)-1 {
@@ -164,8 +183,10 @@ func getUserAgentIDs(userAgents map[string]struct{}) map[string]int {
 	conn.Close(context.Background())
 	if err != nil {
 		log.LogToFile(err.Error())
-		return ids
+		return ids, err
 	}
+	defer rows.Close()
+
 	for rows.Next() {
 		var userAgent string
 		var id int
@@ -176,7 +197,13 @@ func getUserAgentIDs(userAgents map[string]struct{}) map[string]int {
 		}
 		ids[userAgent] = id
 	}
-	return ids
+
+	if err := rows.Err(); err != nil {
+		log.LogToFile(err.Error())
+		return ids, err // Return error if rows iteration failed
+	}
+
+	return ids, nil
 }
 
 func logRequestHandler() gin.HandlerFunc {
@@ -371,9 +398,9 @@ func logRequestHandler() gin.HandlerFunc {
 		query.WriteString(";")
 
 		// Store any new user agents found
-		storeNewUserAgents(uniqueUserAgents)
+		_ = storeNewUserAgents(uniqueUserAgents)
 		// Get associated user IDs for user agents
-		userAgentIDs := getUserAgentIDs(uniqueUserAgents)
+		userAgentIDs, _ := getUserAgentIDs(uniqueUserAgents)
 		// Insert user agent IDs into arguments
 		for i, userAgent := range userAgents {
 			if id, ok := userAgentIDs[userAgent]; ok {
