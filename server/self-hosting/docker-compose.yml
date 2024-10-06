@@ -1,17 +1,31 @@
-version: "3"
 services:
   nginx:
-    image: nginx
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    environment:
+      - DOMAIN_NAME=yourdomain.com  # Add the environment variable here
+    volumes:
+      - ./nginx/nginx.conf.template:/etc/nginx/nginx.conf.template  # Template config
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/certs:/etc/letsencrypt
+      - ./nginx/www:/usr/share/nginx/html
     ports:
       - "80:80"
-    volumes:
-      - type: bind
-        source: ./nginx/nginx.conf
-        target: /etc/nginx/conf.d/default.conf
-        read_only: true
+      - "443:443"
+    entrypoint: /bin/bash -c "envsubst '\$DOMAIN_NAME' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
     depends_on:
+      - certbot
       - api
       - logger
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./nginx/certs:/etc/letsencrypt
+      - ./nginx/www:/usr/share/nginx/html
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do sleep 6h & wait $${!}; certbot renew; done;'"
 
   db:
     image: postgres
@@ -21,8 +35,10 @@ services:
       - db-password
     volumes:
       - db-data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql  # Mount the SQL script
     environment:
       - POSTGRES_DB=analytics
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password  # Securely inject DB password
     expose:
       - 5432
     healthcheck:
@@ -40,6 +56,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   logger:
     build:
@@ -50,6 +71,21 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  monitor:
+    build:
+      context: ../monitor
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../monitor:/app 
 
 volumes:
   db-data:
@@ -57,3 +93,4 @@ volumes:
 secrets:
   db-password:
     file: ./database/password.txt
+
