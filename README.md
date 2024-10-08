@@ -23,7 +23,7 @@ Add our lightweight middleware to your API. Almost all processing is handled by 
 
 #### FastAPI
 
-[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.org/project/api-analytics)
+[![PyPi version](https://badgen.net/pypi/v/fastapi-analytics)](https://pypi.org/project/fastapi-analytics)
 
 ```bash
 pip install api-analytics[fastapi]
@@ -89,7 +89,7 @@ MIDDLEWARE = [
 
 #### Tornado
 
-[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.org/project/api-analytics)
+[![PyPi version](https://badgen.net/pypi/v/tornado-analytics)](https://pypi.org/project/tornado-analytics)
 
 ```bash
 pip install api-analytics[tornado]
