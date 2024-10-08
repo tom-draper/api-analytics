@@ -33,14 +33,14 @@ class Analytics(RequestHandler):
 
     def on_finish(self):
         request_data = {
-            "hostname": self.config.get_hostname(),
+            "hostname": self.config.get_hostname(self.request),
             "ip_address": self._get_ip_address(),
-            "path": self.config.get_path(),
-            "user_agent": self.config.get_user_agent(),
+            "path": self.config.get_path(self.request),
+            "user_agent": self.config.get_user_agent(self.request),
             "method": self.request.method,
             "status": self.get_status(),
             "response_time": int((time() - self.start) * 1000),
-            "user_id": self.config.get_user_id(),
+            "user_id": self.config.get_user_id(self.request),
             "created_at": datetime.now().isoformat(),
         }
 
