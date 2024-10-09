@@ -155,19 +155,19 @@ npm install node-api-analytics
 ```
 
 ```js
-import Fastify from 'fastify';
-import { fastifyAnalytics } from 'node-api-analytics';
+import fastify from 'Fastify';
+import { useFastifyAnalytics } from 'node-api-analytics';
 
 const fastify = Fastify();
 
-fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>)); // Add middleware
+useFastifyAnalytics(fastify, apiKey);
 
 fastify.get('/', function (request, reply) {
-  reply.send({ message: 'Hello, World!' });
+  reply.send({ message: 'Hello World!' });
 })
 
 fastify.listen({ port: 8080 }, function (err, address) {
-  console.log('Server listening at http://localhost:8080');
+  console.log('Server listening at https://localhost:8080');
   if (err) {
     fastify.log.error(err);
     process.exit(1);
