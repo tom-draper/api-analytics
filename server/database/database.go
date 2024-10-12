@@ -15,7 +15,7 @@ var dbURL string
 func LoadConfig() error {
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Println("Warning: Could not load .env file. Make sure it exists.")
+		log.Println("warning: Could not load .env file. Make sure it exists.")
 	}
 
 	// Get the POSTGRES_URL environment variable
@@ -27,6 +27,13 @@ func LoadConfig() error {
 }
 
 func NewConnection() (*pgx.Conn, error) {
+	if dbURL == "" {
+		err := LoadConfig()
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	conn, err := pgx.Connect(context.Background(), dbURL)
 	if err != nil {
 		return nil, err

@@ -1,17 +1,89 @@
 # Self-Hosting API Analytics
 
-API Analytics can be easily self-hosted giving you full control over your stored logged request data. Self-hosting requires an environment that can run Docker Compose and is publically addressable over HTTPS such as a VPS. You will also need a domain name that can be pointed to your server's IP address. By default, the `docker-compose.yml` file is set up to generate a free SSL certificate for your domain using Certbot and Let's Encrypt.
+API Analytics can be easily self-hosted giving you full control over your stored logged request data.
+
+Self-hosting requires:
+
+- an environment that can run Docker Compose and is publically addressable, such as a VPS; and
+- a domain name that can be pointed to your server's IP address.
+
+By default, the `docker-compose.yml` file is set up to generate a free SSL certificate for your domain using Certbot and Let's Encrypt.
+
+**Self-hosting is still undergoing testing, development and further improvements to make it easy to deploy. It is currently recommended that you avoid self-hosting for production use.**
 
 ## Backend Hosting
 
 ### Getting Started
 
+Clone the repo.
+
+```bash
+git clone github.com/tom-draper/api-analytics
+```
+
+Open the `self-hosting` directory.
+
+```bash
+cd api-analytics/server/self-hosting
+```
+
+Enter your `DOMAIN_NAME` as an environment variable within `.env`.
+
+Start the services.
+
 ```bash
 docker compose up -d
 ```
 
+#### Testing
+
+##### Internal
+
+You can quickly confirm if services are working by generating a new API key.
+
+```bash
+curl -X GET http://localhost:3000/api/generate
+```
+
+Confirm services are working internally by running `test.sh` bash script.
+
+```bash
+chmod +x test.sh
+./test.sh
+```
+
+##### External
+
+Outside of the hosting environment, you can confirm that services are publically accessible with an API key generation attempt.
+
+```bash
+curl -X GET <IP-ADDRESS>:3000/api/generate
+```
+
+Confirm your domain is set up and that Nginx is working correctly.
+
+```bash
+curl -X GET <DOMAIN-NAME>/api/generate
+```
+
+#### Maintenance
+
+Check the status of the running services with:
+
+```bash
+docker ps
+```
+
+If needed, you can stop all services with:
+
 ```bash
 docker compose stop
+```
+
+Remove all containers and images with:
+
+```bash
+docker compose down --rmi all
 ```
 
 ### Usage
