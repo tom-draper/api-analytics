@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
-	"fmt"
 
 	"github.com/tom-draper/api-analytics/server/api/lib/log"
 	"github.com/tom-draper/api-analytics/server/api/lib/routes"
@@ -20,6 +20,10 @@ func keyFunc(c *gin.Context) string {
 
 func errorHandler(c *gin.Context, info ratelimit.Info) {
 	c.String(http.StatusTooManyRequests, "Too many requests. Try again in "+time.Until(info.ResetTime).String())
+}
+
+func getRateLimit() int {
+	GetIntegerEnvVariable("RATE_LIMIT", 100)
 }
 
 func main() {
@@ -47,7 +51,7 @@ func main() {
 	// Limit a single IP's request logs to 100 per second
 	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
 		Rate:  time.Second,
-		Limit: 100,
+		Limit: getRateLimit(),
 	})
 	rateLimiter := ratelimit.RateLimiter(store, &ratelimit.Options{
 		ErrorHandler: errorHandler,

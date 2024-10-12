@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/tom-draper/api-analytics/server/database"
@@ -14,6 +16,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/oschwald/geoip2-golang"
 )
 
@@ -97,6 +100,32 @@ func checkHealth(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": "healthy",
 	})
+}
+
+func getMaxInsert() int {
+	const defaultValue int = 2000
+
+	errMsg := fmt.Sprintf("Failed to load .env file. Using default value MAX_INSERT=%d.", defaultValue)
+
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.LogToFile(errMsg)
+		return defaultValue
+	}
+
+	value := os.Getenv(fmt.Sprintf("MAX_INSERT environment variable is blank. Using default value MAX_INSERT=%d.", defaultValue))
+	if value == "" {
+		log.LogToFile(errMsg)
+		return defaultValue
+	}
+
+	maxInsert, err := strconv.Atoi(value)
+	if err != nil {
+		log.LogToFile(fmt.Sprintf("MAX_INSERT environment variable is not an integer. Using default value MAX_INSERT=%d.", defaultValue))
+		return defaultValue
+	}
+
+	return maxInsert
 }
 
 func getCountryCode(IPAddress string) string {
@@ -209,7 +238,7 @@ func getUserAgentIDs(userAgents map[string]struct{}) (map[string]int, error) {
 func logRequestHandler() gin.HandlerFunc {
 	var rateLimiter = ratelimit.RateLimiter{}
 
-	const maxInsert int = 2000
+	var maxInsert = getMaxInsert()
 
 	var methodID = map[string]int16{
 		"GET":     0,

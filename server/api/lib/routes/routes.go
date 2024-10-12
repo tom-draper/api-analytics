@@ -15,6 +15,7 @@ import (
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v5"
 	"github.com/tom-draper/api-analytics/server/api/lib/log"
+	"github.com/tom-draper/api-analytics/server/api/lib/env"
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
@@ -93,15 +94,13 @@ type DashboardRequestRow struct {
 	CreatedAt    time.Time   `json:"created_at"`
 }
 
-func getRequests(c *gin.Context) {
-	var userID string = c.Param("userID")
-	if userID == "" {
-		log.LogToFile("User ID empty")
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
-		return
-	}
+func getMaxLoad() int {
+	GetIntegerEnvVariable("MAX_LOAD", 1_000_000)
+}
 
-	log.LogToFile(fmt.Sprintf("id=%s: Dashboard access", userID))
+func getPageSize() int {
+	GetIntegerEnvVariable("PAGE_SIZE", 250_000)
+}
 
 	connection, err := database.NewConnection()
 	if err != nil {
@@ -111,37 +110,80 @@ func getRequests(c *gin.Context) {
 	}
 	defer connection.Close(context.Background())
 
-	// Fetch API key corresponding with user ID
-	apiKey, err := getUserAPIKey(connection, userID)
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("id=%s: No API key associated with user ID - %s", userID, err.Error()))
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
-		return
-	}
+	return func(c *gin.Context) {
+		userID := c.Param("userID")
+		if userID == "" {
+			log.LogToFile("User ID empty")
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid targetPage ID."})
+			return
+		}
 
-	requests := [][10]any{}
-	pageSize := 1_000_000
-	maxRequests := pageSize   // Temporary limit to prevent memory issues
-	pageMarker := time.Time{} // Start with min time to capture first page
-	userAgentIDs := make(map[int]struct{})
+		var err error
+		pageQuery := c.Query("page")
+		log.LogToFile(pageQuery)
+		targetPage := 1
+		if pageQuery == "" {
+			targetPage, err = strconv.Atoi(pageQuery)
+			if err != nil {
+				log.LogToFile(fmt.Sprintf("Failed to parse page number '%s' from query", pageQuery))
+			}
+		}
 
-	// Read paginated requests data
-	for {
-		// Left table join was originally used but often exceeded postgresql working memory limit with large numbers of requests
-		query := "SELECT ip_address, path, hostname, user_agent_id, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 AND created_at >= $2 ORDER BY created_at LIMIT $3;"
-		rows, err := connection.Query(context.Background(), query, apiKey, pageMarker, pageSize)
+		var message string
+		if targetPage == 0 {
+			message = fmt.Sprintf("id=%s: Dashboard access", userID)
+		} else {
+			message = fmt.Sprintf("id=%s: Dashboard page %d access", userID, targetPage)
+		}
+		log.LogToFile(message)
+
+		connection, err := database.NewConnection()
 		if err != nil {
-			log.LogToFile(fmt.Sprintf("key=%s: Invalid API key - %s", apiKey, err.Error()))
+			log.LogToFile(fmt.Sprintf("id=%s: Dashboard access failed - %s", userID, err.Error()))
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
+			return
+		}
+		defer connection.Close(context.Background())
+
+		// Fetch API key corresponding with user ID
+		apiKey, err := getUserAPIKey(connection, userID)
+		if err != nil {
+			log.LogToFile(fmt.Sprintf("id=%s: No API key associated with user ID - %s", userID, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
 
-		// First value in list holds column names
-		request := new(DashboardRequestRow)
-		var count int
-		for rows.Next() {
-			err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
-			if err == nil {
+		requests := [][10]any{}
+		userAgentIDs := make(map[int]struct{})
+		var currentPage int
+		if targetPage == 0 {
+			currentPage = 1
+		} else {
+			currentPage = targetPage
+		}
+
+		for {
+			// Note: table joins currently avoided due to memory limitations
+			query := "SELECT ip_address, path, hostname, user_agent_id, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 ORDER BY created_at LIMIT $2 OFFSET $3;"
+			offset := (currentPage - 1) * pageSize
+			rows, err := connection.Query(context.Background(), query, apiKey, pageSize, offset)
+			if err != nil {
+				log.LogToFile(fmt.Sprintf("key=%s: Invalid API key - %s", apiKey, err.Error()))
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
+				return
+			}
+
+			// First value in the list will hold column names
+			request := new(DashboardRequestRow)
+			var count int
+			var skipped int
+			for rows.Next() {
+				err = rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
+				if err != nil {
+					skipped++
+					continue
+				}
+
 				var ip string
 				if request.IPAddress.IPNet != nil {
 					ip = request.IPAddress.IPNet.IP.String()
@@ -155,77 +197,86 @@ func getRequests(c *gin.Context) {
 						userAgentIDs[*request.UserAgent] = struct{}{}
 					}
 				}
+
+				count++
+
+				// Finish page read early if reached data limit
+				if len(requests) >= maxLoad {
+					break
+				}
 			}
-			count++
-			if count >= maxRequests {
+			rows.Close()
+
+			currentPage++
+
+			// Finish data read if only needed one page, last page read was the final page available, or reached data limit
+			if targetPage != 0 || count+skipped < pageSize || count >= maxLoad {
 				break
 			}
 		}
-		// If haven't reached page size, there are no more rows to read
-		if count <= pageSize || count >= maxRequests {
-			rows.Close()
-			break
+
+		// Convert user agent IDs to names in-place
+		userAgents, err := getUserAgents(connection, userAgentIDs)
+		if err != nil {
+			log.LogToFile(fmt.Sprintf("key=%s: User agent lookup failed - %s", apiKey, err.Error()))
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User agent lookup failed."})
+			return
 		}
-		// Save the final row's timestamp to know where next page begins
-		lastIdx := len(requests) - 1
-		lastTimestamp := requests[lastIdx][len(requests[lastIdx])-1].(time.Time)
-		pageMarker = lastTimestamp
-		rows.Close()
-	}
 
-	// Convert user agent IDs to names
-	userAgents, err := getUserAgents(connection, userAgentIDs)
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("key=%s: User agent lookup failed - %s", apiKey, err.Error()))
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User agent lookup failed."})
-		return
-	}
+		body := DashboardData{
+			UserAgents: userAgents,
+			Requests:   requests,
+		}
 
-	body := DashboardData{
-		UserAgents: userAgents,
-		Requests:   requests,
-	}
+		// Compress requests with gzip
+		gzipOutput, err := compressJSON(body)
+		if err != nil {
+			log.LogToFile(fmt.Sprintf("key=%s: Compression failed - %s", apiKey, err.Error()))
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Compression failed."})
+			return
+		}
 
-	gzipOutput, err := compressJSON(body)
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("key=%s: Compression failed - %s", apiKey, err.Error()))
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Compression failed."})
-		return
-	}
+		// Return API request data
+		c.Writer.Header().Set("Accept-Encoding", "gzip")
+		c.Writer.Header().Set("Content-Encoding", "gzip")
+		c.Writer.Header().Set("Content-Type", "application/json")
+		c.Data(http.StatusOK, "gzip", gzipOutput)
 
-	// Return API request data
-	c.Writer.Header().Set("Accept-Encoding", "gzip")
-	c.Writer.Header().Set("Content-Encoding", "gzip")
-	c.Writer.Header().Set("Content-Type", "application/json")
-	c.Data(http.StatusOK, "gzip", gzipOutput)
+		// Record user dashboard access
+		if targetPage == 0 {
+			message = fmt.Sprintf("key=%s: Dashboard access successful (%d)", apiKey, len(requests))
+		} else {
+			message = fmt.Sprintf("key=%s: Dashboard page %d access successful (%d)", apiKey, targetPage, len(requests))
+		}
+		log.LogToFile(message)
 
-	log.LogToFile(fmt.Sprintf("key=%s: Dashboard access successful (%d)", apiKey, len(requests)))
-
-	// Record user dashboard access
-	err = updateLastAccessed(connection, apiKey)
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
-		return
+		err = updateLastAccessed(connection, apiKey)
+		if err != nil {
+			log.LogToFile(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
+			return
+		}
 	}
 }
+func getPaginatedRequestsHandler() gin.HandlerFunc {
+	var pageSize int = getPageSize()
 
-func getPaginatedRequests(c *gin.Context) {
-	var userID string = c.Param("userID")
-	if userID == "" {
-		log.LogToFile("User ID empty")
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
-		return
-	}
+	return func(c *gin.Context) {
+		var userID string = c.Param("userID")
+		if userID == "" {
+			log.LogToFile("User ID empty")
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
+			return
+		}
 
-	page, err := strconv.Atoi(c.Param("page"))
-	if err != nil || page == 0 {
-		log.LogToFile("Invalid page number")
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid page number."})
-		return
-	}
+		page, err := strconv.Atoi(c.Param("page"))
+		if err != nil || page == 0 {
+			log.LogToFile("Invalid page number")
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid page number."})
+			return
+		}
 
-	log.LogToFile(fmt.Sprintf("id=%s: Dashboard page %d access", userID, page))
+		log.LogToFile(fmt.Sprintf("id=%s: Dashboard page %d access", userID, page))
 
 	connection, err := database.NewConnection()
 	if err != nil {
@@ -258,60 +309,89 @@ func getPaginatedRequests(c *gin.Context) {
 	for rows.Next() {
 		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
 		if err != nil {
-			continue
+			log.LogToFile(fmt.Sprintf("id=%s: Dashboard page %d access failed - %s", userID, page, err.Error()))
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
+			return
+		}
+		defer connection.Close(context.Background())
+
+		// Fetch API key corresponding with user ID
+		apiKey, err := getUserAPIKey(connection, userID)
+		if err != nil {
+			log.LogToFile(fmt.Sprintf("id=%s: No API key associated with user ID - %s", userID, err.Error()))
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
+			return
 		}
 
-		var ip string
-		if request.IPAddress.IPNet != nil {
-			ip = request.IPAddress.IPNet.IP.String()
+		requests := [][10]any{}
+		userAgentIDs := make(map[int]struct{})
+
+		query := "SELECT ip_address, path, hostname, user_agent_id, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 ORDER BY created_at LIMIT $2 OFFSET $3;"
+		rows, err := connection.Query(context.Background(), query, apiKey, pageSize, (page-1)*pageSize)
+		if err != nil {
+			log.LogToFile(fmt.Sprintf("key=%s: Invalid API key - %s", apiKey, err.Error()))
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
+			return
 		}
-		hostname := getNullableString(request.Hostname)
-		location := getNullableString(request.Location)
-		userID := getNullableString(request.UserID)
-		requests = append(requests, [10]any{ip, request.Path, hostname, request.UserAgent, request.Method, request.ResponseTime, request.Status, location, userID, request.CreatedAt})
-		if request.UserAgent != nil {
-			if _, ok := userAgentIDs[*request.UserAgent]; !ok {
-				userAgentIDs[*request.UserAgent] = struct{}{}
+		request := new(DashboardRequestRow) // Reuseable request struct
+		for rows.Next() {
+			err = rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
+			if err != nil {
+				continue
+			}
+
+			var ip string
+			if request.IPAddress.IPNet != nil {
+				ip = request.IPAddress.IPNet.IP.String()
+			}
+			hostname := getNullableString(request.Hostname)
+			location := getNullableString(request.Location)
+			userID := getNullableString(request.UserID)
+			requests = append(requests, [10]any{ip, request.Path, hostname, request.UserAgent, request.Method, request.ResponseTime, request.Status, location, userID, request.CreatedAt})
+			if request.UserAgent != nil {
+				if _, ok := userAgentIDs[*request.UserAgent]; !ok {
+					userAgentIDs[*request.UserAgent] = struct{}{}
+				}
 			}
 		}
-	}
-	rows.Close()
+		rows.Close()
 
-	// Convert user agent IDs to names
-	userAgents, err := getUserAgents(connection, userAgentIDs)
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("key=%s: User agent lookup failed - %s", apiKey, err.Error()))
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User agent lookup failed."})
-		return
-	}
+		// Convert user agent IDs to names
+		userAgents, err := getUserAgents(connection, userAgentIDs)
+		if err != nil {
+			log.LogToFile(fmt.Sprintf("key=%s: User agent lookup failed - %s", apiKey, err.Error()))
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User agent lookup failed."})
+			return
+		}
 
-	// Store user agents in separate lookup table to reduce data transfer size
-	body := DashboardData{
-		UserAgents: userAgents,
-		Requests:   requests,
-	}
+		// Store user agents in separate lookup table to reduce data transfer size
+		body := DashboardData{
+			UserAgents: userAgents,
+			Requests:   requests,
+		}
 
-	gzipOutput, err := compressJSON(body)
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("key=%s: Compression failed - %s", apiKey, err.Error()))
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Compression failed."})
-		return
-	}
+		gzipOutput, err := compressJSON(body)
+		if err != nil {
+			log.LogToFile(fmt.Sprintf("key=%s: Compression failed - %s", apiKey, err.Error()))
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Compression failed."})
+			return
+		}
 
-	// Return API request data
-	c.Writer.Header().Set("Accept-Encoding", "gzip")
-	c.Writer.Header().Set("Content-Encoding", "gzip")
-	c.Writer.Header().Set("Content-Type", "application/json")
-	c.Data(http.StatusOK, "gzip", gzipOutput)
+		// Return API request data
+		c.Writer.Header().Set("Accept-Encoding", "gzip")
+		c.Writer.Header().Set("Content-Encoding", "gzip")
+		c.Writer.Header().Set("Content-Type", "application/json")
+		c.Data(http.StatusOK, "gzip", gzipOutput)
 
-	log.LogToFile(fmt.Sprintf("key=%s: Dashboard page %d access successful (%d)", apiKey, page, len(requests)))
+		log.LogToFile(fmt.Sprintf("key=%s: Dashboard page %d access successful (%d)", apiKey, page, len(requests)))
 
-	// Record user dashboard access
-	err = updateLastAccessed(connection, apiKey)
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
-		return
+		// Record user dashboard access
+		err = updateLastAccessed(connection, apiKey)
+		if err != nil {
+			log.LogToFile(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
+			return
+		}
 	}
 }
 
@@ -1058,10 +1138,11 @@ func checkHealth(c *gin.Context) {
 }
 
 func RegisterRouter(r *gin.RouterGroup) {
+	r.GET("/generate", genAPIKey)
 	r.GET("/generate-api-key", genAPIKey)
 	r.GET("/user-id/:apiKey", getUserID)
-	r.GET("/requests/:userID", getRequests)
-	r.GET("/requests/:userID/:page", getPaginatedRequests)
+	r.GET("/requests/:userID", getRequestsHandler())
+	r.GET("/requests/:userID/:page", getPaginatedRequestsHandler())
 	r.GET("/delete/:apiKey", deleteData)
 	r.GET("/monitor/pings/:userID", getUserPings)
 	r.POST("/monitor/add", addUserMonitor)
