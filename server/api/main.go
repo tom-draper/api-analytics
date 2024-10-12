@@ -7,7 +7,7 @@ import (
 
 	"github.com/tom-draper/api-analytics/server/api/lib/log"
 	"github.com/tom-draper/api-analytics/server/api/lib/routes"
-	"github.com/tom-draper/api-analytics/server/api/lib/environment"
+	"github.com/tom-draper/api-analytics/server/api/lib/env"
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
 	"github.com/gin-contrib/cors"
