@@ -5,7 +5,7 @@ events {
 http {
     server {
         listen 80;
-        server_name ${DOMAIN_NAME} www.${DOMAIN_NAME};
+        server_name $domain_name www.$domain_name;
 
         location /.well-known/acme-challenge/ {
             root /usr/share/nginx/html;
@@ -18,10 +18,10 @@ http {
 
     server {
         listen 443 ssl;
-        server_name ${DOMAIN_NAME} www.${DOMAIN_NAME};
+        server_name $domain_name www.$domain_name;
 
-        ssl_certificate /etc/letsencrypt/live/${DOMAIN_NAME}/fullchain.pem;
-        ssl_certificate_key /etc/letsencrypt/live/${DOMAIN_NAME}/privkey.pem;
+        ssl_certificate /etc/letsencrypt/live/$domain_name/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/$domain_name/privkey.pem;
 
         location / {
             root /usr/share/nginx/html;

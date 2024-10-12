@@ -3,17 +3,16 @@ services:
     image: nginx:latest
     container_name: nginx
     restart: always
-    environment:
-      - DOMAIN_NAME=yourdomain.com  # Add the environment variable here
     volumes:
-      - ./nginx/nginx.conf.template:/etc/nginx/nginx.conf.template  # Template config
+      - ./nginx/nginx.conf.template:/etc/nginx/nginx.conf.template
+      - ./nginx/template-variables:/etc/nginx/templates/10-variables.conf.template:ro
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./nginx/certs:/etc/letsencrypt
       - ./nginx/www:/usr/share/nginx/html
     ports:
       - "80:80"
       - "443:443"
-    entrypoint: /bin/bash -c "envsubst '\$DOMAIN_NAME' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
+    entrypoint: /bin/bash -c "nginx -g 'daemon off;'"
     depends_on:
       - certbot
       - api
@@ -25,21 +24,16 @@ services:
     volumes:
       - ./nginx/certs:/etc/letsencrypt
       - ./nginx/www:/usr/share/nginx/html
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do sleep 6h & wait $${!}; certbot renew; done;'"
+    entrypoint: /bin/sh -c "trap exit TERM; while :; do sleep 6h & wait $${!}; certbot renew; done;"
 
   db:
     image: postgres
     container_name: db
     restart: always
     user: postgres
-    secrets:
-      - db-password
     volumes:
       - db-data:/var/lib/postgresql/data
-      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql  # Mount the SQL script
-    environment:
-      - POSTGRES_DB=analytics
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password  # Securely inject DB password
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     expose:
       - 5432
     healthcheck:
@@ -58,6 +52,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    environment:
+      POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 10s
@@ -74,6 +70,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    environment:
+      POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
       interval: 10s
@@ -88,13 +86,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    environment:
+      POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     volumes:
       - ../monitor:/app 
 
 volumes:
   db-data:
-
-secrets:
-  db-password:
-    file: ./database/password.txt
 
