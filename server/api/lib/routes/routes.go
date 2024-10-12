@@ -15,7 +15,7 @@ import (
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v5"
 	"github.com/tom-draper/api-analytics/server/api/lib/log"
-	"github.com/tom-draper/api-analytics/server/api/lib/env"
+	"github.com/tom-draper/api-analytics/server/api/lib/environment"
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
