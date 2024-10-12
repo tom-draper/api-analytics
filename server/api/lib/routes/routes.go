@@ -983,6 +983,22 @@ func getUserPings(c *gin.Context) {
 	c.JSON(http.StatusOK, monitors)
 }
 
+func checkHealth(c *gin.Context) {
+	connection := database.NewConnection()
+	err := connection.Ping(context.Background())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status": "unhealthy",
+			"error":  "Database connection failed",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "healthy",
+	})
+}
+
 func RegisterRouter(r *gin.RouterGroup) {
 	r.GET("/generate-api-key", genAPIKey)
 	r.GET("/user-id/:apiKey", getUserID)
@@ -993,4 +1009,5 @@ func RegisterRouter(r *gin.RouterGroup) {
 	r.POST("/monitor/add", addUserMonitor)
 	r.POST("/monitor/delete", deleteUserMonitor)
 	r.GET("/data", getData)
+	r.GET("/health", checkHealth)
 }

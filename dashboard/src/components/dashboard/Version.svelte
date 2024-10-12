@@ -17,6 +17,7 @@
 
 		if (versions.size > 1) {
 			genPlot(data);
+			window?.dispatchEvent(new Event('resize'));
 		}
 	}
 
@@ -107,7 +108,7 @@
 	export let data: RequestsData, endpointsRendered: boolean;
 </script>
 
-<div class="card" class:hidden={versions === undefined || versions.size === 1}>
+<div class="card" class:hidden={versions === undefined || versions.size <= 1}>
 	<div class="card-title">Version</div>
 	<div id="plotly">
 		<div id="plotDiv" bind:this={plotDiv}>

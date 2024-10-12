@@ -1,2 +1,3 @@
 dist
 fastapi_analytics.egg-info
+.pytest_cache

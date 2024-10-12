@@ -2,7 +2,7 @@ import os
 import sys
 
 # Import ../api_analytics rather than api_analyics pip package
-sys.path.insert(0, os.path.abspath("../"))
+sys.path.insert(0, os.path.abspath("../../../"))
 import logging
 
 import uvicorn
@@ -30,4 +30,4 @@ async def root():
 
 
 if __name__ == "__main__":
-    uvicorn.run("fastapi_ex:app", reload=True)
+    uvicorn.run("app:app", reload=True)

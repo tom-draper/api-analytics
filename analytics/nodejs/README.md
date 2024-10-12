@@ -28,8 +28,8 @@ const app = express();
 
 app.use(expressAnalytics(<API-KEY>));  // Add middleware
 
-app.get("/", (req, res) => {
-    res.send({message: "Hello World"});
+app.get('/', (req, res) => {
+    res.send({message: 'Hello World!'});
 });
 
 app.listen(8080, () => {
@@ -40,12 +40,12 @@ app.listen(8080, () => {
 #### Fastify
 
 ```js
-import Fastify from 'fastify';
-import { fastifyAnalytics } from 'node-api-analytics;
+import fastify from 'Fastify';
+import { useFastifyAnalytics } from 'node-api-analytics';
 
 const fastify = Fastify();
 
-fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>));  // Add middleware
+useFastifyAnalytics(fastify, apiKey);
 
 fastify.get('/', function (request, reply) {
   reply.send({ message: 'Hello World!' });
@@ -63,15 +63,15 @@ fastify.listen({ port: 8080 }, function (err, address) {
 #### Koa
 
 ```js
-import Koa from "koa";
-import { koaAnalytics } from "node-api-analytics";
+import Koa from 'koa';
+import { koaAnalytics } from 'node-api-analytics';
 
 const app = new Koa();
 
 app.use(koaAnalytics(<API-KEY>));  // Add middleware
 
 app.use((ctx) => {
-  ctx.body = { message: "Hello World!" };
+  ctx.body = { message: 'Hello World!' };
 });
 
 app.listen(8080, () =>

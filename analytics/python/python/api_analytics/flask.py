@@ -3,7 +3,7 @@ from datetime import datetime
 from time import time
 from typing import Callable, Union
 
-from api_analytics.core import log_request, logger, DEFAULT_SERVER_URL
+from .core import log_request, logger, DEFAULT_SERVER_URL
 from flask import Flask, Request, Response, request
 
 
@@ -32,14 +32,14 @@ def add_middleware(app: Flask, api_key: str, config: "Config" = None):
     def on_finish(response: Response) -> Response:
         nonlocal start
         request_data = {
-            "hostname": config.get_hostname(request, config),
+            "hostname": config.get_hostname(request),
             "ip_address": _get_ip_address(request, config),
-            "path": config.get_path(request, config),
-            "user_agent": config.get_user_agent(request, config),
+            "path": config.get_path(request),
+            "user_agent": config.get_user_agent(request),
             "method": request.method,
             "status": response.status_code,
             "response_time": int((time() - start) * 1000),
-            "user_id": config.get_user_id(request, config),
+            "user_id": config.get_user_id(request),
             "created_at": datetime.now().isoformat(),
         }
 
@@ -60,7 +60,7 @@ class Mappers:
 
     @staticmethod
     def get_hostname(request: Request) -> Union[str, None]:
-        return request.url.hostname
+        return request.host
 
     @staticmethod
     def get_user_id(request: Request) -> Union[str, None]:

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { serverURL } from '../lib/consts';
+	import { getServerURL } from '../lib/url';
 
 	type State = 'delete' | 'loading' | 'deleted' | 'error';
 
@@ -7,11 +7,18 @@
 	let apiKey = '';
 	async function submit() {
 		setState('loading');
-		const response = await fetch(`${serverURL}/api/delete/${apiKey}`);
+		
+		try {
+			const url = getServerURL();
+			const response = await fetch(`${url}/api/delete/${apiKey}`);
 
-		if (response.status === 200) {
-			setState('deleted');
-		} else {
+			if (response.status === 200) {
+				setState('deleted');
+			} else {
+				setState('error');
+			}
+		} catch (e) {
+			console.log(e);
 			setState('error');
 		}
 	}

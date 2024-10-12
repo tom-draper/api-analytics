@@ -22,10 +22,10 @@
 	import Dropdown from '../components/dashboard/Dropdown.svelte';
 	import Notification from '../components/dashboard/Notification.svelte';
 	import exportCSV from '../lib/exportData';
-	import { ColumnIndex, columns, serverURL } from '../lib/consts';
+	import { ColumnIndex, columns } from '../lib/consts';
 	import Error from '../components/dashboard/Error.svelte';
 	import TopUsers from '../components/dashboard/TopUsers.svelte';
-	import { getSourceURL } from '../lib/url';
+	import { getServerURL } from '../lib/url';
 
 	function allTimePeriod(_: Date) {
 		return true;
@@ -69,7 +69,6 @@
 
 	function setPeriodData() {
 		periodData = getPeriodData();
-		changingPeriod = false;
 	}
 
 	function getInRange() {
@@ -171,10 +170,7 @@
 	}
 
 	async function fetchData(): Promise<DashboardData> {
-		const source = getSourceURL();
-		const url = source === null ? serverURL : source;
-
-		console.log(url);
+		const url = getServerURL();
 
 		userID = formatUUID(userID);
 		try {
@@ -223,7 +219,7 @@
 		current: RequestsData;
 		previous: RequestsData;
 	};
-	let changingPeriod: boolean = false;
+	// let changingPeriod: boolean = false;
 	const timePeriods: Period[] = [
 		'24 hours',
 		'Week',
@@ -259,9 +255,7 @@
 
 	async function fetchAdditionalPage(page: number) {
 		try {
-			const source = getSourceURL();
-			const url = source === null ? serverURL : source;
-
+			const url = getServerURL();
 			const response = await fetch(
 				`${url}/api/requests/${userID}/${page}`,
 				{ signal: AbortSignal.timeout(180000) },
@@ -515,31 +509,6 @@
 	.time-period-btn-active {
 		background: var(--highlight);
 		color: black;
-	}
-
-	.time-period-loading {
-		background-position: 0% 0%;
-		transition: background 0.5s ease-in-out;
-		animation: gradient-shift 3s linear infinite;
-		background: linear-gradient(
-			90deg,
-			var(--background),
-			var(--highlight),
-			var(--background)
-		);
-		/* Define the gradient with a narrow highlight in the middle */
-		background: linear-gradient(
-			90deg,
-			var(--background) 0%,
-			/* Background color starts */ var(--background) 40%,
-			/* Background color until 45% */ var(--highlight) 50%,
-			/* Highlight in the middle (thin) */ var(--background) 60%,
-			/* Background color resumes */ var(--background) 100%
-				/* Background color to the end */
-		);
-		/* transition: background 0.5s ease-in-out; */
-		animation: gradient-shift 2s linear infinite;
-		background-size: 180%; /* Set larger background size for smooth animation */
 	}
 
 	@keyframes gradient-shift {

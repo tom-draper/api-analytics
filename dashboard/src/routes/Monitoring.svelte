@@ -6,13 +6,15 @@
 	import Notification from '../components/dashboard/Notification.svelte';
 	import formatUUID from '../lib/uuid';
 	import type { NotificationState } from '../lib/notification';
-	import { serverURL } from '../lib/consts';
+	import { getServerURL } from '../lib/url';
 
 	async function fetchData() {
 		userID = formatUUID(userID);
+
 		try {
+			const url = getServerURL();
 			const response = await fetch(
-				`${serverURL}/api/monitor/pings/${userID}`,
+				`${url}/api/monitor/pings/${userID}`,
 			);
 			if (response.status === 200) {
 				data = await response.json();

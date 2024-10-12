@@ -1,10 +1,7 @@
 package email
 
 import (
-	"os"
 	"testing"
-
-	"github.com/joho/godotenv"
 )
 
 func TestSendEmail(t *testing.T) {

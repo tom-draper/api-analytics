@@ -1,22 +1,22 @@
 <script lang="ts">
-	import { serverURL } from '../lib/consts';
+	import { getServerURL } from '../lib/url';
 
 	type State = 'generate' | 'loading' | 'copy' | 'copied' | 'error';
 
 	let state: State = 'generate';
-	let generatedKey = false;
 	let apiKey = '';
 	async function submit() {
-		if (generatedKey) {
-			return;
+		if (apiKey) {
+			return; // Already generated 
 		}
 
 		setState('loading');
+
 		try {
-			const response = await fetch(`${serverURL}/api/generate-api-key`);
+			const url = getServerURL();
+			const response = await fetch(`${url}/api/generate-api-key`);
 			if (response.status === 200) {
 				const data = await response.json();
-				generatedKey = true;
 				apiKey = data;
 				setState('copy');
 			} else {

@@ -84,7 +84,7 @@
 {#if topUsers}
 	<div class="card">
 		<div class="card-title">Top Users</div>
-		<div>
+		<div class="table-container">
 			<table class="table">
 				<thead>
 					<tr>
@@ -122,10 +122,13 @@
 		width: 100%;
 		margin-top: 2em;
 	}
+	.table-container {
+		display: flex;
+	}
 	.table {
 		margin: 1em 2em 2em;
 		text-align: left;
-		width: -webkit-fill-available;
+		flex: 1;
 	}
 	tr {
 		border-bottom: 1px solid #2e2e2e;

@@ -1,12 +1,13 @@
 package usage
 
 import (
+	"context"
 	"log"
 	"testing"
 )
 
 func TestMonitors(t *testing.T) {
-	monitors, err := Monitors("")
+	monitors, err := Monitors(context.Background(), "")
 	if err != nil {
 		t.Error(err)
 	}
@@ -16,7 +17,7 @@ func TestMonitors(t *testing.T) {
 }
 
 func TestDailyMonitors(t *testing.T) {
-	monitors, err := DailyMonitors()
+	monitors, err := DailyMonitors(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -26,7 +27,7 @@ func TestDailyMonitors(t *testing.T) {
 }
 
 func TestWeeklyMonitors(t *testing.T) {
-	monitors, err := WeeklyMonitors()
+	monitors, err := WeeklyMonitors(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -36,7 +37,7 @@ func TestWeeklyMonitors(t *testing.T) {
 }
 
 func TestMonthlyMonitors(t *testing.T) {
-	monitors, err := MonthlyMonitors()
+	monitors, err := MonthlyMonitors(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -46,7 +47,7 @@ func TestMonthlyMonitors(t *testing.T) {
 }
 
 func TestMonitorsCount(t *testing.T) {
-	monitors, err := MonitorsCount("")
+	monitors, err := MonitorsCount(context.Background(), "")
 	if err != nil {
 		t.Error(err)
 	}
@@ -56,7 +57,7 @@ func TestMonitorsCount(t *testing.T) {
 }
 
 func TestDailyMonitorsCount(t *testing.T) {
-	monitors, err := DailyMonitorsCount()
+	monitors, err := DailyMonitorsCount(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -66,7 +67,7 @@ func TestDailyMonitorsCount(t *testing.T) {
 }
 
 func TestWeeklyMonitorsCount(t *testing.T) {
-	monitors, err := WeeklyMonitorsCount()
+	monitors, err := WeeklyMonitorsCount(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -76,7 +77,7 @@ func TestWeeklyMonitorsCount(t *testing.T) {
 }
 
 func TestMonthlyMonitorsCount(t *testing.T) {
-	monitors, err := MonthlyMonitorsCount()
+	monitors, err := MonthlyMonitorsCount(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -86,7 +87,7 @@ func TestMonthlyMonitorsCount(t *testing.T) {
 }
 
 func TestUserMonitors(t *testing.T) {
-	monitors, err := UserMonitors("")
+	monitors, err := UserMonitors(context.Background(), "")
 	if err != nil {
 		t.Error(err)
 	}
@@ -96,7 +97,7 @@ func TestUserMonitors(t *testing.T) {
 }
 
 func TestDailyUserMonitors(t *testing.T) {
-	monitors, err := DailyUserMonitors()
+	monitors, err := DailyUserMonitors(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -106,7 +107,7 @@ func TestDailyUserMonitors(t *testing.T) {
 }
 
 func TestWeeklyUserMonitors(t *testing.T) {
-	monitors, err := WeeklyUserMonitors()
+	monitors, err := WeeklyUserMonitors(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -116,7 +117,7 @@ func TestWeeklyUserMonitors(t *testing.T) {
 }
 
 func TestMonthlyUserMonitors(t *testing.T) {
-	monitors, err := MonthlyUserMonitors()
+	monitors, err := MonthlyUserMonitors(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
