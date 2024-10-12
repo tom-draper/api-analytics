@@ -93,11 +93,11 @@ type DashboardRequestRow struct {
 }
 
 func getMaxLoad() int {
-	GetIntegerEnvVariable("MAX_LOAD", 1_000_000)
+	return env.GetIntegerEnvVariable("MAX_LOAD", 1_000_000)
 }
 
 func getPageSize() int {
-	GetIntegerEnvVariable("PAGE_SIZE", 250_000)
+	return env.GetIntegerEnvVariable("PAGE_SIZE", 250_000)
 }
 
 func getRequestsHandler() gin.HandlerFunc {
