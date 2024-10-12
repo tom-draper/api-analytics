@@ -46,4 +46,3 @@ func GetEnvVariable(name string, defaultValue string) string {
 
 	return value
 }
-
