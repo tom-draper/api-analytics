@@ -22,8 +22,8 @@ func errorHandler(c *gin.Context, info ratelimit.Info) {
 	c.String(http.StatusTooManyRequests, "Too many requests. Try again in "+time.Until(info.ResetTime).String())
 }
 
-func getRateLimit() int {
-	GetIntegerEnvVariable("RATE_LIMIT", 100)
+func getRateLimit() uint {
+	return uint(env.GetIntegerEnvVariable("RATE_LIMIT", 100))
 }
 
 func main() {
