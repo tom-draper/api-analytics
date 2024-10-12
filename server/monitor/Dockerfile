@@ -4,14 +4,7 @@ FROM golang:1.21
 WORKDIR /app
 
 # Copy the Go Modules and Sum Files
-COPY go.mod ./
-COPY go.sum ./
-
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
-RUN go mod download
-
-# Copy the source code into the container
-COPY . .
+COPY . /app
 
 # Build the Go app
 RUN go build -o monitor .
