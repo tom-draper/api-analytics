@@ -1,0 +1,15 @@
+# A temporary non-SSL nginx config to obtain an SSL certificate through Certbot.
+# Once a certificate is obtained, use nginx.conf instead.
+
+server {
+    listen 80;
+    server_name _;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 200 "HTTP server for Certbot challenge.";
+    }
+}
