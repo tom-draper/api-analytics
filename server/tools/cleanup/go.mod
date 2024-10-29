@@ -5,12 +5,12 @@ go 1.21
 toolchain go1.21.4
 
 require (
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20241006135802-bac24d9edf28
-	github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20241006135802-bac24d9edf28
+	github.com/tom-draper/api-analytics/server/database v0.0.0-20241029184920-9272b43892b6
+	github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20241029184920-9272b43892b6
 )
 
 require (
-	github.com/fatih/color v1.17.0 // indirect
+	github.com/fatih/color v1.18.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.7.1 // indirect

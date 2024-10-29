@@ -6,6 +6,7 @@ import (
 
 	"github.com/tom-draper/api-analytics/server/api/lib/log"
 	"github.com/tom-draper/api-analytics/server/api/lib/routes"
+	"github.com/tom-draper/api-analytics/server/database"
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
 	"github.com/gin-contrib/cors"
@@ -22,6 +23,12 @@ func errorHandler(c *gin.Context, info ratelimit.Info) {
 
 func main() {
 	log.LogToFile("Starting api...")
+
+	err := database.LoadConfig()
+	if err != nil {
+		log.LogToFile("Failed to load database configuration: " + err.Error())
+		return
+	}
 
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()

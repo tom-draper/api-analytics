@@ -17,17 +17,20 @@ const requestsLimit int = 1_500_000
 const userExpiry time.Duration = time.Hour * 24 * 30 * 6
 
 func deleteOldestRequests(apiKey string, count int) error {
-	conn := database.NewConnection()
+	conn, err := database.NewConnection()
+	if err != nil {
+		return err
+	}
 	defer conn.Close(context.Background())
 
 	query := "DELETE FROM requests WHERE request_id = any(array(SELECT request_id from requests WHERE api_key = $1 ORDER BY created_at LIMIT $2));"
 
-	_, err := conn.Exec(context.Background(), query, apiKey, count)
+	_, err = conn.Exec(context.Background(), query, apiKey, count)
 	return err
 }
 
 func deleteExpiredRequests() {
-	users, err := usage.UserRequestsOverLimit(requestsLimit)
+	users, err := usage.UserRequestsOverLimit(context.Background(), requestsLimit)
 	if err != nil {
 		log.Fatalf("Failed to fetch users over limit: %v", err) // Use log for error handling
 	}
@@ -49,7 +52,7 @@ func deleteExpiredUsers() {
 }
 
 func deleteExpiredUnusedUsers() {
-	users, err := usage.UnusedUsers()
+	users, err := usage.UnusedUsers(context.Background())
 	if err != nil {
 		log.Fatalf("Failed to fetch unused users: %v", err)
 	}
@@ -63,7 +66,7 @@ func deleteExpiredUnusedUsers() {
 }
 
 func deleteExpiredRetiredUsers() {
-	users, err := usage.SinceLastRequestUsers()
+	users, err := usage.SinceLastRequestUsers(context.Background())
 	if err != nil {
 		log.Fatalf("Failed to fetch retired users: %v", err)
 	}

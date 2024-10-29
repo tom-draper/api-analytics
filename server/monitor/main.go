@@ -194,7 +194,11 @@ func getClient() http.Client {
 }
 
 func main() {
-	conn := database.NewConnection()
+	database.LoadConfig()
+	conn, err := database.NewConnection()
+	if err != nil {
+		panic(err)
+	}
 	defer conn.Close(context.Background())
 
 	monitored := getMonitoredURLs(conn)
@@ -203,7 +207,7 @@ func main() {
 	shuffle(monitored)
 
 	pings := pingMonitored(monitored)
-	err := uploadPings(pings, conn)
+	err = uploadPings(pings, conn)
 	if err != nil {
 		panic(err)
 	}

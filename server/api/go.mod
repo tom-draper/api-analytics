@@ -10,7 +10,8 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/jackc/pgtype v1.14.3
 	github.com/jackc/pgx/v5 v5.7.1
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20241006135802-bac24d9edf28
+	github.com/joho/godotenv v1.5.1
+	github.com/tom-draper/api-analytics/server/database v0.0.0-20241029184920-9272b43892b6
 )
 
 require (
@@ -29,7 +30,6 @@ require (
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect

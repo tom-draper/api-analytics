@@ -20,6 +20,12 @@ import (
 func main() {
 	log.LogToFile("Starting logger...")
 
+	err := database.LoadConfig()
+	if err != nil {
+		log.LogToFile("Failed to load database configuration: " + err.Error())
+		return
+	}
+
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
 
@@ -61,8 +67,16 @@ const (
 )
 
 func checkHealth(c *gin.Context) {
-	connection := database.NewConnection()
-	err := connection.Ping(context.Background())
+	connection, err := database.NewConnection()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status": "unhealthy",
+			"error":  "Database connection failed",
+		})
+		return
+	}
+
+	err = connection.Ping(context.Background())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status": "unhealthy",
@@ -113,8 +127,12 @@ func storeNewUserAgents(userAgents map[string]struct{}) {
 	}
 	query.WriteString(" ON CONFLICT (user_agent) DO NOTHING;")
 
-	conn := database.NewConnection()
-	_, err := conn.Exec(context.Background(), query.String(), arguments...)
+	conn, err := database.NewConnection()
+	if err != nil {
+		log.LogToFile(err.Error())
+		return
+	}
+	_, err = conn.Exec(context.Background(), query.String(), arguments...)
 	conn.Close(context.Background())
 	if err != nil {
 		log.LogToFile(err.Error())
@@ -137,7 +155,11 @@ func getUserAgentIDs(userAgents map[string]struct{}) map[string]int {
 	query.WriteString(");")
 
 	ids := make(map[string]int)
-	conn := database.NewConnection()
+	conn, err := database.NewConnection()
+	if err != nil {
+		log.LogToFile(err.Error())
+		return ids
+	}
 	rows, err := conn.Query(context.Background(), query.String(), arguments...)
 	conn.Close(context.Background())
 	if err != nil {
@@ -360,7 +382,12 @@ func logRequestHandler() gin.HandlerFunc {
 		}
 
 		// Insert logged requests into database
-		conn := database.NewConnection()
+		conn, err := database.NewConnection()
+		if err != nil {
+			log.LogToFile(err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database connection failed."})
+			return
+		}
 		_, err = conn.Exec(context.Background(), query.String(), arguments...)
 		conn.Close(context.Background())
 		if err != nil {

@@ -37,7 +37,10 @@ func TotalMonitorsCount(ctx context.Context) (int, error) {
 }
 
 func MonitorsCount(ctx context.Context, interval string) (int, error) {
-	conn := database.NewConnection()
+	conn, err := database.NewConnection()
+	if err != nil {
+		return 0, err
+	}
 	defer conn.Close(ctx)
 
 	var count int
@@ -45,7 +48,7 @@ func MonitorsCount(ctx context.Context, interval string) (int, error) {
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
-	err := conn.QueryRow(ctx, query).Scan(&count)
+	err = conn.QueryRow(ctx, query).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -74,7 +77,10 @@ func TotalMonitors(ctx context.Context) ([]MonitorRow, error) {
 }
 
 func Monitors(ctx context.Context, interval string) ([]MonitorRow, error) {
-	conn := database.NewConnection()
+	conn, err := database.NewConnection()
+	if err != nil {
+		return nil, err
+	}
 	defer conn.Close(ctx)
 
 	query := "SELECT api_key, url, secure, ping, created_at FROM monitor"
@@ -124,7 +130,10 @@ func TotalUserMonitors(ctx context.Context) ([]UserCount, error) {
 }
 
 func UserMonitors(ctx context.Context, interval string) ([]UserCount, error) {
-	conn := database.NewConnection()
+	conn, err := database.NewConnection()
+	if err != nil {
+		return nil, err
+	}
 	defer conn.Close(ctx)
 
 	query := "SELECT api_key, COUNT(*) AS count FROM monitor"
