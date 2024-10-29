@@ -171,7 +171,7 @@ func storeNewUserAgents(userAgents map[string]struct{}) error {
 	conn, err := database.NewConnection()
 	if err != nil {
 		log.LogToFile(err.Error())
-		return
+		return err
 	}
 	_, err = conn.Exec(context.Background(), query.String(), arguments...)
 	conn.Close(context.Background())
