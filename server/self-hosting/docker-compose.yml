@@ -8,7 +8,6 @@ services:
       - ./nginx/nginx-certbot.conf.template:/etc/nginx/conf.d/nginx.conf.template
       # For SSL-compatible production use (uncomment once SSL certificate is generated)
       # - ./nginx/nginx.conf.template:/etc/nginx/conf.d/nginx.conf.template
-
       - ./certbot/www:/var/www/certbot:ro
       - ./certbot/conf:/etc/letsencrypt:ro
     ports:
@@ -20,6 +19,11 @@ services:
     depends_on:
       - api
       - logger
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   certbot:
     image: certbot/certbot
@@ -27,7 +31,7 @@ services:
     volumes:
       - ./certbot/www:/var/www/certbot:rw
       - ./certbot/conf:/etc/letsencrypt:rw
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h; done'"
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot; sleep 12h & wait $${!}; done;'"
 
   db:
     image: postgres
@@ -91,8 +95,6 @@ services:
         condition: service_healthy
     environment:
       POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-    volumes:
-      - ../monitor:/app 
 
 volumes:
   db-data:

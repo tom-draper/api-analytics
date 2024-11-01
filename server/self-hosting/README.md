@@ -37,25 +37,25 @@ Enter:
 
 #### 3. Obtain an SSL certificate using Certbot
 
-Start the `nginx` server.
+Start the `certbot` and `nginx` services.
 
 ```bash
-docker compose up nginx -d
+docker compose up certbot nginx -d
 ```
 
 Generate the SSL certificate, replacing `your-domain.com` with your actual domain and `your-email@example.com` with your email address.
 
 ```bash
-docker compose run --rm certbot certonly --webroot --webroot-path=/var/www/certbot -d your-domain.com -d www.your-domain.com --agree-tos --email your-email@example.com --no-eff-email
+docker exec -it certbot certbot certonly --webroot -w /var/www/certbot -d your-domain.com -d www.your-domain.com --agree-tos --email your-email@example.com --no-eff-email
 ```
 
-Stop the `nginx` server once complete.
+Stop the services once successful.
 
 ```bash
-docker compose down nginx
+docker compose down
 ```
 
-Replace the temporary `nginx-certbot.conf.template` with the fully SSL-compatible `nginx.conf.template` in `docker-compose.yaml` under the `nginx` configuration. Comment out the appropriate lines to match the following:
+Replace the temporary `nginx-certbot.conf.template` with the fully SSL-compatible `nginx.conf.template` in the `docker-compose.yaml` file under the `nginx` configuration. Comment out the appropriate lines to match the following:
 
 ```yaml
 # - ./nginx/nginx-certbot.conf.template:/etc/nginx/conf.d/nginx.conf.template
@@ -68,9 +68,9 @@ Replace the temporary `nginx-certbot.conf.template` with the fully SSL-compatibl
 docker compose up -d
 ```
 
-#### Testing
+### Testing
 
-##### Internal
+#### Internal
 
 Check if all six docker services are running.
 
@@ -91,7 +91,7 @@ chmod +x tests/test-internal.sh
 ./tests/test-internal.sh
 ```
 
-##### Nginx
+#### Nginx
 
 Confirm Nginx is running and able to direct to the internal services.
 
@@ -103,7 +103,17 @@ curl -kL -X GET http://localhost/api/generate
 curl -k -X GET https://localhost/api/generate
 ```
 
-##### External
+Confirm the Nginx service is working internally by running the `tests/test-nginx.sh` and  `tests/test-nginx.sl` bash scripts.
+
+```bash
+chmod +x tests/test-nginx.sh
+./tests/test-nginx.sh
+
+chmod +x tests/test-nginx-ssl.sh
+./tests/test-nginx-ssl.sh
+```
+
+#### External
 
 Outside of the hosting environment, confirm that services are publically accessible with an API key generation attempt.
 
@@ -117,7 +127,14 @@ Confirm your domain is set up and that Nginx is working correctly.
 curl -X GET https://your-domain.com/api/generate
 ```
 
-Finally confirm the dashboard can communicate with your server by attempting to generate an API key at: `https://www.apianalytics.dev/generate?source=https://your-domain.com`
+Confirm the services are working externally by running the `tests/test-external.sh` bash script, providing your domain name.
+
+```bash
+chmod +x tests/test-external.sh
+./tests/test-external.sh your-domain.com
+```
+
+Finally, confirm the dashboard can communicate with your server by attempting to generate an API key at: `https://www.apianalytics.dev/generate?source=https://your-domain.com`
 
 You can check:
 - Nginx logs with `docker logs nginx`
@@ -143,6 +160,28 @@ Remove all containers and images with:
 docker compose down --rmi all
 ```
 
+##### Database
+
+The `database/schema.sql` schema is used to initialise the postgres database once the container is first built.
+
+You can run custom SQL commands with:
+
+```bash
+docker exec -it db psql -U postgres -d analytics -c "YOUR SQL COMMAND;"
+```
+
+##### Updates
+
+Updating the backend with the latest improvements is straight-forward, but will come with some downtime.
+
+```bash
+docker compose down
+
+git pull origin main
+
+docker compose up -d
+```
+
 ### Usage
 
 #### Logging Requests
@@ -154,11 +193,9 @@ import uvicorn
 from api_analytics.fastapi import Analytics, Config
 from fastapi import FastAPI
 
-
 app = FastAPI()
 config = Config(server_url='https://your-domain.com')
 app.add_middleware(Analytics, api_key=<api-key>, config=config)
-
 
 @app.get("/")
 async def root():
@@ -184,4 +221,10 @@ You can access your raw data by sending a GET request to `https://www.your-domai
 
 ## Frontend Hosting
 
-Once up and running, self-hosted backend can be fully utilised and managed through `apianalytics.dev`, and this will ensure you always have the latest updates and improvements to the dashboard. The frontend can also be self-hosted by setting storing the URL of your backend service in the environment variable `SERVER_URL`, or manually changing the `SERVER_URL` held in `src/lib/consts.ts`. The frontend can then be deploying with your favourite hosting provider.
+Once up and running, self-hosted backend can be fully utilised and managed through `apianalytics.dev`. This ensures you always have the latest updates and improvements to the dashboard.
+
+The frontend dashboard can also be self-hosted by setting the URL of your backend service as the `SERVER_URL` environment variable, or manually changing the `SERVER_URL` held in `src/lib/consts.ts`. The frontend can then be deploying with your favourite hosting provider.
+
+## Contributions
+
+Feel free to customise this project to your preference. Any feedback or improvements that can still generalise to most deployment environments is much appreciated.

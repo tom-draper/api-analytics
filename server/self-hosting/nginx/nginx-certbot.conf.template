@@ -1,5 +1,5 @@
 # A temporary non-SSL nginx config to obtain an SSL certificate through Certbot.
-# Once a certificate is obtained, use nginx.conf instead.
+# Once a certificate is obtained, use `nginx.conf.template` instead.
 
 server {
     listen 80;

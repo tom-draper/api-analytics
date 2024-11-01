@@ -15,14 +15,17 @@ var dbURL string
 func LoadConfig() error {
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Println("warning: Could not load .env file. Make sure it exists.")
+		log.Println("warning: could not load .env file")
 	}
 
 	// Get the POSTGRES_URL environment variable
 	dbURL = os.Getenv("POSTGRES_URL")
 	if dbURL == "" {
-		return fmt.Errorf("POSTGRES_URL is not set in the environment")
+		return fmt.Errorf("POSTGRES_URL is not set in the environment.")
 	}
+
+	log.Printf("POSTGRES_URL=%s\n", dbURL)
+
 	return nil
 }
 

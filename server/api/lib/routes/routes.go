@@ -102,13 +102,9 @@ func getPageSize() int {
 	return env.GetIntegerEnvVariable("PAGE_SIZE", 250_000)
 }
 
-	connection, err := database.NewConnection()
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("id=%s: Dashboard access failed - %s", userID, err.Error()))
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
-		return
-	}
-	defer connection.Close(context.Background())
+func getRequestsHandler() gin.HandlerFunc {
+	var pageSize int = getPageSize()
+	var maxLoad int = getMaxLoad()
 
 	return func(c *gin.Context) {
 		userID := c.Param("userID")
@@ -258,6 +254,7 @@ func getPageSize() int {
 		}
 	}
 }
+
 func getPaginatedRequestsHandler() gin.HandlerFunc {
 	var pageSize int = getPageSize()
 
@@ -278,39 +275,10 @@ func getPaginatedRequestsHandler() gin.HandlerFunc {
 
 		log.LogToFile(fmt.Sprintf("id=%s: Dashboard page %d access", userID, page))
 
-	connection, err := database.NewConnection()
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("id=%s: Dashboard page %d access failed - %s", userID, page, err.Error()))
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
-		return
-	}
-	defer connection.Close(context.Background())
-
-	// Fetch API key corresponding with user ID
-	apiKey, err := getUserAPIKey(connection, userID)
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("id=%s: No API key associated with user ID - %s", userID, err.Error()))
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
-		return
-	}
-
-	const pageSize int = 400_000
-	requests := [][10]any{}
-	userAgentIDs := make(map[int]struct{})
-
-	query := "SELECT ip_address, path, hostname, user_agent_id, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 ORDER BY created_at LIMIT $2 OFFSET $3;"
-	rows, err := connection.Query(context.Background(), query, apiKey, pageSize, (page-1)*pageSize)
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("key=%s: Invalid API key - %s", apiKey, err.Error()))
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
-		return
-	}
-	request := new(DashboardRequestRow) // Reuseable request struct
-	for rows.Next() {
-		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
+		connection, err := database.NewConnection()
 		if err != nil {
 			log.LogToFile(fmt.Sprintf("id=%s: Dashboard page %d access failed - %s", userID, page, err.Error()))
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
 		defer connection.Close(context.Background())

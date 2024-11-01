@@ -21,7 +21,22 @@ server {
 
     ssl_certificate /etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/$DOMAIN_NAME/privkey.pem;
+    
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers 'HIGH:!aNULL:!MD5';
 
+    add_header X-Content-Type-Options nosniff;
+    add_header X-Frame-Options DENY;
+    add_header X-XSS-Protection "1; mode=block";
+    add_header Referrer-Policy no-referrer-when-downgrade;
+
+    location / {
+        deny all;
+    }
+
+    location /status {
+        return 200;
+    }
 
     location /api/log-request {
         proxy_pass http://logger:8000;
