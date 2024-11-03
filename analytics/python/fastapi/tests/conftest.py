@@ -1,5 +1,5 @@
 import pytest
-from analytics.python.fastapi.tests.recordings import get_recordings
+from recordings import get_recordings
 
 
 # This hook runs after all tests have completed
