@@ -7,8 +7,9 @@ toolchain go1.21.4
 require (
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0
+	github.com/joho/godotenv v1.5.1
 	github.com/oschwald/geoip2-golang v1.11.0
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20241029184920-9272b43892b6
+	github.com/tom-draper/api-analytics/server/database v0.0.0-20241029191841-fbaa9e8c603e
 )
 
 require (
@@ -25,7 +26,6 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.7.1 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
 	github.com/kr/text v0.2.0 // indirect
