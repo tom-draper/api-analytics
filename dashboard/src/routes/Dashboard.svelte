@@ -175,7 +175,7 @@
 		userID = formatUUID(userID);
 		try {
 			const response = await fetch(
-				`${url}/api/requests/${userID}/1`,
+				`${url}/api/requests/${userID}?page=1`,
 			);
 			if (response.ok && response.status === 200) {
 				const data = await response.json();
@@ -185,6 +185,7 @@
 			}
 		} catch (e) {
 			fetchFailed = true;
+			console.log(e);
 		}
 	}
 
