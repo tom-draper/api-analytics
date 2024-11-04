@@ -22,13 +22,12 @@ if [ $# -ge 1 ]; then
     echo ""
     api_key=$1
 else
-    # Test API key generation - nginx + api service
     echo "Testing internal API key generation via Nginx + HTTPS..."
 
     response=$(curl -sk -X GET -w "%{http_code}" https://localhost/api/generate)
     status_code="${response: -3}"   # Extract the last 3 characters as the status code
     response_body="${response%???}"
-    api_key=$(echo "$response_body" | sed 's/\"//g' | sed 's/[0-9][0-9][0-9]$//')  # Strip status code from response
+    api_key=$(echo "$response_body" | sed 's/[0-9][0-9][0-9]$//' | sed 's/\"//g')  # Strip status code from response
 
     # Check if the status code is 200 and the API key is the correct length
     display_result "$response_body" "$status_code" 200
@@ -37,7 +36,6 @@ else
     fi
 fi
 
-# Test request data logging - nginx + logging service
 echo "Testing internal request data logging via Nginx + HTTPS..."
 
 response=$(curl -sko - -w "%{http_code}" -X POST  \
@@ -82,7 +80,34 @@ if [ "$status_code" -ne 201 ]; then
     exit 2
 fi
 
-# Test raw data access - nginx + api service
+echo "Testing internal user ID access via Nginx + HTTPS..."
+
+response=$(curl -sk -X GET -w "%{http_code}" https://localhost/api/user-id/$api_key)
+echo $response
+status_code="${response: -3}"   # Extract the last 3 characters as the status code
+response_body="${response%???}"
+user_id=$(echo "$response_body" | sed 's/[0-9][0-9][0-9]$//' | sed 's/\"//g')  # Strip status code from response
+
+# Check if the status code is 200 and the API key is the correct length
+display_result "$response_body" "$status_code" 200
+if [ "$status_code" -ne 200 ]; then
+    exit 3
+fi
+
+echo "Testing internal dashboard data access via Nginx + HTTPS..."
+
+response=$(curl -sk -X GET -w "%{http_code}" --compressed -H "Accept-Encoding: gzip" \
+    https://localhost/api/requests/$user_id)
+
+status_code="${response: -3}"   # Extract the last 3 characters as the status code
+response_body="${response%???}"  # Extract everything except the last 3 characters as the response body
+
+# Check if the status code is 200 (OK) and response has a reasonable length
+display_result "$response_body" "$status_code" 200
+if [ "$status_code" -ne 200 ] || [ ${#response_body} -lt 100 ]; then
+    exit 4
+fi
+
 echo "Testing internal raw data access via Nginx + HTTPS..."
 
 response=$(curl -sk -X GET -w "%{http_code}" \
@@ -94,10 +119,9 @@ response_body="${response%???}"  # Extract everything except the last 3 characte
 # Check if the status code is 200 (OK) and response has a reasonable length
 display_result "$response_body" "$status_code" 200
 if [ "$status_code" -ne 200 ] || [ ${#response_body} -lt 100 ]; then
-    exit 3
+    exit 5
 fi
 
-# Test account deletion - nginx + api service
 echo "Testing internal account deletion via Nginx + HTTPS..."
 
 response=$(curl -sk -X GET -w "%{http_code}" https://localhost/api/delete/$api_key)
@@ -108,5 +132,5 @@ response_body="${response%???}"  # Extract everything except the last 3 characte
 # Check if the status code is 200 (OK)
 display_result "$response_body" "$status_code" 200
 if [ "$status_code" -ne 200 ]; then
-    exit 4
+    exit 6
 fi

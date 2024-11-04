@@ -95,6 +95,7 @@ services:
         condition: service_healthy
     environment:
       POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    command: /bin/bash -c "printenv > /etc/environment && tail -f /dev/null"
 
 volumes:
   db-data:
