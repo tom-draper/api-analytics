@@ -5,9 +5,6 @@
 	<div class="doc-link-container">
 		<a class="doc-link" href="/privacy-policy">Privacy Policy</a>
 	</div>
-	<!-- <div class="doc-link-container">
-			<a class="doc-link" href="/privacy-policy">Terms of Service</a>
-		</div> -->
 	<div class="doc-link-container">
 		<a class="doc-link" href="/outages">Outages</a>
 	</div>
@@ -16,7 +13,7 @@
 <style scoped>
 	.docs {
 		display: flex;
-		width: 50%;
+		width: fit-content;
 		margin: auto;
 		padding-bottom: 5em;
 	}
@@ -46,6 +43,13 @@
 
 	@media (max-width: 800px) {
 		.docs {
+			width: 100%;
+			flex-direction: column;
+			font-size: 0.8em;
+			margin-top: 1em;
+		}
+		.doc-link {
+			margin-top: 1em;
 			width: 100%;
 		}
 	}

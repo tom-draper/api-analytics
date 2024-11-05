@@ -7,7 +7,7 @@
 	let apiKey = '';
 	async function submit() {
 		if (apiKey) {
-			return; // Already generated 
+			return; // Already generated
 		}
 
 		setState('loading');

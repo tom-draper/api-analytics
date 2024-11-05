@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let reason: 'no-requests' | 'error';
+	export let reason: 'no-requests' | 'error', description: string;
 </script>
 
 <div class="container">
@@ -22,17 +22,24 @@
 	</div>
 	<div class="message-container">
 		{#if reason === 'no-requests'}
-			<div class="message message-no-requests">No requests logged.</div>
+			<div class="message message-no-requests">No requests logged</div>
 		{:else}
-			<div class="message message-error">Server error.</div>
+			<div class="message message-error">Server error</div>
 		{/if}
 	</div>
+	<div class="description">{description}</div>
 </div>
 
 <style scoped>
 	.container {
 		color: var(--highlight);
-		margin-bottom: 14em;
+		/* padding-bottom: 12em; */
+		/* overflow-x: hidden; */
+	}
+
+	.description {
+		color: var(--dim-text);
+		padding: 6em 0 6em;
 	}
 
 	.hanging-lightning {

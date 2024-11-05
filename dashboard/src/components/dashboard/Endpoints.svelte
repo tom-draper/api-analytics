@@ -86,13 +86,13 @@
 
 		return {
 			endpoints: freqArr.slice(0, 50),
-			maxCount: maxCount
-		}
+			maxCount: maxCount,
+		};
 	}
 
 	function build() {
 		endpointsRendered = false;
-		({endpoints: endpoints, maxCount: maxCount} = getEndpoints());
+		({ endpoints: endpoints, maxCount: maxCount } = getEndpoints());
 		endpointsRendered = true;
 	}
 

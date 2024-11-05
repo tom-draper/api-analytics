@@ -6,8 +6,8 @@ toolchain go1.21.4
 
 require (
 	github.com/joho/godotenv v1.5.1
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20241006135802-bac24d9edf28
-	github.com/tom-draper/api-analytics/server/email v0.0.0-20241006135802-bac24d9edf28
+	github.com/tom-draper/api-analytics/server/database v0.0.0-20241029184920-9272b43892b6
+	github.com/tom-draper/api-analytics/server/email v0.0.0-20241029184920-9272b43892b6
 )
 
 require (

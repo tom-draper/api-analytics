@@ -6,15 +6,22 @@ function getSourceURL() {
 	if (source === '') {
 		return null;
 	}
-	return source;
+	return cleanURL(source);
 }
 
 function getEnvSourceURL() {
 	try {
-		return process.env.SERVER_URL;
+		return cleanURL(process.env.SERVER_URL);
 	} catch (e) {
 		return null;
 	}
+}
+
+function cleanURL(url: string) {
+	if (url.endsWith('/')) {
+		return url.slice(0, -1);
+	}
+	return url;
 }
 
 export function getServerURL() {

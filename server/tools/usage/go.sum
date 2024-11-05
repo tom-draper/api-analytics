@@ -2,6 +2,8 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/fatih/color v1.17.0 h1:GlRw1BRJxkpqUCBKzKOw098ed57fEsKeNjpTe3cSjK4=
 github.com/fatih/color v1.17.0/go.mod h1:YZ7TlrGPkiz6ku9fK3TLD/pl3CpsiFyu8N92HLgmosI=
+github.com/fatih/color v1.18.0 h1:S8gINlzdQ840/4pfAwic/ZE0djQEH3wM94VfqLTZcOM=
+github.com/fatih/color v1.18.0/go.mod h1:4FelSpRwEGDpQ12mAdzqdOukCy4u8WUtOY6lkT/6HfU=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
 github.com/jackc/pgpassfile v1.0.0/go.mod h1:CEx0iS5ambNFdcRtxPj5JhEz+xB6uRky5eyVu/W2HEg=
 github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 h1:iCEnooe7UlwOQYpKFhBabPMi4aNAfoODPEFNiAnClxo=
@@ -32,6 +34,8 @@ github.com/tom-draper/api-analytics/server/database v0.0.0-20240729195836-bf2042
 github.com/tom-draper/api-analytics/server/database v0.0.0-20240729195836-bf20421d8f0b/go.mod h1:ybtPh/jbyZO4It1sw3BmXduLkCLnlwFXSkXu9Lv2a+Q=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20241006135802-bac24d9edf28 h1:mMutZN4PuKbBmeTf1eNCN97aS/pEkJ9DzE2t2qy9KAs=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20241006135802-bac24d9edf28/go.mod h1:D975oy/ciRz3XQ+DJ0vt96frmbXdvhopOusMEJEjzxo=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20241029184920-9272b43892b6 h1:/vXCoKwjLUhyvvLyLfsCrG9Cw8zqT2fAmVrlLA/r8cA=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20241029184920-9272b43892b6/go.mod h1:D28ixzrzJTnMGBMqXlDyOLuUlUKWnuwVoUP0BhMKchs=
 golang.org/x/crypto v0.25.0 h1:ypSNr+bnYL2YhwoMt2zPxHFmbAN1KZs/njMG3hxUp30=
 golang.org/x/crypto v0.25.0/go.mod h1:T+wALwcMOSE0kXgUAnPAHqTLW+XHgcELELW8VaDgm/M=
 golang.org/x/crypto v0.28.0 h1:GBDwsMXVQi34v5CCYUm2jkJvu4cbtru2U4TN2PSyQnw=
