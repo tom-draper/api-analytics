@@ -17,9 +17,10 @@ load_dotenv()
 api_key = os.environ.get("API_KEY")
 
 app = FastAPI()
-config = Config()
-config.get_ip_address = lambda request: request.headers.get(
-    "X-Forwarded-For", request.client.host
+config = Config(
+    get_ip_address=lambda request: request.headers.get(
+        "X-Forwarded-For", request.client.host
+    )
 )
 app.add_middleware(Analytics, api_key=api_key, config=config)
 

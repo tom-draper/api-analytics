@@ -104,13 +104,13 @@
 
 	<p>
 		Every user account created along with all associated account data is
-		scheduled to be deleted after a period of inactivity. This
-		is triggered when one of the two following conditions are met:
+		scheduled to be deleted after a period of inactivity. This is triggered
+		when one of the two following conditions are met:
 	</p>
 	<ul>
 		<li>
-			6 months have elapsed after the most recent access to the API Analytics dashboard
-			or data API, OR
+			6 months have elapsed after the most recent access to the API
+			Analytics dashboard or data API, OR
 		</li>
 		<li>3 months have elapsed after the most recent logged request</li>
 	</ul>

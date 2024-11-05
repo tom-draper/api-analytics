@@ -7,7 +7,7 @@ toolchain go1.21.4
 require (
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/jackc/pgx/v5 v5.7.1
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20241029184920-9272b43892b6
+	github.com/tom-draper/api-analytics/server/database v0.0.0-20241029191841-fbaa9e8c603e
 )
 
 require (

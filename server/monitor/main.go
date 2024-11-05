@@ -90,7 +90,7 @@ func deleteExpiredPings(conn *pgx.Conn) error {
 	expiryTime := time.Now().Add(-60 * 24 * time.Hour).UTC()
 
 	// Define the query with a parameter placeholder
-	query := "DELETE FROM pings WHERE created_at < $1"
+	query := "DELETE FROM pings WHERE created_at < $1;"
 
 	// Execute the query with the expiry time as the parameter
 	_, err := conn.Exec(context.Background(), query, expiryTime)
@@ -152,7 +152,7 @@ func pingMonitored(monitored []MonitorRow) []PingsRow {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
-	pings := make([]PingsRow, 0, len(monitored)) // Preallocate slice with expected length
+	pings := make([]PingsRow, 0, len(monitored))
 
 	for _, m := range monitored {
 		wg.Add(1)
@@ -194,7 +194,11 @@ func getClient() http.Client {
 }
 
 func main() {
-	database.LoadConfig()
+	err := database.LoadConfig()
+	if err != nil {
+		panic(err)
+	}
+
 	conn, err := database.NewConnection()
 	if err != nil {
 		panic(err)

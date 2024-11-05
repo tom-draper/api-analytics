@@ -169,7 +169,7 @@
 		hostnames = getHostnames();
 	}
 
-	async function fetchData(): Promise<DashboardData> {
+	async function fetchData() {
 		const url = getServerURL();
 
 		userID = formatUUID(userID);
@@ -178,13 +178,15 @@
 				`${url}/api/requests/${userID}/1`,
 			);
 			if (response.ok && response.status === 200) {
-				const data = await response.json();
+				const data: DashboardData = await response.json();
 				return data;
 			} else {
-				fetchFailed = true;
+				fetchStatus.failed = true;
 			}
 		} catch (e) {
-			fetchFailed = true;
+			fetchStatus.failed = true;
+			fetchStatus.reason = e;
+			console.log(e.message);
 		}
 	}
 
@@ -229,7 +231,10 @@
 		'All time',
 	];
 	let loading: boolean = true;
-	let fetchFailed: boolean = false;
+	const fetchStatus: {failed: boolean, reason: string} = {
+		failed: false,
+		reason: ''
+	}
 	let endpointsRendered: boolean = false;
 	const pageSize = 200_000;
 	onMount(async () => {
@@ -343,7 +348,7 @@
 		refreshData();
 	}
 
-	export let userID: string, demo: boolean;
+	export let location: string, userID: string, demo: boolean;
 </script>
 
 {#if periodData && data.length > 0}
@@ -430,9 +435,9 @@
 		</div>
 	</div>
 {:else if periodData && data.length <= 0}
-	<Error reason={'no-requests'} />
-{:else if fetchFailed}
-	<Error reason={'error'} />
+	<Error reason={'no-requests'} description='' />
+{:else if fetchStatus.failed}
+	<Error reason={'error'} description={fetchStatus.reason} />
 {:else}
 	<div class="placeholder">
 		<div class="spinner">
@@ -477,7 +482,7 @@
 		margin-right: 2em;
 	}
 	.placeholder {
-		min-height: 82vh;
+		min-height: 80vh;
 		display: grid;
 		place-items: center;
 	}
