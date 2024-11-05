@@ -4,7 +4,7 @@ API Analytics can be easily self-hosted giving you full control over your stored
 
 Requirements:
 
-- an environment that can run Docker Compose and is publically addressable, such as a VPS; and
+- a publically addressable environment that can run Docker Compose, such as a VPS; and
 - a domain name that is pointing to your server's IP address.
 
 By default, the `docker-compose.yml` file is set up to generate a free SSL certificate for your domain using Certbot and Let's Encrypt.
