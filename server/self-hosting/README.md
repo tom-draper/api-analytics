@@ -1,6 +1,6 @@
 # Self-Hosting API Analytics
 
-API Analytics can be easily self-hosted giving you full control over your stored logged request data.
+API Analytics can be easily self-hosted, allowing for full control over your stored logged request data.
 
 Requirements:
 
