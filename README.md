@@ -19,7 +19,7 @@ Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to genera
 
 ### 2. Add middleware to your API
 
-Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on the performance of your API.
+Add our lightweight middleware to your API. Almost all processing is handled by the server so there is minimal impact on the performance of your API.
 
 #### FastAPI
 
