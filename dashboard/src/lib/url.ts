@@ -3,7 +3,7 @@ import { SERVER_URL } from './consts';
 function getSourceURL() {
 	const url = new URL(window.location.href);
 	const source = url.searchParams.get('source');
-	if (source === '') {
+	if (source === '' || source === null) {
 		return null;
 	}
 	return cleanURL(source);
