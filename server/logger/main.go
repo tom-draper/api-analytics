@@ -284,7 +284,7 @@ func logRequestHandler() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
 		} else if payload.APIKey == "" {
-			msg := "API key requied."
+			msg := "API key required."
 			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
@@ -305,6 +305,8 @@ func logRequestHandler() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Unsupported API framework."})
 			return
 		}
+
+		payload.APIKey = strings.ReplaceAll(payload.APIKey, "\"", "")
 
 		var query strings.Builder
 		query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, status, response_time, method, framework, location, user_id, created_at, user_agent_id) VALUES ")

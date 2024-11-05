@@ -5,9 +5,6 @@
 	<div class="doc-link-container">
 		<a class="doc-link" href="/privacy-policy">Privacy Policy</a>
 	</div>
-	<!-- <div class="doc-link-container">
-			<a class="doc-link" href="/privacy-policy">Terms of Service</a>
-		</div> -->
 	<div class="doc-link-container">
 		<a class="doc-link" href="/outages">Outages</a>
 	</div>

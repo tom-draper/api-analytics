@@ -7,7 +7,7 @@
 	let apiKey = '';
 	async function submit() {
 		setState('loading');
-		
+
 		try {
 			const url = getServerURL();
 			const response = await fetch(`${url}/api/delete/${apiKey}`);

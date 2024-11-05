@@ -118,7 +118,7 @@ func getRequestsHandler() gin.HandlerFunc {
 		pageQuery := c.Query("page")
 		log.LogToFile(pageQuery)
 		targetPage := 1
-		if pageQuery == "" {
+		if pageQuery != "" {
 			targetPage, err = strconv.Atoi(pageQuery)
 			if err != nil {
 				log.LogToFile(fmt.Sprintf("Failed to parse page number '%s' from query", pageQuery))

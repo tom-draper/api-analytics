@@ -30,20 +30,38 @@
 			<h1>API Analytics</h1>
 			<h2>Monitoring and analytics for API frameworks.</h2>
 			<div class="links">
-				<a href={`/generate${queryString ? `?${queryString}` : ''}`} class="link">
+				<a
+					href={`/generate${queryString ? `?${queryString}` : ''}`}
+					class="link"
+				>
 					<div class="text">
 						Try now – it's <span class="italic">free</span>
 					</div>
 				</a>
-				<a href={`/dashboard/demo${queryString ? `?${queryString}` : ''}`} class="link secondary">
+				<a
+					href={`/dashboard/demo${queryString ? `?${queryString}` : ''}`}
+					class="link secondary"
+				>
 					<div class="text">Demo</div>
 				</a>
 			</div>
 		</div>
 		<div style="position: relative" class="right">
 			<img class="logo" src="img/home-logo2.png" alt="" />
-			<img id="hover-1" style="position: absolute;" class="logo animated" src="img/animated5.png" alt="" />
-			<img id="hover-2" style="position: absolute;" class="logo animated" src="img/animated6.png" alt="" />
+			<img
+				id="hover-1"
+				style="position: absolute;"
+				class="logo animated"
+				src="img/animated5.png"
+				alt=""
+			/>
+			<img
+				id="hover-2"
+				style="position: absolute;"
+				class="logo animated"
+				src="img/animated6.png"
+				alt=""
+			/>
 		</div>
 	</div>
 </div>

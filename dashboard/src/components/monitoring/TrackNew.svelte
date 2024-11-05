@@ -35,19 +35,16 @@
 			const secure = urlPrefix === 'https';
 			const fullURL = getFullURL(monitorURL, secure);
 			const serverURL = getServerURL();
-			const response = await fetch(
-				`${serverURL}/api/monitor/add`,
-				{
-					method: 'POST',
-					headers: {},
-					body: JSON.stringify({
-						user_id: userID,
-						url: getFullURL(monitorURL, secure),
-						ping: true,
-						secure: secure,
-					}),
-				},
-			);
+			const response = await fetch(`${serverURL}/api/monitor/add`, {
+				method: 'POST',
+				headers: {},
+				body: JSON.stringify({
+					user_id: userID,
+					url: getFullURL(monitorURL, secure),
+					ping: true,
+					secure: secure,
+				}),
+			});
 			if (response.status === 201) {
 				triggerNotificationMessage('Created successfully', 'success');
 				addEmptyMonitor(fullURL);

@@ -43,7 +43,7 @@
 		const params = new URLSearchParams(window.location.search);
 		queryString = params.toString();
 		console.log(queryString);
-	})
+	});
 
 	export let page: 'dashboard' | 'monitoring';
 </script>

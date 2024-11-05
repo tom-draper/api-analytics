@@ -13,9 +13,7 @@
 
 		try {
 			const url = getServerURL();
-			const response = await fetch(
-				`${url}/api/monitor/pings/${userID}`,
-			);
+			const response = await fetch(`${url}/api/monitor/pings/${userID}`);
 			if (response.status === 200) {
 				data = await response.json();
 			}
