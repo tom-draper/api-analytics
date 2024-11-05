@@ -15,7 +15,7 @@ Currently compatible with:
 
 ### 1. Generate an API key
 
-Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It's also required in order to access your API analytics dashboard and data.
+Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It's also required when accessing your API analytics dashboard and data.
 
 ### 2. Add middleware to your API
 
