@@ -2,10 +2,10 @@
 
 API Analytics can be easily self-hosted giving you full control over your stored logged request data.
 
-Self-hosting requires:
+Requirements:
 
 - an environment that can run Docker Compose and is publically addressable, such as a VPS; and
-- a domain name that can be pointed to your server's IP address.
+- a domain name that is pointing to your server's IP address.
 
 By default, the `docker-compose.yml` file is set up to generate a free SSL certificate for your domain using Certbot and Let's Encrypt.
 
@@ -49,7 +49,7 @@ Generate the SSL certificate, replacing `your-domain.com` with your actual domai
 docker exec -it certbot certbot certonly --webroot -w /var/www/certbot -d your-domain.com -d www.your-domain.com --agree-tos --email your-email@example.com --no-eff-email
 ```
 
-Stop the services once successful.
+Stop the services once complete.
 
 ```bash
 docker compose down
@@ -176,9 +176,7 @@ Updating the backend with the latest improvements is straight-forward, but will 
 
 ```bash
 docker compose down
-
 git pull origin main
-
 docker compose up -d
 ```
 
@@ -186,7 +184,7 @@ docker compose up -d
 
 #### Logging Requests
 
-Once your backend services are up and running, you can log requests to your server by specifying the server URL within the API Analytics middleware config.
+Once your backend services are running and tested, you can log requests to your server by specifying the server URL within the API Analytics middleware config.
 
 ```py
 import uvicorn
@@ -208,6 +206,7 @@ if __name__ == "__main__":
 You can confirm requests are being logged by checking the logs.
 
 ```bash
+docker logs nginx
 docker exec -it logger tail requests.log
 ```
 
@@ -223,7 +222,7 @@ You can access your raw data by sending a GET request to `https://www.your-domai
 
 Once up and running, self-hosted backend can be fully utilised and managed through `apianalytics.dev`. This ensures you always have the latest updates and improvements to the dashboard.
 
-The frontend dashboard can also be self-hosted by setting the URL of your backend service as the `SERVER_URL` environment variable, or manually changing the `SERVER_URL` held in `src/lib/consts.ts`. The frontend can then be deploying with your favourite hosting provider.
+Alternatively, it's possible to self-host the frontend dashboard by setting the URL of your backend service as a `SERVER_URL` environment variable, or manually changing the `SERVER_URL` held in `src/lib/consts.ts`. The frontend can then be deployed using your preferred hosting provider.
 
 ## Contributions
 
