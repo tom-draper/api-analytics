@@ -671,10 +671,6 @@ In order to keep the service free, up to 1.5 million requests can be stored per 
 
 The project can be self-hosted by following the [guide](./server/self-hosting/README.md).
 
-It requires:
-- a domain name; and 
-- an environment that can run docker such as a VPS.
-
 Please note: Self-hosting is still undergoing testing, development and further improvements to make it as easy as possible to deploy. It is currently recommended that you avoid self-hosting for production use.
 
 ## Contributions
