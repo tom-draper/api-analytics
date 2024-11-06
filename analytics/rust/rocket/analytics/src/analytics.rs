@@ -254,7 +254,7 @@ impl<'r> FromRequest<'r> for Start {
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, ()> {
         match &*request.local_cache(|| Start::<Option<Instant>>(None)) {
             Start(Some(start)) => Outcome::Success(Start(start.to_owned())),
-            Start(None) => Outcome::Failure((Status::InternalServerError, ())),
+            Start(None) => Outcome::Error((Status::InternalServerError, ())),
         }
     }
 }
