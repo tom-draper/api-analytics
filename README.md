@@ -15,11 +15,11 @@ Currently compatible with:
 
 ### 1. Generate an API key
 
-Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It's also required in order to access your API analytics dashboard and data.
+Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It's also required when accessing your API analytics dashboard and data.
 
 ### 2. Add middleware to your API
 
-Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on the performance of your API.
+Add our lightweight middleware to your API. Almost all processing is handled by the server so there is minimal impact on the performance of your API.
 
 #### FastAPI
 
@@ -665,15 +665,11 @@ Active API monitoring can be set up by heading to [apianalytics.dev/monitoring](
 
 ## Limitations
 
-In order to keep the service free, we can currently only store up to 1.5 million requests per API key. This is enforced as a rolling limit; old requests will be replaced by new requests. If your API would rapidly exceed this limit, we recommend you try other solutions or check out [self-hosting](./server/self-hosting/README.md).
+In order to keep the service free, up to 1.5 million requests can be stored against an API key. This is enforced as a rolling limit; old requests will be replaced by new requests. If your API would rapidly exceed this limit, we recommend you try other solutions or check out [self-hosting](./server/self-hosting/README.md).
 
 ## Self-Hosting
 
 The project can be self-hosted by following the [guide](./server/self-hosting/README.md).
-
-It requires:
-- a domain name; and 
-- an environment that can run docker such as a VPS.
 
 Please note: Self-hosting is still undergoing testing, development and further improvements to make it as easy as possible to deploy. It is currently recommended that you avoid self-hosting for production use.
 
