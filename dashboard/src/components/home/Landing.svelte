@@ -5,22 +5,12 @@
 	let queryString: string = '';
 
 	onMount(() => {
-		// Select animated images and add 'load' event listener for animation
-		const images = document.querySelectorAll('.animated');
-		images.forEach((img) => {
-			img.addEventListener('load', animate);
-		});
+		// Start animation after delay
+		setTimeout(animate, 10);
 
 		// Retrieve current URL parameters
 		const params = new URLSearchParams(window.location.search);
 		queryString = params.toString();
-
-		// Clean up event listeners on component unmount
-		return () => {
-			images.forEach((img) => {
-				img.removeEventListener('load', animate);
-			});
-		};
 	});
 </script>
 
