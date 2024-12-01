@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
-	"strings
+	"strings"
 )
 
 var requests []RequestData
