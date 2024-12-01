@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
+	"strings"
 )
 
 var requests []RequestData
@@ -31,11 +32,11 @@ type RequestData struct {
 	CreatedAt    string `json:"created_at"`
 }
 
-func getServerEndpoint(serverURL string) {
-	if serverURL = "" {
-		return DefaultServerUrl + "api/log-request"
+func getServerEndpoint(serverURL string) string {
+	if serverURL == "" {
+		return DefaultServerURL + "api/log-request"
 	}
-	if serverURL.HasSuffix("/") {
+	if strings.HasSuffix(serverURL, "/") {
 		return serverURL + "api/log-request"
 	}
 	return serverURL + "/api/log-request"
