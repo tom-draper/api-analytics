@@ -31,8 +31,8 @@ type RequestData struct {
 	CreatedAt    string `json:"created_at"`
 }
 
-func getServerEndpoint(serverURL string) {
-	if serverURL = "" {
+func getServerEndpoint(serverURL string) string {
+	if serverURL == "" {
 		return DefaultServerUrl + "api/log-request"
 	}
 	if serverURL.HasSuffix("/") {
