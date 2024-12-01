@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
+	"strings
 )
 
 var requests []RequestData
@@ -33,9 +34,9 @@ type RequestData struct {
 
 func getServerEndpoint(serverURL string) string {
 	if serverURL == "" {
-		return DefaultServerUrl + "api/log-request"
+		return DefaultServerURL + "api/log-request"
 	}
-	if serverURL.HasSuffix("/") {
+	if strings.HasSuffix(serverURL, "/") {
 		return serverURL + "api/log-request"
 	}
 	return serverURL + "/api/log-request"
