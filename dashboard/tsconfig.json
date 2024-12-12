@@ -6,5 +6,9 @@
 		"src/scripts/test.js",
 		"public/prismold.js"
 	],
-	"exclude": ["node_modules/*", "__sapper__/*", "public/*"]
+	"exclude": [
+		"node_modules/*",
+		"__sapper__/*",
+		"public/*"
+	]
 }

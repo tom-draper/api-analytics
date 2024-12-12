@@ -1,4 +1,4 @@
-# Logger (Gin Server)
+# Backend Service Logger
 
 An API to handle and store all incoming requests containing logged requests information recorded and posted by analytics middleware.
 

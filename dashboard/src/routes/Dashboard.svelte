@@ -174,9 +174,7 @@
 
 		userID = formatUUID(userID);
 		try {
-			const response = await fetch(
-				`${url}/api/requests/${userID}/1`,
-			);
+			const response = await fetch(`${url}/api/requests/${userID}/1`);
 			if (response.ok && response.status === 200) {
 				const data: DashboardData = await response.json();
 				return data;
@@ -231,15 +229,16 @@
 		'All time',
 	];
 	let loading: boolean = true;
-	const fetchStatus: {failed: boolean, reason: string} = {
+	const fetchStatus: { failed: boolean; reason: string } = {
 		failed: false,
-		reason: ''
-	}
+		reason: '',
+	};
 	let endpointsRendered: boolean = false;
 	const pageSize = 200_000;
 	onMount(async () => {
-		({requests: data, user_agents: userAgents} = await getDashboardData());
-		
+		({ requests: data, user_agents: userAgents } =
+			await getDashboardData());
+
 		// loading = true;
 		if (data.length === pageSize) {
 			// Fetch page 2 and onwards if initial fetch didn't get all data
@@ -435,7 +434,7 @@
 		</div>
 	</div>
 {:else if periodData && data.length <= 0}
-	<Error reason={'no-requests'} description='' />
+	<Error reason={'no-requests'} description="" />
 {:else if fetchStatus.failed}
 	<Error reason={'error'} description={fetchStatus.reason} />
 {:else}

@@ -63,7 +63,11 @@
 	<div class="status">
 		{#if data !== undefined && Object.keys(data).length === 0}
 			<div class="status-image">
-				<img id="status-image" src="/img/logos/lightning-green.png" alt="" />
+				<img
+					id="status-image"
+					src="/img/logos/lightning-green.png"
+					alt=""
+				/>
 				<div class="status-text">Setup required</div>
 			</div>
 		{:else if error}
