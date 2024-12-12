@@ -23,7 +23,11 @@
 				<td>2021-09-17 20:30:00 UTC</td>
 				<td>2021-09-18 09:30:00 UTC</td>
 				<td>Emergency maintenance by hosting provider.</td>
-			</tr><tr> </tr></tbody
+			</tr>
+			<tr>
+
+			</tr>
+		</tbody
 		>
 	</table>
 </div>

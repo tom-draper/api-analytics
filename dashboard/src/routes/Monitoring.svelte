@@ -63,17 +63,17 @@
 	<div class="status">
 		{#if data !== undefined && Object.keys(data).length === 0}
 			<div class="status-image">
-				<img id="status-image" src="/img/logo.png" alt="" />
+				<img id="status-image" src="/img/logos/lightning-green.png" alt="" />
 				<div class="status-text">Setup required</div>
 			</div>
 		{:else if error}
 			<div class="status-image">
-				<img id="status-image" src="/img/bigcross.png" alt="" />
+				<img id="status-image" src="/img/icons/big-cross.png" alt="" />
 				<div class="status-text">Systems down</div>
 			</div>
 		{:else}
 			<div class="status-image">
-				<img id="status-image" src="/img/bigtick.png" alt="" />
+				<img id="status-image" src="/img/icons/big-tick.png" alt="" />
 				<div class="status-text">Systems Online</div>
 			</div>
 		{/if}

@@ -367,7 +367,7 @@
 					showSettings = true;
 				}}
 			>
-				<img class="settings-icon" src="../img/cog.png" alt="" />
+				<img class="settings-icon" src="../img/icons/cog.png" alt="" />
 			</button>
 			{#if hostnames.length > 1}
 				<div class="dropdown-container">

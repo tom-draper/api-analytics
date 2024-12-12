@@ -175,9 +175,9 @@
 				class:negative={percentageChange < 0}
 			>
 				{#if percentageChange > 0}
-					<img class="arrow" src="../img/up.png" alt="" />
+					<img class="arrow" src="../img/icons/green-up.png" alt="" />
 				{:else if percentageChange < 0}
-					<img class="arrow" src="../img/down.png" alt="" />
+					<img class="arrow" src="../img/icons/red-down.png" alt="" />
 				{/if}
 				{Math.abs(percentageChange).toFixed(1)}%
 			</div>

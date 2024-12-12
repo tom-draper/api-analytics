@@ -193,7 +193,7 @@
 				>{separatedURL.body}</a
 			>
 			<button class="delete" on:click={deleteMonitor}
-				><img class="bin-icon" src="../img/bin.png" alt="" /></button
+				><img class="bin-icon" src="../img/icons/bin.png" alt="" /></button
 			>
 		</div>
 		<div class="card-text-right">

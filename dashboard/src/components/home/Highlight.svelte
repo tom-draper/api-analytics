@@ -4,7 +4,7 @@
 
 <div class="dashboard">
 	<div class="dashboard-title-container">
-		<img class="lightning-top" src="img/logo.png" alt="" />
+		<img class="lightning-top" src="img/logos/lightning-green.png" alt="" />
 		<h1 class="dashboard-title">{title}</h1>
 	</div>
 	<div class="dashboard-content">
@@ -17,7 +17,7 @@
 			</a>
 		</div>
 	</div>
-	<img class="dashboard-img" src="img/{img}" alt="" />
+	<img class="dashboard-img" src="img/examples/{img}" alt="" />
 </div>
 
 <style scoped>

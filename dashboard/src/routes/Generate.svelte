@@ -62,7 +62,7 @@
 			id="formBtn"
 			on:click={copyToClipboard}
 			class:no-display={state !== 'copy'}
-			><img class="copy-icon" src="img/copy.png" alt="" /></button
+			><img class="copy-icon" src="img/icons/copy.png" alt="" /></button
 		>
 		<button
 			id="formBtn"
@@ -75,7 +75,7 @@
 	<div class="details">
 		<div class="keep-secure">Keep your API key safe and secure.</div>
 		<div class="highlight logo">API Analytics</div>
-		<img class="footer-logo" src="img/logo.png" alt="" />
+		<img class="footer-logo" src="img/logos/lightning-green.png" alt="" />
 	</div>
 </div>
 
