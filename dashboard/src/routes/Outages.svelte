@@ -25,11 +25,11 @@
 				<td>Emergency maintenance by hosting provider.</td>
 			</tr>
 			<tr>
-				<td>2024-11-12 01:10:00 UTC</td>
-				<td>2024-11-12 07:35:00 UTC</td>
+				<td>2021-11-12 01:10:00 UTC</td>
+				<td>2021-11-11 07:35:00 UTC</td>
 				<td>Server resource limit exceeded.</td>
 			</tr>
-		</tbody
+			<tr> </tr></tbody
 		>
 	</table>
 </div>
