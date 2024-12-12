@@ -180,6 +180,10 @@ git pull origin main
 docker compose up -d
 ```
 
+##### Locations
+
+Optional IP-to-location mappings are provided by the GeoLite2 Country database maintained by MaxMind. Create a free account at `https://www.maxmind.com/en/home`, and download and copy the `GeoLite2-Country.mmdb` file into the `server/logger` folder.
+
 ### Usage
 
 #### Logging Requests
