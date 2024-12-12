@@ -1,6 +1,6 @@
 services:
   nginx:
-    image: nginx:latest
+    image: nginx:1.27
     container_name: nginx
     restart: always
     volumes:
@@ -34,7 +34,7 @@ services:
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot; sleep 12h & wait $${!}; done;'"
 
   db:
-    image: postgres
+    image: postgres:17
     container_name: db
     restart: always
     user: postgres
