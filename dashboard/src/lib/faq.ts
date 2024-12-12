@@ -1,7 +1,7 @@
 const faq = [
     {
         question: 'Can the project be self-hosted?',
-        answer: 'We are currently working on a self-hosted solution that will allow you to take full control over your logged request data. Check back soon for updates!',
+        answer: 'The project can be easily self-hosted following the guide <a href="https://github.com/tom-draper/api-analytics/tree/main/server/self-hosting">here</a>. Self-hosting is still undergoing testing, development and further improvements to make it as easy as possible to deploy. It is currently recommended that you avoid self-hosting for production use.',
         showing: false,
     },
     {
