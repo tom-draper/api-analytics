@@ -1,7 +1,6 @@
 import logging
 import threading
 from datetime import datetime
-from types import NoneType
 from typing import Dict, List, Union
 
 import requests
@@ -65,7 +64,7 @@ def _post_requests(
     logger.debug(f"Response from server ({response.status_code}): {response.text}")
 
 
-def _endpoint_url(server_url: Union[str, NoneType]):
+def _endpoint_url(server_url: Union[str, None]):
     if server_url is None or server_url == "":
         return server_url
     elif server_url[-1] == "/":
