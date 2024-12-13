@@ -177,6 +177,10 @@
 				</tbody>
 			</table>
 		</div>
+		<div class="buttons">
+			<button class="btn-prev">Previous</button>
+			<button class="btn-next">Next</button>
+		</div>
 	</div>
 {/if}
 
@@ -189,7 +193,7 @@
 	display: flex;
 }
 .table {
-	margin: 1em 2em 2em;
+	margin: 1em 1.2em 1em;
 	text-align: left;
 	flex: 1;
 }
@@ -233,4 +237,28 @@ th {
 .last-row {
 	border-bottom: none;
 }
+
+.buttons {
+	display: flex;
+	justify-content: right;
+	margin: 0 1.2em 1em 1.2em;
+}
+
+.btn-prev {
+	margin-right: 1em;
+}
+
+.buttons button {
+	cursor: pointer;
+	border-radius: 4px;
+	padding: 0.4em 1em;
+	background: transparent;
+	color: #505050;
+	border: 1px solid #2e2e2e;
+}
+
+.buttons button:hover {
+	color: #EDEDED;
+}
+
 </style>
