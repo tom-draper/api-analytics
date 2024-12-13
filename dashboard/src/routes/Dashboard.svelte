@@ -415,6 +415,7 @@
 					data={periodData.current}
 					bind:targetPath={settings.targetEndpoint.path}
 					bind:targetStatus={settings.targetEndpoint.status}
+					bind:ignoreParams={settings.ignoreParams}
 					bind:endpointsRendered
 				/>
 				<Version data={periodData.current} bind:endpointsRendered />

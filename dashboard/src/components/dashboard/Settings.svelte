@@ -7,6 +7,10 @@
 		settings.disable404 = !settings.disable404;
 	}
 
+	function toggleIgnoreParams() {
+		settings.ignoreParams = !settings.ignoreParams;
+	}
+
 	function hideSettings() {
 		show = false;
 	}
@@ -34,6 +38,15 @@
 				name="disable404"
 				id="checkbox"
 				on:change={toggleDisable404}
+			/>
+		</div>
+		<div class="disable404 setting">
+			<div class="setting-label">Ignore Params</div>
+			<input
+				type="checkbox"
+				name="ignoreParams"
+				id="checkbox"
+				on:change={toggleIgnoreParams}
 			/>
 		</div>
 		<div class="setting-title">Filters:</div>
@@ -96,7 +109,7 @@
 	.container {
 		background: var(--background);
 		border-radius: 6px;
-		width: 30vw;
+		width: 35vw;
 		/* min-height: 30vh; */
 		border: 1px solid #2e2e2e;
 		color: var(--faded-text);
