@@ -44,7 +44,10 @@
 			const path = request[ColumnIndex.Path];
 			const hostname = request[ColumnIndex.Hostname];
 			const location = request[ColumnIndex.Location];
+			const ipAddress = request[ColumnIndex.IPAddress];
+			const customUserID = request[ColumnIndex.UserID];
 			if (
+				(settings.targetUser === null || settings.targetUser === `${ipAddress} ${customUserID}`) &&
 				(!settings.disable404 || status !== 404) &&
 				(settings.targetEndpoint.path === null ||
 					settings.targetEndpoint.path === path) &&
@@ -68,6 +71,7 @@
 	}
 
 	function setPeriodData() {
+		console.log('setting data');
 		periodData = getPeriodData();
 	}
 
@@ -339,7 +343,7 @@
 		setPeriodData();
 	}
 
-	// If target path/location is changed or reset, refresh data with this new filter
+	// If any settings are updated or target path/location is reset, refresh data with this new filter
 	$: if (
 		settings.targetEndpoint.path !== undefined &&
 		settings.targetLocation !== undefined
@@ -430,7 +434,7 @@
 					<Device data={periodData.current} {getUserAgent} />
 				</div>
 				<UsageTime data={periodData.current} />
-				<TopUsers data={periodData.current} />
+				<TopUsers data={periodData.current} bind:targetUser={settings.targetUser}/>
 			</div>
 		</div>
 	</div>
