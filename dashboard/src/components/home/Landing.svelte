@@ -37,19 +37,19 @@
 			</div>
 		</div>
 		<div style="position: relative" class="right">
-			<img class="logo" src="img/home-logo2.png" alt="" />
+			<img class="logo" src="img/logos/home-logo.png" alt="" />
 			<img
 				id="hover-1"
 				style="position: absolute;"
 				class="logo animated"
-				src="img/animated5.png"
+				src="img/logos/floating-points-1.png"
 				alt=""
 			/>
 			<img
 				id="hover-2"
 				style="position: absolute;"
 				class="logo animated"
-				src="img/animated6.png"
+				src="img/logos/floating-points-2.png"
 				alt=""
 			/>
 		</div>

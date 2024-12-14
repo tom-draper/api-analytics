@@ -75,7 +75,7 @@
 	<div class="details">
 		<div class="keep-secure">Keep your API key safe and secure.</div>
 		<div class="highlight logo">API Analytics</div>
-		<img class="footer-logo" src="img/logo.png" alt="" />
+		<img class="footer-logo" src="img/logos/lightning-green.png" alt="" />
 	</div>
 </div>
 

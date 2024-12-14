@@ -44,7 +44,10 @@
 			const path = request[ColumnIndex.Path];
 			const hostname = request[ColumnIndex.Hostname];
 			const location = request[ColumnIndex.Location];
+			const ipAddress = request[ColumnIndex.IPAddress];
+			const customUserID = request[ColumnIndex.UserID];
 			if (
+				(settings.targetUser === null || settings.targetUser === `${ipAddress} ${customUserID}`) &&
 				(!settings.disable404 || status !== 404) &&
 				(settings.targetEndpoint.path === null ||
 					settings.targetEndpoint.path === path) &&
@@ -174,9 +177,7 @@
 
 		userID = formatUUID(userID);
 		try {
-			const response = await fetch(
-				`${url}/api/requests/${userID}/1`,
-			);
+			const response = await fetch(`${url}/api/requests/${userID}/1`);
 			if (response.ok && response.status === 200) {
 				const data: DashboardData = await response.json();
 				return data;
@@ -231,15 +232,16 @@
 		'All time',
 	];
 	let loading: boolean = true;
-	const fetchStatus: {failed: boolean, reason: string} = {
+	const fetchStatus: { failed: boolean; reason: string } = {
 		failed: false,
-		reason: ''
-	}
+		reason: '',
+	};
 	let endpointsRendered: boolean = false;
 	const pageSize = 200_000;
 	onMount(async () => {
-		({requests: data, user_agents: userAgents} = await getDashboardData());
-		
+		({ requests: data, user_agents: userAgents } =
+			await getDashboardData());
+
 		// loading = true;
 		if (data.length === pageSize) {
 			// Fetch page 2 and onwards if initial fetch didn't get all data
@@ -248,12 +250,12 @@
 			loading = false;
 		}
 
-		setPeriod(settings.period);
 		setHostnames();
 		parseDates(data);
 		sortByTime(data);
+		setPeriod(settings.period);
 
-		setPeriodData();
+		// setPeriodData();
 
 		console.log(data);
 	});
@@ -340,7 +342,7 @@
 		setPeriodData();
 	}
 
-	// If target path/location is changed or reset, refresh data with this new filter
+	// If any settings are updated or target path/location is reset, refresh data with this new filter
 	$: if (
 		settings.targetEndpoint.path !== undefined &&
 		settings.targetLocation !== undefined
@@ -367,7 +369,7 @@
 					showSettings = true;
 				}}
 			>
-				<img class="settings-icon" src="../img/cog.png" alt="" />
+				<img class="settings-icon" src="../img/icons/cog.png" alt="" />
 			</button>
 			{#if hostnames.length > 1}
 				<div class="dropdown-container">
@@ -416,6 +418,7 @@
 					data={periodData.current}
 					bind:targetPath={settings.targetEndpoint.path}
 					bind:targetStatus={settings.targetEndpoint.status}
+					bind:ignoreParams={settings.ignoreParams}
 					bind:endpointsRendered
 				/>
 				<Version data={periodData.current} bind:endpointsRendered />
@@ -430,12 +433,12 @@
 					<Device data={periodData.current} {getUserAgent} />
 				</div>
 				<UsageTime data={periodData.current} />
-				<TopUsers data={periodData.current} />
+				<TopUsers data={periodData.current} bind:targetUser={settings.targetUser}/>
 			</div>
 		</div>
 	</div>
 {:else if periodData && data.length <= 0}
-	<Error reason={'no-requests'} description='' />
+	<Error reason={'no-requests'} description="" />
 {:else if fetchStatus.failed}
 	<Error reason={'error'} description={fetchStatus.reason} />
 {:else}

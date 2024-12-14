@@ -49,10 +49,10 @@ export default [
 			// App.js will be built after bundle.js, so we only need to watch that.
 			// By setting a small delay the Node server has a chance to restart before reloading.
 			!production &&
-				livereload({
-					watch: 'public/App.js',
-					delay: 200,
-				}),
+			livereload({
+				watch: 'public/App.js',
+				delay: 200,
+			}),
 			production && terser(),
 		],
 	},

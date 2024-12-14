@@ -1,7 +1,7 @@
 <div class="error">
 	<div class="error-code">
 		<div class="green-cover">
-			<img src="img/logo.png" alt="" />
+			<img src="img/logos/lightning-green.png" alt="" />
 		</div>
 		404
 	</div>

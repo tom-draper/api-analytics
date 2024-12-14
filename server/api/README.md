@@ -1,6 +1,6 @@
-# API (Gin Server)
+# Backend Service API
 
-An API to handle all requests from the main website (https://apianalytics.dev/).
+An API to handle all requests from the main website (https://apianalytics.dev/) and user queries.
 
 ## Development
 

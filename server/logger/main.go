@@ -275,25 +275,30 @@ func logRequestHandler() gin.HandlerFunc {
 	}
 
 	return func(c *gin.Context) {
-		// Collect API request data sent via POST request
 		var payload Payload
 		err := c.BindJSON(&payload)
 		if err != nil {
-			msg := "Invalid request data."
+			msg := fmt.Sprintf("Invalid request data.\n%s\nRequest body: %s", err.Error(), "body")
 			log.LogErrorToFile(c.ClientIP(), "", msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
-		} else if payload.APIKey == "" {
-			msg := "API key required."
+		}
+		
+		if payload.APIKey == "" {
+			msg := "API key requied."
 			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
-		} else if rateLimiter.RateLimited(payload.APIKey) {
+		}
+		
+		if rateLimiter.RateLimited(payload.APIKey) {
 			msg := "Too many requests."
 			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusTooManyRequests, gin.H{"status": http.StatusTooManyRequests, "message": msg})
 			return
-		} else if len(payload.Requests) == 0 {
+		}
+		
+		if len(payload.Requests) == 0 {
 			msg := "Payload contains no logged requests."
 			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
@@ -302,7 +307,9 @@ func logRequestHandler() gin.HandlerFunc {
 
 		framework, ok := frameworkID[payload.Framework]
 		if !ok {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Unsupported API framework."})
+			msg := "Unsupported API framework."
+			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
 		}
 
@@ -314,7 +321,6 @@ func logRequestHandler() gin.HandlerFunc {
 		inserted := 0
 		userAgents := make([]string, 0)
 		uniqueUserAgents := map[string]struct{}{}
-		badUserAgents := map[string]struct{}{}
 		for _, request := range payload.Requests {
 			// Temporary request per minute limit
 			if inserted >= maxInsert {
@@ -347,10 +353,6 @@ func logRequestHandler() gin.HandlerFunc {
 				request.UserAgent = request.UserAgent[:255]
 			}
 			if !database.ValidUserAgent(request.UserAgent) {
-				// Store bad user agent for logging
-				if _, ok := badUserAgents[request.UserAgent]; !ok {
-					badUserAgents[request.UserAgent] = struct{}{}
-				}
 				continue
 			}
 
@@ -459,15 +461,5 @@ func logRequestHandler() gin.HandlerFunc {
 
 		// Record in log file for debugging
 		log.LogRequestsToFile(payload.APIKey, inserted, len(payload.Requests))
-		// Log any bad user agents found
-		if len(badUserAgents) > 0 {
-			var msg bytes.Buffer
-			index := 0
-			for userAgent := range badUserAgents {
-				msg.WriteString(fmt.Sprintf("[%d] bad user agent: %s\n", index, userAgent))
-				index++
-			}
-			log.LogToFile(msg.String())
-		}
 	}
 }

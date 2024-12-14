@@ -14,9 +14,9 @@
 			class:lightning-container-error={reason === 'error'}
 		>
 			{#if reason === 'no-requests'}
-				<img src="../img/logo.png" alt="" />
+				<img src="../img/logos/lightning-green.png" alt="" />
 			{:else}
-				<img src="../img/logo-red.png" alt="" />
+				<img src="../img/logos/lightning-red.png" alt="" />
 			{/if}
 		</div>
 	</div>

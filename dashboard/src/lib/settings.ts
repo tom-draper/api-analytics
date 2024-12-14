@@ -16,7 +16,9 @@ export type DashboardSettings = {
 		status: number | null;
 	};
 	targetLocation: string | null;
+	targetUser: string | null;
 	hiddenEndpoints: Set<string>;
+	ignoreParams: boolean;
 };
 
 export function initSettings(): DashboardSettings {
@@ -29,6 +31,9 @@ export function initSettings(): DashboardSettings {
 			status: null,
 		},
 		targetLocation: null,
+		targetUser: null,
 		hiddenEndpoints: new Set(),
+		ignoreParams: true,
 	};
 }
+

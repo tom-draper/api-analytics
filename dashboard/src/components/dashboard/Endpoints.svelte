@@ -25,11 +25,14 @@
 		const freq: EndpointFreq = new Map();
 		for (let i = 0; i < data.length; i++) {
 			// Create groups of endpoints by path + status
-			const endpointID = `${data[i][ColumnIndex.Path]}${data[i][ColumnIndex.Status]}`;
+			const path = ignoreParams ? data[i][ColumnIndex.Path].split('?')[0] : data[i][ColumnIndex.Path];
+			const status = data[i][ColumnIndex.Status];
+			const endpointID = `${path}${status}`;
 			if (!freq.has(endpointID)) {
+				const method = methodMap[data[i][ColumnIndex.Method]];
 				freq.set(endpointID, {
-					path: `${methodMap[data[i][ColumnIndex.Method]]}  ${data[i][ColumnIndex.Path]}`,
-					status: data[i][ColumnIndex.Status],
+					path: `${method}  ${path}`,
+					status: status,
 					count: 0,
 				});
 			}
@@ -91,9 +94,7 @@
 	}
 
 	function build() {
-		endpointsRendered = false;
 		({ endpoints: endpoints, maxCount: maxCount } = getEndpoints());
-		endpointsRendered = true;
 	}
 
 	function setBtn(value: typeof activeBtn) {
@@ -115,7 +116,8 @@
 	export let data: RequestsData,
 		targetPath: string,
 		targetStatus: number,
-		endpointsRendered: boolean;
+		endpointsRendered: boolean,
+		ignoreParams: boolean;
 </script>
 
 <div class="card">
