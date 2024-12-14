@@ -71,7 +71,6 @@
 	}
 
 	function setPeriodData() {
-		console.log('setting data');
 		periodData = getPeriodData();
 	}
 
@@ -251,12 +250,12 @@
 			loading = false;
 		}
 
-		setPeriod(settings.period);
 		setHostnames();
 		parseDates(data);
 		sortByTime(data);
+		setPeriod(settings.period);
 
-		setPeriodData();
+		// setPeriodData();
 
 		console.log(data);
 	});

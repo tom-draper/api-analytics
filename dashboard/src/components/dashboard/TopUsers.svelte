@@ -93,7 +93,8 @@
 
 		topUsers = Object.values(users)
 			.sort((a, b) => b.requests - a.requests)
-			.slice(0, 10);
+			.slice(0, pageSize * maxPages);
+		page = topUsers.slice(0, pageSize);
 	}
 
 	function getTopUserRequestsCount(users: Users) {
@@ -127,9 +128,31 @@
 		return false;
 	}
 
+	function totalPages() {
+		return Math.ceil(topUsers.length / pageSize);
+	}
+
+	function nextPage() {
+		pageNumber += 1;
+		setPage();
+	}
+
+	function prevPage() {
+		pageNumber -= 1;
+		setPage();
+	}
+
+	function setPage() {
+		page = topUsers.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
+	}
+
 	let topUsers = null;
+	let page = null;
 	let userIDActive = false;
 	let locationsActive = false;
+	let pageNumber = 1;
+	const pageSize = 10;
+	const maxPages = 100;
 
 	$: if (data && !targetUser) {
 		build(data);
@@ -157,14 +180,15 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each topUsers as { ipAddress, customUserID, requests, locations, lastRequested }, i}
-						<tr class="highlight-row" class:highlighted-row={targetUser !== null && targetUser === formatUserID(ipAddress, customUserID)} class:dim-row={targetUser !== null && targetUser !== formatUserID(ipAddress, customUserID)} class:last-row={i === topUsers.length - 1}>
+					{#each page as { ipAddress, customUserID, requests, locations, lastRequested }, i}
+						<!-- svelte-ignore a11y-click-events-have-key-events -->
+						<tr class="highlight-row" class:highlighted-row={targetUser !== null && targetUser === formatUserID(ipAddress, customUserID)} class:dim-row={targetUser !== null && targetUser !== formatUserID(ipAddress, customUserID)} class:last-row={i === page.length - 1}>
 							<td on:click={() => selectUser(ipAddress, customUserID)}>{ipAddress}</td>
 							{#if userIDActive}
-								<td on:click={() => selectUser(ipAddress, customUserID)}>{customUserID}</td>
+								<td on:click={() => selectUser(ipAddress, customUserID)}>{customUserID ?? ''}</td>
 							{/if}
 							{#if locationsActive}
-								<td on:click={() => selectUser(ipAddress, customUserID)}>{maxLocation(locations)}</td>
+								<td on:click={() => selectUser(ipAddress, customUserID)}>{locations ? maxLocation(locations) : ''}</td>
 							{/if}
 							<td on:click={() => selectUser(ipAddress, customUserID)}>
 								{lastRequested.toLocaleString()}
@@ -178,8 +202,13 @@
 			</table>
 		</div>
 		<div class="buttons">
-			<button class="btn-prev">Previous</button>
-			<button class="btn-next">Next</button>
+			<div class="current-page">Page {pageNumber} of {totalPages()}</div>
+			{#if pageNumber > 1}
+				<button class:btn-prev={(topUsers.length / pageSize) > pageNumber} on:click={prevPage}>Previous</button>
+			{/if}
+			{#if (topUsers.length / pageSize) > pageNumber}
+				<button class="btn-next" on:click={nextPage}>Next</button>
+			{/if}
 		</div>
 	</div>
 {/if}
@@ -259,6 +288,13 @@ th {
 
 .buttons button:hover {
 	color: #EDEDED;
+}
+
+.current-page {
+	place-self: center;
+	color: #505050;
+	font-size: 0.85em;
+	margin-right:auto;
 }
 
 </style>
