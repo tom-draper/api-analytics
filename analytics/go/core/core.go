@@ -57,14 +57,16 @@ func postRequest(apiKey string, requests []RequestData, framework string, privac
 }
 
 func LogRequest(apiKey string, request RequestData, framework string, privacyLevel int, serverURL string) {
-	if apiKey == "" {
-		return
-	}
-	now := time.Now()
-	requests = append(requests, request)
-	if time.Since(lastPosted) > time.Minute {
-		go postRequest(apiKey, requests, framework, privacyLevel, serverURL)
-		requests = nil
-		lastPosted = now
-	}
+    if apiKey == "" {
+        return
+    }
+    requests = append(requests, request)
+    if time.Since(lastPosted) > time.Minute {
+        requestsCopy := make([]RequestData, len(requests))
+        copy(requestsCopy, requests) 
+        
+        go postRequest(apiKey, requestsCopy, framework, privacyLevel, serverURL)
+        requests = nil
+        lastPosted = time.Now()
+    }
 }
