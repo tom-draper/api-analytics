@@ -19,7 +19,7 @@ class KtorAnalyticsHandler(
     client,
     loggingTimeout,
     serverUrl,
-    "Ktor",
+    "Express",//"Ktor", // Spoofing Express temporarily until the backend can catch up
     privacyLevel
 ) {
     override fun send(payload: PayloadHandler.AnalyticsPayload, endpoint: String): HttpResponse = runBlocking {

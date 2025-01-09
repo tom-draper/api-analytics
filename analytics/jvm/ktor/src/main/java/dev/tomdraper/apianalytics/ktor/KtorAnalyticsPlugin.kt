@@ -7,6 +7,7 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.statement.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
+import io.ktor.server.application.hooks.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.util.*
@@ -58,6 +59,10 @@ object KtorAnalyticsPlugin {
             if (hr != null)
                 LOG.debug("""Request to ApiAnalytics (specifically ${hr.request.url.host}) 
                     |ran with status ${hr.status.value} / ${hr.status.description}""".trimMargin())
+        }
+        on(MonitoringEvent(ApplicationStopping)) {app ->
+            println(handler.forceSend())
+            app.monitor.unsubscribe(ApplicationStopping) { /* no-op, release resources */ }
         }
     }
 

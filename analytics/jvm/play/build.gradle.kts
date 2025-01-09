@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin)
-    //id("org.gradle.playframework") version "0.12" // Use the latest version
+    alias(libs.plugins.play)
     scala
 }
 
@@ -13,14 +13,14 @@ repositories {
 
 dependencies {
     implementation(project(":common"))
-    implementation(libs.jackson.core)
     implementation(libs.jackson.scala)
-    implementation("org.scala-lang:scala-library:2.13.12")
-    implementation("com.typesafe.play:play_2.13:2.9.0") //2.8.20
-    implementation("com.typesafe.play:play-ws_2.13:2.9.0")
+    implementation(libs.scala.stdlib)
+    implementation(libs.play.core)
+    implementation(libs.play.webservice)
 
-
-    //testImplementation("org.scalatestplus.play:scalatestplus-play_2.13:5.1.0")
+    testImplementation("org.scalactic:scalactic_3:3.2.19")
+    testImplementation("org.scalatest:scalatest_3:3.2.19")
+    testImplementation("org.scalatestplus.play:scalatestplus-play_2.13:5.1.0")
 }
 /*
 play {

@@ -1,13 +1,13 @@
 package dev.tomdraper.apianalytics.spring
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import dev.tomdraper.apianalytics.AbstractAnalyticsHandler
 import dev.tomdraper.apianalytics.PayloadHandler.AnalyticsPayload
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.web.client.RestTemplate
-import java.util.concurrent.Executors
 
 class SpringAnalyticsHandler(
     override val apiKey: String?,
@@ -19,21 +19,17 @@ class SpringAnalyticsHandler(
     RestTemplate(),
     loggingTimeout,
     serverUrl,
-    "Spring",
+    "Express",//"Spring", // Spoofing Express temporarily until the backend can catch up
     privacyLevel
 ) {
-    //
-    private val objectMapper = ObjectMapper()
-    //
-    private val executorService = Executors.newSingleThreadExecutor()
+    private val logger: Logger = LoggerFactory.getLogger(SpringAnalyticsHandler::class.java)
 
     override fun send(payload: AnalyticsPayload, endpoint: String) {
+        logger.debug("Sending payload to analytics API...")
         val body = objectMapper.writeValueAsString(payload)
-        executorService.submit {
-            val headers = HttpHeaders()
-            headers.contentType = MediaType.APPLICATION_JSON
-            val request = HttpEntity(body, headers)
-            client.postForEntity(endpoint, request, String::class.java)
-        }
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.APPLICATION_JSON
+        val request = HttpEntity(body, headers)
+        client.postForEntity(endpoint, request, String::class.java)
     }
 }

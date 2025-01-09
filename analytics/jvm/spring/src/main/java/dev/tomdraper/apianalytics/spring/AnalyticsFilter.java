@@ -1,6 +1,7 @@
 package dev.tomdraper.apianalytics.spring;
 
 import dev.tomdraper.apianalytics.PayloadHandler;
+import jakarta.annotation.PreDestroy;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,11 +20,11 @@ public class AnalyticsFilter extends OncePerRequestFilter {
     
     private static final Logger logger = LoggerFactory.getLogger(AnalyticsFilter.class);
     private final SpringAnalyticsConfig config;
-    private final SpringAnalyticsHandler handler;
+    public static SpringAnalyticsHandler handler;
     
     public AnalyticsFilter(SpringAnalyticsConfig config) {
         this.config = config;
-        this.handler = new SpringAnalyticsHandler(
+        handler = new SpringAnalyticsHandler(
             config.apiKey,
             config.timeout,
             config.serverUrl,
@@ -70,6 +71,11 @@ public class AnalyticsFilter extends OncePerRequestFilter {
         );
         
         handler.logRequest(reqData);
+    }
+    
+    @PreDestroy
+    public void destroy() {
+        handler.forceSend();
     }
 }
 

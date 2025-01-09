@@ -1,7 +1,7 @@
 [versions]
 # Languages
 kotlin-version = "1.9.25"
-scala-version = "2.13.0"
+scala-version = "2.13.12"
 
 # Common Impl
 jackson-version = "2.18.2"
@@ -9,23 +9,24 @@ slf4j-version = "2.0.16"
 lombok-version = "1.18.36"
 # Common Testing
 logback-version = "1.3.0"
-junit-version = "5.8.1"
+junit-version = "5.10.0"
 
-# Ktor Impl
+# Frameworks
 ktor-version = "3.0.0"
-
-# Spring Impl
 spring-version = "3.2.6"
+play-version = "2.9.0"
 
 [libraries]
 # Common Impl
-jackson-core = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson-version" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson-version" }
+jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson-version" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson-version" }
-jackson-scala = { module = "com.fasterxml.jackson.module:jackson-module-scala", version.ref = "jackson-version" }
+jackson-scala = { module = "com.fasterxml.jackson.module:jackson-module-scala_2.13", version.ref = "jackson-version" }
 logging-slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j-version" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok-version" }
 # Common Testing (testing deps from common are not transitive! copy-paste the lines to the right into new subprojects)
 logging-logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback-version" }     # testImplementation(libs.logging.logback)
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin-version" }
 junit-kotlin = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin-version" } # testImplementation(libs.junit.kotlin)
 junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-version" }        # testImplementation(libs.junit.api)
 junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-version" }  # testRuntimeOnly(libs.junit.engine)
@@ -37,11 +38,18 @@ ktor-serialization-jackson = { module = "io.ktor:ktor-serialization-jackson", ve
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor-version" }
 # Ktor Testing (use JVM specific impls)
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp-jvm", version.ref = "ktor-version" }
+ktor-server-test = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor-version" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor-version" }
 ktor-server-content = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor-version" }
+
+# Play Impl
+scala-stdlib = { module = "org.scala-lang:scala-library", version.ref = "scala-version" }
+play-core = { module = "com.typesafe.play:play_2.13", version.ref = "play-version" }
+play-webservice = { module = "com.typesafe.play:play-ws_2.13", version.ref = "play-version" }
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor-version" }
 spring-kotlin = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin-version" }
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-version" }
+play = { id = "org.gradle.playframework", version = "0.14" }

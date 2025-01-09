@@ -26,31 +26,31 @@ object PayloadHandler {
         //
         val hostname: String,
         //
-        @JsonProperty("ip_address") val ipAddress: String,
+        @get:JsonProperty("ip_address") val ipAddress: String,
         //
-        @JsonProperty("user_agent") val userAgent: String?,
+        @get:JsonProperty("user_agent") val userAgent: String?,
         //
         val path: String,
         //
-        @JsonProperty("status") val statusCode: Int?,
+        @get:JsonProperty("status") val statusCode: Int?,
         //
         val method: String,
         //
-        @JsonProperty("response_time") val responseTime: Long,
+        @get:JsonProperty("response_time") val responseTime: Long,
         //
-        @JsonProperty("user_id") val userId: Int?,
+        @get:JsonProperty("user_id") val userId: Int?,
         //
-        @JsonProperty("created_at") val createdAt: String?
+        @get:JsonProperty("created_at") val createdAt: String?
     )
 
     data class AnalyticsPayload(
         //
-        @JsonProperty("api_key") val apiKey: String,
+        @get:JsonProperty("api_key") val apiKey: String,
         //
         val requests: List<RequestData>,
         //
         val framework: String,
         //
-        @JsonProperty("privacy_level") val privacyLevel: Int,
+        @get:JsonProperty("privacy_level") val privacyLevel: Int,
     )
 }

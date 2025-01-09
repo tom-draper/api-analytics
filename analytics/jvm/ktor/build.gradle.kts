@@ -17,6 +17,7 @@ dependencies {
     implementation(libs.ktor.client.content)
     implementation(libs.ktor.serialization.jackson)
 
+    testImplementation(libs.ktor.server.test)
     testImplementation(libs.ktor.server.content)
     testImplementation(libs.ktor.server.netty)
     testImplementation(libs.ktor.client.okhttp)
@@ -30,6 +31,6 @@ application {
     mainClass.set("dev.tomdraper.apianalytics.ktor.DummyKt")
 }
 
-/*tasks.named<Test>("test") {
+tasks.named<Test>("test") {
     useJUnitPlatform()
-}*/
+}

@@ -75,20 +75,18 @@ Next configure the plugin, either in;
 
 `application.properties`:
 ```properties
-dev.tomdraper.analytics.apiKey = [YOUR API KEY HERE]
+apianalytics.apiKey = [YOUR API KEY HERE]
 # Spring-only configs:
-dev.tomdraper.analytics.sendUserId = false # If a numerical user-id is found in the header name below, it is sent as well
-dev.tomdraper.analytics.userHeader = "" # The request header checked for numerical IDs
+apianalytics.sendUserId = false # If a numerical user-id is found in the header name below, it is sent as well
+apianalytics.userHeader = "" # The request header checked for numerical IDs
 ```
 
 or `application.yml`:
 ```yml
-dev:
-    tomdraper:
-        analytics:
-            apiKey = [YOUR API KEY HERE]
-            sendUserId = false
-            userHeader = ""
+apianalytics:
+    apiKey = "[YOUR API KEY HERE]"
+    sendUserId = false
+    userHeader = ""
 ```
 
 Then you're done, as the `@Component` annotation on the middleware will register it automatically.

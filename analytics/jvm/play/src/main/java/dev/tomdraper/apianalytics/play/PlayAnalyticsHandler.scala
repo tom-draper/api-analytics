@@ -1,6 +1,5 @@
 package dev.tomdraper.apianalytics.play
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import dev.tomdraper.apianalytics.{AbstractAnalyticsHandler, PayloadHandler}
 import play.api.libs.ws.{WSClient, WSResponse}
 
@@ -23,10 +22,8 @@ class PlayAnalyticsHandler(
   privacyLevel
 ) {
 
-  private val objectMapper = new ObjectMapper()
-
   override def send(payload: PayloadHandler.AnalyticsPayload, endpoint: String): Future[WSResponse] =
     httpClient.url(endpoint)
       .withHttpHeaders("Content-Type" -> "application/json")
-      .post(objectMapper.writeValueAsString(payload))
+      .post(getObjectMapper.writeValueAsString(payload))
 }
