@@ -5,13 +5,22 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
-	"strings"
+	"sync"
 )
 
-var requests []RequestData
-var lastPosted time.Time = time.Now()
+const defaultServerURL string = "https://www.apianalytics-server.com/"
 
-const DefaultServerURL string = "https://www.apianalytics-server.com/"
+type Client struct {
+	apiKey       string
+	framework    string
+	privacyLevel int
+	endpointURL  string
+
+	mu			 sync.Mutex
+	requests     []RequestData
+	lastPush     time.Time
+}
+
 
 type Payload struct {
 	APIKey       string        `json:"api_key"`
@@ -32,41 +41,66 @@ type RequestData struct {
 	CreatedAt    string `json:"created_at"`
 }
 
-func getServerEndpoint(serverURL string) string {
-	if serverURL == "" {
-		return DefaultServerURL + "api/log-request"
+func NewClient(apiKey string, framework string, privacyLevel int, serverURL string) *Client {
+	if apiKey == "" {
+		return nil
 	}
-	if strings.HasSuffix(serverURL, "/") {
-		return serverURL + "api/log-request"
+
+	getEndpointURL := func(serverURL string) string {
+		if serverURL == "" {
+			return defaultServerURL + "api/log-request"
+		}
+		if serverURL[len(serverURL)-1] == '/' {
+			return serverURL + "api/log-request"
+		}
+		return serverURL + "/api/log-request"
 	}
-	return serverURL + "/api/log-request"
+
+	return &Client{
+		apiKey:       apiKey,
+		framework:    framework,
+		privacyLevel: privacyLevel,
+		endpointURL:    getEndpointURL(serverURL),
+		lastPush:     time.Now(),
+	}
 }
 
-func postRequest(apiKey string, requests []RequestData, framework string, privacyLevel int, serverURL string) {
+func (c *Client) LogRequest(request RequestData) {
+	if c == nil || c.apiKey == "" {
+		return
+	}
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.requests = append(c.requests, request)
+	if time.Since(c.lastPush) > time.Minute {
+		c.pushRequests()
+	}
+}
+
+func (c *Client) pushRequests() {
+	if len(c.requests) == 0 {
+		return
+	}
+
+	requestsCopy := make([]RequestData, len(c.requests))
+	copy(requestsCopy, c.requests) 
+
+	go c.post(requestsCopy)
+	c.requests = nil
+	c.lastPush = time.Now()
+}
+
+func (c *Client) post(requests []RequestData) {
 	data := Payload{
-		APIKey:       apiKey,
+		APIKey:       c.apiKey,
 		Requests:     requests,
-		Framework:    framework,
-		PrivacyLevel: privacyLevel,
+		Framework:    c.framework,
+		PrivacyLevel: c.privacyLevel,
 	}
 	body, err := json.Marshal(data)
 	if err == nil {
-		url := getServerEndpoint(serverURL)
-		http.Post(url, "application/json", bytes.NewBuffer(body))
+		http.Post(c.endpointURL, "application/json", bytes.NewBuffer(body))
 	}
-}
-
-func LogRequest(apiKey string, request RequestData, framework string, privacyLevel int, serverURL string) {
-    if apiKey == "" {
-        return
-    }
-    requests = append(requests, request)
-    if time.Since(lastPosted) > time.Minute {
-        requestsCopy := make([]RequestData, len(requests))
-        copy(requestsCopy, requests) 
-        
-        go postRequest(apiKey, requestsCopy, framework, privacyLevel, serverURL)
-        requests = nil
-        lastPosted = time.Now()
-    }
 }
