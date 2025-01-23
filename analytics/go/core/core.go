@@ -5,22 +5,19 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
-	"sync"
 )
 
 const defaultServerURL string = "https://www.apianalytics-server.com/"
 
 type Client struct {
-	apiKey       string
-	framework    string
-	privacyLevel int
-	endpointURL  string
-
-	mu			 sync.Mutex
-	requests     []RequestData
-	lastPush     time.Time
+	apiKey          string
+	framework       string
+	privacyLevel    int
+	endpointURL     string
+ 
+	requestChannel  chan RequestData
+	done            chan struct{}
 }
-
 
 type Payload struct {
 	APIKey       string        `json:"api_key"`
@@ -56,13 +53,17 @@ func NewClient(apiKey string, framework string, privacyLevel int, serverURL stri
 		return serverURL + "/api/log-request"
 	}
 
-	return &Client{
+	client := &Client{
 		apiKey:       apiKey,
 		framework:    framework,
 		privacyLevel: privacyLevel,
-		endpointURL:    getEndpointURL(serverURL),
-		lastPush:     time.Now(),
+		endpointURL:  getEndpointURL(serverURL),
+		requestChannel: make(chan RequestData, 1000),
+		done: make(chan struct{}),
 	}
+
+	go client.worker()
+	return client
 }
 
 func (c *Client) LogRequest(request RequestData) {
@@ -70,29 +71,39 @@ func (c *Client) LogRequest(request RequestData) {
 		return
 	}
 
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.requestChannel <- request
+}
 
-	c.requests = append(c.requests, request)
-	if time.Since(c.lastPush) > time.Minute {
-		c.pushRequests()
+func (c *Client) worker() {
+	var requests []RequestData
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case request := <-c.requestChannel:
+			requests = append(requests, request)
+			c.pushRequests(requests)
+			requests = nil
+
+		case <-ticker.C:
+			// Send requests periodically
+			if len(requests) > 0 {
+				c.pushRequests(requests)
+				requests = nil
+			}
+
+		case <-c.done:
+			// Send any remaining requests before shutting down
+			if len(requests) > 0 {
+				c.pushRequests(requests)
+			}
+			return
+		}
 	}
 }
 
-func (c *Client) pushRequests() {
-	if len(c.requests) == 0 {
-		return
-	}
-
-	requestsCopy := make([]RequestData, len(c.requests))
-	copy(requestsCopy, c.requests) 
-
-	go c.post(requestsCopy)
-	c.requests = nil
-	c.lastPush = time.Now()
-}
-
-func (c *Client) post(requests []RequestData) {
+func (c *Client) pushRequests(requests []RequestData) {
 	data := Payload{
 		APIKey:       c.apiKey,
 		Requests:     requests,
@@ -103,4 +114,9 @@ func (c *Client) post(requests []RequestData) {
 	if err == nil {
 		http.Post(c.endpointURL, "application/json", bytes.NewBuffer(body))
 	}
+}
+
+func (c *Client) Shutdown() {
+	close(c.done)
+	close(c.requestChannel)
 }
