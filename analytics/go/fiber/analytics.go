@@ -30,10 +30,11 @@ func NewConfig() *Config {
 }
 
 func Analytics(apiKey string) func(c *fiber.Ctx) error {
-	return AnalyticsWithConfig(apiKey, &Config{})
+	return AnalyticsWithConfig(apiKey, NewConfig())
 }
 
 func AnalyticsWithConfig(apiKey string, config *Config) func(c *fiber.Ctx) error {
+	client := core.NewClient(apiKey, "Fiber", config.PrivacyLevel, config.ServerURL)
 	return func(c *fiber.Ctx) error {
 		start := time.Now()
 		err := c.Next()
@@ -50,7 +51,7 @@ func AnalyticsWithConfig(apiKey string, config *Config) func(c *fiber.Ctx) error
 			CreatedAt:    start.Format(time.RFC3339),
 		}
 
-		core.LogRequest(apiKey, data, "Fiber", config.PrivacyLevel, config.ServerURL)
+		client.LogRequest(data)
 
 		return err
 	}
