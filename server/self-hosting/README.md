@@ -29,10 +29,12 @@ Open the `self-hosting` directory.
 cd api-analytics/server/self-hosting
 ```
 
-#### 2. Edit the `.env` file
+#### 2. Create a `.env` file
+
+Create a new `.env` file, using the provided `.env.example` as a template.
 
 Enter:
-- your `DOMAIN_NAME` e.g. example.com 
+- your `DOMAIN_NAME` e.g. example.com
 - a `POSTGRES_PASSWORD` for the database
 
 #### 3. Obtain an SSL certificate using Certbot
@@ -55,7 +57,7 @@ Stop the services once complete.
 docker compose down
 ```
 
-Replace the temporary `nginx-certbot.conf.template` with the fully SSL-compatible `nginx.conf.template` in the `docker-compose.yaml` file under the `nginx` configuration. Comment out the appropriate lines to match the following:
+Within `docker-compose.yaml`, replace the temporary `nginx-certbot.conf.template` with the fully SSL-compatible `nginx.conf.template` under the `nginx` configuration. Comment the appropriate lines to match the following:
 
 ```yaml
 # - ./nginx/nginx-certbot.conf.template:/etc/nginx/conf.d/nginx.conf.template
@@ -72,19 +74,19 @@ docker compose up -d
 
 #### Internal
 
-Check if all six docker services are running.
+Confirm all six Docker services are running internally.
 
 ```bash
 docker ps
 ```
 
-Quickly check if services are working by attempting to generate a new API key.
+From the server, quickly check if internal services are working by attempting to generate a new API key.
 
 ```bash
 curl -X GET http://localhost:3000/api/generate
 ```
 
-Confirm services are working internally by running the `tests/test-internal.sh` bash script.
+For a more comprehensive test, confirm services are working internally by running the `tests/test-internal.sh` bash script.
 
 ```bash
 chmod +x tests/test-internal.sh
@@ -93,7 +95,7 @@ chmod +x tests/test-internal.sh
 
 #### Nginx
 
-Confirm Nginx is running and able to direct to the internal services.
+From the server, confirm Nginx is running and redirecting to the internal services correctly.
 
 ```bash
 curl -kL -X GET http://localhost/api/generate
@@ -103,7 +105,7 @@ curl -kL -X GET http://localhost/api/generate
 curl -k -X GET https://localhost/api/generate
 ```
 
-Confirm the Nginx service is working internally by running the `tests/test-nginx.sh` and  `tests/test-nginx.sl` bash scripts.
+For a more comprehensive test, confirm the Nginx service is working internally by running the `tests/test-nginx.sh` and  `tests/test-nginx-ssl.sh` bash scripts.
 
 ```bash
 chmod +x tests/test-nginx.sh
@@ -121,13 +123,13 @@ Outside of the hosting environment, confirm that services are publically accessi
 curl -X GET http://<ip-address>:3000/api/generate
 ```
 
-Confirm your domain is set up and that Nginx is working correctly.
+Confirm your domain is set up and that Nginx is redirecting correctly.
 
 ```bash
 curl -X GET https://your-domain.com/api/generate
 ```
 
-Confirm the services are working externally by running the `tests/test-external.sh` bash script, providing your domain name.
+For a more comprehensive test, confirm the services are working externally by running the `tests/test-external.sh` bash script, providing your domain name.
 
 ```bash
 chmod +x tests/test-external.sh
@@ -207,11 +209,14 @@ if __name__ == "__main__":
     uvicorn.run("app:app", reload=True)
 ```
 
-You can confirm requests are being logged by checking the logs.
+When debugging, checking the server logs is usually the best place to start.
 
 ```bash
 docker logs nginx
+
 docker exec -it logger tail requests.log
+
+docker exec -it api tail api.log
 ```
 
 #### Dashboard
@@ -226,7 +231,7 @@ You can access your raw data by sending a GET request to `https://www.your-domai
 
 Once up and running, self-hosted backend can be fully utilised and managed through `apianalytics.dev`. This ensures you always have the latest updates and improvements to the dashboard.
 
-Alternatively, it's possible to self-host the frontend dashboard by setting the URL of your backend service as a `SERVER_URL` environment variable, or manually changing the `SERVER_URL` held in `src/lib/consts.ts`. The frontend can then be deployed using your preferred hosting provider.
+Whilst not recommeneded, it's possible to self-host the frontend dashboard by setting the URL of your backend service as a `SERVER_URL` environment variable, or manually changing the `SERVER_URL` held in `src/lib/consts.ts`. The frontend can then be deployed using your preferred hosting provider.
 
 ## Contributions
 
