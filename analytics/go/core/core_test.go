@@ -388,6 +388,20 @@ func TestPerformanceLogRequests(t *testing.T) {
 	// Allow worker to process requests
 	time.Sleep(time.Second)
 
+	// For if implementation changes...
+	// If requests are pushed on request - final request to force a push
+	// Time this request as may be longer if triggering a push to server
+	start = time.Now()
+	client.LogRequest(req)
+	loggingTime = time.Since(start)
+
+	t.Logf("Processed subsequent request in %s", loggingTime)
+
+	if loggingTime > time.Millisecond*100 {
+		t.Errorf("Performance test took too long: %s", loggingTime)
+	}
+
+	// Confirm batched requests were pushed to the server
 	if serverTriggerCount == 0 {
 		t.Errorf("Server was not triggered")
 	} else if serverTriggerCount != 1 {

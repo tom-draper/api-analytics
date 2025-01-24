@@ -127,6 +127,23 @@ func (c *Client) pushRequests(requests []RequestData) {
 }
 
 func (c *Client) Shutdown() {
+	if c == nil {
+		return
+	}
+
+	// Signal the worker to shut down
 	close(c.done)
+
+	// Drain the requestChannel
+    var remainingRequests []RequestData
+    for request := range c.requestChannel {
+        remainingRequests = append(remainingRequests, request)
+    }
+
+    // Push any remaining requests
+    if len(remainingRequests) > 0 {
+        c.pushRequests(remainingRequests)
+    }
+
 	close(c.requestChannel)
 }
