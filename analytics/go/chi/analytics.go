@@ -52,10 +52,11 @@ func NewConfig() *Config {
 }
 
 func Analytics(apiKey string) func(next http.Handler) http.Handler {
-	return AnalyticsWithConfig(apiKey, &Config{})
+	return AnalyticsWithConfig(apiKey, NewConfig())
 }
 
 func AnalyticsWithConfig(apiKey string, config *Config) func(next http.Handler) http.Handler {
+	client := core.NewClient(apiKey, "Chi", config.PrivacyLevel, config.ServerURL)
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			defer func() {
@@ -82,7 +83,7 @@ func AnalyticsWithConfig(apiKey string, config *Config) func(next http.Handler) 
 				CreatedAt:    start.Format(time.RFC3339),
 			}
 
-			core.LogRequest(apiKey, data, "Chi", config.PrivacyLevel, config.ServerURL)
+			client.LogRequest(data)
 		})
 	}
 }

@@ -30,10 +30,11 @@ func NewConfig() *Config {
 }
 
 func Analytics(apiKey string) gin.HandlerFunc {
-	return AnalyticsWithConfig(apiKey, &Config{})
+	return AnalyticsWithConfig(apiKey, NewConfig())
 }
 
 func AnalyticsWithConfig(apiKey string, config *Config) gin.HandlerFunc {
+	client := core.NewClient(apiKey, "Gin", config.PrivacyLevel, config.ServerURL)
 	return func(c *gin.Context) {
 		start := time.Now()
 		c.Next()
@@ -50,7 +51,7 @@ func AnalyticsWithConfig(apiKey string, config *Config) gin.HandlerFunc {
 			CreatedAt:    start.Format(time.RFC3339),
 		}
 
-		core.LogRequest(apiKey, data, "Gin", config.PrivacyLevel, config.ServerURL)
+		client.LogRequest(data)
 	}
 }
 

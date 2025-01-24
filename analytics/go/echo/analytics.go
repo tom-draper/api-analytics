@@ -30,10 +30,11 @@ func NewConfig() *Config {
 }
 
 func Analytics(apiKey string) echo.MiddlewareFunc {
-	return AnalyticsWithConfig(apiKey, &Config{})
+	return AnalyticsWithConfig(apiKey, NewConfig())
 }
 
 func AnalyticsWithConfig(apiKey string, config *Config) echo.MiddlewareFunc {
+	client := core.NewClient(apiKey, "Echo", config.PrivacyLevel, config.ServerURL)
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			start := time.Now()
@@ -51,7 +52,7 @@ func AnalyticsWithConfig(apiKey string, config *Config) echo.MiddlewareFunc {
 				CreatedAt:    start.Format(time.RFC3339),
 			}
 
-			core.LogRequest(apiKey, data, "Echo", config.PrivacyLevel, config.ServerURL)
+			client.LogRequest(data)
 			return err
 		}
 	}
