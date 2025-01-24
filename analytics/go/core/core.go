@@ -3,6 +3,7 @@ package core
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 )
@@ -10,13 +11,13 @@ import (
 const defaultServerURL string = "https://www.apianalytics-server.com/"
 
 type Client struct {
-	apiKey          string
-	framework       string
-	privacyLevel    int
-	endpointURL     string
- 
-	requestChannel  chan RequestData
-	done            chan struct{}
+	apiKey       string
+	framework    string
+	privacyLevel int
+	endpointURL  string
+
+	requestChannel chan RequestData
+	done           chan struct{}
 }
 
 type Payload struct {
@@ -40,6 +41,7 @@ type RequestData struct {
 
 func NewClient(apiKey string, framework string, privacyLevel int, serverURL string) *Client {
 	if apiKey == "" {
+		log.Println("Failed to create new API Analytics client: API key is required")
 		return nil
 	}
 
@@ -54,12 +56,12 @@ func NewClient(apiKey string, framework string, privacyLevel int, serverURL stri
 	}
 
 	client := &Client{
-		apiKey:       apiKey,
-		framework:    framework,
-		privacyLevel: privacyLevel,
-		endpointURL:  getEndpointURL(serverURL),
+		apiKey:         apiKey,
+		framework:      framework,
+		privacyLevel:   privacyLevel,
+		endpointURL:    getEndpointURL(serverURL),
 		requestChannel: make(chan RequestData, 1000),
-		done: make(chan struct{}),
+		done:           make(chan struct{}),
 	}
 
 	go client.worker()
@@ -83,11 +85,9 @@ func (c *Client) worker() {
 		select {
 		case request := <-c.requestChannel:
 			requests = append(requests, request)
-			c.pushRequests(requests)
-			requests = nil
 
 		case <-ticker.C:
-			// Send requests periodically
+			// Push any logged requests periodically
 			if len(requests) > 0 {
 				c.pushRequests(requests)
 				requests = nil
@@ -111,8 +111,18 @@ func (c *Client) pushRequests(requests []RequestData) {
 		PrivacyLevel: c.privacyLevel,
 	}
 	body, err := json.Marshal(data)
-	if err == nil {
-		http.Post(c.endpointURL, "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		log.Printf("Failed to send requests: %v", err)
+		return
+	}
+	resp, err := http.Post(c.endpointURL, "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		log.Printf("Failed to send requests: %v", err)
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("Server responded with status: %d", resp.StatusCode)
 	}
 }
 
