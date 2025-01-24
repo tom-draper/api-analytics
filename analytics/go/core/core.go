@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const defaultServerURL string = "https://www.apianalytics-server.com/"
+const DefaultServerURL string = "https://www.apianalytics-server.com/"
 
 type Client struct {
 	apiKey       string
@@ -47,7 +47,7 @@ func NewClient(apiKey string, framework string, privacyLevel int, serverURL stri
 
 	getEndpointURL := func(serverURL string) string {
 		if serverURL == "" {
-			return defaultServerURL + "api/log-request"
+			return DefaultServerURL + "api/log-request"
 		}
 		if serverURL[len(serverURL)-1] == '/' {
 			return serverURL + "api/log-request"
