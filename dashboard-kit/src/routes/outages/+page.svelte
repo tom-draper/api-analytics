@@ -1,12 +1,12 @@
-<div class="info-page-container">
+<div class="info-page-container min-h-[75vh] !max-w-[80%] mx-auto pb-20">
 	<h1>Outages</h1>
 
-	<p>
+	<p class="px-0 pb-12 max-w-full">
 		Outages may be reflected in your dashboard. Make sure to check this page if you see unexpected
 		downtime.
 	</p>
 
-	<table>
+	<table class="w-full border-collapse">
 		<thead>
 			<tr>
 				<th>Start</th>
@@ -31,19 +31,12 @@
 </div>
 
 <style scoped>
-	.info-page-container {
-		max-width: 80% !important;
-		margin: auto;
-		padding-bottom: 5em;
-	}
 	h1 {
-		margin: 1.2em 0 1em !important;
+		font-size: 2em;
+		font-weight: 700;
+		margin: 1.5em 0 0.5em !important;
 	}
 
-	table {
-		width: 100%;
-		border-collapse: collapse;
-	}
 	th {
 		background: var(--background);
 	}
@@ -54,10 +47,5 @@
 	}
 	td {
 		color: #c3c3c3;
-	}
-	p {
-		margin: 0;
-		padding: 0 0em 3em;
-		max-width: 100%;
 	}
 </style>
