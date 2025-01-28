@@ -6,4 +6,6 @@
 
 {@render children()}
 
-<Footer />
+<footer>
+	<Footer generic={true}/>
+</footer>

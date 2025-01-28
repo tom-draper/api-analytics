@@ -49,8 +49,6 @@
 	];
 	let currentFramework = frameworks[0];
 
-	$: installCode = frameworkExamples[currentFramework.framework]?.install;
-
 	function setFramework(value: SupportedFramework) {
 		currentFramework = value;
 	}
@@ -79,7 +77,11 @@
 		<div class="instructions-container">
 			<div class="instructions">
 				<div class="subtitle">Install</div>
-				<CodeHighlighter language="text" bind:code={installCode} />
+				{#each frameworks as { framework }}
+					<div class:hidden={currentFramework.framework !== framework}>
+						<CodeHighlighter language="text" code={frameworkExamples[currentFramework.framework]?.install} />
+					</div>
+				{/each}
 				<div class="subtitle">Add middleware to API</div>
 				<div class="code-file">
 					{frameworkExamples[currentFramework.framework].codeFile ?? ''}

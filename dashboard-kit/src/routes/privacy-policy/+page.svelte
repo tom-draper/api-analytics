@@ -24,7 +24,7 @@
 	</p>
 
 	<ul>
-		<li>Request method (GET, POST, PUT, DELETE, etc.)</li>
+		<li>Request method (GET, POST, etc.)</li>
 		<li>Request endpoint (API endpoint being accessed)</li>
 		<li>User agent</li>
 		<li>IP address (subject to privacy level settings)</li>
@@ -97,8 +97,8 @@
 
 	<h2>4. Account Management and Data Access</h2>
 	<p>
-		Account creation and managament for the Service is handled solely through a unique API key
-		(UUID). This key is required to log API requests, access your dashboard, or retrieve raw data.
+		Account creation and managament for the Service is handled solely through a UUID API key. This
+		key is required to log API requests, access your dashboard, or retrieve raw data.
 		<strong>If you lose your API key, you will be unable to access your associated data.</strong> Please
 		ensure you securely store your API key.
 	</p>
@@ -122,7 +122,8 @@
 	</p>
 	<ul>
 		<li>
-			Six months have passed since the last data access, via the API Analytics dashboard or data API, or
+			Six months have passed since the last data access, via the API Analytics dashboard or data
+			API, or
 		</li>
 		<li>Three months have passed since the most recent logged request.</li>
 	</ul>
@@ -136,9 +137,9 @@
 	</p>
 
 	<p>
-		While we make every effort to ensure the security of your data, no method of transmission over the
-		Internet or method of electronic storage is completely secure. Therefore, we cannot guarantee its
-		absolute security.
+		While we make every effort to ensure the security of your data, no method of transmission over
+		the Internet or method of electronic storage is completely secure. Therefore, we cannot
+		guarantee its absolute security.
 	</p>
 	<p>
 		We recommend that you also take precautions to protect your data, including keeping your API key
