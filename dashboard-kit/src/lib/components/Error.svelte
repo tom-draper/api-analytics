@@ -2,7 +2,7 @@
 	export let status: number, message: string;
 </script>
 
-<div class="text-[var(--highlight)] min-h-[75vh]">
+<div class="text-[var(--highlight)] min-h-[75vh] overflow-hidden">
 	<div
 		class="hanging-lightning"
 		class:hanging-lightning-no-requests={status !== 500}

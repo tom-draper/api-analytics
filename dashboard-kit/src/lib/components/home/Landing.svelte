@@ -1,12 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import animate from '$lib/animate';
+	import { formatPath } from '$lib/path';
 
 	let queryString: string = '';
-
-	function formatPath(path: string): string {
-		return `${path}${queryString ? `?${queryString}` : ''}`;
-	}
 
 	onMount(() => {
 		// Start animation after delay
@@ -26,7 +23,7 @@
 			<h2 class="font-bold">Monitoring and analytics for API frameworks.</h2>
 			<div class="links">
 				<a
-					href={formatPath('/generate')}
+					href={formatPath('/generate', queryString)}
 					class="link"
 				>
 					<div class="text">
@@ -34,7 +31,7 @@
 					</div>
 				</a>
 				<a
-					href={formatPath('/dashboard/demo')}
+					href={formatPath('/dashboard/demo', queryString)}
 					class="link secondary"
 				>
 					<div class="text">Demo</div>

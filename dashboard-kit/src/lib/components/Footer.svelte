@@ -1,19 +1,27 @@
+<script lang="ts">
+	export let generic: boolean = false;
+</script>
+
 <div class="footer">
-	<a
-		class="github-link"
-		rel="noreferrer"
-		target="_blank"
-		href="https://github.com/tom-draper/api-analytics"
-	>
-		<img class="github-logo" height="30px" src="/images/logos/github.png" alt="" />
-	</a>
+	{#if generic}
+		<a
+			class="github-link"
+			rel="noreferrer"
+			target="_blank"
+			href="https://github.com/tom-draper/api-analytics"
+		>
+			<img class="github-logo" height="30px" src="/images/logos/github.png" alt="" />
+		</a>
+	{:else}
+		<div class="text-[#5a5a5a] mb-[2em] text-[0.8em]">Keep your API key safe and secure.</div>
+	{/if}
 	<div class="logo">API Analytics</div>
 	<img class="footer-logo" src="/images/logos/lightning-green.svg" alt="" />
 </div>
 
 <style scoped>
 	.logo {
-		font-size: 0.9em;
+		font-size: 13px;
 		color: var(--highlight);
 	}
 	.footer {

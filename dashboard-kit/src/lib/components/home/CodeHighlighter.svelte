@@ -10,15 +10,8 @@
 
 	export let language: string, code: string;
 
-	let highlightedCode: string = '';
-
-	$: {
-		setHighlighedCode(code, language);
-	}
-
-	function setHighlighedCode(code: string, language: string) {
-		highlightedCode = Prism.highlight(code, Prism.languages[language], language);
-	}
+	let highlightedCode: string;
+	$: highlightedCode = Prism.highlight(code, Prism.languages[language], language);
 </script>
 
 <svelte:head>
