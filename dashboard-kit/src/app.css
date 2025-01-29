@@ -7,12 +7,12 @@
 
 @font-face {
     font-family: 'Geist';
-    src: url('fonts/Geist/GeistVF.ttf') format('truetype');
+    src: url('/fonts/Geist/GeistVF.ttf') format('truetype');
 }
 
 @font-face {
     font-family: 'Geist Mono';
-    src: url('fonts/Geist_Mono/GeistMonoVF.ttf') format('truetype');
+    src: url('/fonts/Geist_Mono/GeistMonoVF.ttf') format('truetype');
 }
 
 :root {
@@ -136,7 +136,7 @@ code {
 }
 
 button {
-    font-family: 'Geist', 'Noto Sans' !important;
+    font-family: 'Noto Sans', 'Geist' !important;
     font-weight: 400;
 }
 

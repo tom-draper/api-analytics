@@ -22,80 +22,72 @@
 		});
 	});
 
-	export let show: boolean,
-		settings: DashboardSettings,
-		exportCSV: () => void;
+	export let show: boolean, settings: DashboardSettings, exportCSV: () => void;
 </script>
 
 <div class="background" class:hidden={!show} on:click={hideSettings}>
 	<div class="container" bind:this={container}>
 		<h2 class="title">Settings</h2>
-		<div class="disable404 setting">
+		<div class="disable404 setting mb-2">
 			<div class="setting-label">Disable 404</div>
-			<input
-				type="checkbox"
-				name="disable404"
-				id="checkbox"
-				on:change={toggleDisable404}
-			/>
+			<input type="checkbox" name="disable404" id="checkbox" on:change={toggleDisable404} title="Hide requests that returned a 404 status code" />
 		</div>
-		<div class="disable404 setting">
+		<div class="disable404 setting mb-8">
 			<div class="setting-label">Ignore Params</div>
-			<input
-				type="checkbox"
-				name="ignoreParams"
-				id="checkbox"
-				on:change={toggleIgnoreParams}
-			/>
+			<input type="checkbox" name="ignoreParams" id="checkbox" on:change={toggleIgnoreParams} title="Ignore URL parameters when grouping endpoints" />
 		</div>
 		<div class="setting-title">Filters:</div>
-		<div class="setting-filters">
-			<div class="setting-filter">
-				Hostname: <span class:text-white={settings.hostname}
-					>{settings.hostname ?? 'None'}</span
-				>
+		<div class="setting-filters mb-8 mt-1">
+			<div class="setting-filter" class:active={settings.hostname}>
+				Hostname: <span>{settings.hostname ?? 'None'}</span>
 			</div>
-			<div class="setting-filter">
-				Period: <span class:text-white={settings.period}
-					>{settings.period === 'All time'
-						? 'None'
-						: settings.period}</span
-				>
+			<div class="setting-filter" class:active={settings.period}>
+				Period: <span>{settings.period === 'All time' ? 'None' : settings.period}</span>
 			</div>
-			<div class="setting-filter">
-				Endpoint: <span class:text-white={settings.targetEndpoint.path}
-					>{settings.targetEndpoint.path ?? 'None'}</span
-				>
+			<div class="setting-filter" class:active={settings.targetEndpoint.path}>
+				Endpoint: <span>{settings.targetEndpoint.path ?? 'None'}</span>
 			</div>
-			<div class="setting-filter">
-				Status: <span class:text-white={settings.targetEndpoint.status}
-					>{settings.targetEndpoint.status ?? 'None'}</span
-				>
+			<div class="setting-filter" class:active={settings.targetEndpoint.status}>
+				Status: <span>{settings.targetEndpoint.status ?? 'None'}</span>
 			</div>
-			<div class="setting-filter">
-				Location: <span class:text-white={settings.targetLocation}
-					>{settings.targetLocation ?? 'None'}</span
-				>
+			<div class="setting-filter" class:active={settings.targetLocation}>
+				Location: <span>{settings.targetLocation ?? 'None'}</span>
 			</div>
 		</div>
 		<div class="setting-title">Hidden endpoints:</div>
-		<div class="setting">
-			<List
-				bind:items={settings.hiddenEndpoints}
-				placeholder={'/api/v1/example'}
-			/>
+		<div class="setting mb-4">
+			<List bind:items={settings.hiddenEndpoints} placeholder={'/api/v1/example'} />
 		</div>
 		<div class="export-csv">
-			<button class="export-csv-btn" on:click={exportCSV}>
-				Export CSV
+			<button class="export-csv-btn" on:click={exportCSV} title="Export data to CSV"
+				><svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+					stroke="currentColor"
+					class="size-6"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
+					/>
+				</svg>
 			</button>
 		</div>
 	</div>
 </div>
 
 <style scoped>
+	h2 {
+		color: var(--highlight);
+		margin-bottom: 1em;
+		font-weight: 700;
+	}
 	.background {
-		background: rgba(0, 0, 0, 0.6);
+		background: rgba(0, 0, 0, 0.7);
+		backdrop-filter: blur(4px);
 		height: 100vh;
 		width: 100%;
 		display: grid;
@@ -108,15 +100,14 @@
 	.container {
 		background: var(--background);
 		border-radius: 6px;
-		width: 35vw;
-		/* min-height: 30vh; */
+		width: 42em;
 		border: 1px solid #2e2e2e;
 		color: var(--faded-text);
 		z-index: 20;
 		position: absolute;
 		cursor: default !important;
 		pointer-events: bounding-box;
-		padding: 30px 50px 50px;
+		padding: 1.5em 2.5em;
 		position: relative;
 	}
 	.title {
@@ -136,65 +127,74 @@
 	.setting-label {
 		margin-right: 10px;
 	}
-	.text-white {
-		color: white;
-	}
 
 	.setting-filters {
-		margin-bottom: 2em;
-		margin-top: 5px;
 		text-align: left;
 		font-size: 0.9em;
 		color: #707070;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 5px 10px;
 	}
 	.setting-filter {
 		margin: 2px 0;
+		background: rgba(0, 0, 0, 0.7);
+		background: var(--dark-background);
+		border-radius: 4px;
+		padding: 5px 10px;
+	}
+	.active {
+		background: var(--highlight);
+		color: var(--background);
 	}
 
 	input {
-		margin-bottom: 2em;
+		margin: 0;
+	}
+	input[type='checkbox'] {
+		align-self: center;
+	}
+
+	svg {
+		width: 22px;
+		height: 22px;
 	}
 
 	#checkbox {
-		height: 15px;
-		width: 15px;
+		height: 12px;
+		width: 12px;
+		margin-top: 2px;
 		cursor: pointer;
 	}
 
 	.export-csv {
 		position: absolute;
 		text-align: right;
-		/* margin-top: 30px; */
-		right: 50px;
-		top: 2.4em;
+		right: 2.5em;
+		top: 1.8em;
 	}
 	.export-csv-btn {
-		background: var(--background);
+		background: var(--dark-background);
 		color: var(--dim-text);
 		border: 1px solid #2e2e2e;
-		padding: 5px 12px;
+		padding: 0.8em;
 		cursor: pointer;
-		border-radius: 3px;
+		border-radius: 4px;
+		font-size: 0.85em;
 	}
 	.export-csv-btn:hover {
 		background: var(--highlight);
 		color: var(--background);
 	}
 
-	@media screen and (max-width: 1400px) {
-		.container {
-			width: 60vw;
-		}
-	}
-
 	@media screen and (max-width: 800px) {
 		.container {
-			width: 70vw;
+			width: 95%;
 			padding: 1.5em 2em;
 		}
 		.export-csv {
-			top: 1.5em;
-			right: 2em;
+			top: 2em;
+			right: 1.5em;
 		}
 	}
 </style>

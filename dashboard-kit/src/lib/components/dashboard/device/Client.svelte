@@ -2,10 +2,7 @@
 	import { graphColors } from '$lib/consts';
 	import { ColumnIndex } from '$lib/consts';
 	import { cachedFunction } from '$lib/cache';
-	import {
-		type Candidate,
-		maintainCandidates,
-	} from '$lib/candidates';
+	import { type Candidate, maintainCandidates } from '$lib/candidates';
 
 	const clientCandidates: Candidate[] = [
 		{ name: 'Curl', regex: /curl\//, matches: 0 },
@@ -37,28 +34,28 @@
 		{
 			name: 'Vercel Edge Functions',
 			regex: /Vercel Edge Functions/,
-			matches: 0,
+			matches: 0
 		},
 		{
 			name: 'OpenAI Image Downloader',
 			regex: /OpenAI Image Downloader/,
-			matches: 0,
+			matches: 0
 		},
 		{ name: 'OpenAI', regex: /OpenAI/, matches: 0 },
 		{
 			name: 'Tsunami Security Scanner',
 			regex: /TsunamiSecurityScanner/,
-			matches: 0,
+			matches: 0
 		},
 		{ name: 'iOS', regex: /iOS\//, matches: 0 },
 		{ name: 'Safari', regex: /Safari\//, matches: 0 },
 		{ name: 'Edge', regex: /Edg\//, matches: 0 },
 		{ name: 'Opera', regex: /(OPR|Opera)\//, matches: 0 },
-		{ name: 'Internet Explorer', regex: /(; MSIE |Trident\/)/, matches: 0 },
+		{ name: 'Internet Explorer', regex: /(; MSIE |Trident\/)/, matches: 0 }
 	];
 
 	function getClient(userAgent: string | null): string {
-		if (userAgent == null) {
+		if (!userAgent) {
 			return 'Unknown';
 		}
 
@@ -83,22 +80,22 @@
 		return {
 			title: false,
 			autosize: true,
-			margin: { r: 35, l: 70, t: 20, b: 20, pad: 0 },
+			margin: { r: 30, l: 30, t: 10, b: 25, pad: 0 },
 			hovermode: 'closest',
 			plot_bgcolor: 'transparent',
 			paper_bgcolor: 'transparent',
-			height: 180,
+			height: 196,
 			width: 411,
 			yaxis: {
 				title: { text: 'Requests' },
 				gridcolor: 'gray',
 				showgrid: false,
-				fixedrange: true,
+				fixedrange: true
 			},
 			xaxis: {
-				visible: false,
+				visible: false
 			},
-			dragmode: false,
+			dragmode: false
 		};
 	}
 
@@ -106,7 +103,7 @@
 		const clientCount: ValueCount = {};
 		const clientGetter = cachedFunction(getClient);
 		for (let i = 0; i < data.length; i++) {
-			const userAgent = getUserAgent(data[i][ColumnIndex.UserAgent]);
+			const userAgent = userAgents[data[i][ColumnIndex.UserAgent]] || '';
 			const client = clientGetter(userAgent);
 			if (client in clientCount) {
 				clientCount[client]++;
@@ -115,9 +112,7 @@
 			}
 		}
 
-		const dataPoints = Object.entries(clientCount).sort(
-			(a, b) => b[1] - a[1],
-		);
+		const dataPoints = Object.entries(clientCount).sort((a, b) => b[1] - a[1]);
 
 		const clients = new Array(dataPoints.length);
 		const counts = new Array(dataPoints.length);
@@ -133,10 +128,11 @@
 				values: counts,
 				labels: clients,
 				type: 'pie',
+				hole: 0.6,
 				marker: {
-					colors: graphColors,
-				},
-			},
+					colors: graphColors
+				}
+			}
 		];
 	}
 
@@ -147,29 +143,23 @@
 			config: {
 				responsive: true,
 				showSendToCloud: false,
-				displayModeBar: false,
-			},
+				displayModeBar: false
+			}
 		};
 	}
 
-	function genPlot(data: RequestsData) {
+	function generatePlot(data: RequestsData) {
 		const plotData = getPlotData(data);
-		//@ts-ignore
-		new Plotly.newPlot(
-			plotDiv,
-			plotData.data,
-			plotData.layout,
-			plotData.config,
-		);
+		new Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
 	}
 
 	let plotDiv: HTMLDivElement;
 
-	$: if (plotDiv && data) {
-		genPlot(data);
+	$: if (plotDiv) {
+		generatePlot(data);
 	}
 
-	export let data: RequestsData, getUserAgent: (id: number) => string;
+	export let data: RequestsData, userAgents: { [id: string]: string };
 </script>
 
 <div id="plotly">
@@ -178,8 +168,9 @@
 	</div>
 </div>
 
-<style>
+<style scoped>
 	#plotDiv {
-		margin-right: 20px;
+		padding-right: 20px;
+		overflow-x: auto;
 	}
 </style>

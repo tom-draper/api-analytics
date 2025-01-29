@@ -1,22 +1,31 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import Plotly from 'plotly.js-dist'; // Use 'plotly.js' if you're importing modular builds.
+	import { plotly, loadPlotly } from '$lib/plotly';
 
 	export let data = [];
 	export let layout = {};
 	export let config = {};
 
-	let plotDiv;
+	let plotDiv: HTMLDivElement;
 
-	onMount(() => {
+	onMount(async () => {
+		await loadPlotly();
+		$plotly && $plotly.newPlot(plotDiv, data, layout, config);
+
 		// Create the plot
-		Plotly.newPlot(plotDiv, data, layout, config);
+		// Plotly.newPlot(plotDiv, data, layout, config);
 
 		return () => {
 			// Cleanup when the component is destroyed
-			Plotly.purge(plotDiv);
+			$plotly.purge(plotDiv);
 		};
 	});
+
+	$: {
+		if ($plotly && plotDiv) {
+			$plotly.react(plotDiv, data, layout, config);
+		}
+	}
 </script>
 
 <div bind:this={plotDiv} style="width: 100%; height: 100%;"></div>

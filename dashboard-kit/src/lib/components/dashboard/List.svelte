@@ -50,7 +50,16 @@
 							removeItem(item);
 						}}
 					>
-						x
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke-width="1.5"
+							stroke="currentColor"
+							class="size-6"
+						>
+							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+						</svg>
 					</button>
 					<div class="item-text">
 						{item}
@@ -72,7 +81,6 @@
 		flex-direction: column;
 		border-radius: 0px 4px 4px 0px;
 		background: var(--background);
-		color: var(--dim-text);
 		width: 100%;
 	}
 	.item {
@@ -85,28 +93,39 @@
 	.item-text {
 		flex-grow: 1;
 		text-align: left;
+		align-content: center;
+		color: #ededed !important;
 		margin: 4px 12px;
-		font-size: 0.8em;
+		font-size: 0.85em;
 	}
 	input {
 		margin: 10px 0;
-		height: 2em;
+		height: 35px;
 		text-align: left;
 		padding: 0.1em 1em;
 		font-size: 0.9em;
 		width: auto;
+		background: #2b2b2b;
+	}
+	input::placeholder {
+		color: #707070;
 	}
 	.remove-btn {
 		background: transparent;
 		outline: none;
 		border: none;
 		color: white;
-		padding: 0 1em;
+		padding: 0 0.5em;
 		cursor: pointer;
 		border-radius: 2px;
+		height: 35px;
+		width: 35px;
 	}
 	.remove-btn:hover {
-		background: grey;
+		background: rgb(35, 35, 35);
+	}
+	svg {
+		width: 18px;
 	}
 
 	.inner {

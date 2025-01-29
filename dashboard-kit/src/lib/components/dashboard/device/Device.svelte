@@ -3,15 +3,17 @@
 	import OperatingSystem from './OperatingSystem.svelte';
 	import DeviceType from './DeviceType.svelte';
 
-	function setBtn(target: 'client' | 'os' | 'device') {
+	type Tab = 'client' | 'os' | 'device';
+
+	function setBtn(target: Tab) {
 		activeBtn = target;
 		// Resize window to trigger new plot resize to match current card size
 		window.dispatchEvent(new Event('resize'));
 	}
 
-	let activeBtn: 'client' | 'os' | 'device' = 'client';
+	let activeBtn: Tab = 'client';
 
-	export let data: RequestsData, getUserAgent: (id: number) => string;
+	export let data: RequestsData, userAgents: { [id: string]: string };
 </script>
 
 <div class="card">
@@ -39,20 +41,19 @@
 		</div>
 	</div>
 	<div class="client" class:display={activeBtn === 'client'}>
-		<Client {data} {getUserAgent} />
+		<Client {data} {userAgents} />
 	</div>
 	<div class="os" class:display={activeBtn === 'os'}>
-		<OperatingSystem {data} {getUserAgent} />
+		<OperatingSystem {data} {userAgents} />
 	</div>
 	<div class="device" class:display={activeBtn === 'device'}>
-		<DeviceType {data} {getUserAgent} />
+		<DeviceType {data} {userAgents} />
 	</div>
 </div>
 
-<style>
+<style scoped>
 	.card {
 		margin: 2em 0 2em 1em;
-		padding-bottom: 1em;
 		width: 420px;
 	}
 	.card-title {

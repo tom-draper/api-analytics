@@ -101,14 +101,10 @@
 		return successArr;
 	}
 
-	function build(data: RequestsData) {
-		successRate = getSuccessRate(data);
-	}
-
 	let successRate: number[];
 
 	$: if (data) {
-		build(data);
+		successRate = getSuccessRate(data);
 	}
 
 	export let data: RequestsData, period: Period;

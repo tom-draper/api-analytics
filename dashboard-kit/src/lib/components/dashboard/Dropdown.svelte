@@ -37,11 +37,9 @@
 						class:last-option={(selected === defaultOption && i === options.length - 1) ||
 							(selected !== defaultOption && i === options.length)}
 						on:click={() => {
-							if (option === defaultOption) {
-								selectOption(null);
-							} else {
-								selectOption(option);
-							}
+							const value = option === defaultOption ? null : option;
+							selectOption(value);
+							open = false;
 						}}>{option}</button
 					>
 				{/if}

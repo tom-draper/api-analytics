@@ -73,6 +73,11 @@
 </div>
 
 <style scoped>
+	h2 {
+		font-size: 2em;
+		color: var(--highlight);
+		margin-bottom: 1em;
+	}
 	.loader {
 		border: 3px solid #343434;
 		border-top: 3px solid var(--highlight);

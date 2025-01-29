@@ -69,9 +69,8 @@
 		};
 	}
 
-	function genPlot(data: RequestsData) {
+	function generatePlot(data: RequestsData) {
 		const plotData = requestsPlotData(data);
-		//@ts-ignore
 		new Plotly.newPlot(
 			plotDiv,
 			plotData.data,
@@ -81,13 +80,11 @@
 	}
 
 	function getPercentageChange(data: RequestsData) {
-		let percentageChange: number | null;
 		if (prevData.length == 0) {
-			percentageChange = null;
-		} else {
-			percentageChange = (data.length / prevData.length) * 100 - 100;
+			return null;
 		}
-		return percentageChange;
+
+		return percentageChange = (data.length / prevData.length) * 100 - 100;
 	}
 
 	function getRequestsPerHour(data: RequestsData) {
@@ -98,6 +95,7 @@
 				requestsPerHour = data.length / (24 * days);
 			}
 		}
+
 		return requestsPerHour;
 	}
 
@@ -105,19 +103,17 @@
 		perHour = !perHour;
 	}
 
-	function build(data: RequestsData) {
-		percentageChange = getPercentageChange(data);
-		requestsPerHour = getRequestsPerHour(data);
-		genPlot(data);
-	}
-
 	let plotDiv: HTMLDivElement;
 	let requestsPerHour: number;
-	let percentageChange: number;
+	let percentageChange: number | null;
 	let perHour = false;
 
-	$: if (plotDiv && data) {
-		build(data);
+	$: percentageChange = getPercentageChange(data);
+
+	$: requestsPerHour = getRequestsPerHour(data);
+
+	$: if (plotDiv) {
+		generatePlot(data);
 	}
 
 	export let data: RequestsData, prevData: RequestsData, period: Period;
@@ -143,7 +139,9 @@
 				{:else if percentageChange < 0}
 					<img class="arrow" src="/images/icons/red-down.png" alt="" />
 				{/if}
-				{Math.abs(percentageChange).toFixed(1)}%
+				<div>
+					{Math.abs(percentageChange).toFixed(1)}%
+				</div>
 			</div>
 		{/if}
 		<div class="card-title">Requests</div>
@@ -166,7 +164,7 @@
 		overflow: hidden;
 	}
 	.value {
-		padding: 20px 10px;
+		padding: 0.55em 0.2em;
 		font-size: 1.8em;
 		font-weight: 700;
 		position: inherit;

@@ -1,7 +1,7 @@
-<div class="info-page-container min-h-[75vh] !max-w-[80%] mx-auto pb-20">
+<div class="info-page-container mx-auto min-h-[75vh] !max-w-[80%] pb-20">
 	<h1>Outages</h1>
 
-	<p class="px-0 pb-12 max-w-full">
+	<p class="max-w-full px-0 pb-12">
 		Outages may be reflected in your dashboard. Make sure to check this page if you see unexpected
 		downtime.
 	</p>
@@ -16,17 +16,16 @@
 		</thead>
 		<tbody>
 			<tr>
-				<td>2024-09-17 20:30:00 UTC</td>
-				<td>2024-09-18 09:30:00 UTC</td>
-				<td>Emergency maintenance by hosting provider.</td>
-			</tr>
-			<tr>
 				<td>2024-11-12 01:10:00 UTC</td>
 				<td>2024-11-11 07:35:00 UTC</td>
 				<td>Server resource limit exceeded.</td>
 			</tr>
-			<tr> </tr></tbody
-		>
+			<tr>
+				<td>2024-09-17 20:30:00 UTC</td>
+				<td>2024-09-18 09:30:00 UTC</td>
+				<td>Emergency maintenance by hosting provider.</td>
+			</tr>
+		</tbody>
 	</table>
 </div>
 

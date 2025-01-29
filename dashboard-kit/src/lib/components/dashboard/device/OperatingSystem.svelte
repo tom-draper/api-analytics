@@ -52,7 +52,7 @@
 	];
 
 	function getOS(userAgent: string | null): string {
-		if (userAgent === null) {
+		if (!userAgent) {
 			return 'Unknown';
 		}
 
@@ -77,11 +77,11 @@
 		return {
 			title: false,
 			autosize: true,
-			margin: { r: 35, l: 70, t: 20, b: 20, pad: 0 },
+			margin: { r: 30, l: 30, t: 10, b: 20, pad: 0 },
 			hovermode: 'closest',
 			plot_bgcolor: 'transparent',
 			paper_bgcolor: 'transparent',
-			height: 180,
+			height: 196,
 			width: 411,
 			yaxis: {
 				title: { text: 'Requests' },
@@ -100,7 +100,7 @@
 		const osCount: ValueCount = {};
 		const osGetter = cachedFunction(getOS);
 		for (let i = 0; i < data.length; i++) {
-			const userAgent = getUserAgent(data[i][ColumnIndex.UserAgent]);
+			const userAgent = userAgents[data[i][ColumnIndex.UserAgent]] || '';
 			const os = osGetter(userAgent);
 			if (os in osCount) {
 				osCount[os]++;
@@ -125,6 +125,7 @@
 				values: counts,
 				labels: oss,
 				type: 'pie',
+				hole: 0.6,
 				marker: {
 					colors: graphColors,
 				},
@@ -144,9 +145,8 @@
 		};
 	}
 
-	function genPlot(data: RequestsData) {
+	function generatePlot(data: RequestsData) {
 		const plotData = getPlotData(data);
-		//@ts-ignore
 		new Plotly.newPlot(
 			plotDiv,
 			plotData.data,
@@ -157,11 +157,11 @@
 
 	let plotDiv: HTMLDivElement;
 
-	$: if (plotDiv && data) {
-		genPlot(data);
+	$: if (plotDiv) {
+		generatePlot(data);
 	}
 
-	export let data: RequestsData, getUserAgent: (id: number) => string;
+	export let data: RequestsData, userAgents: { [id: string]: string };
 </script>
 
 <div id="plotly">
@@ -170,8 +170,9 @@
 	</div>
 </div>
 
-<style>
+<style scoped>
 	#plotDiv {
-		margin-right: 20px;
+		padding-right: 20px;
+		overflow-x: auto;
 	}
 </style>
