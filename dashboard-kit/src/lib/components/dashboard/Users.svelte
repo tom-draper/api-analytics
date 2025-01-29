@@ -85,9 +85,8 @@
 		};
 	}
 
-	function genPlot(data: RequestsData) {
+	function generatePlot(data: RequestsData) {
 		const plotData = usersPlotData(data);
-		//@ts-ignore
 		new Plotly.newPlot(
 			plotDiv,
 			plotData.data,
@@ -100,12 +99,25 @@
 		perHour = !perHour;
 	}
 
-	function setPercentageChange(now: number, prev: number) {
+	function getPercentageChange(now: number, prev: number) {
 		if (prev === 0) {
-			percentageChange = null;
-		} else {
-			percentageChange = (now / prev) * 100 - 100;
+			return null;
+		} 
+
+		return (now / prev) * 100 - 100;
+	}
+
+	function getUsersPerHour(users: Set<string>, period: Period) {
+		if (users.size === 0) {
+			return 0;
 		}
+
+		const days = periodToDays(period);
+		if (days === null) {
+			return 0;
+		}
+
+		return users.size / (24 * days);
 	}
 
 	function getUsers(data: RequestsData): Set<string> {
@@ -116,36 +128,27 @@
 				users.add(userID);
 			}
 		}
+
 		return users;
 	}
 
-	function build(data: RequestsData) {
-		({ size: numUsers } = getUsers(data));
-
-		const prevUsers = getUsers(prevData);
-		const prevNumUsers = prevUsers.size;
-
-		setPercentageChange(numUsers, prevNumUsers);
-
-		if (numUsers > 0) {
-			const days = periodToDays(period);
-			if (days !== null) {
-				usersPerHour = numUsers / (24 * days);
-			}
-		} else {
-			usersPerHour = 0;
-		}
-		genPlot(data);
-	}
-
 	let plotDiv: HTMLDivElement;
-	let numUsers: number = 0;
+	let userCount: number = 0;
 	let usersPerHour: number;
 	let perHour = false;
 	let percentageChange: number | null;
 
-	$: if (plotDiv && data) {
-		build(data);
+	$: if (data) {
+		const users = getUsers(data);
+		const prevUsers = getUsers(prevData);
+
+		userCount = users.size;
+		percentageChange = getPercentageChange(users.size, prevUsers.size);
+		usersPerHour = getUsersPerHour(users, period);
+	}
+
+	$: if (plotDiv) {
+		generatePlot(data);
 	}
 
 	export let data: RequestsData, prevData: RequestsData, period: Period;
@@ -177,7 +180,7 @@
 			</div>
 		{/if}
 		<div class="card-title">Users</div>
-		<div class="value">{numUsers.toLocaleString()}</div>
+		<div class="value">{userCount.toLocaleString()}</div>
 	{/if}
 	<div id="plotly">
 		<div id="plotDiv" bind:this={plotDiv}>
@@ -196,7 +199,7 @@
 		overflow: hidden;
 	}
 	.value {
-		padding: 20px 10px;
+		padding: 0.55em 0.2em;
 		font-size: 1.8em;
 		font-weight: 700;
 		position: inherit;

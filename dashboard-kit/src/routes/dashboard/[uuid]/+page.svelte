@@ -1,3 +1,5 @@
+
+
 <script lang="ts">
    import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -29,11 +31,7 @@
 
 	const userID = formatUUID($page.params.uuid);
 
-	function allTimePeriod(_: Date) {
-		return true;
-	}
-
-	function getPeriodData() {
+	function getPeriodData(data: RequestsData) {
 		const inRange = getInRange();
 		const inPrevRange = getInPrevRange();
 
@@ -69,32 +67,28 @@
 		return { current, previous };
 	}
 
-	function setPeriodData() {
-		periodData = getPeriodData();
+	function allTimePeriod(_: Date) {
+		return true;
 	}
 
 	function getInRange() {
-		let inRange: (date: Date) => boolean;
 		if (settings.period === 'All time') {
-			inRange = allTimePeriod;
-		} else {
-			inRange = (date: Date) => {
-				return dateInPeriod(date, settings.period);
-			};
+			return allTimePeriod;
 		}
-		return inRange;
+
+		return (date: Date) => {
+			return dateInPeriod(date, settings.period);
+		};
 	}
 
 	function getInPrevRange() {
-		let inPrevRange: (date: Date) => boolean;
 		if (settings.period === 'All time') {
-			inPrevRange = allTimePeriod;
-		} else {
-			inPrevRange = (date) => {
-				return dateInPrevPeriod(date, settings.period);
-			};
+			return allTimePeriod;
 		}
-		return inPrevRange;
+
+		return (date: Date) => {
+			return dateInPrevPeriod(date, settings.period);
+		};
 	}
 
 	function isHiddenEndpoint(endpoint: string) {
@@ -221,12 +215,17 @@
 	};
 	let endpointsRendered: boolean = false;
 	const pageSize = 200_000;
+
+	// If data or settings are changed, recalcualte data
+	$: if (data && settings) {
+		periodData = getPeriodData(data);
+	}
+
 	onMount(async () => {
         const dashboardData = await getDashboardData();
         data = dashboardData.requests;
         userAgents = dashboardData.user_agents;
 
-		// loading = true;
 		if (data.length === pageSize) {
 			// Fetch page 2 and onwards if initial fetch didn't get all data
 			fetchAdditionalPage(2);
@@ -290,36 +289,27 @@
 		}
 	}
 
+	function isDemo() {
+		return $page.params.uuid === 'demo';
+	}
+
 	async function getDashboardData() {
-		if ($page.params.uuid === 'demo') {
+		if (isDemo()) {
 			return genDemoData();
         }
 
         return await fetchData();
 	}
-
-	function getUserAgent(id: number) {
-		if (!(id in userAgents)) {
-			return ''
-		} 
-
-		return userAgents[id];
-	}
-
-	function refreshData() {
-		if (data === undefined) {
-			return;
-		}
-
-		setPeriodData();
-	}
-
-	// If any settings are updated or target path/location is reset, refresh data with this new filter
-	$: if (settings.targetEndpoint.path !== undefined && settings.targetLocation !== undefined) {
-		refreshData();
-	}
 </script>
 
+<Settings
+	bind:show={showSettings}
+	bind:settings
+	exportCSV={() => {
+		exportCSV(periodData.current, columns, userAgents);
+	}}
+/>
+<Notification state={notification} />
 {#if periodData && data.length > 0}
 	<div class="dashboard">
 		<Navigation bind:settings={settings} bind:showSettings={showSettings} bind:hostnames={hostnames}/>
@@ -356,7 +346,7 @@
 				<Activity data={periodData.current} period={settings.period} />
 				<div class="grid-row">
 					<Location data={periodData.current} bind:targetLocation={settings.targetLocation} />
-					<Device data={periodData.current} {getUserAgent} />
+					<Device data={periodData.current} {userAgents} />
 				</div>
 				<UsageTime data={periodData.current} />
 				<TopUsers data={periodData.current} bind:targetUser={settings.targetUser} />
@@ -374,14 +364,7 @@
 		</div>
 	</div>
 {/if}
-<Settings
-	bind:show={showSettings}
-	bind:settings
-	exportCSV={() => {
-		exportCSV(periodData.current, columns, userAgents);
-	}}
-/>
-<Notification state={notification} />
+
 
 <style scoped>
 	.dashboard {
@@ -413,6 +396,11 @@
 		min-height: 80vh;
 		display: grid;
 		place-items: center;
+	}
+
+	.loader {
+		width: 40px;
+		height: 40px;
 	}
 
 	@keyframes gradient-shift {
@@ -450,13 +438,12 @@
 	@media screen and (max-width: 600px) {
 		.right,
 		.left {
-			margin: 0 1em;
+			margin: 0;
 		}
 	}
 	@media screen and (max-width: 450px) {
 		.dashboard-content {
-			margin: 1.4em 0em 3.5em;
+			margin: 1.4em 1em 3.5em;
 		}
-			margin: 2.5em 1em 0;
 	}
 </style>

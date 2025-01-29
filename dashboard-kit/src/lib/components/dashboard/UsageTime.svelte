@@ -6,7 +6,7 @@
 			font: { size: 12 },
 			paper_bgcolor: 'transparent',
 			height: 500,
-			margin: { r: 35, l: 70, t: 20, b: 50, pad: 0 },
+			margin: { r: 50, l: 50, t: 20, b: 50, pad: 0 },
 			polar: {
 				bargap: 0,
 				bgcolor: 'transparent',

@@ -10,6 +10,14 @@
 </script>
 
 <nav class="button-nav text-sm">
+	<div class="info">
+		<div class="info-content">
+			Try the new Log Explorer <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+</svg>
+ 
+		</div>
+	</div>
 	<div class="donate">
 		<a target="_blank" href="https://www.buymeacoffee.com/tomdraper" class="donate-link">Donate</a>
 	</div>
@@ -49,7 +57,31 @@
 	.button-nav {
 		margin: 2.5em 2rem 0;
 		display: flex;
-        font-size: 0.85em;
+	}
+	.info {
+		background: var(--background);
+		padding: 2px 12px;
+		color: var(--dim-text);
+		cursor: pointer;
+		border: 1px solid #2e2e2e;
+		border-radius: 4px;
+	}
+	.info-content {
+		display: flex;
+		align-items: center;
+		cursor: pointer;
+	}
+	.info-content > svg {
+		margin-left: 0.6em;
+		width: 16px;
+		transition: transform 0.15s ease;
+
+	}
+	.info:hover .info-content > svg {
+		transform: translateX(2px);
+	}
+	.info:hover {
+		background: #161616;
 	}
 	.time-period {
 		display: flex;
@@ -136,7 +168,7 @@
 
 	@media screen and (max-width: 1300px) {
 		.button-nav {
-			margin: 2.5em 3em 0;
+			margin: 2.5em 3rem 0;
 		}
 	}
 
@@ -147,7 +179,7 @@
 		.dropdown-container {
 			margin-left: auto;
 			margin-right: 0;
-			margin: -30px 0 0 auto;
+			margin: -2em 0 0 auto;
 		}
 		.time-period {
 			margin-top: 15px;
@@ -156,7 +188,10 @@
 			flex: 1;
 		}
 		.settings {
-			margin-left: 0;
+			width: 30px;
+			height: 30px;
+			margin-left: 0.5em;
+			margin-top: 0;
 			margin-right: auto;
 		}
 	}
@@ -165,7 +200,7 @@
 			right: 1em;
 		}
 		.button-nav {
-			margin: 2.5em 2em 0;
+			margin: 2em 1rem 0;
 		}
 		.time-period-btn {
 			padding: 3px 0;

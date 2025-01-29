@@ -79,7 +79,7 @@
 				<div class="subtitle">Install</div>
 				{#each frameworks as { framework }}
 					<div class:hidden={currentFramework.framework !== framework}>
-						<CodeHighlighter language="text" code={frameworkExamples[currentFramework.framework]?.install} />
+						<CodeHighlighter language="text" code={frameworkExamples[framework]?.install} />
 					</div>
 				{/each}
 				<div class="subtitle">Add middleware to API</div>

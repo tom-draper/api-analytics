@@ -48,9 +48,11 @@
 
 		for (let i = 0; i < data.length; i++) {
 			const date = new Date(data[i][ColumnIndex.CreatedAt]);
-			if (days !== null && days <= 7) {
+			if (days !== null && days === 1) {
 				// Round down to multiple of 5
 				date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
+			} else if (days !== null && days === 7) {
+				date.setMinutes(0, 0, 0);
 			} else {
 				date.setHours(0, 0, 0, 0);
 			}
@@ -101,7 +103,7 @@
 				y: responseTimes,
 				type: 'bar',
 				marker: { color: '#707070' },
-				hovertemplate: `<b>%{y:.1f}ms avg</b><br>%{x|%d %b %Y %H:%M}</b><extra></extra>`,
+				hovertemplate: `<b>%{y:.1f}ms average</b><br>%{x|%d %b %Y %H:%M}</b><extra></extra>`,
 				showlegend: false,
 			},
 		];
@@ -119,9 +121,8 @@
 		};
 	}
 
-	function genPlot(data: RequestsData, period: Period) {
+	function generatePlot(data: RequestsData, period: Period) {
 		const plotData = buildPlotData(data, period);
-		//@ts-ignore
 		new Plotly.newPlot(
 			plotDiv,
 			plotData.data,
@@ -132,8 +133,8 @@
 
 	let plotDiv: HTMLDivElement;
 
-	$: if (plotDiv && data) {
-		genPlot(data, period);
+	$: if (plotDiv) {
+		generatePlot(data, period);
 	}
 
 	export let data: RequestsData, period: Period;

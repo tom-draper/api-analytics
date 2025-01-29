@@ -21,7 +21,7 @@
 			hovermode: 'closest',
 			plot_bgcolor: 'transparent',
 			paper_bgcolor: 'transparent',
-			height: 160,
+			height: 159,
 			barmode: 'stack',
 			yaxis: {
 				title: { text: 'Requests' },
@@ -48,9 +48,12 @@
 		const days = periodToDays(period);
 		for (let i = 0; i < data.length; i++) {
 			const date = new Date(data[i][ColumnIndex.CreatedAt]);
-			if (days !== null && days <= 7) {
+			if (days !== null && days === 1) {
 				// Round down to multiple of 5
 				date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
+			} else if (days !== null && days === 7) {
+				date.setMinutes(0, 0, 0);
+
 			} else {
 				date.setHours(0, 0, 0, 0);
 			}
@@ -102,7 +105,7 @@
 			requestsText[i] = `${requestFreqArr[i].requestCount} requests`;
 			users[i] = requestFreqArr[i].userCount;
 			usersText[i] =
-				`${requestFreqArr[i].userCount} users from ${requestFreqArr[i].requestCount} requests`;
+				`${requestFreqArr[i].requestCount} requests from ${requestFreqArr[i].userCount} users`;
 		}
 
 		return [
@@ -139,9 +142,8 @@
 		};
 	}
 
-	function genPlot(data: RequestsData, period: Period) {
+	function generatePlot(data: RequestsData, period: Period) {
 		const plotData = buildPlotData(data, period);
-		//@ts-ignore
 		new Plotly.newPlot(
 			plotDiv,
 			plotData.data,
@@ -152,8 +154,8 @@
 
 	let plotDiv: HTMLDivElement;
 
-	$: if (plotDiv && data) {
-		genPlot(data, period);
+	$: if (plotDiv) {
+		generatePlot(data, period);
 	}
 
 	export let data: RequestsData, period: Period;

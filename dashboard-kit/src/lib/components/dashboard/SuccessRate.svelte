@@ -64,9 +64,8 @@
 		};
 	}
 
-	function genPlot(data: RequestsData) {
+	function generatePlot(data: RequestsData) {
 		const plotData = successRatePlotData(data);
-		//@ts-ignore
 		new Plotly.newPlot(
 			plotDiv,
 			plotData.data,
@@ -75,7 +74,7 @@
 		);
 	}
 
-	function build(data: RequestsData) {
+	function getSuccessRate(data: RequestsData) {
 		const requests = {
 			total: 0,
 			successful: 0,
@@ -91,20 +90,23 @@
 			requests.total++;
 		}
 
-		if (requests.total > 0) {
-			successRate = (requests.successful / requests.total) * 100;
-		} else {
-			successRate = 100;
+		console.log(requests)
+
+		if (requests.total === 0) {
+			return null;
 		}
 
-		genPlot(data);
+		return (requests.successful / requests.total) * 100;
 	}
 
-	let plotDiv: HTMLDivElement;
-	let successRate: number;
 
-	$: if (plotDiv && data) {
-		build(data);
+	let plotDiv: HTMLDivElement;
+	let successRate: number | null;
+
+	$: successRate = getSuccessRate(data);
+
+	$: if (plotDiv) {
+		generatePlot(data);
 	}
 
 	export let data: RequestsData;
@@ -112,16 +114,14 @@
 
 <div class="card">
 	<div class="card-title">Success rate</div>
-	{#if successRate !== undefined}
-		<div
-			class="value"
-			class:red={successRate <= 75}
-			class:yellow={successRate > 75 && successRate < 90}
-			class:green={successRate > 90}
-		>
-			{successRate.toFixed(1)}%
-		</div>
-	{/if}
+	<div
+		class="value"
+		class:red={successRate !== null && successRate <= 75}
+		class:yellow={successRate !== null && successRate > 75 && successRate < 90}
+		class:green={successRate === null || successRate > 90}
+	>
+		{successRate ? `${successRate.toFixed(1)}%` : 'N/A'}
+	</div>
 	<div id="plotly">
 		<div id="plotDiv" bind:this={plotDiv}>
 			<!-- Plotly chart will be drawn inside this DIV -->
@@ -137,14 +137,15 @@
 		overflow: hidden;
 	}
 	.value {
-		margin: 20px auto;
-		width: fit-content;
+		padding: 0.55em;
+		text-align: center;
 		font-size: 1.8em;
 		font-weight: 700;
 		color: var(--yellow);
 		position: inherit;
 		z-index: 2;
 	}
+
 	.red {
 		color: var(--red);
 	}

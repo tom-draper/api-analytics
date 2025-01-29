@@ -8,7 +8,7 @@ type FrameworkExamples = {
 
 const frameworkExamples: FrameworkExamples = {
 	Django: {
-		install: 'pip install api-analytics',
+		install: 'pip install api-analytics[django]',
 		codeFile: 'settings.py',
 		example: `ANALYTICS_API_KEY = <API-KEY>
 
@@ -18,7 +18,7 @@ MIDDLEWARE = [
 ]`,
 	},
 	Flask: {
-		install: 'pip install api-analytics',
+		install: 'pip install api-analytics[flask]',
 		example: `from flask import Flask
 from api_analytics.flask import add_middleware
 
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     app.run()`,
 	},
 	FastAPI: {
-		install: 'pip install fastapi-analytics',
+		install: 'pip install api-analytics[fastapi]',
 	    example: `import uvicorn
 from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     uvicorn.run('app:app', reload=True)`,
 	},
 	Tornado: {
-		install: 'pip install tornado-analytics',
+		install: 'pip install api-analytics[tornado]',
 		example: `import asyncio
 from tornado.web import Application
 from api_analytics.tornado import Analytics

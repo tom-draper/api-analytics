@@ -227,6 +227,7 @@
 	}
 	.table-container {
 		display: flex;
+		overflow: auto;
 	}
 	.table {
 		margin: 1em 1.2em 1em;
