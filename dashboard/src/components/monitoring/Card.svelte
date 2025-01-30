@@ -18,9 +18,9 @@
 
 	async function deleteMonitor() {
 		try {
-			const url = getServerURL();
+			const serverURL = getServerURL();
 			const response = await fetch(
-				`${url}/api/monitor/delete`,
+				`${serverURL}/api/monitor/delete`,
 				{
 					method: 'POST',
 					headers: {},
