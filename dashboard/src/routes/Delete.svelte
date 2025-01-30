@@ -1,16 +1,24 @@
 <script lang="ts">
-	import { serverURL } from '../lib/consts';
+	import { getServerURL } from '../lib/url';
 
 	type State = 'delete' | 'loading' | 'deleted' | 'error';
+
 	let state: State = 'delete';
 	let apiKey = '';
 	async function submit() {
 		setState('loading');
-		const response = await fetch(`${serverURL}/api/delete/${apiKey}`);
 
-		if (response.status === 200) {
-			setState('deleted');
-		} else {
+		try {
+			const url = getServerURL();
+			const response = await fetch(`${url}/api/delete/${apiKey}`);
+
+			if (response.status === 200) {
+				setState('deleted');
+			} else {
+				setState('error');
+			}
+		} catch (e) {
+			console.log(e);
 			setState('error');
 		}
 	}
@@ -55,7 +63,7 @@
 	<div class="details">
 		<div class="keep-secure">Keep your API key safe and secure.</div>
 		<div class="highlight logo">API Analytics</div>
-		<img class="footer-logo" src="img/logo.png" alt="" />
+		<img class="footer-logo" src="img/icons/logo.png" alt="" />
 	</div>
 </div>
 

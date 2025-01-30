@@ -8,3 +8,7 @@ version = "0.1.0"
 [dependencies]
 
 dotenv = "0.15.0"
+rocket = {version = "=0.5.0-rc.3", features = ["json"]}
+rocket-analytics = "1.0"
+serde = {version = "1.0", features = ["derive"]}
+

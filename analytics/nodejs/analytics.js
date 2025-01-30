@@ -4,14 +4,14 @@ import fetch from "node-fetch";
  * the default functionality when extracting data from the request. */
 export class Config {
   constructor() {
-    /** 
-     * Controls client identification by IP address. 
-     * - 0: Sends client IP to the server to be stored and client location is 
-     * inferred. 
-     * - 1: Sends the client IP to the server only for the location to be 
+    /**
+     * Controls client identification by IP address.
+     * - 0: Sends client IP to the server to be stored and client location is
+     * inferred.
+     * - 1: Sends the client IP to the server only for the location to be
      * inferred and stored, with the IP discarded afterwards.
-     * - 2: Avoids sending the client IP address to the server. Providing a 
-     * custom `getUserID` mapping function becomes the only method for client 
+     * - 2: Avoids sending the client IP address to the server. Providing a
+     * custom `getUserID` mapping function becomes the only method for client
      * identification.
      * Defaults to 0.
      * @type {number}
@@ -19,16 +19,16 @@ export class Config {
      */
     this.privacyLevel = 0;
 
-    /** 
-     * For self-hosting. Points to the public server url to post 
+    /**
+     * For self-hosting. Points to the public server url to post
      * requests to.
      * @type {string}
      * @public
      */
-    this.serverUrl = 'https://www.apianalytics-server.com/';
+    this.serverUrl = "https://www.apianalytics-server.com/";
 
     /**
-     * A mapping function that takes a request and returns the path 
+     * A mapping function that takes a request and returns the path
      * stored within the request.
      * Assigning a value will overrides the default behaviour.
      * @type {(req: Request) => string}
@@ -37,7 +37,7 @@ export class Config {
     this.getPath = Mappers.getPath;
 
     /**
-     * A mapping function that takes a request and returns the hostname 
+     * A mapping function that takes a request and returns the hostname
      * stored within the request.
      * Assigning a value will overrides the default behaviour.
      * @type {(req: Request) => string}
@@ -64,10 +64,10 @@ export class Config {
     this.getUserAgent = Mappers.getUserAgent;
 
     /**
-     * A mapping function that takes a request and returns a user ID 
+     * A mapping function that takes a request and returns a user ID
      * stored within the request. Always returns `null` by default.
-     * Assigning a value allows for tracking a custom user ID specific to your API 
-     * such as an API key or client ID. If left as the default value, user 
+     * Assigning a value allows for tracking a custom user ID specific to your API
+     * such as an API key or client ID. If left as the default value, user
      * identification may rely on client IP address only (depending on
      * config `privacyLevel`).
      * @type {(req: Request) => string}
@@ -78,7 +78,7 @@ export class Config {
 }
 
 /**
- * A request object, holding information related to a request, that will be sent 
+ * A request object, holding information related to a request, that will be sent
  * the server to be logged.
  * @typedef {{
  *   hostname: string;
@@ -101,14 +101,14 @@ class Analytics {
    */
   constructor(apiKey, framework, config = new Config()) {
     this.apiKey = apiKey;
-    this.framework = framework
+    this.framework = framework;
     this.config = config;
     this.requests = [];
     this.lastPosted = new Date();
   }
 
   /**
-   * Logs a request to storage. If time interval has elapsed, post all stored 
+   * Logs a request to storage. If time interval has elapsed, post all stored
    * logs to the server.
    * @param {RequestData} requestData - Request data to be logged
    * @returns {Promise<void>}
@@ -120,14 +120,14 @@ class Analytics {
     this.requests.push(requestData);
     const now = new Date();
     if (now - this.lastPosted > 60000) {
-      const url = this.getServerEndpoint()
+      const url = this.getServerEndpoint();
       await fetch(url, {
         method: "POST",
         body: JSON.stringify({
           api_key: this.apiKey,
           requests: this.requests,
           framework: this.framework,
-          privacy_level: this.config.privacyLevel
+          privacy_level: this.config.privacyLevel,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -139,10 +139,10 @@ class Analytics {
   }
 
   getServerEndpoint() {
-    if (this.config.serverUrl.endsWith('/')) {
-      return this.config.serverUrl + "api/log-request"
+    if (this.config.serverUrl.endsWith("/")) {
+      return this.config.serverUrl + "api/log-request";
     }
-    return this.config.serverUrl + "/api/log-request"
+    return this.config.serverUrl + "/api/log-request";
   }
 }
 
@@ -164,7 +164,7 @@ export function expressAnalytics(apiKey, config = new Config()) {
       path: config.getPath(req),
       status: res.statusCode,
       method: req.method,
-      response_time: Math.round((performance.now() - start) / 1000),
+      response_time: Math.round(performance.now() - start),
       user_id: config.getUserID(req),
       created_at: new Date().toISOString(),
     };
@@ -174,30 +174,40 @@ export function expressAnalytics(apiKey, config = new Config()) {
 }
 
 /**
- * @param {string} apiKey - API Key for API Analytics
- * @param {Config} config - Configuration for API Analytics
- * @returns {function}
+ * Fastify middleware for logging analytics data.
+ *
+ * @param {FastifyInstance} fastify - The Fastify instance.
+ * @param {string} apiKey - The API key for the analytics service.
+ * @param {Config} [config=new Config()] - The configuration object (optional).
+ * @returns {void}
+ *
+ * @typedef {import('fastify').FastifyInstance} FastifyInstance
  */
-export function fastifyAnalytics(apiKey, config = new Config()) {
+export function useFastifyAnalytics(fastify, apiKey, config = new Config()) {
   const analytics = new Analytics(apiKey, "Fastify", config);
-  return (req, reply, done) => {
-    const start = performance.now();
-    done();
 
+  fastify.addHook("onRequest", (request, reply, done) => {
+    request.startTime = performance.now();
+    done();
+  });
+
+  fastify.addHook("onResponse", (request, reply, done) => {
+    const responseTime = Math.round(performance.now() - request.startTime);
     const requestData = {
-      hostname: config.getHostname(req),
-      ip_address: getIPAddress(req, config),
-      user_agent: config.getUserAgent(req),
-      path: config.getPath(req),
+      hostname: config.getHostname(request),
+      ip_address: getIPAddress(request, config),
+      user_agent: config.getUserAgent(request),
+      path: config.getPath(request),
       status: reply.statusCode,
-      method: req.method,
-      response_time: Math.round((performance.now() - start) / 1000),
-      user_id: config.getUserID(req),
+      method: request.method,
+      response_time: responseTime,
+      user_id: config.getUserID(request),
       created_at: new Date().toISOString(),
     };
 
     analytics.logRequest(requestData);
-  };
+    done();
+  });
 }
 
 /**
@@ -207,6 +217,7 @@ export function fastifyAnalytics(apiKey, config = new Config()) {
  */
 export function koaAnalytics(apiKey, config = new Config()) {
   const analytics = new Analytics(apiKey, "Koa", config);
+
   return async (ctx, next) => {
     const start = performance.now();
     await next();
@@ -218,7 +229,7 @@ export function koaAnalytics(apiKey, config = new Config()) {
       path: config.getPath(ctx),
       status: ctx.status,
       method: ctx.method,
-      response_time: Math.round((performance.now() - start) / 1000),
+      response_time: Math.round(performance.now() - start),
       user_id: config.getUserID(ctx),
       created_at: new Date().toISOString(),
     };
@@ -228,10 +239,10 @@ export function koaAnalytics(apiKey, config = new Config()) {
 }
 
 /**
- * Gets the IP address from the request, using the custom mapping function if 
+ * Gets the IP address from the request, using the custom mapping function if
  * provided, or the default behaviour if not.
- * @param {Request} req 
- * @param {Config} config 
+ * @param {Request} req
+ * @param {Config} config
  * @returns {string}
  */
 function getIPAddress(req, config) {
@@ -243,9 +254,9 @@ function getIPAddress(req, config) {
 
 class Mappers {
   /**
-   * Gets the hostname from the request, using the custom mapping function if 
+   * Gets the hostname from the request, using the custom mapping function if
    * provided, or the default behaviour if not.
-   * @param {Request} req 
+   * @param {Request} req
    * @returns {string}
    */
   static getHostname(req) {
@@ -253,9 +264,9 @@ class Mappers {
   }
 
   /**
-   * Gets the IP address from the request, using the custom mapping function if 
+   * Gets the IP address from the request, using the custom mapping function if
    * provided, or the default behaviour if not.
-   * @param {Request} req 
+   * @param {Request} req
    * @returns {string}
    */
   static getIPAddress(req) {
@@ -267,9 +278,9 @@ class Mappers {
   }
 
   /**
-   * Gets the user agent from the request, using the custom mapping function if 
+   * Gets the user agent from the request, using the custom mapping function if
    * provided, or the default behaviour if not.
-   * @param {Request} req 
+   * @param {Request} req
    * @returns {string}
    */
   static getUserAgent(req) {
@@ -277,9 +288,9 @@ class Mappers {
   }
 
   /**
-   * Gets the path from the request, using the custom mapping function if 
+   * Gets the path from the request, using the custom mapping function if
    * provided, or the default behaviour if not.
-   * @param {Request} req 
+   * @param {Request} req
    * @returns {string}
    */
   static getPath(req) {
@@ -287,9 +298,9 @@ class Mappers {
   }
 
   /**
-   * Gets the user agent from the request, using the custom mapping function if 
+   * Gets the user agent from the request, using the custom mapping function if
    * provided, or no user ID is used.
-   * @param {Request} req 
+   * @param {Request} req
    * @returns {string}
    */
   static getUserID(req) {

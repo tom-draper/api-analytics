@@ -10,7 +10,7 @@
 			</div>
 		</div>
 	{:else}
-		<img src="../img/logo.png" alt="" />
+		<img src="../img/logos/lightning-green.png" alt="" />
 	{/if}
 </div>
 

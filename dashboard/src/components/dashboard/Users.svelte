@@ -3,7 +3,7 @@
 	import type { Period } from '../../lib/settings';
 	import { ColumnIndex } from '../../lib/consts';
 
-	function usersPlotLayout() {
+	function getLayout() {
 		return {
 			title: false,
 			autosize: true,
@@ -76,7 +76,7 @@
 	function usersPlotData(data: RequestsData) {
 		return {
 			data: lines(data),
-			layout: usersPlotLayout(),
+			layout: getLayout(),
 			config: {
 				responsive: true,
 				showSendToCloud: false,
@@ -120,7 +120,7 @@
 	}
 
 	function build(data: RequestsData) {
-		({size: numUsers} = getUsers(data));
+		({ size: numUsers } = getUsers(data));
 
 		const prevUsers = getUsers(prevData);
 		const prevNumUsers = prevUsers.size;
@@ -175,9 +175,9 @@
 				class:negative={percentageChange < 0}
 			>
 				{#if percentageChange > 0}
-					<img class="arrow" src="../img/up.png" alt="" />
+					<img class="arrow" src="../img/icons/green-up.png" alt="" />
 				{:else if percentageChange < 0}
-					<img class="arrow" src="../img/down.png" alt="" />
+					<img class="arrow" src="../img/icons/red-down.png" alt="" />
 				{/if}
 				{Math.abs(percentageChange).toFixed(1)}%
 			</div>

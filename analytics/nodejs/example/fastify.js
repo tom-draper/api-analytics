@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-import { fastifyAnalytics } from "node-api-analytics";
+import { useFastifyAnalytics } from "node-api-analytics";
 import * as dotenv from "dotenv";
 dotenv.config();
 
@@ -9,7 +9,7 @@ const fastify = Fastify({
   logger: true,
 });
 
-fastify.addHook("onRequest", fastifyAnalytics(apiKey));
+useFastifyAnalytics(fastify, apiKey);
 
 fastify.get("/", function (request, reply) {
   reply.send({ message: "Hello World!" });

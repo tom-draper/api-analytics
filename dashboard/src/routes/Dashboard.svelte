@@ -22,20 +22,21 @@
 	import Dropdown from '../components/dashboard/Dropdown.svelte';
 	import Notification from '../components/dashboard/Notification.svelte';
 	import exportCSV from '../lib/exportData';
-	import { ColumnIndex, columns, serverURL } from '../lib/consts';
+	import { ColumnIndex, columns } from '../lib/consts';
 	import Error from '../components/dashboard/Error.svelte';
 	import TopUsers from '../components/dashboard/TopUsers.svelte';
+	import { getServerURL } from '../lib/url';
 
 	function allTimePeriod(_: Date) {
 		return true;
 	}
 
-	function setData() {
+	function getPeriodData() {
 		const inRange = getInRange();
 		const inPrevRange = getInPrevRange();
 
-		const dataSubset = [];
-		const prevDataSubset = [];
+		const current = [];
+		const previous = [];
 		for (let i = 0; i < data.length; i++) {
 			// Created inverted version of the if statement to reduce nesting
 			const request = data[i];
@@ -43,7 +44,10 @@
 			const path = request[ColumnIndex.Path];
 			const hostname = request[ColumnIndex.Hostname];
 			const location = request[ColumnIndex.Location];
+			const ipAddress = request[ColumnIndex.IPAddress];
+			const customUserID = request[ColumnIndex.UserID];
 			if (
+				(settings.targetUser === null || settings.targetUser === `${ipAddress} ${customUserID}`) &&
 				(!settings.disable404 || status !== 404) &&
 				(settings.targetEndpoint.path === null ||
 					settings.targetEndpoint.path === path) &&
@@ -56,15 +60,18 @@
 			) {
 				const date = request[ColumnIndex.CreatedAt];
 				if (inRange(date)) {
-					dataSubset.push(request);
+					current.push(request);
 				} else if (inPrevRange(date)) {
-					prevDataSubset.push(request);
+					previous.push(request);
 				}
 			}
 		}
 
-		periodData = dataSubset;
-		prevPeriodData = prevDataSubset;
+		return { current, previous };
+	}
+
+	function setPeriodData() {
+		periodData = getPeriodData();
 	}
 
 	function getInRange() {
@@ -91,7 +98,7 @@
 		return inPrevRange;
 	}
 
-	function isHiddenEndpoint(endpoint: string): boolean {
+	function isHiddenEndpoint(endpoint: string) {
 		const firstChar = endpoint.charAt(0);
 		const lastChar = endpoint.charAt(endpoint.length - 1);
 		return (
@@ -108,7 +115,7 @@
 		);
 	}
 
-	function wildCardMatch(endpoint: string): boolean {
+	function wildCardMatch(endpoint: string) {
 		if (endpoint.charAt(endpoint.length - 1) !== '/') {
 			endpoint = endpoint + '/';
 		}
@@ -165,17 +172,22 @@
 		hostnames = getHostnames();
 	}
 
-	async function fetchData(): Promise<DashboardData> {
+	async function fetchData() {
+		const url = getServerURL();
+
 		userID = formatUUID(userID);
 		try {
-			const response = await fetch(`${serverURL}/api/requests/${userID}/1`);
-			if (response.status === 200) {
-				return await response.json();
+			const response = await fetch(`${url}/api/requests/${userID}/1`);
+			if (response.ok && response.status === 200) {
+				const data: DashboardData = await response.json();
+				return data;
 			} else {
-				fetchFailed = true;
+				fetchStatus.failed = true;
 			}
 		} catch (e) {
-			fetchFailed = true;
+			fetchStatus.failed = true;
+			fetchStatus.reason = e;
+			console.log(e.message);
 		}
 	}
 
@@ -185,6 +197,15 @@
 				data[i][ColumnIndex.CreatedAt],
 			);
 		}
+	}
+
+	function sortByTime(data: RequestsData) {
+		data.sort((a, b) => {
+			return (
+				a[ColumnIndex.CreatedAt].getTime() -
+				b[ColumnIndex.CreatedAt].getTime()
+			);
+		});
 	}
 
 	let data: RequestsData;
@@ -197,8 +218,11 @@
 		style: 'error',
 		show: false,
 	};
-	let periodData: RequestsData;
-	let prevPeriodData: RequestsData;
+	let periodData: {
+		current: RequestsData;
+		previous: RequestsData;
+	};
+	// let changingPeriod: boolean = false;
 	const timePeriods: Period[] = [
 		'24 hours',
 		'Week',
@@ -207,50 +231,41 @@
 		'Year',
 		'All time',
 	];
-	let loading = true;
-	let fetchFailed = false;
-	let endpointsRendered = false;
+	let loading: boolean = true;
+	const fetchStatus: { failed: boolean; reason: string } = {
+		failed: false,
+		reason: '',
+	};
+	let endpointsRendered: boolean = false;
 	const pageSize = 200_000;
 	onMount(async () => {
-		const dashboardData = await getDashboardData();
-		data = dashboardData.requests;
-		userAgents = dashboardData.user_agents;
+		({ requests: data, user_agents: userAgents } =
+			await getDashboardData());
 
-		loading = true;
+		// loading = true;
 		if (data.length === pageSize) {
 			// Fetch page 2 and onwards if initial fetch didn't get all data
-			fetchAdditionalPages(2);
+			fetchAdditionalPage(2);
 		} else {
 			loading = false;
 		}
-		// loading = true;
-		// let fetchAdditionalPages = data.length === pageSize;
-		// let page = 2;
-		// while (fetchAdditionalPages) {
-		// 	fetchAdditionalPages = await fetchPage(page);
-		// 	page++;
-		// }
-		// loading = false;
 
-		setPeriod(settings.period);
 		setHostnames();
 		parseDates(data);
+		sortByTime(data);
+		setPeriod(settings.period);
 
-		data?.sort((a, b) => {
-			return (
-				a[ColumnIndex.CreatedAt].getTime() -
-				b[ColumnIndex.CreatedAt].getTime()
-			);
-		});
+		// setPeriodData();
 
 		console.log(data);
 	});
 
-	async function fetchAdditionalPages(page: number) {
+	async function fetchAdditionalPage(page: number) {
 		try {
+			const url = getServerURL();
 			const response = await fetch(
-				`${serverURL}/api/requests/${userID}/${page}`,
-				{ signal: AbortSignal.timeout(120000) }
+				`${url}/api/requests/${userID}/${page}`,
+				{ signal: AbortSignal.timeout(180000) },
 			);
 			if (response.status !== 200) {
 				loading = false;
@@ -283,35 +298,40 @@
 				Object.assign(data, data.concat(json.requests));
 			}
 
-			setPeriod(settings.period);
+			// setPeriod(settings.period);
 			setHostnames();
 
 			console.log(data);
 
 			if (json.requests.length === pageSize) {
-				await fetchAdditionalPages(page + 1);
+				await fetchAdditionalPage(page + 1);
 			} else {
 				loading = false;
 			}
 		} catch (e) {
 			console.log(e);
-			loading = false
-			return;
+			loading = false;
 		}
 	}
 
 	async function getDashboardData() {
+		let data: DashboardData;
 		if (demo) {
-			return genDemoData();
+			data = genDemoData();
+		} else {
+			data = await fetchData();
 		}
-		return await fetchData();
+		return data;
 	}
 
-	function getUserAgent(id: number): string {
+	function getUserAgent(id: number) {
+		let userAgent: string;
 		if (id in userAgents) {
-			return userAgents[id];
+			userAgent = userAgents[id];
+		} else {
+			userAgent = '';
 		}
-		return '';
+		return userAgent;
 	}
 
 	function refreshData() {
@@ -319,20 +339,18 @@
 			return;
 		}
 
-		setData();
+		setPeriodData();
 	}
 
-	// If target path/location changes or is reset, refresh data with this filter change
+	// If any settings are updated or target path/location is reset, refresh data with this new filter
 	$: if (
-		settings.targetEndpoint.path === null ||
-		settings.targetEndpoint.path ||
-		settings.targetLocation === null ||
-		settings.targetLocation
+		settings.targetEndpoint.path !== undefined &&
+		settings.targetLocation !== undefined
 	) {
 		refreshData();
 	}
 
-	export let userID: string, demo: boolean;
+	export let location: string, userID: string, demo: boolean;
 </script>
 
 {#if periodData && data.length > 0}
@@ -351,7 +369,7 @@
 					showSettings = true;
 				}}
 			>
-				<img class="settings-icon" src="../img/cog.png" alt="" />
+				<img class="settings-icon" src="../img/icons/cog.png" alt="" />
 			</button>
 			{#if hostnames.length > 1}
 				<div class="dropdown-container">
@@ -381,47 +399,48 @@
 			<div class="left">
 				<div class="row">
 					<Logo bind:loading />
-					<SuccessRate data={periodData} />
+					<SuccessRate data={periodData.current} />
 				</div>
 				<div class="row">
 					<Requests
-						data={periodData}
-						prevData={prevPeriodData}
+						data={periodData.current}
+						prevData={periodData.previous}
 						period={settings.period}
 					/>
 					<Users
-						data={periodData}
-						prevData={prevPeriodData}
+						data={periodData.current}
+						prevData={periodData.previous}
 						period={settings.period}
 					/>
 				</div>
-				<ResponseTimes data={periodData} />
+				<ResponseTimes data={periodData.current} />
 				<Endpoints
-					data={periodData}
+					data={periodData.current}
 					bind:targetPath={settings.targetEndpoint.path}
 					bind:targetStatus={settings.targetEndpoint.status}
+					bind:ignoreParams={settings.ignoreParams}
 					bind:endpointsRendered
 				/>
-				<Version data={periodData} bind:endpointsRendered />
+				<Version data={periodData.current} bind:endpointsRendered />
 			</div>
 			<div class="right">
-				<Activity data={periodData} period={settings.period} />
+				<Activity data={periodData.current} period={settings.period} />
 				<div class="grid-row">
 					<Location
-						data={periodData}
+						data={periodData.current}
 						bind:targetLocation={settings.targetLocation}
 					/>
-					<Device data={periodData} {getUserAgent} />
+					<Device data={periodData.current} {getUserAgent} />
 				</div>
-				<UsageTime data={periodData} />
-				<TopUsers data={periodData} />
+				<UsageTime data={periodData.current} />
+				<TopUsers data={periodData.current} bind:targetUser={settings.targetUser}/>
 			</div>
 		</div>
 	</div>
 {:else if periodData && data.length <= 0}
-	<Error reason={'no-requests'} />
-{:else if fetchFailed}
-	<Error reason={'error'} />
+	<Error reason={'no-requests'} description="" />
+{:else if fetchStatus.failed}
+	<Error reason={'error'} description={fetchStatus.reason} />
 {:else}
 	<div class="placeholder">
 		<div class="spinner">
@@ -433,7 +452,7 @@
 	bind:show={showSettings}
 	bind:settings
 	exportCSV={() => {
-		exportCSV(periodData, columns, userAgents);
+		exportCSV(periodData.current, columns, userAgents);
 	}}
 />
 <Notification state={notification} />
@@ -466,14 +485,13 @@
 		margin-right: 2em;
 	}
 	.placeholder {
-		min-height: 82vh;
+		min-height: 80vh;
 		display: grid;
 		place-items: center;
 	}
 	.button-nav {
 		margin: 2.5em 2em 0;
 		display: flex;
-		/* font-family: 'Geist'; */
 	}
 	.time-period {
 		display: flex;
@@ -489,10 +507,28 @@
 		color: var(--dim-text);
 		cursor: pointer;
 	}
+	.time-period-btn:hover {
+		background: #161616;
+	}
+	.time-period-btn-active:hover {
+		background: var(--highlight);
+		color: black;
+	}
 	.time-period-btn-active {
 		background: var(--highlight);
 		color: black;
 	}
+
+	@keyframes gradient-shift {
+		0%,
+		100% {
+			background-position: 0% 50%; /* Start at the left */
+		}
+		50% {
+			background-position: 100% 50%; /* End at the right */
+		}
+	}
+
 	.settings {
 		background: transparent;
 		outline: none;

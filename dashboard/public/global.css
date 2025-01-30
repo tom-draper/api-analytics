@@ -24,6 +24,8 @@
   --dark-green: #081d13;
 }
 
+
+
 body {
   font-family: "Noto Sans";
   font-weight: 300;
@@ -169,6 +171,22 @@ button {
 
 .no-display {
   display: none;
+}
+
+.info-page-container {
+  max-width: 800px;
+  margin: auto;
+  padding: 4em 2em;
+  text-align: left;
+  color: white;
+  font-family: 'Noto Sans' sans-serif;
+}
+
+.answer > a {
+  color: var(--highlight);
+}
+.answer > a:hover {
+  color: white;
 }
 
 /* Spinner */

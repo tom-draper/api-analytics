@@ -1,18 +1,25 @@
 <script lang="ts">
-	import { serverURL } from '../lib/consts';
+	import { onMount } from 'svelte';
+	import { getServerURL } from '../lib/url';
 
 	type State = 'sign-in' | 'loading';
 
 	let state: State = 'sign-in';
 	let apiKey = '';
+	let queryString: string = '';
+
 	async function submit() {
+		if (!apiKey) return;
+
 		setState('loading');
+
 		try {
-			const response = await fetch(`${serverURL}/api/user-id/${apiKey}`);
+			const url = getServerURL();
+			const response = await fetch(`${url}/api/user-id/${apiKey}`);
 
 			if (response.status === 200) {
 				const userID = await response.json();
-				window.location.href = `/${page}/${userID.replaceAll('-', '')}`;
+				window.location.href = `/${page}/${userID.replaceAll('-', '')}${queryString ? `?${queryString}` : ''}`;
 			} else {
 				setState('sign-in');
 			}
@@ -31,6 +38,12 @@
 	function setState(value: State) {
 		state = value;
 	}
+
+	onMount(() => {
+		const params = new URLSearchParams(window.location.search);
+		queryString = params.toString();
+		console.log(queryString);
+	});
 
 	export let page: 'dashboard' | 'monitoring';
 </script>
@@ -62,7 +75,7 @@
 	<div class="details">
 		<div class="keep-secure">Keep your API key safe and secure.</div>
 		<div class="highlight logo">API Analytics</div>
-		<img class="footer-logo" src="img/logo.png" alt="" />
+		<img class="footer-logo" src="img/logos/lightning-green.png" alt="" />
 	</div>
 </div>
 

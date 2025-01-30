@@ -22,11 +22,6 @@
 		return Math.floor((now.getTime() - time) / (24 * 60 * 60 * 1000));
 	}
 
-	function hoursAgo(date: Date): number {
-		const now = new Date();
-		return Math.floor((now.getTime() - date.getTime()) / (60 * 60 * 1000));
-	}
-
 	function hoursAgoTime(time: number): number {
 		const now = new Date();
 		return Math.floor((now.getTime() - time) / (60 * 60 * 1000));

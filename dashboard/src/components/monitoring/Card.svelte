@@ -2,6 +2,7 @@
 	import ResponseTime from './ResponseTime.svelte';
 	import { periodToMarkers } from '../../lib/period';
 	import type { NotificationState } from '../../lib/notification';
+	import { getServerURL } from '../../lib/url';
 
 	function triggerNotificationMessage(
 		message: string,
@@ -17,8 +18,9 @@
 
 	async function deleteMonitor() {
 		try {
+			const serverURL = getServerURL();
 			const response = await fetch(
-				'https://www.apianalytics-server.com/api/monitor/delete',
+				`${serverURL}/api/monitor/delete`,
 				{
 					method: 'POST',
 					headers: {},
@@ -191,7 +193,7 @@
 				>{separatedURL.body}</a
 			>
 			<button class="delete" on:click={deleteMonitor}
-				><img class="bin-icon" src="../img/bin.png" alt="" /></button
+				><img class="bin-icon" src="../img/icons/bin.png" alt="" /></button
 			>
 		</div>
 		<div class="card-text-right">

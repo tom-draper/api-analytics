@@ -1,11 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/tom-draper/api-analytics/server/api/lib/log"
 	"github.com/tom-draper/api-analytics/server/api/lib/routes"
+	"github.com/tom-draper/api-analytics/server/api/lib/env"
+	"github.com/tom-draper/api-analytics/server/database"
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
 	"github.com/gin-contrib/cors"
@@ -20,8 +23,24 @@ func errorHandler(c *gin.Context, info ratelimit.Info) {
 	c.String(http.StatusTooManyRequests, "Too many requests. Try again in "+time.Until(info.ResetTime).String())
 }
 
+func getRateLimit() uint {
+	return uint(env.GetIntegerEnvVariable("RATE_LIMIT", 100))
+}
+
 func main() {
+	defer func() {
+		if err := recover(); err != nil {
+			log.LogToFile(fmt.Sprintf("Application crashed: %v", err))
+		}
+	}()
+
 	log.LogToFile("Starting api...")
+
+	err := database.LoadConfig()
+	if err != nil {
+		log.LogToFile("Failed to load database configuration: " + err.Error())
+		return
+	}
 
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
@@ -33,7 +52,7 @@ func main() {
 	// Limit a single IP's request logs to 100 per second
 	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
 		Rate:  time.Second,
-		Limit: 100,
+		Limit: getRateLimit(),
 	})
 	rateLimiter := ratelimit.RateLimiter(store, &ratelimit.Options{
 		ErrorHandler: errorHandler,
@@ -43,5 +62,7 @@ func main() {
 
 	routes.RegisterRouter(r)
 
-	app.Run(":3000")
+	if err := app.Run(":3000"); err != nil {
+		log.LogToFile(fmt.Sprintf("Failed to run server: %v", err))
+	}
 }

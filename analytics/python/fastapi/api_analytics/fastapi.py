@@ -17,7 +17,7 @@ class Analytics(BaseHTTPMiddleware):
         super().__init__(app)
         self.api_key = api_key
         self.config = config or Config()
-
+        
         if not self.api_key:
             logger.debug("API key is not set.")
         if not self.config.server_url:

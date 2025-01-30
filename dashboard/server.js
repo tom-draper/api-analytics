@@ -29,13 +29,14 @@ server.get('*', function (req, res) {
       <script src="https://cdn.plot.ly/plotly-latest.min.js" type="text/javascript"></script>
     </head>
 
-    <body>
-      <div id="app">${html}</div>
-      <script src="/bundle.js"></script>
-    </body>
+		<body>
+			<div id="app">${html}</div>
+			<script src="/bundle.js"></script>
+		</body>
   `);
 
 	res.end();
 });
 
 server.listen(port, () => console.log(`Listening on http://localhost:${port}`));
+

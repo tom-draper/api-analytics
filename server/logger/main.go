@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/tom-draper/api-analytics/server/database"
@@ -14,11 +16,24 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/oschwald/geoip2-golang"
 )
 
 func main() {
+	defer func() {
+		if err := recover(); err != nil {
+			log.LogToFile(fmt.Sprintf("Application crashed: %v", err))
+		}
+	}()
+
 	log.LogToFile("Starting logger...")
+
+	err := database.LoadConfig()
+	if err != nil {
+		log.LogToFile("Failed to load database configuration: " + err.Error())
+		return
+	}
 
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
@@ -28,8 +43,11 @@ func main() {
 	handler := logRequestHandler()
 	app.POST("/api/log-request", handler)
 	app.POST("/api/requests", handler)
+	app.GET("/api/health", checkHealth)
 
-	app.Run(":8000")
+	if err := app.Run(":8000"); err != nil {
+		log.LogToFile(fmt.Sprintf("Failed to run server: %v", err))
+	}
 }
 
 type RequestData struct {
@@ -59,6 +77,58 @@ const (
 	P3                     // Client IP address never be sent to server, optional custom user ID field is the only user identification
 )
 
+func checkHealth(c *gin.Context) {
+	connection, err := database.NewConnection()
+	if err != nil {
+		log.LogToFile(fmt.Sprintf("Health check failed: %v", err))
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status": "unhealthy",
+			"error":  "Database connection failed",
+		})
+		return
+	}
+
+	err = connection.Ping(context.Background())
+	if err != nil {
+		log.LogToFile(fmt.Sprintf("Health check failed: %v", err))
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status": "unhealthy",
+			"error":  "Database connection failed",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "healthy",
+	})
+}
+
+func getMaxInsert() int {
+	const defaultValue int = 2000
+
+	errMsg := fmt.Sprintf("Failed to load .env file. Using default value MAX_INSERT=%d.", defaultValue)
+
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.LogToFile(errMsg)
+		return defaultValue
+	}
+
+	value := os.Getenv(fmt.Sprintf("MAX_INSERT environment variable is blank. Using default value MAX_INSERT=%d.", defaultValue))
+	if value == "" {
+		log.LogToFile(errMsg)
+		return defaultValue
+	}
+
+	maxInsert, err := strconv.Atoi(value)
+	if err != nil {
+		log.LogToFile(fmt.Sprintf("MAX_INSERT environment variable is not an integer. Using default value MAX_INSERT=%d.", defaultValue))
+		return defaultValue
+	}
+
+	return maxInsert
+}
+
 func getCountryCode(IPAddress string) string {
 	if IPAddress == "" {
 		return ""
@@ -81,11 +151,12 @@ func getCountryCode(IPAddress string) string {
 	return location
 }
 
-func storeNewUserAgents(userAgents map[string]struct{}) {
+func storeNewUserAgents(userAgents map[string]struct{}) error {
 	var query strings.Builder
 	query.WriteString("INSERT INTO user_agents (user_agent) VALUES ")
 	arguments := make([]any, len(userAgents))
 	i := 0
+
 	for userAgent := range userAgents {
 		query.WriteString(fmt.Sprintf("($%d)", i+1))
 		if i < len(userAgents)-1 {
@@ -94,21 +165,34 @@ func storeNewUserAgents(userAgents map[string]struct{}) {
 		arguments[i] = userAgent
 		i++
 	}
+
 	query.WriteString(" ON CONFLICT (user_agent) DO NOTHING;")
 
-	conn := database.NewConnection()
-	_, err := conn.Exec(context.Background(), query.String(), arguments...)
+	conn, err := database.NewConnection()
+	if err != nil {
+		log.LogToFile(err.Error())
+		return err
+	}
+	_, err = conn.Exec(context.Background(), query.String(), arguments...)
 	conn.Close(context.Background())
 	if err != nil {
 		log.LogToFile(err.Error())
+		return err
 	}
+
+	return nil
 }
 
-func getUserAgentIDs(userAgents map[string]struct{}) map[string]int {
+func getUserAgentIDs(userAgents map[string]struct{}) (map[string]int, error) {
+	if len(userAgents) == 0 {
+		return make(map[string]int), nil
+	}
+
 	var query strings.Builder
 	query.WriteString("SELECT user_agent, id FROM user_agents WHERE user_agent IN (")
 	arguments := make([]any, len(userAgents))
 	i := 0
+
 	for userAgent := range userAgents {
 		query.WriteString(fmt.Sprintf("$%d", i+1))
 		if i < len(userAgents)-1 {
@@ -120,13 +204,19 @@ func getUserAgentIDs(userAgents map[string]struct{}) map[string]int {
 	query.WriteString(");")
 
 	ids := make(map[string]int)
-	conn := database.NewConnection()
+	conn, err := database.NewConnection()
+	if err != nil {
+		log.LogToFile(err.Error())
+		return ids, err
+	}
 	rows, err := conn.Query(context.Background(), query.String(), arguments...)
 	conn.Close(context.Background())
 	if err != nil {
 		log.LogToFile(err.Error())
-		return ids
+		return ids, err
 	}
+	defer rows.Close()
+
 	for rows.Next() {
 		var userAgent string
 		var id int
@@ -137,13 +227,19 @@ func getUserAgentIDs(userAgents map[string]struct{}) map[string]int {
 		}
 		ids[userAgent] = id
 	}
-	return ids
+
+	if err := rows.Err(); err != nil {
+		log.LogToFile(err.Error())
+		return ids, err // Return error if rows iteration failed
+	}
+
+	return ids, nil
 }
 
 func logRequestHandler() gin.HandlerFunc {
 	var rateLimiter = ratelimit.RateLimiter{}
 
-	const maxInsert int = 2000
+	var maxInsert = getMaxInsert()
 
 	var methodID = map[string]int16{
 		"GET":     0,
@@ -179,25 +275,30 @@ func logRequestHandler() gin.HandlerFunc {
 	}
 
 	return func(c *gin.Context) {
-		// Collect API request data sent via POST request
 		var payload Payload
 		err := c.BindJSON(&payload)
 		if err != nil {
-			msg := "Invalid request data."
+			msg := fmt.Sprintf("Invalid request data.\n%s\nRequest body: %s", err.Error(), "body")
 			log.LogErrorToFile(c.ClientIP(), "", msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
-		} else if payload.APIKey == "" {
+		}
+		
+		if payload.APIKey == "" {
 			msg := "API key requied."
 			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
-		} else if rateLimiter.RateLimited(payload.APIKey) {
+		}
+		
+		if rateLimiter.RateLimited(payload.APIKey) {
 			msg := "Too many requests."
 			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusTooManyRequests, gin.H{"status": http.StatusTooManyRequests, "message": msg})
 			return
-		} else if len(payload.Requests) == 0 {
+		}
+		
+		if len(payload.Requests) == 0 {
 			msg := "Payload contains no logged requests."
 			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
@@ -206,9 +307,13 @@ func logRequestHandler() gin.HandlerFunc {
 
 		framework, ok := frameworkID[payload.Framework]
 		if !ok {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Unsupported API framework."})
+			msg := "Unsupported API framework."
+			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
 		}
+
+		payload.APIKey = strings.ReplaceAll(payload.APIKey, "\"", "")
 
 		var query strings.Builder
 		query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, status, response_time, method, framework, location, user_id, created_at, user_agent_id) VALUES ")
@@ -216,7 +321,6 @@ func logRequestHandler() gin.HandlerFunc {
 		inserted := 0
 		userAgents := make([]string, 0)
 		uniqueUserAgents := map[string]struct{}{}
-		badUserAgents := map[string]struct{}{}
 		for _, request := range payload.Requests {
 			// Temporary request per minute limit
 			if inserted >= maxInsert {
@@ -249,10 +353,6 @@ func logRequestHandler() gin.HandlerFunc {
 				request.UserAgent = request.UserAgent[:255]
 			}
 			if !database.ValidUserAgent(request.UserAgent) {
-				// Store bad user agent for logging
-				if _, ok := badUserAgents[request.UserAgent]; !ok {
-					badUserAgents[request.UserAgent] = struct{}{}
-				}
 				continue
 			}
 
@@ -332,9 +432,9 @@ func logRequestHandler() gin.HandlerFunc {
 		query.WriteString(";")
 
 		// Store any new user agents found
-		storeNewUserAgents(uniqueUserAgents)
+		_ = storeNewUserAgents(uniqueUserAgents)
 		// Get associated user IDs for user agents
-		userAgentIDs := getUserAgentIDs(uniqueUserAgents)
+		userAgentIDs, _ := getUserAgentIDs(uniqueUserAgents)
 		// Insert user agent IDs into arguments
 		for i, userAgent := range userAgents {
 			if id, ok := userAgentIDs[userAgent]; ok {
@@ -343,9 +443,13 @@ func logRequestHandler() gin.HandlerFunc {
 		}
 
 		// Insert logged requests into database
-		conn := database.NewConnection()
+		conn, err := database.NewConnection()
+		if err != nil {
+			log.LogToFile(err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database connection failed."})
+			return
+		}
 		_, err = conn.Exec(context.Background(), query.String(), arguments...)
-		conn.Close(context.Background())
 		if err != nil {
 			log.LogToFile(err.Error())
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
@@ -357,15 +461,5 @@ func logRequestHandler() gin.HandlerFunc {
 
 		// Record in log file for debugging
 		log.LogRequestsToFile(payload.APIKey, inserted, len(payload.Requests))
-		// Log any bad user agents found
-		if len(badUserAgents) > 0 {
-			var msg bytes.Buffer
-			index := 0
-			for userAgent := range badUserAgents {
-				msg.WriteString(fmt.Sprintf("[%d] bad user agent: %s\n", index, userAgent))
-				index++
-			}
-			log.LogToFile(msg.String())
-		}
 	}
 }

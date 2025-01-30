@@ -2,9 +2,15 @@
 	import { onMount } from 'svelte';
 	import animate from '../../lib/animate';
 
+	let queryString: string = '';
+
 	onMount(() => {
-		// Wait until images are rendered
+		// Start animation after delay
 		setTimeout(animate, 10);
+
+		// Retrieve current URL parameters
+		const params = new URLSearchParams(window.location.search);
+		queryString = params.toString();
 	});
 </script>
 
@@ -14,30 +20,36 @@
 			<h1>API Analytics</h1>
 			<h2>Monitoring and analytics for API frameworks.</h2>
 			<div class="links">
-				<a href="/generate" class="link">
+				<a
+					href={`/generate${queryString ? `?${queryString}` : ''}`}
+					class="link"
+				>
 					<div class="text">
 						Try now – it's <span class="italic">free</span>
-					</div></a
+					</div>
+				</a>
+				<a
+					href={`/dashboard/demo${queryString ? `?${queryString}` : ''}`}
+					class="link secondary"
 				>
-				<a href="/dashboard/demo" class="link secondary">
-					<div class="text">Demo</div></a
-				>
+					<div class="text">Demo</div>
+				</a>
 			</div>
 		</div>
 		<div style="position: relative" class="right">
-			<img class="logo" src="img/home-logo2.png" alt="" />
+			<img class="logo" src="img/logos/home-logo.png" alt="" />
 			<img
 				id="hover-1"
 				style="position: absolute;"
 				class="logo animated"
-				src="img/animated5.png"
+				src="img/logos/floating-points-1.png"
 				alt=""
 			/>
 			<img
 				id="hover-2"
 				style="position: absolute;"
 				class="logo animated"
-				src="img/animated6.png"
+				src="img/logos/floating-points-2.png"
 				alt=""
 			/>
 		</div>
@@ -142,7 +154,6 @@
 		.landing-page-container {
 			margin: 0 2em;
 		}
-
 		.logo {
 			width: 100%;
 		}
@@ -167,7 +178,6 @@
 		.landing-page {
 			padding-bottom: 8em;
 		}
-
 		.logo {
 			margin-bottom: 0;
 		}

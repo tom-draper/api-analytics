@@ -1,22 +1,22 @@
 <script lang="ts">
-	import { serverURL } from '../lib/consts';
+	import { getServerURL } from '../lib/url';
 
 	type State = 'generate' | 'loading' | 'copy' | 'copied' | 'error';
 
 	let state: State = 'generate';
-	let generatedKey = false;
 	let apiKey = '';
 	async function submit() {
-		if (generatedKey) {
-			return;
+		if (apiKey) {
+			return; // Already generated
 		}
 
 		setState('loading');
+
 		try {
-			const response = await fetch(`${serverURL}/api/generate-api-key`);
+			const url = getServerURL();
+			const response = await fetch(`${url}/api/generate-api-key`);
 			if (response.status === 200) {
 				const data = await response.json();
-				generatedKey = true;
 				apiKey = data;
 				setState('copy');
 			} else {
@@ -62,7 +62,7 @@
 			id="formBtn"
 			on:click={copyToClipboard}
 			class:no-display={state !== 'copy'}
-			><img class="copy-icon" src="img/copy.png" alt="" /></button
+			><img class="copy-icon" src="img/icons/copy.png" alt="" /></button
 		>
 		<button
 			id="formBtn"
@@ -75,7 +75,7 @@
 	<div class="details">
 		<div class="keep-secure">Keep your API key safe and secure.</div>
 		<div class="highlight logo">API Analytics</div>
-		<img class="footer-logo" src="img/logo.png" alt="" />
+		<img class="footer-logo" src="img/logos/lightning-green.png" alt="" />
 	</div>
 </div>
 

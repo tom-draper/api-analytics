@@ -25,7 +25,7 @@ func NewConfig() *Config {
 		GetHostname: GetHostname,
 		GetUserAgent: GetUserAgent,
 		GetIPAddress: GetIPAddress,
-		GetUserID: GetUserID
+		GetUserID: GetUserID,
 	}
 }
 

@@ -1,13 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
 	"time"
 
+	"log"
+
 	"github.com/fatih/color"
-	"github.com/tom-draper/api-analytics/server/database"
 	"github.com/tom-draper/api-analytics/server/email"
 	monitor "github.com/tom-draper/api-analytics/server/tools/monitor/lib"
 	"github.com/tom-draper/api-analytics/server/tools/usage"
@@ -19,41 +21,42 @@ func printBanner(text string) {
 	fmt.Printf("---- %s %s\n", text, strings.Repeat("-", 35-len(text)))
 }
 
-func emailBody(users []database.UserRow, requests []usage.UserCount, monitors []usage.UserCount, size string, connections int) string {
-	return fmt.Sprintf("%d new users\n%d requests\n%d monitors\nDatabase size: %s\nActive database connections: %d", len(users), len(requests), len(monitors), size, connections)
+func emailBody(users []usage.UserRow, requests []usage.UserCount, monitors []usage.UserCount, size string, connections int) string {
+	return fmt.Sprintf("%d new users\n%d requests\n%d monitors\nDatabase size: %s\nActive database connections: %d",
+		len(users), len(requests), len(monitors), size, connections)
 }
 
-func emailCheckup() {
-	users, err := usage.DailyUsers()
-	if err != nil {
-		panic(err)
-	}
-	requests, err := usage.DailyUserRequests()
-	if err != nil {
-		panic(err)
-	}
-	monitors, err := usage.DailyUserMonitors()
-	if err != nil {
-		panic(err)
-	}
-	size, err := usage.TableSize("requests")
-	if err != nil {
-		panic(err)
-	}
-	connections, err := usage.DatabaseConnections()
-	if err != nil {
-		panic(err)
-	}
+func emailCheckup(ctx context.Context) {
+	users, err := usage.DailyUsers(context.Background())
+	handleError(err)
+
+	requests, err := usage.DailyUserRequests(context.Background())
+	handleError(err)
+
+	monitors, err := usage.DailyUserMonitors(context.Background())
+	handleError(err)
+
+	size, err := usage.TableSize(context.Background(), "requests")
+	handleError(err)
+
+	connections, err := usage.DatabaseConnections(context.Background())
+	handleError(err)
+
 	body := emailBody(users, requests, monitors, size, connections)
 	address := email.GetEmailAddress()
 	email.SendEmail("API Analytics", body, address)
+}
+
+func handleError(err error) {
+	if err != nil {
+		log.Printf("Error: %v\n", err)
+	}
 }
 
 func displayCheckup() {
 	displayServicesTest()
 	displayAPITest()
 	displayLoggerTest()
-
 	displayDatabaseStats()
 	displayLastHour()
 	displayLast24Hours()
@@ -63,11 +66,10 @@ func displayCheckup() {
 
 func displayServicesTest() {
 	printBanner("Services")
-
-	testService("api")
-	testService("logger")
-	testService("nginx")
-	testService("postgresql")
+	services := []string{"api", "logger", "nginx", "postgresql"}
+	for _, service := range services {
+		testService(service)
+	}
 }
 
 func testService(service string) {
@@ -82,12 +84,19 @@ func testService(service string) {
 
 func displayAPITest() {
 	printBanner("API")
-
-	testAPIEndpoint("/generate-api-key", monitor.TryNewUser)
-	testAPIEndpoint("/requests/<user-id>", monitor.TryFetchDashboardData)
-	testAPIEndpoint("/data", monitor.TryFetchData)
-	testAPIEndpoint("/user-id/<api-key>", monitor.TryFetchUserID)
-	testAPIEndpoint("/monitor/pings/<user-id>", monitor.TryFetchMonitorPings)
+	endpoints := []struct {
+		endpoint string
+		testFunc func() error
+	}{
+		{"/generate-api-key", monitor.TryNewUser},
+		{"/requests/<user-id>", monitor.TryFetchDashboardData},
+		{"/data", monitor.TryFetchData},
+		{"/user-id/<api-key>", monitor.TryFetchUserID},
+		{"/monitor/pings/<user-id>", monitor.TryFetchMonitorPings},
+	}
+	for _, ep := range endpoints {
+		testAPIEndpoint(ep.endpoint, ep.testFunc)
+	}
 }
 
 func testAPIEndpoint(endpoint string, testEndpoint func() error) {
@@ -95,17 +104,16 @@ func testAPIEndpoint(endpoint string, testEndpoint func() error) {
 	err := testEndpoint()
 	fmt.Printf("%s ", endpoint)
 	if err != nil {
-		color.New(color.FgRed).Printf("offline")
+		color.New(color.FgRed).Printf("offline\n")
 		fmt.Printf("\n%s\n", err.Error())
 	} else {
-		color.New(color.FgGreen).Printf("online")
+		color.New(color.FgGreen).Printf("online\n")
 		fmt.Printf(" %s\n", time.Since(start))
 	}
 }
 
 func displayLoggerTest() {
 	printBanner("Logger")
-
 	testLoggerEndpoint("/log-request", monitor.TryLogRequests, true)
 	testLoggerEndpoint("/requests", monitor.TryLogRequests, false)
 }
@@ -115,10 +123,10 @@ func testLoggerEndpoint(endpoint string, testEndpoint func(legacy bool) error, l
 	err := testEndpoint(legacy)
 	fmt.Printf("%s ", endpoint)
 	if err != nil {
-		color.New(color.FgRed).Printf("offline")
+		color.New(color.FgRed).Printf("offline\n")
 		fmt.Printf("\n%s\n", err.Error())
 	} else {
-		color.New(color.FgGreen).Printf("online")
+		color.New(color.FgGreen).Printf("online\n")
 		fmt.Printf(" %s\n", time.Since(start))
 	}
 }
@@ -126,84 +134,82 @@ func testLoggerEndpoint(endpoint string, testEndpoint func(legacy bool) error, l
 func displayDatabaseStats() {
 	p := message.NewPrinter(language.English)
 	printBanner("Database")
-	connections, err := usage.DatabaseConnections()
-	if err != nil {
-		panic(err)
-	}
+
+	connections, err := usage.DatabaseConnections(context.Background())
+	handleError(err)
 	p.Println("Active database connections:", connections)
-	size, err := usage.TableSize("requests")
-	if err != nil {
-		panic(err)
-	}
+
+	size, err := usage.TableSize(context.Background(), "requests")
+	handleError(err)
 	p.Println("Database size:", size)
 }
 
 func displayLastHour() {
 	p := message.NewPrinter(language.English)
 	printBanner("Last Hour")
-	dailyUsers, err := usage.HourlyUsersCount()
-	if err != nil {
-		panic(err)
+
+	hourlyStats := []struct {
+		label string
+		count func(context.Context) (int, error)
+	}{
+		{"Users", usage.HourlyUsersCount},
+		{"Requests", usage.HourlyRequestsCount},
+		{"Monitors", usage.HourlyMonitorsCount},
 	}
-	p.Println("Users:", dailyUsers)
-	dailyRequests, err := usage.HourlyRequestsCount()
-	if err != nil {
-		panic(err)
+
+	for _, stat := range hourlyStats {
+		count, err := stat.count(context.Background())
+		handleError(err)
+		p.Println(stat.label+":", count)
 	}
-	p.Println("Requests:", dailyRequests)
-	dailyMonitors, err := usage.HourlyMonitorsCount()
-	if err != nil {
-		panic(err)
-	}
-	p.Println("Monitors:", dailyMonitors)
 }
 
 func displayLast24Hours() {
 	p := message.NewPrinter(language.English)
 	printBanner("Last 24 Hours")
-	dailyUsers, err := usage.DailyUsersCount()
-	if err != nil {
-		panic(err)
+
+	dailyStats := []struct {
+		label string
+		count func(context.Context) (int, error)
+	}{
+		{"Users", usage.DailyUsersCount},
+		{"Requests", usage.DailyRequestsCount},
+		{"Monitors", usage.DailyMonitorsCount},
 	}
-	p.Println("Users:", dailyUsers)
-	dailyRequests, err := usage.DailyRequestsCount()
-	if err != nil {
-		panic(err)
+
+	for _, stat := range dailyStats {
+		count, err := stat.count(context.Background())
+		handleError(err)
+		p.Println(stat.label+":", count)
 	}
-	p.Println("Requests:", dailyRequests)
-	dailyMonitors, err := usage.DailyMonitorsCount()
-	if err != nil {
-		panic(err)
-	}
-	p.Println("Monitors:", dailyMonitors)
 }
 
 func displayLastWeek() {
 	p := message.NewPrinter(language.English)
 	printBanner("Last Week")
-	weeklyUsers, err := usage.WeeklyUsersCount()
-	if err != nil {
-		panic(err)
+
+	weeklyStats := []struct {
+		label string
+		count func(context.Context) (int, error)
+	}{
+		{"Users", usage.WeeklyUsersCount},
+		{"Requests", usage.WeeklyRequestsCount},
+		{"Monitors", usage.WeeklyMonitorsCount},
 	}
-	p.Println("Users:", weeklyUsers)
-	weeklyRequests, err := usage.WeeklyRequestsCount()
-	if err != nil {
-		panic(err)
+
+	for _, stat := range weeklyStats {
+		count, err := stat.count(context.Background())
+		handleError(err)
+		p.Println(stat.label+":", count)
 	}
-	p.Println("Requests:", weeklyRequests)
-	weeklyMonitors, err := usage.WeeklyMonitorsCount()
-	if err != nil {
-		panic(err)
-	}
-	p.Println("Monitors:", weeklyMonitors)
 }
 
 func displayDatabaseCheckup() {
 	displayDatabaseStats()
 	p := message.NewPrinter(language.English)
-	totalRequests, err := usage.RequestsCount("")
+	totalRequests, err := usage.RequestsCount(context.Background(), "")
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 	p.Println("Requests:", totalRequests)
 	displayDatabaseTableStats()
@@ -211,9 +217,9 @@ func displayDatabaseCheckup() {
 
 func displayDatabaseTableStats() {
 	printBanner("Requests Fields")
-	columnSize, err := usage.RequestsColumnSize()
+	columnSize, err := usage.RequestsColumnSize(context.Background())
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 	columnSize.Display()
 }
@@ -227,47 +233,41 @@ func displayUsersCheckup() {
 func displayTotal() {
 	p := message.NewPrinter(language.English)
 	printBanner("Total")
-	totalUsers, err := usage.UsersCount("")
-	if err != nil {
-		panic(err)
+
+	totalStats := []struct {
+		label string
+		count func(context.Context, string) (int, error)
+	}{
+		{"Users", usage.UsersCount},
+		{"Requests", usage.RequestsCount},
+		{"Monitors", usage.MonitorsCount},
 	}
-	p.Println("Users:", totalUsers)
-	totalRequests, err := usage.RequestsCount("")
-	if err != nil {
-		panic(err)
+
+	for _, stat := range totalStats {
+		count, err := stat.count(context.Background(), "")
+		handleError(err)
+		p.Println(stat.label+":", count)
 	}
-	p.Println("Requests:", totalRequests)
-	totalMonitors, err := usage.MonitorsCount("")
-	if err != nil {
-		panic(err)
-	}
-	p.Println("Monitors:", totalMonitors)
 }
 
 func displayTopUsers() {
 	printBanner("Top Users")
-	topUsers, err := usage.TopUsers(10)
-	if err != nil {
-		panic(err)
-	}
+	topUsers, err := usage.TopUsers(context.Background(), 10)
+	handleError(err)
 	usage.DisplayUsers(topUsers)
 }
 
 func displayUnusedUsers() {
 	printBanner("Unused Users")
-	unusedUsers, err := usage.UnusedUsers()
-	if err != nil {
-		panic(err)
-	}
+	unusedUsers, err := usage.UnusedUsers(context.Background())
+	handleError(err)
 	usage.DisplayUserTimes(unusedUsers)
 }
 
 func displayUsersSinceLastRequest() {
 	printBanner("Users Since Last Request")
-	sinceLastRequestUsers, err := usage.SinceLastRequestUsers()
-	if err != nil {
-		panic(err)
-	}
+	sinceLastRequestUsers, err := usage.SinceLastRequestUsers(context.Background())
+	handleError(err)
 	usage.DisplayUserTimes(sinceLastRequestUsers)
 }
 
@@ -277,10 +277,9 @@ func displayMonitorsCheckup() {
 
 func displayMonitors() {
 	printBanner("Monitors")
-	monitors, err := usage.TotalMonitors()
-	if err != nil {
-		panic(err)
-	}
+	monitors, err := usage.TotalMonitors(context.Background())
+	handleError(err)
+
 	for i, monitor := range monitors {
 		fmt.Printf("[%d] %s %s %s\n", i, monitor.APIKey, monitor.CreatedAt.Format("2006-01-02 15:04:05"), monitor.URL)
 	}
@@ -296,16 +295,17 @@ type Options struct {
 
 func getOptions() Options {
 	options := Options{}
-	for _, arg := range os.Args {
-		if arg == "--email" {
+	for _, arg := range os.Args[1:] {
+		switch arg {
+		case "--email":
 			options.email = true
-		} else if arg == "--users" {
+		case "--users":
 			options.users = true
-		} else if arg == "--monitors" {
+		case "--monitors":
 			options.monitors = true
-		} else if arg == "--database" {
+		case "--database":
 			options.database = true
-		} else if arg == "--help" {
+		case "--help":
 			options.help = true
 		}
 	}
@@ -320,8 +320,13 @@ func main() {
 	options := getOptions()
 	if options.help {
 		displayHelp()
-	} else if options.email {
-		emailCheckup()
+		return
+	}
+
+	ctx := context.Background()
+
+	if options.email {
+		emailCheckup(ctx)
 	} else if options.users {
 		displayUsersCheckup()
 	} else if options.monitors {

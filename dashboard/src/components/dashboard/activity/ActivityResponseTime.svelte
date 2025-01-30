@@ -56,7 +56,8 @@
 			}
 			const time = date.getTime();
 			if (responseTimesFreq.has(time)) {
-				responseTimesFreq.get(time).totalResponseTime += data[i][ColumnIndex.ResponseTime];
+				responseTimesFreq.get(time).totalResponseTime +=
+					data[i][ColumnIndex.ResponseTime];
 				responseTimesFreq.get(time).count++;
 			} else {
 				responseTimesFreq.set(time, { totalResponseTime: 1, count: 1 });
