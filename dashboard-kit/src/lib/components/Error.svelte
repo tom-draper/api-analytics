@@ -49,7 +49,11 @@
 <style scoped>
 	.description {
 		color: var(--dim-text);
-		padding: 5em 0 5em;
+		padding: 7em 0 1em;
+		font-size: 0.8em;
+		min-height: 10em;
+		display: grid;
+		place-items: center;
 	}
 
 	.hanging-lightning {
@@ -98,8 +102,8 @@
 		display: inline-block;
 		padding-top: 100px;
 		padding-bottom: 100px;
-		padding-right: 4em;
-		padding-left: 4em;
+		padding-right: 2em;
+		padding-left: 2em;
 		margin-top: -2em;
 		width: fit-content;
 		-webkit-background-clip: text;

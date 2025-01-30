@@ -6,7 +6,7 @@
 
 	function triggerNotificationMessage(
 		message: string,
-		style: 'error' | 'warn' | 'success' = 'error',
+		style: 'error' | 'warn' | 'success' = 'error'
 	) {
 		notification.message = message;
 		notification.style = style;
@@ -18,19 +18,16 @@
 
 	async function deleteMonitor() {
 		try {
-			const url = getServerURL();
-			const response = await fetch(
-				`${url}/api/monitor/delete`,
-				{
-					method: 'POST',
-					headers: {},
-					body: JSON.stringify({
-						user_id: userID,
-						url: url,
-						status: 0,
-					}),
-				},
-			);
+			const serverURL = getServerURL();
+			const response = await fetch(`${serverURL}/api/monitor/delete`, {
+				method: 'POST',
+				headers: {},
+				body: JSON.stringify({
+					user_id: userID,
+					status: 0,
+					url,
+				})
+			});
 			if (response.status === 201) {
 				triggerNotificationMessage('Deleted successfully', 'success');
 				removeMonitor(url);
@@ -43,32 +40,29 @@
 		}
 	}
 
-	function setUptime() {
+	function getUptime(samples: Sample[]) {
 		let success = 0;
 		let total = 0;
 		for (let i = 0; i < samples.length; i++) {
 			if (samples[i].label === 'no-request') {
 				continue;
 			}
-			if (
-				samples[i].label === 'success' ||
-				samples[i].label === 'delay'
-			) {
+			if (samples[i].label === 'success' || samples[i].label === 'delay') {
 				success++;
 			}
 			total++;
 		}
 
 		if (total === 0) {
-			uptime = '0';
-		} else {
-			const per = (success / total) * 100;
-			// If 100% display without decimal
-			uptime = per === 100 ? '100' : per.toFixed(2);
-		}
+			return 'N/A';
+		} 
+
+		const per = (success / total) * 100;
+		// If 100% display without decimal
+		return per === 100 ? '100' : per.toFixed(2);
 	}
 
-	function periodSample(): MonitorSample[] {
+	function periodSample(period: string): MonitorSample[] {
 		/* Sample ping recordings at regular intervals if number of bars fewer than 
 		total recordings the current period length */
 		let sample: MonitorSample[] = [];
@@ -97,15 +91,20 @@
 		return sample;
 	}
 
-	function setSamples() {
+	function getSamples(period: string) {
 		const markers = periodToMarkers(period);
-		samples = Array(markers).fill({
+		const samples: Sample[] = Array.from({ length: markers }).fill({
 			label: 'no-request',
 			responseTime: 0,
 			status: 0,
-			createdAt: null,
+			createdAt: null
 		});
-		const sampledData = periodSample();
+
+		if (!markers) {
+			return samples;
+		}
+
+		const sampledData = periodSample(period);
 		const start = markers - sampledData.length;
 
 		for (let i = 0; i < sampledData.length; i++) {
@@ -113,7 +112,7 @@
 				label: 'no-request',
 				status: sampledData[i].status,
 				responseTime: sampledData[i]['response_time'],
-				createdAt: new Date(sampledData[i]['created_at']),
+				createdAt: new Date(sampledData[i]['created_at'])
 			};
 			if (sampledData[i].status >= 200 && sampledData[i].status <= 299) {
 				samples[i + start].label = 'success';
@@ -121,35 +120,32 @@
 				samples[i + start].label = 'error';
 			}
 		}
+
+		return samples;
 	}
 
-	function setCurrentStatus() {
+	function getCurrentStatus(samples: Sample[]) {
 		const latest = samples[samples.length - 1];
 		if (latest.label === null || latest.label === 'no-request') {
-			currentStatus = 'no-request';
+			return 'no-request';
 		} else if (latest.label === 'error') {
-			currentStatus = 'error';
+			return 'error';
 		} else if (latest.label == 'success') {
-			currentStatus = 'success';
+			return 'success';
 		}
-		anyError = anyError || currentStatus === 'error';
 	}
 
-	function separateURL() {
+	function separateURL(url: string) {
+		let prefix: string = '';
+		let body: string = '';
 		if (url.startsWith('https://')) {
-			separatedURL.prefix = 'https://';
-			separatedURL.body = url.replace('https://', '');
+			prefix = 'https://';
+			body = url.replace('https://', '');
 		} else if (url.startsWith('http://')) {
-			separatedURL.prefix = 'http://';
-			separatedURL.body = url.replace('http://', '');
+			prefix = 'http://';
+			body = url.replace('http://', '');
 		}
-	}
-
-	function build() {
-		separateURL();
-		setSamples();
-		setCurrentStatus();
-		setUptime();
+		return { prefix, body };
 	}
 
 	// Monitor sample with label for status colour CSS class
@@ -158,13 +154,19 @@
 	let uptime = '';
 	let currentStatus: 'success' | 'error' | 'no-request' = 'no-request';
 	let samples: Sample[];
-	const separatedURL = {
+	let separatedURL = {
 		prefix: '',
-		body: '',
+		body: ''
 	};
 
 	// If card period or url changes at any time, rebuild
-	$: (period || url) && build();
+	$: {
+		separatedURL = separateURL(url);
+		samples = getSamples(period);
+		currentStatus = getCurrentStatus(samples) || currentStatus;
+		anyError = anyError || currentStatus === 'error'
+		uptime = getUptime(samples);
+	}
 
 	export let url: string,
 		data: MonitorData,
@@ -180,25 +182,36 @@
 		<div class="card-text-left">
 			<div class="card-status">
 				{#if currentStatus === 'no-request'}
-					<div class="indicator grey-light" />
+					<div class="indicator grey-light"></div>
 				{:else if currentStatus === 'error'}
-					<div class="indicator red-light" />
+					<div class="indicator red-light"></div>
 				{:else}
-					<div class="indicator green-light" />
+					<div class="indicator green-light"></div>
 				{/if}
 			</div>
 			<a href="{separatedURL.prefix}{separatedURL.body}" class="endpoint"
-				><span style="color: var(--dim-text)"
-					>{separatedURL.prefix}</span
-				>{separatedURL.body}</a
+				><span class="text-[var(--dim-text)]">{separatedURL.prefix}</span>{separatedURL.body}</a
 			>
-			<button class="delete" on:click={deleteMonitor}
-				><img class="bin-icon" src="/images/icons/bin.png" alt="" /></button
-			>
+			<button class="delete" on:click={deleteMonitor}>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+					stroke="currentColor"
+					class="size-6"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+					/>
+				</svg>
+			</button>
 		</div>
 		<div class="card-text-right">
 			<div class="uptime">
-				Uptime: {currentStatus === 'no-request' ? 'N/A' : `${uptime}%`}
+				Uptime: {currentStatus === 'no-request' ? 'Pending' : `${uptime}%`}
 			</div>
 		</div>
 	</div>
@@ -212,12 +225,14 @@
 						: sample.status === 0
 							? `No response\n${sample.createdAt.toLocaleString()}`
 							: `Status: ${sample.status}\n${sample.createdAt.toLocaleString()}`}
-				/>
+				></div>
 			{/each}
 		</div>
-		<div class="response-time">
-			<ResponseTime bind:data={samples} {period} />
-		</div>
+		{#if samples[samples.length - 1].label !== 'no-request'}
+			<div class="response-time">
+				<ResponseTime bind:data={samples} {period} />
+			</div>
+		{/if}
 	{/if}
 </div>
 
@@ -266,7 +281,7 @@
 		background: rgb(199, 229, 125);
 	}
 	.error {
-		background: rgb(228, 98, 98);
+		background: var(--red);
 	}
 	.no-request {
 		color: var(--dim-text);
@@ -280,6 +295,14 @@
 		border-radius: 5px;
 		margin-right: 5px;
 		margin-bottom: 1px;
+	}
+	.delete {
+		aspect-ratio: 1/1;
+		color: var(--dim-text);
+	}
+	.delete > svg {
+		width: 16px;
+		height: 16px;
 	}
 	.card-status {
 		display: grid;
@@ -306,11 +329,12 @@
 		border: none;
 		cursor: pointer;
 		margin-left: 10px;
-		padding: 2px 4px 1px;
+		padding: 2px 4px;
 		border-radius: 4px;
 	}
 	.delete:hover {
 		background: var(--red);
+		color: var(--background);
 	}
 	.bin-icon {
 		width: 12px;

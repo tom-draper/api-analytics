@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { periodToMarkers } from '$lib/period';
 
-	function defaultLayout() {
+	function getPlotLayout() {
 		return {
 			title: false,
 			autosize: true,
@@ -27,12 +26,16 @@
 		};
 	}
 
-	function bars() {
+	function bars(data: MonitorData, period: string) {
 		const markers = periodToMarkers(period);
+		
+		if (!markers) {
+			return;
+		}
 
-		const dates: Date[] = Array(markers);
-		const x: number[] = Array(markers);
-		const requests: number[] = Array(markers);
+		const dates: (Date | null)[] = Array.from({length: markers});
+		const x: (number | null)[] = Array.from({length: markers});
+		const requests: (number | null)[] = Array.from({length: markers});
 		for (let i = 0; i < markers; i++) {
 			requests[markers - i - 1] = data[i].responseTime;
 			dates[markers - i - 1] = data[i].createdAt;
@@ -66,10 +69,10 @@
 		];
 	}
 
-	function buildPlotData() {
+	function getPlotData(data: MonitorData, period: string) {
 		return {
-			data: bars(),
-			layout: defaultLayout(),
+			data: bars(data, period),
+			layout: getPlotLayout(),
 			config: {
 				responsive: true,
 				showSendToCloud: false,
@@ -78,10 +81,18 @@
 		};
 	}
 
-	function genPlot() {
-		const plotData = buildPlotData();
-		//@ts-ignore
-		new Plotly.newPlot(
+
+	function generatePlot(data: MonitorData, period: string) {
+		if (plotDiv.data) {
+			refreshPlot(data, period);
+		} else {
+			newPlot(data, period);
+		}
+	}
+
+	async function newPlot(data: MonitorData, period: string) {
+		const plotData = getPlotData(data, period);
+		Plotly.newPlot(
 			plotDiv,
 			plotData.data,
 			plotData.layout,
@@ -89,16 +100,21 @@
 		);
 	}
 
+	function refreshPlot(data: MonitorData, period: string) {
+		Plotly.react(
+			plotDiv,
+			bars(data, period),
+			getPlotLayout(),
+		)
+	}
+
 	let plotDiv: HTMLDivElement;
-	let setup = false;
-	onMount(() => {
-		genPlot();
-		setup = true;
-	});
 
-	$: setup && (data || period) && genPlot();
+	$: if (plotDiv && data) {
+		generatePlot(data, period);
+	}
 
-	export let data, period: string;
+	export let data: MonitorData, period: string;
 </script>
 
 <div id="plotly">
