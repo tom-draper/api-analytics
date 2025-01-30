@@ -74,7 +74,7 @@
 <div class="card">
 	<div class="card-text">
 		<div class="url">
-			<div class="dropdown-container">
+			<div class="text-sm">
 				<Dropdown
 					{options}
 					bind:selected={urlPrefix}
@@ -84,6 +84,7 @@
 			<input
 				type="text"
 				placeholder="www.example.com/endpoint/"
+				class="text-sm"
 				bind:value={monitorURL}
 			/>
 			<button class="add" on:click={postMonitor}>Add</button>
@@ -114,10 +115,12 @@
 		width: 100%;
 		text-align: left;
 		height: auto;
-		padding: 5px 12px;
-		color: white;
-		font-size: 0.9em;
+		padding: 3px 12px;
 		font-family: 'Geist';
+		border: 1px solid var(--background);
+	}
+	input::placeholder {
+		color: var(--dim-text);
 	}
 	.url {
 		display: flex;
@@ -133,6 +136,8 @@
 		border-radius: 4px;
 		background: var(--light-background);
 		cursor: pointer;
+		font-size: 0.85em;
+		color: var(--background)
 	}
 	.add {
 		background: var(--highlight);

@@ -1,14 +1,10 @@
-// src/routes/page-to-redirect/+page.server.ts
-
-import { page } from '$app/state';
 import { redirect } from '@sveltejs/kit';
 
-export function load() {
-    const uuid = page.params.uuid;
-    console.log(page)
+export function load({ params }) {
+    const uuid = params.uuid;
     if (!uuid) {
         throw redirect(308, '/monitor');
     }
 
-    throw redirect(308, `/monitor/${page.params.uuid}`);
+    throw redirect(308, `/monitor/${uuid}`);
 }

@@ -167,21 +167,19 @@
 	}
 
 	@media screen and (max-width: 800px) {
-		.donate {
-			display: none;
-		}
-		.settings {
-			margin-left: auto;
-		}
+
 	}
 
 	@media screen and (max-width: 1300px) {
 		.button-nav {
 			margin: 2.5em 3rem 0;
 		}
+		.info {
+			display: none;
+		}
 	}
 
-	@media screen and (max-width: 800px) {
+	@media screen and (max-width: 820px) {
 		.button-nav {
 			flex-direction: column;
 		}
@@ -203,8 +201,11 @@
 			margin-top: 0;
 			margin-right: auto;
 		}
+		.donate {
+			display: none;
+		}
 	}
-	@media screen and (max-width: 600px) {
+	@media screen and (max-width: 660px) {
 		.time-period {
 			right: 1em;
 		}

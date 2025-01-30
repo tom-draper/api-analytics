@@ -1,18 +1,20 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import Footer from '$lib/components/Footer.svelte';
 	import Card from '$lib/components/monitor/Card.svelte';
 	import TrackNew from '$lib/components/monitor/TrackNew.svelte';
 	import Notification from '$lib/components/dashboard/Notification.svelte';
 	import formatUUID from '$lib/uuid';
 	import type { NotificationState } from '$lib/notification';
 	import { getServerURL } from '$lib/url';
+	import { page } from '$app/stores';
+
+	const userID = formatUUID($page.params.uuid);
 
 	async function fetchData() {
-		userID = formatUUID(userID);
+		const url = getServerURL();
 
+		let data: MonitorData = {};
 		try {
-			const url = getServerURL();
 			const response = await fetch(`${url}/api/monitor/pings/${userID}`);
 			if (response.status === 200) {
 				data = await response.json();
@@ -20,6 +22,10 @@
 		} catch (e) {
 			console.log(e);
 		}
+
+		console.log(data);
+
+		return data;
 	}
 
 	function setPeriod(value: string) {
@@ -47,54 +53,51 @@
 	let notification: NotificationState = {
 		message: '',
 		style: 'error',
-		show: false,
+		show: false
 	};
 
 	let showTrackNew = false;
 	onMount(async () => {
-		await fetchData();
-		console.log(data);
+		data = await fetchData();
 	});
-
-	export let userID: string;
 </script>
 
 <div class="monitoring">
 	<div class="status">
 		{#if data !== undefined && Object.keys(data).length === 0}
 			<div class="status-image">
-				<img
-					id="status-image"
-					src="/images/logos/lightning-green.png"
-					alt=""
-				/>
-				<div class="status-text">Setup required</div>
+				<img id="status-image" src="/images/logos/lightning-green.svg" alt="" />
+				<div class="status-text">Setup Required</div>
 			</div>
 		{:else if error}
 			<div class="status-image">
 				<img id="status-image" src="/images/icons/big-cross.png" alt="" />
-				<div class="status-text">Systems down</div>
+				<div class="status-text">Systems Down</div>
 			</div>
 		{:else}
 			<div class="status-image">
-				<img id="status-image" src="/images/icons/big-tick.png" alt="" />
+				<img id="status-image" src="/images/logos/lightning-green.svg" alt="" />
 				<div class="status-text">Systems Online</div>
 			</div>
 		{/if}
 	</div>
 	<div class="cards-container">
 		<div class="controls">
-			<div class="add-new">
-				<button
-					class="add-new-btn"
-					class:active={showTrackNew}
-					on:click={toggleShowTrackNew}
-					><div class="add-new-text">
-						<span class="plus">+</span>
-					</div>
+			<div class="add-new text-sm">
+				<button class="add-new-btn" class:active={showTrackNew} on:click={toggleShowTrackNew}>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="currentColor"
+						class="size-6"
+					>
+						<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+					</svg>
 				</button>
 			</div>
-			<div class="period-controls-container">
+			<div class="period-controls-container text-sm">
 				<div class="period-controls">
 					{#each periods as _period}
 						<button
@@ -139,7 +142,6 @@
 	</div>
 </div>
 <Notification bind:state={notification} />
-<Footer />
 
 <style scoped>
 	.monitoring {
@@ -150,13 +152,16 @@
 		display: grid;
 		place-items: center;
 	}
+	.status-image {
+		place-items: center;
+	}
 	#status-image {
-		height: 130px;
-		margin-bottom: 1em;
+		height: 5em;
+		margin-bottom: 2em;
 		filter: saturate(1.3);
 	}
 	.status-text {
-		font-size: 2.2em;
+		font-size: 2em;
 		font-weight: 700;
 		color: white;
 	}
@@ -179,10 +184,19 @@
 		display: flex;
 		justify-content: left;
 	}
+	.add-new-btn > svg {
+		width: 20px;
+		height: 20px;
+	}
 	.period-controls {
 		margin-left: auto;
 		display: flex;
 		justify-content: right;
+	}
+
+	.period-btn:hover {
+		background: #161616
+
 	}
 
 	.period-controls {
@@ -196,11 +210,14 @@
 	}
 
 	button {
-		background: var(--light-background);
+		background: var(--background);
 		color: var(--dim-text);
 		border: none;
 		padding: 3px 12px;
 		cursor: pointer;
+	}
+	.add-new-btn {
+		background: var(--light-background);
 	}
 	.add-new-btn:hover {
 		background: radial-gradient(var(--light-background), #3fcf8e10);
@@ -212,20 +229,20 @@
 		height: 35px;
 		color: var(--highlight);
 		width: 35px;
-	}
-	.add-new-text {
-		display: flex;
-		justify-content: center;
-		font-family: 'Noto Sans' !important;
-		font-size: 1.8em;
+		display: grid;
+		place-items: center;
 	}
 	.active,
 	.active:hover {
-		background: var(--highlight);
+		background: var(--highlight) !important;
 		color: black !important;
 	}
 	.spinner {
 		margin: 3em 0 10em;
+	}
+	.loader {
+		width: 40px;
+		height: 40px;
 	}
 
 	@media screen and (max-width: 1100px) {

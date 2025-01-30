@@ -437,7 +437,7 @@
 			margin: 0 2em;
 		}
 	}
-	@media screen and (max-width: 600px) {
+	@media screen and (max-width: 660px) {
 		.right,
 		.left {
 			margin: 0;
