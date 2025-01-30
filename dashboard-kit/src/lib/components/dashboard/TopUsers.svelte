@@ -45,7 +45,7 @@
 	}
 
 	function formatUserID(ipAddress: string, customUserID: string) {
-		return `${ipAddress} ${customUserID}`;
+		return `${ipAddress}||${customUserID}`;
 	}
 
 	function build(data: RequestsData) {
@@ -131,16 +131,16 @@
 
 	function nextPage() {
 		pageNumber += 1;
-		setPage();
+		page = getPage();
 	}
 
 	function prevPage() {
 		pageNumber -= 1;
-		setPage();
+		page = getPage();
 	}
 
-	function setPage() {
-		page = topUsers.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
+	function getPage() {
+		return topUsers.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
 	}
 
 	let topUsers = null;
@@ -155,7 +155,7 @@
 		build(data);
 	}
 
-	export let data: RequestsData, targetUser: string;
+	export let data: RequestsData, targetUser: string | null;
 </script>
 
 {#if topUsers || targetUser}

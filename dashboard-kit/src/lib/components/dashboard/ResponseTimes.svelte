@@ -15,8 +15,7 @@
 	}
 
 	function build(data: RequestsData) {
-		calcualteMetrics(data);
-		genPlot(data);
+
 	}
 
 	function calcualteMetrics(data: RequestsData) {
@@ -30,7 +29,7 @@
 		UQ = quantile(responseTimes, 0.75);
 	}
 
-	function defaultLayout(range: [number, number]) {
+	function getPlotLayout(range: [number, number]) {
 		return {
 			title: false,
 			autosize: true,
@@ -93,11 +92,11 @@
 		];
 	}
 
-	function buildPlotData(data: RequestsData) {
+	function getPlotData(data: RequestsData) {
 		const b = bars(data);
 		return {
 			data: b,
-			layout: defaultLayout([b[0].x[0], b[0].x[b[0].x.length - 1]]),
+			layout: getPlotLayout([b[0].x[0], b[0].x[b[0].x.length - 1]]),
 			config: {
 				responsive: true,
 				showSendToCloud: false,
@@ -106,10 +105,17 @@
 		};
 	}
 
-	function genPlot(data: RequestsData) {
-		const plotData = buildPlotData(data);
-		//@ts-ignore
-		new Plotly.newPlot(
+	function generatePlot(data: RequestsData) {
+		if (plotDiv.data) {
+			refreshPlot(data);
+		} else {
+			newPlot(data);
+		}
+	}
+
+	async function newPlot(data: RequestsData) {
+		const plotData = getPlotData(data);
+		Plotly.newPlot(
 			plotDiv,
 			plotData.data,
 			plotData.layout,
@@ -117,13 +123,26 @@
 		);
 	}
 
+	function refreshPlot(data: RequestsData) {
+		const b = bars(data);
+		Plotly.react(
+			plotDiv,
+			bars(data),
+			getPlotLayout([b[0].x[0], b[0].x[b[0].x.length - 1]]),
+		)
+	}
+
 	let median: number;
 	let LQ: number;
 	let UQ: number;
 	let plotDiv: HTMLDivElement;
 
+	$: if (data) {
+		calcualteMetrics(data);
+	}
+
 	$: if (plotDiv && data) {
-		build(data);
+		generatePlot(data);
 	}
 
 	export let data: RequestsData;

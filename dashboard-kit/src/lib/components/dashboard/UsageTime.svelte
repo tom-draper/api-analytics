@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ColumnIndex } from '$lib/consts';
 
-	function getLayout() {
+	function getPlotLayout() {
 		return {
 			font: { size: 12 },
 			paper_bgcolor: 'transparent',
@@ -55,10 +55,10 @@
 		];
 	}
 
-	function buildPlotData(data: RequestsData) {
+	function getPlotData(data: RequestsData) {
 		return {
 			data: bars(data),
-			layout: getLayout(),
+			layout: getPlotLayout(),
 			config: {
 				responsive: true,
 				showSendToCloud: false,
@@ -67,10 +67,17 @@
 		};
 	}
 
-	function genPlot(data: RequestsData) {
-		const plotData = buildPlotData(data);
-		//@ts-ignore
-		new Plotly.newPlot(
+	function generatePlot(data: RequestsData) {
+		if (plotDiv.data) {
+			refreshPlot(data);
+		} else {
+			newPlot(data);
+		}
+	}
+
+	async function newPlot(data: RequestsData) {
+		const plotData = getPlotData(data);
+		Plotly.newPlot(
 			plotDiv,
 			plotData.data,
 			plotData.layout,
@@ -78,10 +85,18 @@
 		);
 	}
 
+	function refreshPlot(data: RequestsData) {
+		Plotly.react(
+			plotDiv,
+			bars(data),
+			getPlotLayout(),
+		)
+	}
+
 	let plotDiv: HTMLDivElement;
 
 	$: if (plotDiv && data) {
-		genPlot(data);
+		generatePlot(data);
 	}
 
 	export let data: RequestsData;

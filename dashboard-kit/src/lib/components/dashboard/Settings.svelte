@@ -15,6 +15,21 @@
 		show = false;
 	}
 
+	function formatUserID(id: string) {
+		if (!id) {
+			return ''
+		}
+
+		const [ipAddress, userID] = id.split('||');
+		if (ipAddress && userID) {
+			return `${ipAddress} + ${userID}`
+		} else  if (userID) {
+			return userID;
+		} else {
+			return ipAddress;
+		}
+	}
+
 	let container: HTMLDivElement;
 	onMount(() => {
 		container.addEventListener('click', (e) => {
@@ -52,6 +67,9 @@
 			</div>
 			<div class="setting-filter" class:active={settings.targetLocation}>
 				Location: <span>{settings.targetLocation ?? 'None'}</span>
+			</div>
+			<div class="setting-filter" class:active={settings.targetUser}>
+				User: <span>{formatUserID(settings.targetUser) ?? 'None'}</span>
 			</div>
 		</div>
 		<div class="setting-title">Hidden endpoints:</div>

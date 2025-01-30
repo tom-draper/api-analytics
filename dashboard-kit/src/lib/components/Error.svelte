@@ -13,10 +13,10 @@
 			class:lightning-container-no-requests={status !== 500}
 			class:lightning-container-error={status === 500}
 		>
-			{#if status !== 500}
-				<img src="/images/logos/lightning-green.png" alt="" />
-			{:else}
+			{#if status === 500}
 				<img src="/images/logos/lightning-red.png" alt="" />
+			{:else}
+				<img src="/images/logos/lightning-green.png" alt="" />
 			{/if}
 		</div>
 	</div>

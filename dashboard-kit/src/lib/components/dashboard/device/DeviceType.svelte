@@ -32,7 +32,7 @@
 		return 'Other';
 	}
 
-	function devicePlotLayout() {
+	function getPlotLayout() {
 		return {
 			title: false,
 			autosize: true,
@@ -61,7 +61,7 @@
 		'#EBEB81', // Yellow
 	];
 
-	function pieChart(data: RequestsData) {
+	function donut(data: RequestsData) {
 		const deviceCount: ValueCount = {};
 		const deviceGetter = cachedFunction(getDevice);
 		for (let i = 0; i < data.length; i++) {
@@ -102,8 +102,8 @@
 
 	function getPlotData(data: RequestsData) {
 		return {
-			data: pieChart(data),
-			layout: devicePlotLayout(),
+			data: donut(data),
+			layout: getPlotLayout(),
 			config: {
 				responsive: true,
 				showSendToCloud: false,
@@ -113,9 +113,16 @@
 	}
 
 	function generatePlot(data: RequestsData) {
+		if (plotDiv.data) {
+			refreshPlot(data);
+		} else {
+			newPlot(data);
+		}
+	}
+
+	async function newPlot(data: RequestsData) {
 		const plotData = getPlotData(data);
-		//@ts-ignore
-		new Plotly.newPlot(
+		Plotly.newPlot(
 			plotDiv,
 			plotData.data,
 			plotData.layout,
@@ -123,9 +130,17 @@
 		);
 	}
 
+	function refreshPlot(data: RequestsData) {
+		Plotly.react(
+			plotDiv,
+			donut(data),
+			getPlotLayout(),
+		)
+	}
+
 	let plotDiv: HTMLDivElement;
 
-	$: if (plotDiv) {
+	$: if (plotDiv && data) {
 		generatePlot(data);
 	}
 

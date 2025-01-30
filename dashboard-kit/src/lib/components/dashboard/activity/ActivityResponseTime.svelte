@@ -4,7 +4,7 @@
 	import { initFreqMap } from '$lib/activity';
 	import { ColumnIndex } from '$lib/consts';
 
-	function defaultLayout(period: Period) {
+	function getPlotLayout(period: Period) {
 		const days = periodToDays(period);
 		let periodAgo = new Date();
 		if (days != null) {
@@ -109,10 +109,10 @@
 		];
 	}
 
-	function buildPlotData(data: RequestsData, period: Period) {
+	function getPlotData(data: RequestsData, period: Period) {
 		return {
 			data: bars(data, period),
-			layout: defaultLayout(period),
+			layout: getPlotLayout(period),
 			config: {
 				responsive: true,
 				showSendToCloud: false,
@@ -122,13 +122,29 @@
 	}
 
 	function generatePlot(data: RequestsData, period: Period) {
-		const plotData = buildPlotData(data, period);
-		new Plotly.newPlot(
+		if (plotDiv.data) {
+			refreshPlot(data, period);
+		} else {
+			newPlot(data, period);
+		}
+	}
+
+	async function newPlot(data: RequestsData, period: Period) {
+		const plotData = getPlotData(data, period);
+		Plotly.newPlot(
 			plotDiv,
 			plotData.data,
 			plotData.layout,
 			plotData.config,
 		);
+	}
+
+	function refreshPlot(data: RequestsData, period: Period) {
+		Plotly.react(
+			plotDiv,
+			bars(data, period),
+			getPlotLayout(period),
+		)
 	}
 
 	let plotDiv: HTMLDivElement;
