@@ -121,6 +121,8 @@
 			}
 		}
 
+		samples[samples.length-1].label = 'error'
+
 		return samples;
 	}
 
