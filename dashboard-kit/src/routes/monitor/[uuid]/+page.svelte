@@ -71,7 +71,7 @@
 			</div>
 		{:else if error}
 			<div class="status-image">
-				<img id="status-image" src="/images/icons/big-cross.png" alt="" />
+				<img id="status-image" src="/images/logos/lightning-red.svg" alt="" />
 				<div class="status-text">Systems Down</div>
 			</div>
 		{:else}

@@ -84,7 +84,7 @@
 			<input
 				type="text"
 				placeholder="www.example.com/endpoint/"
-				class="text-sm"
+				class="text-sm font-normal"
 				bind:value={monitorURL}
 			/>
 			<button class="add" on:click={postMonitor}>Add</button>
@@ -115,7 +115,7 @@
 		width: 100%;
 		text-align: left;
 		height: auto;
-		padding: 3px 12px;
+		padding: 4px 12px;
 		font-family: 'Geist';
 		border: 1px solid var(--background);
 	}
