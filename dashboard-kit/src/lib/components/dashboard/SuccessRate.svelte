@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ColumnIndex } from '$lib/consts';
 
-	function successRatePlotLayout() {
+	function getPlotLayout() {
 		return {
 			title: false,
 			autosize: true,
@@ -52,10 +52,10 @@
 		];
 	}
 
-	function successRatePlotData(data: RequestsData) {
+	function getPlotData(data: RequestsData) {
 		return {
 			data: lines(data),
-			layout: successRatePlotLayout(),
+			layout: getPlotLayout(),
 			config: {
 				responsive: true,
 				showSendToCloud: false,
@@ -65,8 +65,16 @@
 	}
 
 	function generatePlot(data: RequestsData) {
-		const plotData = successRatePlotData(data);
-		new Plotly.newPlot(
+		if (plotDiv.data) {
+			refreshPlot(data);
+		} else {
+			newPlot(data);
+		}
+	}
+
+	async function newPlot(data: RequestsData) {
+		const plotData = getPlotData(data);
+		Plotly.newPlot(
 			plotDiv,
 			plotData.data,
 			plotData.layout,
@@ -74,38 +82,40 @@
 		);
 	}
 
-	function getSuccessRate(data: RequestsData) {
-		const requests = {
-			total: 0,
-			successful: 0,
-		};
+	function refreshPlot(data: RequestsData) {
+		Plotly.react(
+			plotDiv,
+			lines(data),
+			getPlotLayout(),
+		)
+	}
 
+	function getSuccessRate(data: RequestsData) {
+		if (!data || data.length === 0) {
+			return null;
+		}
+
+		let successfulRequests = 0;
 		for (let i = 0; i < data.length; i++) {
 			if (
 				data[i][ColumnIndex.Status] >= 200 &&
 				data[i][ColumnIndex.Status] <= 299
 			) {
-				requests.successful++;
+				successfulRequests++;
 			}
-			requests.total++;
 		}
 
-		console.log(requests)
-
-		if (requests.total === 0) {
-			return null;
-		}
-
-		return (requests.successful / requests.total) * 100;
+		return (successfulRequests / data.length) * 100;
 	}
-
 
 	let plotDiv: HTMLDivElement;
 	let successRate: number | null;
 
-	$: successRate = getSuccessRate(data);
+	$: if (data) {
+		successRate = getSuccessRate(data);
+	}
 
-	$: if (plotDiv) {
+	$: if (plotDiv && data) {
 		generatePlot(data);
 	}
 

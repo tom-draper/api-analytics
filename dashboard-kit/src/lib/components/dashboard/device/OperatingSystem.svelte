@@ -69,7 +69,7 @@
 		return 'Other';
 	}
 
-	function osPlotLayout() {
+	function getPlotLayout() {
 		const monthAgo = new Date();
 		monthAgo.setDate(monthAgo.getDate() - 30);
 		const tomorrow = new Date();
@@ -96,7 +96,7 @@
 		};
 	}
 
-	function plotData(data: RequestsData) {
+	function donut(data: RequestsData) {
 		const osCount: ValueCount = {};
 		const osGetter = cachedFunction(getOS);
 		for (let i = 0; i < data.length; i++) {
@@ -135,8 +135,8 @@
 
 	function getPlotData(data: RequestsData) {
 		return {
-			data: plotData(data),
-			layout: osPlotLayout(),
+			data: donut(data),
+			layout: getPlotLayout(),
 			config: {
 				responsive: true,
 				showSendToCloud: false,
@@ -146,8 +146,16 @@
 	}
 
 	function generatePlot(data: RequestsData) {
+		if (plotDiv.data) {
+			refreshPlot(data);
+		} else {
+			newPlot(data);
+		}
+	}
+
+	async function newPlot(data: RequestsData) {
 		const plotData = getPlotData(data);
-		new Plotly.newPlot(
+		Plotly.newPlot(
 			plotDiv,
 			plotData.data,
 			plotData.layout,
@@ -155,9 +163,17 @@
 		);
 	}
 
+	function refreshPlot(data: RequestsData) {
+		Plotly.react(
+			plotDiv,
+			donut(data),
+			getPlotLayout(),
+		)
+	}
+
 	let plotDiv: HTMLDivElement;
 
-	$: if (plotDiv) {
+	$: if (plotDiv && data) {
 		generatePlot(data);
 	}
 

@@ -2,10 +2,8 @@
     import Error from '$lib/components/Error.svelte';
     import { page } from '$app/state';
 
-    console.log($page.status)
-
-    export let error, status: number;
-    console.log(error, status)
+    const message = page.status === 404 ? '' : page.error && page.error.message ? page.error.message : '';
+    const status = page.status;
 </script>
 
-<Error status={status}  message={error && error.message ? error.message : ''} />
+<Error {status}  {message} />

@@ -40,15 +40,15 @@
 		queryString = params.toString();
 	});
 
-	export let page: 'dashboard' | 'monitoring' | 'explorer';
+	export let page: 'dashboard' | 'monitor' | 'explorer';
 </script>
 
 <div class="generate">
 	<div class="content place-items-center">
 		{#if page === 'dashboard'}
 			<h2 class="font-bold">Dashboard</h2>
-		{:else if page === 'monitoring'}
-			<h2 class="font-bold">Monitoring</h2>
+		{:else if page === 'monitor'}
+			<h2 class="font-bold">Monitor</h2>
 		{:else if page === 'explorer'}
 			<h2 class="font-bold">Explorer</h2>
 		{/if}

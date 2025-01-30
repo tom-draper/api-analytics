@@ -1,21 +1,31 @@
 <script lang="ts">
-	import type { DashboardSettings, Period } from "$lib/settings";
-	import Dropdown from "./Dropdown.svelte";
+	import type { DashboardSettings, Period } from '$lib/settings';
+	import Dropdown from './Dropdown.svelte';
 
 	const timePeriods: Period[] = ['24 hours', 'Week', 'Month', '6 months', 'Year', 'All time'];
 
-    let dropdownOpen: boolean = false;
+	let dropdownOpen: boolean = false;
 
-    export let settings: DashboardSettings, showSettings: boolean, hostnames: string[];
+	export let settings: DashboardSettings, showSettings: boolean, hostnames: string[];
 </script>
 
 <nav class="button-nav text-sm">
 	<div class="info">
 		<div class="info-content">
-			Try the new Log Explorer <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-</svg>
- 
+			Try the Log Explorer <svg
+				xmlns="http://www.w3.org/2000/svg"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke-width="1.5"
+				stroke="currentColor"
+				class="size-6"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+				/>
+			</svg>
 		</div>
 	</div>
 	<div class="donate">
@@ -29,22 +39,22 @@
 	>
 		<img class="settings-icon" src="/images/icons/cog.png" alt="" />
 	</button>
-    <div class="dropdown-container" class:no-display={hostnames.length <= 1}>
-        <Dropdown
-            options={hostnames.slice(0, 25)}
-            bind:selected={settings.hostname}
-            bind:open={dropdownOpen}
-            defaultOption={'All hostnames'}
-        />
-    </div>
+	<div class="dropdown-container" class:no-display={hostnames.length <= 1}>
+		<Dropdown
+			options={hostnames.slice(0, 25)}
+			bind:selected={settings.hostname}
+			bind:open={dropdownOpen}
+			defaultOption={'All hostnames'}
+		/>
+	</div>
 	<div class="nav-btn time-period">
 		{#each timePeriods as period}
 			<button
 				class="time-period-btn"
 				class:time-period-btn-active={settings.period === period}
 				on:click={() => {
-                    settings.period = period;
-                    dropdownOpen = false;
+					settings.period = period;
+					dropdownOpen = false;
 				}}
 			>
 				{period}
@@ -75,7 +85,6 @@
 		margin-left: 0.6em;
 		width: 16px;
 		transition: transform 0.15s ease;
-
 	}
 	.info:hover .info-content > svg {
 		transform: translateX(2px);

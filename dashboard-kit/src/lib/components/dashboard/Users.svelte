@@ -3,7 +3,7 @@
 	import type { Period } from '$lib/settings';
 	import { ColumnIndex } from '$lib/consts';
 
-	function getLayout() {
+	function getPlotLayout() {
 		return {
 			title: false,
 			autosize: true,
@@ -73,10 +73,10 @@
 		];
 	}
 
-	function usersPlotData(data: RequestsData) {
+	function getPlotData(data: RequestsData) {
 		return {
 			data: lines(data),
-			layout: getLayout(),
+			layout: getPlotLayout(),
 			config: {
 				responsive: true,
 				showSendToCloud: false,
@@ -86,13 +86,29 @@
 	}
 
 	function generatePlot(data: RequestsData) {
-		const plotData = usersPlotData(data);
-		new Plotly.newPlot(
+		if (plotDiv.data) {
+			refreshPlot(data);
+		} else {
+			newPlot(data);
+		}
+	}
+
+	async function newPlot(data: RequestsData) {
+		const plotData = getPlotData(data);
+		Plotly.newPlot(
 			plotDiv,
 			plotData.data,
 			plotData.layout,
 			plotData.config,
 		);
+	}
+
+	function refreshPlot(data: RequestsData) {
+		Plotly.react(
+			plotDiv,
+			lines(data),
+			getPlotLayout(),
+		)
 	}
 
 	function togglePeriod() {
@@ -147,7 +163,7 @@
 		usersPerHour = getUsersPerHour(users, period);
 	}
 
-	$: if (plotDiv) {
+	$: if (plotDiv && data) {
 		generatePlot(data);
 	}
 

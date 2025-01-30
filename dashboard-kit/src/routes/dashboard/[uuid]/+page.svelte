@@ -1,7 +1,5 @@
-
-
 <script lang="ts">
-   import { page } from '$app/stores';
+	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import Requests from '$lib/components/dashboard/Requests.svelte';
 	import Logo from '$lib/components/dashboard/Logo.svelte';
@@ -17,14 +15,14 @@
 	import { dateInPeriod, dateInPrevPeriod } from '$lib/period';
 	import genDemoData from '$lib/demo';
 	import formatUUID from '$lib/uuid';
-    import Settings from "$lib/components/dashboard/Settings.svelte";
+	import Settings from '$lib/components/dashboard/Settings.svelte';
 	import type { DashboardSettings, Period } from '$lib/settings';
 	import { initSettings } from '$lib/settings';
 	import type { NotificationState } from '$lib/notification';
 	import Notification from '$lib/components/dashboard/Notification.svelte';
 	import exportCSV from '$lib/exportData';
 	import { ColumnIndex, columns } from '$lib/consts';
-	import Error from '$lib/components/dashboard/Error.svelte';
+	import Error from '$lib/components/Error.svelte';
 	import TopUsers from '$lib/components/dashboard/TopUsers.svelte';
 	import { getServerURL } from '$lib/url';
 	import Navigation from '$lib/components/dashboard/Navigation.svelte';
@@ -128,10 +126,6 @@
 		return false;
 	}
 
-	function setPeriod(value: Period) {
-		settings.period = value;
-	}
-
 	function sortedFrequencies(freq: ValueCount): string[] {
 		return Object.entries(freq)
 			.sort((a, b) => {
@@ -140,7 +134,7 @@
 			.map((value) => value[0]);
 	}
 
-	function getHostnames() {
+	function getHostnames(data: RequestsData) {
 		const hostnameFreq: ValueCount = {};
 		for (let i = 0; i < data.length; i++) {
 			const hostname = data[i][ColumnIndex.Hostname];
@@ -157,28 +151,99 @@
 		return sortedFrequencies(hostnameFreq);
 	}
 
-	function setHostnames() {
-		hostnames = getHostnames();
-	}
-
 	async function fetchData() {
 		const url = getServerURL();
 
 		let data: DashboardData = { requests: [], user_agents: {} };
 		try {
-			const response = await fetch(`${url}/api/requests/${userID}/1`);
+			const response = await fetch(`${url}/api/requests/${userID}/1`, {
+				signal: AbortSignal.timeout(250000),
+				keepalive: true
+			});
+
+			const body = await response.json();
 			if (response.ok && response.status === 200) {
-				data = await response.json();
+				data = body;
 			} else {
-				fetchStatus.failed = true;
+				fetchStatus = {
+					failed: true,
+					message: body.message || '',
+					status: body.status || null
+				};
 			}
 		} catch (e) {
-			fetchStatus.failed = true;
-			fetchStatus.reason = e;
-			console.log(e.message);
+			console.log(e);
+			fetchStatus = {
+				failed: true,
+				message: 'Internal server error.',
+				status: 500
+			};
 		}
 
 		return data;
+	}
+
+	async function fetchAdditionalPages() {
+		let page = 2;
+		let requests: number;
+		do {
+			requests = await fetchAdditionalPage(page);
+			page++;
+		} while (requests === pageSize);
+
+		loading = false;
+	}
+
+	async function fetchAdditionalPage(page: number) {
+		const url = getServerURL();
+
+		try {
+			const response = await fetch(`${url}/api/requests/${userID}/${page}`, {
+				signal: AbortSignal.timeout(250000),
+				keepalive: true
+			});
+			if (response.status !== 200) {
+				return 0;
+			}
+
+			const body = await response.json();
+			if (body.requests.length <= 0) {
+				return 0;
+			}
+
+			userAgents = { ...userAgents, ...body.user_agents };
+
+			parseDates(body.requests);
+			sortByTime(body.requests);
+
+			const mostRecent = body.requests[body.requests.length - 1][ColumnIndex.CreatedAt];
+			if (dateInPeriod(mostRecent, settings.period)) {
+				// Trigger dashboard re-render
+				data = data.concat(body.requests);
+			} else {
+				// Avoid triggering dashboard re-render
+				Object.assign(data, data.concat(body.requests));
+			}
+
+			console.log(data);
+
+			return body.requests.length;
+		} catch (e) {
+			console.log(e);
+			return 0;
+		}
+	}
+
+	function isDemo() {
+		return $page.params.uuid === 'demo';
+	}
+
+	async function getDashboardData() {
+		if (isDemo()) {
+			return genDemoData();
+		}
+
+		return await fetchData();
 	}
 
 	function parseDates(data: RequestsData) {
@@ -207,12 +272,8 @@
 		current: RequestsData;
 		previous: RequestsData;
 	};
-	// let changingPeriod: boolean = false;
 	let loading: boolean = true;
-	const fetchStatus: { failed: boolean; reason: string } = {
-		failed: false,
-		reason: ''
-	};
+	let fetchStatus: { failed: boolean; status: number; message: string };
 	let endpointsRendered: boolean = false;
 	const pageSize = 200_000;
 
@@ -221,85 +282,27 @@
 		periodData = getPeriodData(data);
 	}
 
+	$: if (data) {
+		hostnames = getHostnames(data);
+	}
+
 	onMount(async () => {
-        const dashboardData = await getDashboardData();
-        data = dashboardData.requests;
-        userAgents = dashboardData.user_agents;
+		const dashboardData = await getDashboardData();
+		data = dashboardData.requests;
+		userAgents = dashboardData.user_agents;
 
 		if (data.length === pageSize) {
 			// Fetch page 2 and onwards if initial fetch didn't get all data
-			fetchAdditionalPage(2);
+			fetchAdditionalPages();
 		} else {
 			loading = false;
 		}
 
-		setHostnames();
 		parseDates(data);
 		sortByTime(data);
-		setPeriod(settings.period);
 
 		console.log(data);
 	});
-
-	async function fetchAdditionalPage(page: number) {
-		try {
-			const url = getServerURL();
-			const response = await fetch(`${url}/api/requests/${userID}/${page}`, {
-				signal: AbortSignal.timeout(180000)
-			});
-			if (response.status !== 200) {
-				loading = false;
-				return;
-			}
-
-			const json = await response.json();
-			if (json.requests.length <= 0) {
-				loading = false;
-				return;
-			}
-
-			userAgents = { ...userAgents, ...json.user_agents };
-
-			parseDates(json.requests);
-
-			json.requests?.sort((a, b) => {
-				return a[ColumnIndex.CreatedAt].getTime() - b[ColumnIndex.CreatedAt].getTime();
-			});
-
-			const mostRecent = json.requests[json.requests.length - 1][ColumnIndex.CreatedAt];
-			if (dateInPeriod(mostRecent, settings.period)) {
-				// Trigger dashboard re-render
-				data = data.concat(json.requests);
-			} else {
-				Object.assign(data, data.concat(json.requests));
-			}
-
-			setHostnames();
-
-			console.log(data);
-
-			if (json.requests.length === pageSize) {
-				await fetchAdditionalPage(page + 1);
-			} else {
-				loading = false;
-			}
-		} catch (e) {
-			console.log(e);
-			loading = false;
-		}
-	}
-
-	function isDemo() {
-		return $page.params.uuid === 'demo';
-	}
-
-	async function getDashboardData() {
-		if (isDemo()) {
-			return genDemoData();
-        }
-
-        return await fetchData();
-	}
 </script>
 
 <Settings
@@ -312,7 +315,7 @@
 <Notification state={notification} />
 {#if periodData && data.length > 0}
 	<div class="dashboard">
-		<Navigation bind:settings={settings} bind:showSettings={showSettings} bind:hostnames={hostnames}/>
+		<Navigation bind:settings bind:showSettings bind:hostnames />
 
 		<div class="dashboard-content">
 			<div class="left">
@@ -354,9 +357,9 @@
 		</div>
 	</div>
 {:else if periodData && data.length <= 0}
-	<Error reason={'no-requests'} description="" />
-{:else if fetchStatus.failed}
-	<Error reason={'error'} description={fetchStatus.reason} />
+	<Error status={400} message="" />
+{:else if fetchStatus && fetchStatus.failed}
+	<Error status={fetchStatus.status} message={fetchStatus.message} />
 {:else}
 	<div class="placeholder">
 		<div class="spinner">
@@ -364,7 +367,6 @@
 		</div>
 	</div>
 {/if}
-
 
 <style scoped>
 	.dashboard {
