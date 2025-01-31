@@ -21,7 +21,7 @@
 
 	type MapValue<A> = A extends Map<unknown, infer V> ? V : never;
 
-	function endpointFreq() {
+	function endpointFreq(data: RequestsData) {
 		const freq: EndpointFreq = new Map();
 		for (let i = 0; i < data.length; i++) {
 			// Create groups of endpoints by path + status
@@ -50,7 +50,7 @@
 		);
 	}
 
-	function setTargetEndpoint(endpoint: string, status: number) {
+	function setTargetEndpoint(endpoint: string | null, status: number | null) {
 		if (endpoint === null || status === null) {
 			// Trigger reset if input is null
 			targetPath = null;
@@ -68,8 +68,8 @@
 		}
 	}
 
-	function getEndpoints() {
-		const freq = endpointFreq();
+	function getEndpoints(data: RequestsData) {
+		const freq = endpointFreq(data);
 
 		// Convert object to list
 		const freqArr: MapValue<EndpointFreq>[] = [];
@@ -93,10 +93,6 @@
 		};
 	}
 
-	function build() {
-		({ endpoints: endpoints, maxCount: maxCount } = getEndpoints());
-	}
-
 	function setBtn(value: typeof activeBtn) {
 		activeBtn = value;
 	}
@@ -110,12 +106,12 @@
 	let activeBtn: 'all' | 'success' | 'client' | 'server' = 'all';
 
 	$: if (data && activeBtn) {
-		build();
+		({ endpoints, maxCount } = getEndpoints(data));
 	}
 
 	export let data: RequestsData,
-		targetPath: string,
-		targetStatus: number,
+		targetPath: string | null,
+		targetStatus: number | null,
 		ignoreParams: boolean;
 </script>
 

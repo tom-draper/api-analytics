@@ -58,12 +58,7 @@
 					<div class="loader"></div>
 				</div>
 			</button>
-			<button
-				id="formBtn"
-				on:click={copyToClipboard}
-				class="place-items-center text-sm"
-				class:no-display={state !== 'copy'}
-			>
+			<button id="formBtn" class="text-sm" on:click={copyToClipboard} class:no-display={state !== 'copy'}>
 				<img class="copy-icon" src="/images/icons/copy.png" alt="" />
 			</button>
 			<button
@@ -100,7 +95,7 @@
 		margin-bottom: 1em;
 	}
 	img {
-		display: grid;
+		vertical-align: sub;
 		display: inline;
 	}
 </style>
