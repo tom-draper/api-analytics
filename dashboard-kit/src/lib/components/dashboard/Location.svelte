@@ -118,7 +118,7 @@
 	}
 
 	.no-locations {
-		height: 180px;
+		height: 190px;
 		display: grid;
 		place-items: center;
 		font-size: 0.95em;

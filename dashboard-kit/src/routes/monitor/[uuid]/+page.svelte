@@ -112,14 +112,14 @@
 </script>
 
 <div class="monitoring">
-	<div class="status">
+	<div class="status min-h-[160px]">
 		{#if data}
 			<div class="status-image">
 				<div
 					class="lightning"
 					class:text-[var(--highlight)]={status === 'online'}
 					class:text-[var(--red)]={status === 'offline'}
-					class:text-[grey]={status === 'setup' || status === 'pending'}
+					class:text-[#424242]={status === 'setup' || status === 'pending'}
 				>
 					<Lightning />
 				</div>
@@ -215,10 +215,12 @@
 		height: 5em;
 		margin-bottom: 2em;
 		filter: saturate(1.3);
+		transition: color 1s ease-out;
 	}
 	.status-text {
 		font-size: 2em;
 		font-weight: 700;
+		transition: color 1s ease-out;
 	}
 
 	.cards-container {

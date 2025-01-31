@@ -144,7 +144,7 @@
 			margin: 0 2em;
 		}
 		.logo {
-			width: 100%;
+			width: 90%;
 		}
 	}
 
@@ -169,6 +169,12 @@
 		}
 		.logo {
 			margin-bottom: 0;
+		}
+	}
+
+	@media screen and (max-width: 600px) {
+		.logo {
+			width: 100%;
 		}
 	}
 </style>
