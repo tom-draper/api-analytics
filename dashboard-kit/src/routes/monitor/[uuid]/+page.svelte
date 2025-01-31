@@ -7,6 +7,7 @@
 	import type { NotificationState } from '$lib/notification';
 	import { getServerURL } from '$lib/url';
 	import { page } from '$app/stores';
+	import Lightning from '$lib/components/Lightning.svelte';
 
 	const userID = formatUUID($page.params.uuid);
 
@@ -46,17 +47,65 @@
 		data = data; // Trigger reactivity to update display
 	}
 
+	function allPending(data: MonitorData) {
+		for (const samples of Object.values(data)) {
+			if (samples.length > 0) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	function getStatus(data: MonitorData, error: boolean) {
+		const monitorCount = Object.keys(data).length;
+		if (monitorCount === 0) {
+			return 'setup';
+		} else if (allPending(data)) {
+			return 'pending';
+		} else if (error) {
+			return 'offline';
+		} else {
+			return 'online';
+		}
+	}
+
+	function getStatusTitle(status: Status) {
+		switch (status) {
+			case 'online':
+				return 'Systems Online';
+			case 'offline':
+				return 'Systems Down';
+			case 'pending':
+				return 'Status Pending';
+			case 'setup':
+				return 'Setup Required';
+			default:
+				return '';
+		}
+	}
+
 	let error = false;
 	const periods = ['24h', '7d', '30d', '60d'];
 	let period = periods[1];
 	let data: MonitorData;
+	let showTrackNew = false;
 	let notification: NotificationState = {
 		message: '',
 		style: 'error',
 		show: false
 	};
 
-	let showTrackNew = false;
+	type Status = 'setup' | 'pending' | 'online' | 'offline';
+
+	let status: Status;
+	let statusTitle: string;
+
+	$: if (data) {
+		status = getStatus(data, error);
+		statusTitle = getStatusTitle(status);
+	}
+
 	onMount(async () => {
 		data = await fetchData();
 	});
@@ -64,25 +113,33 @@
 
 <div class="monitoring">
 	<div class="status">
-		{#if data !== undefined}
-			<div class="status-image" class:no-display={Object.keys(data).length > 0}>
-				<img id="status-image" src="/images/logos/lightning-grey.svg" alt="" />
-				<div class="status-text text-[#c0c0c0]">Setup Required</div>
-			</div>
-			<div class="status-image" class:no-display={Object.keys(data).length === 0 || !error}>
-				<img id="status-image" src="/images/logos/lightning-red.svg" alt="" />
-				<div class="status-text text-[#ffc1c1]">Systems Down</div>
-			</div>
-			<div class="status-image" class:no-display={Object.keys(data).length === 0 || error}>
-				<img id="status-image" src="/images/logos/lightning-green.svg" alt="" />
-				<div class="status-text text-[#bee7c5]">Systems Online</div>
+		{#if data}
+			<div class="status-image">
+				<div
+					class="lightning"
+					class:text-[var(--highlight)]={status === 'online'}
+					class:text-[var(--red)]={status === 'offline'}
+					class:text-[grey]={status === 'setup' || status === 'pending'}
+				>
+					<Lightning />
+				</div>
+				<div class="status-text text-[#c0c0c0]"
+					class:text-[#bee7c5]={status === 'online'}
+					class:text-[#ffc1c1]={status === 'offline'}
+					class:text-[#c0c0c0]={status === 'setup' || status === 'pending'}
+				>{statusTitle}</div>
 			</div>
 		{/if}
 	</div>
 	<div class="cards-container">
 		<div class="controls">
 			<div class="add-new text-sm">
-				<button class="add-new-btn" class:active={showTrackNew || Object.keys(data || {}).length === 0} on:click={toggleShowTrackNew} aria-label="Add new monitor">
+				<button
+					class="add-new-btn"
+					class:active={showTrackNew || (data && Object.keys(data).length === 0)}
+					on:click={toggleShowTrackNew}
+					aria-label="Add new monitor"
+				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						fill="none"
@@ -154,7 +211,7 @@
 	.status-image {
 		place-items: center;
 	}
-	#status-image {
+	.lightning {
 		height: 5em;
 		margin-bottom: 2em;
 		filter: saturate(1.3);
@@ -194,7 +251,7 @@
 
 	.add-new-btn:hover,
 	.period-btn:hover {
-		background: #161616
+		background: #161616;
 	}
 
 	.add-new-btn:hover {
@@ -241,7 +298,7 @@
 	.add-new-btn > svg {
 		margin: 0 0.5em;
 		width: 16px;
-		transition: color 0.4s ease-in-out; 
+		transition: color 0.4s ease-in-out;
 	}
 	.active > svg {
 		transition: none;
