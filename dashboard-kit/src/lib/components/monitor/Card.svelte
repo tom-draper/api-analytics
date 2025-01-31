@@ -121,7 +121,7 @@
 			}
 		}
 
-		samples[samples.length-1].label = 'error'
+		// samples[samples.length-1].label = 'error'
 
 		return samples;
 	}
@@ -194,7 +194,7 @@
 			<a href="{separatedURL.prefix}{separatedURL.body}" class="endpoint"
 				><span class="text-[var(--dim-text)]">{separatedURL.prefix}</span>{separatedURL.body}</a
 			>
-			<button class="delete" on:click={deleteMonitor}>
+			<button class="delete" on:click={deleteMonitor} aria-label="Delete monitor" title="Delete monitor">
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					fill="none"

@@ -64,27 +64,25 @@
 
 <div class="monitoring">
 	<div class="status">
-		{#if data !== undefined && Object.keys(data).length === 0}
-			<div class="status-image">
-				<img id="status-image" src="/images/logos/lightning-green.svg" alt="" />
-				<div class="status-text">Setup Required</div>
+		{#if data !== undefined}
+			<div class="status-image" class:no-display={Object.keys(data).length > 0}>
+				<img id="status-image" src="/images/logos/lightning-grey.svg" alt="" />
+				<div class="status-text text-[#c0c0c0]">Setup Required</div>
 			</div>
-		{:else if error}
-			<div class="status-image">
+			<div class="status-image" class:no-display={Object.keys(data).length === 0 || !error}>
 				<img id="status-image" src="/images/logos/lightning-red.svg" alt="" />
-				<div class="status-text">Systems Down</div>
+				<div class="status-text text-[#ffc1c1]">Systems Down</div>
 			</div>
-		{:else}
-			<div class="status-image">
+			<div class="status-image" class:no-display={Object.keys(data).length === 0 || error}>
 				<img id="status-image" src="/images/logos/lightning-green.svg" alt="" />
-				<div class="status-text">Systems Online</div>
+				<div class="status-text text-[#bee7c5]">Systems Online</div>
 			</div>
 		{/if}
 	</div>
 	<div class="cards-container">
 		<div class="controls">
 			<div class="add-new text-sm">
-				<button class="add-new-btn" class:active={showTrackNew} on:click={toggleShowTrackNew}>
+				<button class="add-new-btn" class:active={showTrackNew || Object.keys(data || {}).length === 0} on:click={toggleShowTrackNew} aria-label="Add new monitor">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						fill="none"
@@ -95,6 +93,7 @@
 					>
 						<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
 					</svg>
+					<span>New</span>
 				</button>
 			</div>
 			<div class="period-controls-container text-sm">
@@ -163,7 +162,6 @@
 	.status-text {
 		font-size: 2em;
 		font-weight: 700;
-		color: white;
 	}
 
 	.cards-container {
@@ -194,9 +192,13 @@
 		justify-content: right;
 	}
 
+	.add-new-btn:hover,
 	.period-btn:hover {
 		background: #161616
+	}
 
+	.add-new-btn:hover {
+		color: var(--highlight);
 	}
 
 	.period-controls {
@@ -217,25 +219,37 @@
 		cursor: pointer;
 	}
 	.add-new-btn {
-		background: var(--light-background);
+		display: flex;
 	}
-	.add-new-btn:hover {
-		background: radial-gradient(var(--light-background), #3fcf8e10);
-	}
+
 	.add-new-btn {
 		border: 1px solid #2e2e2e;
 		border-radius: 4px;
 		padding: 0;
-		height: 35px;
-		color: var(--highlight);
-		width: 35px;
-		display: grid;
+		display: flex;
 		place-items: center;
+	}
+	.add-new-btn > span {
+		padding: 0 12px 0 0.2em;
+		color: var(--dim-text) !important;
+	}
+
+	.active > span {
+		color: var(--dark-background) !important;
+	}
+
+	.add-new-btn > svg {
+		margin: 0 0.5em;
+		width: 16px;
+		transition: color 0.4s ease-in-out; 
+	}
+	.active > svg {
+		transition: none;
 	}
 	.active,
 	.active:hover {
 		background: var(--highlight) !important;
-		color: black !important;
+		color: var(--dark-background) !important;
 	}
 	.spinner {
 		margin: 3em 0 10em;
