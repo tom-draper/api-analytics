@@ -53,7 +53,7 @@
 			<button id="formBtn" class="text-sm" on:click={submit} class:no-display={state !== 'generate'}
 				>Generate</button
 			>
-			<button id="formBtn" class:no-display={state !== 'loading'}>
+			<button id="formBtn" class:no-display={state !== 'loading'} aria-label="Loading">
 				<div class="spinner">
 					<div class="loader"></div>
 				</div>
