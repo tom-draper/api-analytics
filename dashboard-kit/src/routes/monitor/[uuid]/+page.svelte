@@ -123,7 +123,7 @@
 				>
 					<Lightning />
 				</div>
-				<div class="status-text text-[#c0c0c0]"
+				<div class="status-text"
 					class:text-[#bee7c5]={status === 'online'}
 					class:text-[#ffc1c1]={status === 'offline'}
 					class:text-[#c0c0c0]={status === 'setup' || status === 'pending'}
