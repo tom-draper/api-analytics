@@ -37,7 +37,6 @@
 		"vite": "^6.0.0"
 	},
 	"dependencies": {
-		"plotly.js-dist": "^3.0.0",
 		"prismjs": "^1.29.0",
 		"svelte-highlight": "^7.8.2"
 	}

@@ -3,9 +3,9 @@
 
 	type State = 'generate' | 'loading' | 'copy' | 'copied' | 'error';
 
+	let apiKey = '';
 	let state: State = 'generate';
 
-	let apiKey = '';
 	async function submit() {
 		if (apiKey) {
 			return; // Already generated
@@ -58,7 +58,12 @@
 					<div class="loader"></div>
 				</div>
 			</button>
-			<button id="formBtn" class="text-sm" on:click={copyToClipboard} class:no-display={state !== 'copy'}>
+			<button
+				id="formBtn"
+				class="text-sm"
+				on:click={copyToClipboard}
+				class:no-display={state !== 'copy'}
+			>
 				<img class="copy-icon" src="/images/icons/copy.png" alt="" />
 			</button>
 			<button

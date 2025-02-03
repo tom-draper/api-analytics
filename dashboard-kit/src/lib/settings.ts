@@ -16,7 +16,11 @@ export type DashboardSettings = {
 		status: number | null;
 	};
 	targetLocation: string | null;
-	targetUser: string | null;
+	targetUser: {
+		ipAddress: string,
+		userID: string,
+		composite: boolean
+	} | null;
 	hiddenEndpoints: Set<string>;
 	ignoreParams: boolean;
 };

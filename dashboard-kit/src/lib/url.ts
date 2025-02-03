@@ -1,8 +1,9 @@
 import { SERVER_URL } from './consts';
+import { page } from '$app/state'
 
 function getSourceURL() {
-	const url = new URL(window.location.href);
-	const source = url.searchParams.get('source');
+	const params = page.url.searchParams;
+	const source = params.get('source');
 	if (source === '' || source === null) {
 		return null;
 	}

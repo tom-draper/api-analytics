@@ -15,61 +15,69 @@
 		show = false;
 	}
 
-	function formatUserID(id: string) {
-		if (!id) {
-			return ''
+	function formatUserID(
+		targetUser: { ipAddress: string; userID: string; composite: boolean } | null
+	) {
+		if (!targetUser) {
+			return '';
 		}
 
-		const [ipAddress, userID] = id.split('||');
-		if (ipAddress && userID) {
-			return `${ipAddress} + ${userID}`
-		} else  if (userID) {
-			return userID;
+		if (targetUser.composite && targetUser.ipAddress && targetUser.userID) {
+			return `${targetUser.ipAddress} + ${targetUser.userID}`;
 		} else {
-			return ipAddress;
+			return targetUser.userID || targetUser.ipAddress || '';
 		}
 	}
 
-	let container: HTMLDivElement;
-	onMount(() => {
-		container.addEventListener('click', (e) => {
-			e.stopImmediatePropagation();
-		});
-	});
+	function handleClick(e) {
+		e.stopImmediatePropagation();
+	}
 
 	export let show: boolean, settings: DashboardSettings, exportCSV: () => void;
 </script>
 
 <div class="background" class:hidden={!show} on:click={hideSettings}>
-	<div class="container" bind:this={container}>
+	<div class="container" on:click={handleClick}>
 		<h2 class="title">Settings</h2>
 		<div class="disable404 setting mb-2">
 			<div class="setting-label">Disable 404</div>
-			<input type="checkbox" name="disable404" id="checkbox" on:change={toggleDisable404} title="Hide requests that returned a 404 status code" />
+			<input
+				type="checkbox"
+				name="disable404"
+				id="checkbox"
+				on:change={toggleDisable404}
+				title="Hide requests that returned a 404 status code"
+			/>
 		</div>
 		<div class="disable404 setting mb-8">
 			<div class="setting-label">Ignore Params</div>
-			<input type="checkbox" name="ignoreParams" id="checkbox" on:change={toggleIgnoreParams} title="Ignore URL parameters when grouping endpoints" />
+			<input
+				type="checkbox"
+				name="ignoreParams"
+				id="checkbox"
+				on:change={toggleIgnoreParams}
+				title="Ignore URL parameters when grouping endpoints"
+			/>
 		</div>
 		<div class="setting-title">Filters:</div>
 		<div class="setting-filters mb-8 mt-1">
 			<div class="setting-filter" class:active={settings.hostname}>
-				Hostname: <span>{settings.hostname ?? 'None'}</span>
+				Hostname: <span>{settings.hostname || 'None'}</span>
 			</div>
 			<div class="setting-filter" class:active={settings.period}>
 				Period: <span>{settings.period === 'All time' ? 'None' : settings.period}</span>
 			</div>
 			<div class="setting-filter" class:active={settings.targetEndpoint.path}>
-				Endpoint: <span>{settings.targetEndpoint.path ?? 'None'}</span>
+				Endpoint: <span>{settings.targetEndpoint.path || 'None'}</span>
 			</div>
 			<div class="setting-filter" class:active={settings.targetEndpoint.status}>
-				Status: <span>{settings.targetEndpoint.status ?? 'None'}</span>
+				Status: <span>{settings.targetEndpoint.status || 'None'}</span>
 			</div>
 			<div class="setting-filter" class:active={settings.targetLocation}>
-				Location: <span>{settings.targetLocation ?? 'None'}</span>
+				Location: <span>{settings.targetLocation || 'None'}</span>
 			</div>
 			<div class="setting-filter" class:active={settings.targetUser}>
-				User: <span>{formatUserID(settings.targetUser) ?? 'None'}</span>
+				User: <span>{formatUserID(settings.targetUser) || 'None'}</span>
 			</div>
 		</div>
 		<div class="setting-title">Hidden endpoints:</div>
@@ -199,6 +207,7 @@
 		cursor: pointer;
 		border-radius: 4px;
 		font-size: 0.85em;
+		/* transition: background 0.05s ease-in; */
 	}
 	.export-csv-btn:hover {
 		background: var(--highlight);

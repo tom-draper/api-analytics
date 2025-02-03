@@ -49,17 +49,13 @@
 		return locationBars;
 	}
 
-	function build(data: RequestsData) {
-		locations = getLocationBars(data);
-	}
-
 	let locations: LocationBar[] = [];
 
 	$: if (data) {
-		build(data);
+		locations = getLocationBars(data);
 	}
 
-	export let data: RequestsData, targetLocation: string;
+	export let data: RequestsData, targetLocation: string | null;
 </script>
 
 <div class="card">
@@ -85,7 +81,7 @@
 						<div
 							class="bar-inner"
 							style="height: {location.height * 100}%"
-						/>
+						></div>
 					</div>
 					<div class="label">{getFlagEmoji(location.location)}</div>
 				</div>

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Lightning from "../Lightning.svelte";
+
 	export let loading: boolean;
 </script>
 
@@ -10,7 +12,9 @@
 			</div>
 		</div>
 	{:else}
-		<img src="/images/logos/lightning-green.png" alt="" />
+		<div class="lightning">
+			<Lightning />
+		</div>
 	{/if}
 </div>
 
@@ -22,8 +26,9 @@
 		display: grid;
 		place-items: center;
 	}
-	img {
+	.lightning {
 		width: 25px;
+		color: var(--highlight);
 	}
 	.spinner {
 		height: auto !important;

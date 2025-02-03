@@ -1,15 +1,17 @@
 <script lang="ts">
-	import { getUserIdentifier } from '$lib/user';
+	import { formatUserID, getUserIdentifier } from '$lib/user';
 	import { ColumnIndex } from '$lib/consts';
 
 	type Users = {
-		[userID: string]: {
-			ipAddress: string;
-			customUserID: string;
-			lastRequested: Date;
-			requests: number;
-			locations: Locations;
-		};
+		[userID: string]: User;
+	};
+
+	type User = {
+		ipAddress: string;
+		customUserID: string;
+		lastRequested: Date;
+		requests: number;
+		locations: Locations;
 	};
 
 	type Locations = {
@@ -35,22 +37,54 @@
 		locationsActive = false;
 	}
 
-	function selectUser(ipAddress: string, customUserID: string) {
-		const formattedUserID = formatUserID(ipAddress, customUserID);
-		if (targetUser === formattedUserID) {
+	function selectUser(ipAddress: string, userID: string) {
+		if (!targetUser) {
+			targetUser = {
+				composite: !(userID && multipleUserIDOccurances(userID)),
+				ipAddress,
+				userID
+			};
+		} else if (targetUser.composite) {
+			const formattedUserID = formatUserID(ipAddress, userID);
+			const formattedTargetUserID = formatUserID(targetUser.ipAddress, targetUser.userID);
 			targetUser = null;
+			if (formattedUserID !== formattedTargetUserID) {
+				selectUser(ipAddress, userID); // If a different user was selected, select this one instead
+			}
 		} else {
-			targetUser = formattedUserID;
+			if (userID === targetUser.userID) {
+				targetUser.composite = true;
+				targetUser.ipAddress = ipAddress;
+			} else {
+				targetUser = null;
+				selectUser(ipAddress, userID); // If a different user was selected, select this one instead
+			}
 		}
-	}
-
-	function formatUserID(ipAddress: string, customUserID: string) {
-		return `${ipAddress}||${customUserID}`;
 	}
 
 	function build(data: RequestsData) {
 		resetFlags();
 
+		const users = getUsers(data);
+
+		const totalUsers = Object.keys(users).length;
+		const topUserRequestsCount = getTopUserRequestsCount(users);
+		if (totalUsers < 10 || topUserRequestsCount <= 1) {
+			topUsers = null;
+			return;
+		}
+
+		userIDActive = getUserIDActive(users);
+		locationsActive = getLocationsActive(users);
+
+		topUsers = Object.values(users)
+			.sort((a, b) => b.requests - a.requests)
+			.slice(0, pageSize * maxPages);
+
+		resetPage();
+	}
+
+	function getUsers(data: RequestsData) {
 		const users: Users = {};
 		for (let i = 0; i < data.length; i++) {
 			const userID = getUserIdentifier(data[i]);
@@ -72,8 +106,11 @@
 				};
 			} else {
 				users[userID].requests += 1;
-				users[userID].locations[location] ??= 0;
-				users[userID].locations[location] += 1;
+				if (location in users[userID].locations) {
+					users[userID].locations[location] += 1;
+				} else {
+					users[userID].locations[location] = 1;
+				}
 			}
 
 			if (createdAt > users[userID].lastRequested) {
@@ -81,20 +118,7 @@
 			}
 		}
 
-		const totalUsers = Object.keys(users).length;
-		const topUserRequestsCount = getTopUserRequestsCount(users);
-		if (totalUsers < 10 || topUserRequestsCount <= 1) {
-			topUsers = null;
-			return;
-		}
-
-		userIDActive = getUserIDActive(users);
-		locationsActive = getLocationsActive(users);
-
-		topUsers = Object.values(users)
-			.sort((a, b) => b.requests - a.requests)
-			.slice(0, pageSize * maxPages);
-		page = topUsers.slice(0, pageSize);
+		return users;
 	}
 
 	function getTopUserRequestsCount(users: Users) {
@@ -125,8 +149,48 @@
 		return false;
 	}
 
+	function multipleUserIDOccurances(userID: string) {
+		const users = getPage();
+
+		let count = 0;
+		for (let i = 0; i < users.length; i++) {
+			if (users[i].customUserID === userID) {
+				count++;
+			}
+
+			if (count > 1) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	function userTargeted(ipAddress: string, userID: string) {
+		if (!targetUser) {
+			return false;
+		}
+
+		if (targetUser.composite) {
+			return (
+				formatUserID(ipAddress, userID) === formatUserID(targetUser.ipAddress, targetUser.userID)
+			);
+		} else {
+			return targetUser.userID === userID;
+		}
+	}
+
 	function totalPages() {
+		if (!topUsers) {
+			return 0;
+		}
+
 		return Math.ceil(topUsers.length / pageSize);
+	}
+
+	function resetPage() {
+		pageNumber = 1;
+		page = getPage();
 	}
 
 	function nextPage() {
@@ -140,11 +204,15 @@
 	}
 
 	function getPage() {
+		if (!topUsers) {
+			return [];
+		}
+
 		return topUsers.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
 	}
 
-	let topUsers = null;
-	let page = null;
+	let topUsers: User[] | null = null;
+	let page: User[] | null = null;
 	let userIDActive = false;
 	let locationsActive = false;
 	let pageNumber = 1;
@@ -155,10 +223,16 @@
 		build(data);
 	}
 
-	export let data: RequestsData, targetUser: string | null;
+	type TargetUser = {
+		ipAddress: string;
+		userID: string;
+		composite: boolean;
+	};
+
+	export let data: RequestsData, targetUser: TargetUser | null;
 </script>
 
-{#if topUsers || targetUser}
+{#if topUsers}
 	<div class="card">
 		<h2 class="card-title">Top Users</h2>
 		<div class="table-container">
@@ -180,10 +254,8 @@
 					{#each page as { ipAddress, customUserID, requests, locations, lastRequested }, i}
 						<tr
 							class="highlight-row"
-							class:highlighted-row={targetUser !== null &&
-								targetUser === formatUserID(ipAddress, customUserID)}
-							class:dim-row={targetUser !== null &&
-								targetUser !== formatUserID(ipAddress, customUserID)}
+							class:highlighted-row={targetUser !== null && userTargeted(ipAddress, customUserID)}
+							class:dim-row={targetUser !== null && !userTargeted(ipAddress, customUserID)}
 							class:last-row={i === page.length - 1}
 						>
 							<td on:click={() => selectUser(ipAddress, customUserID)}>{ipAddress}</td>
@@ -209,11 +281,12 @@
 		<div class="buttons">
 			<div class="current-page">Page {pageNumber} of {totalPages()}</div>
 			{#if pageNumber > 1}
-				<button class:btn-prev={topUsers.length / pageSize > pageNumber} on:click={prevPage}
-					>Previous</button
+				<button
+					class:btn-prev={topUsers && topUsers.length / pageSize > pageNumber}
+					on:click={prevPage}>Previous</button
 				>
 			{/if}
-			{#if topUsers.length / pageSize > pageNumber}
+			{#if topUsers && topUsers.length / pageSize > pageNumber}
 				<button class="btn-next" on:click={nextPage}>Next</button>
 			{/if}
 		</div>
@@ -256,19 +329,20 @@
 	}
 
 	.highlight-row:hover td {
-		color: #ededed;
+		color: #707070;
+		color: #808080;
 	}
 
 	.highlighted-row td {
-		color: var(--highlight) !important;
-	}
-
-	.dim-row td {
-		color: #505050;
+		/* color: var(--highlight) !important; */
+		color: #ededed !important;
 	}
 
 	.highlight-row td {
 		cursor: pointer;
+	}
+	.dim-row {
+		color: #505050;
 	}
 
 	.last-row {

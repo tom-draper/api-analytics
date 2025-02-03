@@ -1,19 +1,38 @@
 <script lang="ts">
+	import { onMount } from "svelte";
+
+	let dropdown;
+
 	function selectOption(option: string | null) {
 		selected = option;
 		open = true;
 	}
 
+	function closeDropdown(e) {
+		// Check if the click is outside the dropdown
+		if (!dropdown.contains(e.target)) {
+			open = false;
+		}
+	}
+
+	onMount(() => {
+		document.addEventListener('click', closeDropdown)
+
+		return () => {
+			document.removeEventListener('click', closeDropdown);
+		}
+	})
+
 	export let open: boolean = false;
 	export let options: string[], selected: string | null, defaultOption: string;
 </script>
 
-<div class="dropdown" id="dropdown">
+<div class="dropdown" id="dropdown" bind:this={dropdown}>
 	<div class="inner" class:no-click={!open}>
 		<button
 			class="current"
 			class:square-bottom={open}
-			on:click={() => {
+			on:click={(e) => {
 				open = !open;
 			}}
 		>
@@ -88,6 +107,9 @@
 	.current:hover {
 		background: #161616;
 	}
+	.current:hover svg {
+		transform: translateY(1px); /* Moves icon 3px down */
+	}
 	.hidden {
 		visibility: hidden;
 	}
@@ -112,5 +134,8 @@
 		align-self: center;
 		margin-right: 6px;
 		opacity: 0.6;
+		display: inline-block;
+
+		transition: transform 0.15s ease-in-out;
 	}
 </style>

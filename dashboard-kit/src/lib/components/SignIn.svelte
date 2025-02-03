@@ -1,11 +1,13 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { getServerURL } from '$lib/url';
 	import { formatPath } from '$lib/path';
+	import { page } from "$app/state"
 
 	let apiKey: string = '';
-	let queryString: string = '';
 	let loading: boolean = false;
+
+	let params: string;
+	$: params = page.url.searchParams.toString();
 
 	async function submit() {
 		if (!apiKey) {
@@ -14,13 +16,14 @@
 
 		loading = true;
 		
+		const url = getServerURL();
+
 		try {
-			const url = getServerURL();
 			const response = await fetch(`${url}/api/user-id/${apiKey}`);
 
 			if (response.status === 200) {
 				const userID = await response.json();
-				window.location.href = formatPath(`/${page}/${userID.replaceAll('-', '')}`, queryString);
+				window.location.href = formatPath(`/${page}/${userID.replaceAll('-', '')}`, params);
 			}
 		} catch (e) {
 			console.log(e);
@@ -35,21 +38,16 @@
 		}
 	}
 
-	onMount(() => {
-		const params = new URLSearchParams(window.location.search);
-		queryString = params.toString();
-	});
-
-	export let page: 'dashboard' | 'monitor' | 'explorer';
+	export let type: 'dashboard' | 'monitor' | 'explorer';
 </script>
 
 <div class="generate">
 	<div class="content place-items-center">
-		{#if page === 'dashboard'}
+		{#if type === 'dashboard'}
 			<h2 class="font-bold">Dashboard</h2>
-		{:else if page === 'monitor'}
+		{:else if type === 'monitor'}
 			<h2 class="font-bold">Monitor</h2>
-		{:else if page === 'explorer'}
+		{:else if type === 'explorer'}
 			<h2 class="font-bold">Explorer</h2>
 		{/if}
 		<input

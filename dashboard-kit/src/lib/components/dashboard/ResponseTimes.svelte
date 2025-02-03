@@ -86,7 +86,7 @@
 				y: counts,
 				type: 'bar',
 				marker: { color: '#707070' },
-				hovertemplate: `<b>%{y}</b><br>%{x:.1f}ms</b><extra></extra>`,
+				hovertemplate: `<b>%{y} occurances</b><br>%{x:.1f}ms</b><extra></extra>`,
 				showlegend: false,
 			},
 		];
