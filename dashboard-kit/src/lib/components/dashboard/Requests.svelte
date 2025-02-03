@@ -16,13 +16,13 @@
 				gridcolor: 'gray',
 				showgrid: false,
 				fixedrange: true,
-				dragmode: false,
+				dragmode: false
 			},
 			xaxis: {
 				visible: false,
-				dragmode: false,
+				dragmode: false
 			},
-			dragmode: false,
+			dragmode: false
 		};
 	}
 
@@ -38,7 +38,8 @@
 			for (let i = 0; i < data.length; i++) {
 				const time = data[i][ColumnIndex.CreatedAt].getTime();
 				const diff = time - start;
-				const idx = Math.floor(diff / (range / n));
+				// Make sure idx doesn't exceed n - 1
+				const idx = Math.min(Math.floor(diff / (range / n)), n - 1);
 				y[idx] += 1;
 			}
 		}
@@ -52,8 +53,8 @@
 				showlegend: false,
 				line: { shape: 'spline', smoothing: 1, color: '#3FCF8E30' },
 				fill: 'tozeroy',
-				fillcolor: '#3fcf8e15',
-			},
+				fillcolor: '#3fcf8e15'
+			}
 		];
 	}
 
@@ -64,8 +65,8 @@
 			config: {
 				responsive: true,
 				showSendToCloud: false,
-				displayModeBar: false,
-			},
+				displayModeBar: false
+			}
 		};
 	}
 
@@ -79,20 +80,11 @@
 
 	async function newPlot(data: RequestsData) {
 		const plotData = getPlotData(data);
-		Plotly.newPlot(
-			plotDiv,
-			plotData.data,
-			plotData.layout,
-			plotData.config,
-		);
+		Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
 	}
 
 	function refreshPlot(data: RequestsData) {
-		Plotly.react(
-			plotDiv,
-			lines(data),
-			getPlotLayout(),
-		)
+		Plotly.react(plotDiv, lines(data), getPlotLayout());
 	}
 
 	function getPercentageChange(data: RequestsData) {
@@ -100,7 +92,7 @@
 			return null;
 		}
 
-		return percentageChange = (data.length / prevData.length) * 100 - 100;
+		return (percentageChange = (data.length / prevData.length) * 100 - 100);
 	}
 
 	function getRequestsPerHour(data: RequestsData) {

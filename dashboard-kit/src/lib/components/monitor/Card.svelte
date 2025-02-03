@@ -25,7 +25,7 @@
 				body: JSON.stringify({
 					user_id: userID,
 					status: 0,
-					url,
+					url
 				})
 			});
 			if (response.status === 201) {
@@ -55,7 +55,7 @@
 
 		if (total === 0) {
 			return 'N/A';
-		} 
+		}
 
 		const per = (success / total) * 100;
 		// If 100% display without decimal
@@ -166,7 +166,7 @@
 		separatedURL = separateURL(url);
 		samples = getSamples(period);
 		currentStatus = getCurrentStatus(samples) || currentStatus;
-		anyError = anyError || currentStatus === 'error'
+		anyError = anyError || currentStatus === 'error';
 		uptime = getUptime(samples);
 	}
 
@@ -183,18 +183,22 @@
 	<div class="card-text">
 		<div class="card-text-left">
 			<div class="card-status">
-				{#if currentStatus === 'no-request'}
-					<div class="indicator grey-light"></div>
-				{:else if currentStatus === 'error'}
-					<div class="indicator red-light"></div>
-				{:else}
-					<div class="indicator green-light"></div>
-				{/if}
+				<div
+					class="indicator grey-light"
+					class:grey-light={currentStatus === 'no-request'}
+					class:green-light={currentStatus === 'success'}
+					class:red-light={currentStatus === 'error'}
+				></div>
 			</div>
-			<a href="{separatedURL.prefix}{separatedURL.body}" class="endpoint"
+			<a href="{separatedURL.prefix}{separatedURL.body}" target="_blank" class="endpoint"
 				><span class="text-[var(--dim-text)]">{separatedURL.prefix}</span>{separatedURL.body}</a
 			>
-			<button class="delete" on:click={deleteMonitor} aria-label="Delete monitor" title="Delete monitor">
+			<button
+				class="delete"
+				on:click={deleteMonitor}
+				aria-label="Delete monitor"
+				title="Delete monitor"
+			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					fill="none"

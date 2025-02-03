@@ -260,6 +260,10 @@
 		color: var(--highlight);
 	}
 
+	.add-new-btn:hover svg {
+		filter: contrast(1.5);
+	}
+
 	.period-controls {
 		border: 1px solid #2e2e2e;
 		width: fit-content;
@@ -301,6 +305,8 @@
 		margin: 0 0.5em;
 		width: 16px;
 		transition: color 0.4s ease-in-out;
+
+		/* filter: contrast(1.5); */
 	}
 	.active > svg {
 		transition: none;

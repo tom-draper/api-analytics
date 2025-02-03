@@ -1347,7 +1347,7 @@ function createErrorSamples(
 	);
 }
 
-export default function genDemoData() {
+export default function generateDemoData() {
 	const demoRequests: RequestsData = [];
 
 	const maxDaysAgo = 460;

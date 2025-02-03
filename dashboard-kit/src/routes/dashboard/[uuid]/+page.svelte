@@ -13,7 +13,7 @@
 	import Location from '$lib/components/dashboard/Location.svelte';
 	import Device from '$lib/components/dashboard/device/Device.svelte';
 	import { dateInPeriod, dateInPrevPeriod } from '$lib/period';
-	import genDemoData from '$lib/demo';
+	import generateDemoData from '$lib/demo';
 	import formatUUID from '$lib/uuid';
 	import Settings from '$lib/components/dashboard/Settings.svelte';
 	import type { DashboardSettings, Period } from '$lib/settings';
@@ -26,10 +26,12 @@
 	import TopUsers from '$lib/components/dashboard/TopUsers.svelte';
 	import { getServerURL } from '$lib/url';
 	import Navigation from '$lib/components/dashboard/Navigation.svelte';
+	import { userTargeted } from '$lib/user';
+	import { dataStore } from '$lib/dataStore';
 
 	const userID = formatUUID($page.params.uuid);
 
-	function getPeriodData(data: RequestsData) {
+	function getPeriodData(data: RequestsData, settings: DashboardSettings) {
 		const inRange = getInRange();
 		const inPrevRange = getInPrevRange();
 
@@ -45,7 +47,8 @@
 			const ipAddress = request[ColumnIndex.IPAddress];
 			const customUserID = request[ColumnIndex.UserID];
 			if (
-				(settings.targetUser === null || settings.targetUser === `${ipAddress} ${customUserID}`) &&
+				(settings.targetUser === null ||
+					userTargeted(settings.targetUser, ipAddress, customUserID)) &&
 				(!settings.disable404 || status !== 404) &&
 				(settings.targetEndpoint.path === null || settings.targetEndpoint.path === path) &&
 				(settings.targetEndpoint.status === null || settings.targetEndpoint.status === status) &&
@@ -164,6 +167,7 @@
 			const body = await response.json();
 			if (response.ok && response.status === 200) {
 				data = body;
+				dataStore.set(data);
 			} else {
 				fetchStatus = {
 					failed: true,
@@ -225,6 +229,8 @@
 				Object.assign(data, data.concat(body.requests));
 			}
 
+			dataStore.set({requests: data, user_agents: userAgents});
+
 			console.log(data);
 
 			return body.requests.length;
@@ -240,10 +246,19 @@
 
 	async function getDashboardData() {
 		if (isDemo()) {
-			return genDemoData();
+			return await getDemoData();
 		}
 
 		return await fetchData();
+	}
+
+	async function getDemoData() {
+		return new Promise<DashboardData>((resolve) => {
+			const data = generateDemoData();
+			setTimeout(() => {
+				resolve(data);
+			});
+		});
 	}
 
 	function parseDates(data: RequestsData) {
@@ -278,8 +293,8 @@
 	const pageSize = 200_000;
 
 	// If data or settings are changed, recalcualte data
-	$: if (data && settings) {
-		periodData = getPeriodData(data);
+	$: if (data) {
+		periodData = getPeriodData(data, settings);
 	}
 
 	$: if (data) {
@@ -287,19 +302,28 @@
 	}
 
 	onMount(async () => {
-		const dashboardData = await getDashboardData();
-		data = dashboardData.requests;
-		userAgents = dashboardData.user_agents;
+		dataStore.subscribe((value) => {
+			if (value) {
+				data = value;
+			}
+		});
 
-		if (data.length === pageSize) {
-			// Fetch page 2 and onwards if initial fetch didn't get all data
-			fetchAdditionalPages();
-		} else {
-			loading = false;
+		if (!data) {
+			const dashboardData = await getDashboardData();
+			data = dashboardData.requests;
+			userAgents = dashboardData.user_agents;
+	
+			if (data.length === pageSize) {
+				// Fetch page 2 and onwards if initial fetch didn't get all data
+				fetchAdditionalPages();
+			} else {
+				loading = false;
+			}
+	
+			parseDates(data);
+			sortByTime(data);
+
 		}
-
-		parseDates(data);
-		sortByTime(data);
 
 		console.log(data);
 	});
@@ -341,7 +365,6 @@
 					bind:targetPath={settings.targetEndpoint.path}
 					bind:targetStatus={settings.targetEndpoint.status}
 					bind:ignoreParams={settings.ignoreParams}
-					bind:endpointsRendered
 				/>
 				<Version data={periodData.current} bind:endpointsRendered />
 			</div>

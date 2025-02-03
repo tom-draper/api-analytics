@@ -1,10 +1,15 @@
 <script lang="ts">
+	import Lightning from "$lib/components/Lightning.svelte";
+
 	export let title: string, description: string, img: string, path: string;
 </script>
 
 <div class="dashboard">
 	<div class="dashboard-title-container">
-		<img class="lightning-top" src="images/logos/lightning-green.svg" alt="" />
+		<div class="lightning">
+			<Lightning />
+		</div>
+		<!-- <img class="lightning-top" src="images/logos/lightning-green.svg" alt="" /> -->
 		<h1 class="dashboard-title font-bold">{title}</h1>
 	</div>
 	<div class="dashboard-content">
@@ -34,9 +39,10 @@
 		background: var(--dark-green);
 	}
 
-	.lightning-top {
+	.lightning {
 		height: 50px;
 		align-self: center;
+		color: var(--highlight)
 	}
 
 	.dashboard-title-container {

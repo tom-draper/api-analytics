@@ -1,18 +1,13 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import Landing from '$lib/components/home/Landing.svelte';
 	import Highlight from '$lib/components/home/Highlight.svelte';
 	import GettingStarted from '$lib/components/home/GettingStarted.svelte';
 	import DocLinks from '$lib/components/home/DocumentLinks.svelte';
+	import { page } from '$app/state';
 	import { formatPath } from '$lib/path';
 
-	let queryString: string = '';
-
-	onMount(() => {
-		// Retrieve current URL parameters
-		const params = new URLSearchParams(window.location.search);
-		queryString = params.toString();
-	});
+	let params: string;
+	$: params = page.url.searchParams.toString();
 </script>
 
 <div class="home">
@@ -20,7 +15,7 @@
 	<Highlight
 		title="Dashboard"
 		description="A powerful all-in-one analytics dashboard. Real-time usage insight."
-		path={formatPath('/dashboard', queryString)}
+		path={formatPath('/dashboard', params)}
 		img="dashboard.png"
 	/>
 	<!-- <Highlight
@@ -38,7 +33,7 @@
 	<Highlight
 		title="Monitor"
 		description="Active monitoring and error notifications. Peace of mind."
-		path={formatPath('/monitoring', queryString)}
+		path={formatPath('/monitoring', params)}
 		img="monitoring.png"
 	/>
 	<GettingStarted />

@@ -16,22 +16,18 @@
 				gridcolor: 'gray',
 				showgrid: false,
 				fixedrange: true,
-				dragmode: false,
+				dragmode: false
 			},
 			xaxis: {
 				visible: false,
-				dragmode: false,
+				dragmode: false
 			},
-			dragmode: false,
+			dragmode: false
 		};
 	}
 
 	function getUserIdentifier(request: RequestsData[number]) {
-		return (
-			request[ColumnIndex.IPAddress] ??
-			'' + request[ColumnIndex.UserID].toString() ??
-			''
-		);
+		return request[ColumnIndex.IPAddress] ?? '' + request[ColumnIndex.UserID].toString() ?? '';
 	}
 
 	function lines(data: RequestsData) {
@@ -43,17 +39,19 @@
 			const start = data[0][ColumnIndex.CreatedAt].getTime();
 			const end = data[data.length - 1][ColumnIndex.CreatedAt].getTime();
 			const range = end - start;
+
 			for (let i = 0; i < data.length; i++) {
 				const userID = getUserIdentifier(data[i]);
 				if (!userID) {
 					continue;
 				}
+
 				const time = data[i][ColumnIndex.CreatedAt].getTime();
 				const diff = time - start;
 				const idx = Math.min(n - 1, Math.floor(diff / (range / n)));
-				if (idx >= 0 && idx < n) {
-					uniqueUsers[idx].add(userID);
-				}
+
+				// Add the userID to the correct bucket
+				uniqueUsers[idx].add(userID);
 			}
 		}
 
@@ -68,8 +66,8 @@
 				showlegend: false,
 				line: { shape: 'spline', smoothing: 1, color: '#3FCF8E30' },
 				fill: 'tozeroy',
-				fillcolor: '#3fcf8e15',
-			},
+				fillcolor: '#3fcf8e15'
+			}
 		];
 	}
 
@@ -80,8 +78,8 @@
 			config: {
 				responsive: true,
 				showSendToCloud: false,
-				displayModeBar: false,
-			},
+				displayModeBar: false
+			}
 		};
 	}
 
@@ -95,20 +93,11 @@
 
 	async function newPlot(data: RequestsData) {
 		const plotData = getPlotData(data);
-		Plotly.newPlot(
-			plotDiv,
-			plotData.data,
-			plotData.layout,
-			plotData.config,
-		);
+		Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
 	}
 
 	function refreshPlot(data: RequestsData) {
-		Plotly.react(
-			plotDiv,
-			lines(data),
-			getPlotLayout(),
-		)
+		Plotly.react(plotDiv, lines(data), getPlotLayout());
 	}
 
 	function togglePeriod() {
@@ -118,7 +107,7 @@
 	function getPercentageChange(now: number, prev: number) {
 		if (prev === 0) {
 			return null;
-		} 
+		}
 
 		return (now / prev) * 100 - 100;
 	}
