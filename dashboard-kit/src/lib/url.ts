@@ -1,4 +1,4 @@
-import { SERVER_URL } from './consts';
+import { serverURL } from './consts';
 import { page } from '$app/state'
 
 function getSourceURL() {
@@ -26,5 +26,5 @@ function cleanURL(url: string) {
 }
 
 export function getServerURL() {
-	return getSourceURL() ?? getEnvSourceURL() ?? SERVER_URL;
+	return getSourceURL() ?? getEnvSourceURL() ?? serverURL;
 }

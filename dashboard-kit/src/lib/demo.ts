@@ -25,7 +25,7 @@ function getUserAgent() {
 
 function getUserAgents() {
 	const userAgentsMapping: UserAgents = {};
-	for (let i = 0; i < 100; i++) {
+	for (let i = 0; i < userAgents.length; i++) {
 		userAgentsMapping[i] = userAgents[i];
 	}
 	return userAgentsMapping;
@@ -1367,7 +1367,7 @@ export default function generateDemoData() {
 	createErrorSamples(demoRequests, maxDaysAgo, scale, outages);
 
 	const demoData: DashboardData = {
-		user_agents: getUserAgents(),
+		userAgents: getUserAgents(),
 		requests: demoRequests,
 	};
 	return demoData;

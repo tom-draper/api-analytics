@@ -1,11 +1,4 @@
-export type Period =
-	| '24 hours'
-	| 'Week'
-	| 'Month'
-	| '3 months'
-	| '6 months'
-	| 'Year'
-	| 'All time';
+import type { Period } from "./period";
 
 export type DashboardSettings = {
 	disable404: boolean;
@@ -29,7 +22,7 @@ export function initSettings(): DashboardSettings {
 	return {
 		disable404: false,
 		hostname: null,
-		period: 'Month',
+		period: 'Week',
 		targetEndpoint: {
 			path: null,
 			status: null,

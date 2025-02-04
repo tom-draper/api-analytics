@@ -1,18 +1,5 @@
 <script lang="ts">
-	import { ColumnIndex } from '$lib/consts';
-
-	// Integer to method string mapping used by server
-	const methodMap = [
-		'GET',
-		'POST',
-		'PUT',
-		'PATCH',
-		'DELETE',
-		'OPTIONS',
-		'CONNECT',
-		'HEAD',
-		'TRACE',
-	];
+	import { ColumnIndex, methodMap } from '$lib/consts';
 
 	type EndpointFreq = Map<
 		string,
@@ -89,7 +76,7 @@
 
 		return {
 			endpoints: freqArr.slice(0, 50),
-			maxCount: maxCount,
+			maxCount
 		};
 	}
 

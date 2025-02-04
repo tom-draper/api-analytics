@@ -3,16 +3,18 @@
 	import { onMount } from 'svelte';
 	import generateDemoData from '$lib/demo';
 	import formatUUID from '$lib/uuid';
-	import { ColumnIndex, columns } from '$lib/consts';
+	import { ColumnIndex, pageSize } from '$lib/consts';
 	import { getServerURL } from '$lib/url';
 	import { dataStore } from '$lib/dataStore';
+	import Navigation from '$lib/components/explorer/Navigation.svelte';
+	import Viewer from '$lib/components/explorer/Viewer.svelte';
 
 	const userID = formatUUID($page.params.uuid);
 
 	async function fetchData() {
 		const url = getServerURL();
 
-		let data: DashboardData = { requests: [], user_agents: {} };
+		let data: DashboardData = { requests: [], userAgents: {} };
 		try {
 			const response = await fetch(`${url}/api/requests/${userID}/1`, {
 				signal: AbortSignal.timeout(250000),
@@ -21,8 +23,9 @@
 
 			const body = await response.json();
 			if (response.ok && response.status === 200) {
-				data = body;
+				data = { requests: body.requests, userAgents: body.user_agents };
 				dataStore.set(data);
+				console.log(data);
 			}
 		} catch (e) {
 			console.log(e);
@@ -38,8 +41,6 @@
 			requests = await fetchAdditionalPage(page);
 			page++;
 		} while (requests === pageSize);
-
-		loading = false;
 	}
 
 	async function fetchAdditionalPage(page: number) {
@@ -59,14 +60,14 @@
 				return 0;
 			}
 
-			userAgents = { ...userAgents, ...body.user_agents };
+			data.userAgents = { ...data.userAgents, ...body.user_agents };
 
 			parseDates(body.requests);
 			sortByTime(body.requests);
 
-			data = data.concat(body.requests);
-			dataStore.set({requests: data, user_agents: userAgents});
+			data.requests = data.requests.concat(body.requests);
 
+			dataStore.set(data);
 			console.log(data);
 
 			return body.requests.length;
@@ -109,39 +110,32 @@
 		});
 	}
 
-	let data: RequestsData;
-	let userAgents: UserAgents;
-	let loading: boolean = true;
-	const pageSize = 200_000;
+	let data: DashboardData;
 
 	onMount(async () => {
 		dataStore.subscribe((value) => {
 			if (value) {
-				data = value.requests;
-                userAgents = value.user_agents;
+				data = value;
 			}
 		});
 
 		if (!data) {
-			const dashboardData = await getDashboardData();
-			data = dashboardData.requests;
-			userAgents = dashboardData.user_agents;
+			data = await getDashboardData();
 
-			if (data.length === pageSize) {
+			if (data.requests.length === pageSize) {
 				// Fetch page 2 and onwards if initial fetch didn't get all data
 				fetchAdditionalPages();
-			} else {
-				loading = false;
 			}
 
-			parseDates(data);
-			sortByTime(data);
+			parseDates(data.requests);
+			sortByTime(data.requests);
 		}
-
-		console.log(data);
 	});
 </script>
 
-<div>
-	<h1>Explorer</h1>
-</div>
+<main>
+	<div class="flex">
+		<Navigation />
+		<Viewer {data} />
+	</div>
+</main>
