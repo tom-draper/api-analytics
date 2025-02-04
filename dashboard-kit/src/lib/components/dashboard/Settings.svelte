@@ -40,13 +40,13 @@
 	<div class="container" on:click={handleClick}>
 		<h2 class="title">Settings</h2>
 		<div class="disable404 setting mb-2">
-			<div class="setting-label">Disable 404</div>
+			<div class="setting-label">Hide 404</div>
 			<input
 				type="checkbox"
 				name="disable404"
 				id="checkbox"
 				on:change={toggleDisable404}
-				title="Hide requests that returned a 404 status code"
+				title="Hide requests made to non-existent routes"
 			/>
 		</div>
 		<div class="disable404 setting mb-8">

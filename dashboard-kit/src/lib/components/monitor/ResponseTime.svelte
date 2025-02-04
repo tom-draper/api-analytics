@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { periodToMarkers } from '$lib/period';
+	import { periodToMarkers, type MonitorPeriod } from '$lib/period';
 
 	function getPlotLayout() {
 		return {
 			title: false,
 			autosize: true,
-			margin: { r: 30, l: 55, t: 10, b: 30, pad: 10 },
+			margin: { r: 30, l: 55, t: 10, b: 20, pad: 10 },
 			hovermode: 'closest',
 			plot_bgcolor: 'transparent',
 			paper_bgcolor: 'transparent',
@@ -26,7 +26,7 @@
 		};
 	}
 
-	function bars(data: MonitorData, period: string) {
+	function bars(data: Sample[], period: MonitorPeriod) {
 		const markers = periodToMarkers(period);
 		
 		if (!markers) {
@@ -46,6 +46,7 @@
 			if (dates[i] !== null) {
 				continue;
 			}
+
 			if (i === 0) {
 				dates[i] = new Date();
 			} else {
@@ -69,7 +70,7 @@
 		];
 	}
 
-	function getPlotData(data: MonitorData, period: string) {
+	function getPlotData(data: Sample[], period: MonitorPeriod) {
 		return {
 			data: bars(data, period),
 			layout: getPlotLayout(),
@@ -82,7 +83,7 @@
 	}
 
 
-	function generatePlot(data: MonitorData, period: string) {
+	function generatePlot(data: Sample[], period: MonitorPeriod) {
 		if (plotDiv.data) {
 			refreshPlot(data, period);
 		} else {
@@ -90,7 +91,7 @@
 		}
 	}
 
-	async function newPlot(data: MonitorData, period: string) {
+	async function newPlot(data: Sample[], period: MonitorPeriod) {
 		const plotData = getPlotData(data, period);
 		Plotly.newPlot(
 			plotDiv,
@@ -100,7 +101,7 @@
 		);
 	}
 
-	function refreshPlot(data: MonitorData, period: string) {
+	function refreshPlot(data: Sample[], period: MonitorPeriod) {
 		Plotly.react(
 			plotDiv,
 			bars(data, period),
@@ -114,7 +115,7 @@
 		generatePlot(data, period);
 	}
 
-	export let data: MonitorData, period: string;
+	export let data: Sample[], period: MonitorPeriod;
 </script>
 
 <div id="plotly">

@@ -8,6 +8,7 @@
 	import { getServerURL } from '$lib/url';
 	import { page } from '$app/stores';
 	import Lightning from '$lib/components/Lightning.svelte';
+	import type { MonitorPeriod } from '$lib/period';
 
 	const userID = formatUUID($page.params.uuid);
 
@@ -29,7 +30,7 @@
 		return data;
 	}
 
-	function setPeriod(value: string) {
+	function setPeriod(value: MonitorPeriod) {
 		period = value;
 		error = false;
 	}
@@ -86,7 +87,7 @@
 	}
 
 	let error = false;
-	const periods = ['24h', '7d', '30d', '60d'];
+	const periods: MonitorPeriod[] = ['24h', '7d', '30d', '60d'];
 	let period = periods[1];
 	let data: MonitorData;
 	let showTrackNew = false;
@@ -155,15 +156,15 @@
 			</div>
 			<div class="period-controls-container text-sm">
 				<div class="period-controls">
-					{#each periods as _period}
+					{#each periods as p}
 						<button
 							class="period-btn"
-							class:active={period === _period}
+							class:active={period === p}
 							on:click={() => {
-								setPeriod(_period);
+								setPeriod(p);
 							}}
 						>
-							{_period}
+							{p}
 						</button>
 					{/each}
 				</div>
@@ -327,6 +328,13 @@
 	@media screen and (max-width: 1100px) {
 		.cards-container {
 			width: 95%;
+		}
+	}
+
+	@media screen and (max-width: 600px) {
+		.status {
+			margin: 10vh 0 9vh !important;
+			font-size: 0.9em;
 		}
 	}
 </style>

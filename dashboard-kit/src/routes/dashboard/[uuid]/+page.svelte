@@ -16,12 +16,12 @@
 	import generateDemoData from '$lib/demo';
 	import formatUUID from '$lib/uuid';
 	import Settings from '$lib/components/dashboard/Settings.svelte';
-	import type { DashboardSettings, Period } from '$lib/settings';
+	import type { DashboardSettings } from '$lib/settings';
 	import { initSettings } from '$lib/settings';
 	import type { NotificationState } from '$lib/notification';
 	import Notification from '$lib/components/dashboard/Notification.svelte';
 	import exportCSV from '$lib/exportData';
-	import { ColumnIndex, columns } from '$lib/consts';
+	import { ColumnIndex, columns, pageSize } from '$lib/consts';
 	import Error from '$lib/components/Error.svelte';
 	import TopUsers from '$lib/components/dashboard/TopUsers.svelte';
 	import { getServerURL } from '$lib/url';
@@ -106,23 +106,19 @@
 	}
 
 	function wildCardMatch(endpoint: string) {
-		if (endpoint.charAt(endpoint.length - 1) !== '/') {
-			endpoint = endpoint + '/';
-		}
+		// Ensure endpoint has a trailing slash
+		endpoint = endpoint.endsWith('/') ? endpoint : endpoint + '/';
 
-		for (let value of settings.hiddenEndpoints) {
-			if (value.charAt(value.length - 1) !== '*') {
+		for (const hidden of settings.hiddenEndpoints) {
+			if (!hidden.endsWith('*')) {
 				continue;
 			}
-			value = value.slice(0, value.length - 1); // Remove asterisk
-			// Format both paths with a starting '/' and no trailing '/'
-			if (value.charAt(0) !== '/') {
-				value = '/' + value;
-			}
-			if (value.charAt(value.length - 1) !== '/') {
-				value = value + '/';
-			}
-			if (endpoint.slice(0, value.length) === value) {
+
+			let prefix = hidden.slice(0, -1); // Remove trailing '*'
+			prefix = prefix.startsWith('/') ? prefix : '/' + prefix;
+			prefix = prefix.endsWith('/') ? prefix : prefix + '/';
+
+			if (endpoint.startsWith(prefix)) {
 				return true;
 			}
 		}
@@ -157,7 +153,7 @@
 	async function fetchData() {
 		const url = getServerURL();
 
-		let data: DashboardData = { requests: [], user_agents: {} };
+		let data: DashboardData = { requests: [], userAgents: {} };
 		try {
 			const response = await fetch(`${url}/api/requests/${userID}/1`, {
 				signal: AbortSignal.timeout(250000),
@@ -166,8 +162,9 @@
 
 			const body = await response.json();
 			if (response.ok && response.status === 200) {
-				data = body;
+				data = { requests: body.requests, userAgents: body.user_agents };
 				dataStore.set(data);
+				console.log(data);
 			} else {
 				fetchStatus = {
 					failed: true,
@@ -215,7 +212,7 @@
 				return 0;
 			}
 
-			userAgents = { ...userAgents, ...body.user_agents };
+			data.userAgents = { ...data.userAgents, ...body.user_agents };
 
 			parseDates(body.requests);
 			sortByTime(body.requests);
@@ -223,14 +220,13 @@
 			const mostRecent = body.requests[body.requests.length - 1][ColumnIndex.CreatedAt];
 			if (dateInPeriod(mostRecent, settings.period)) {
 				// Trigger dashboard re-render
-				data = data.concat(body.requests);
+				data.requests = data.requests.concat(body.requests);
 			} else {
 				// Avoid triggering dashboard re-render
-				Object.assign(data, data.concat(body.requests));
+				Object.assign(data.requests, data.requests.concat(body.requests));
 			}
 
-			dataStore.set({requests: data, user_agents: userAgents});
-
+			dataStore.set(data);
 			console.log(data);
 
 			return body.requests.length;
@@ -273,8 +269,7 @@
 		});
 	}
 
-	let data: RequestsData;
-	let userAgents: UserAgents;
+	let data: DashboardData;
 	let settings: DashboardSettings = initSettings();
 	let showSettings: boolean = false;
 	let hostnames: string[];
@@ -290,15 +285,14 @@
 	let loading: boolean = true;
 	let fetchStatus: { failed: boolean; status: number; message: string };
 	let endpointsRendered: boolean = false;
-	const pageSize = 200_000;
 
 	// If data or settings are changed, recalcualte data
 	$: if (data) {
-		periodData = getPeriodData(data, settings);
+		periodData = getPeriodData(data.requests, settings);
 	}
 
 	$: if (data) {
-		hostnames = getHostnames(data);
+		hostnames = getHostnames(data.requests);
 	}
 
 	onMount(async () => {
@@ -309,23 +303,18 @@
 		});
 
 		if (!data) {
-			const dashboardData = await getDashboardData();
-			data = dashboardData.requests;
-			userAgents = dashboardData.user_agents;
-	
-			if (data.length === pageSize) {
+			data = await getDashboardData();
+
+			if (data.requests.length === pageSize) {
 				// Fetch page 2 and onwards if initial fetch didn't get all data
 				fetchAdditionalPages();
 			} else {
 				loading = false;
 			}
-	
-			parseDates(data);
-			sortByTime(data);
 
+			parseDates(data.requests);
+			sortByTime(data.requests);
 		}
-
-		console.log(data);
 	});
 </script>
 
@@ -333,11 +322,11 @@
 	bind:show={showSettings}
 	bind:settings
 	exportCSV={() => {
-		exportCSV(periodData.current, columns, userAgents);
+		exportCSV(periodData.current, columns, data.userAgents);
 	}}
 />
 <Notification state={notification} />
-{#if periodData && data.length > 0}
+{#if periodData && data.requests.length > 0}
 	<div class="dashboard">
 		<Navigation bind:settings bind:showSettings bind:hostnames />
 
@@ -372,14 +361,14 @@
 				<Activity data={periodData.current} period={settings.period} />
 				<div class="grid-row">
 					<Location data={periodData.current} bind:targetLocation={settings.targetLocation} />
-					<Device data={periodData.current} {userAgents} />
+					<Device data={periodData.current} userAgents={data.userAgents} />
 				</div>
 				<UsageTime data={periodData.current} />
 				<TopUsers data={periodData.current} bind:targetUser={settings.targetUser} />
 			</div>
 		</div>
 	</div>
-{:else if periodData && data.length <= 0}
+{:else if periodData && data.requests.length <= 0}
 	<Error status={400} message="" />
 {:else if fetchStatus && fetchStatus.failed}
 	<Error status={fetchStatus.status} message={fetchStatus.message} />

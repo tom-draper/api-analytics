@@ -1,8 +1,12 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import type { DashboardSettings, Period } from '$lib/settings';
+	import formatUUID from '$lib/uuid';
 	import Dropdown from './Dropdown.svelte';
 
 	const timePeriods: Period[] = ['24 hours', 'Week', 'Month', '6 months', 'Year', 'All time'];
+
+	const userID = formatUUID($page.params.uuid);
 
 	let dropdownOpen: boolean = false;
 
@@ -10,7 +14,7 @@
 </script>
 
 <nav class="button-nav text-sm">
-	<div class="info">
+	<a class="info" href={userID ? `/explorer/${userID}` : '/explorer'}>
 		<div class="info-content">
 			Try the Log Explorer <svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -27,7 +31,7 @@
 				/>
 			</svg>
 		</div>
-	</div>
+	</a>
 	<div class="donate">
 		<a target="_blank" href="https://www.buymeacoffee.com/tomdraper" class="donate-link">Donate</a>
 	</div>
@@ -75,6 +79,7 @@
 		cursor: pointer;
 		border: 1px solid #2e2e2e;
 		border-radius: 4px;
+		font-weight: 400;
 	}
 	.info-content {
 		display: flex;

@@ -10,7 +10,7 @@ declare global {
 	}
 
 	type DashboardData = {
-		user_agents: UserAgents;
+		userAgents: UserAgents;
 		requests: RequestsData;
 	};
 
@@ -32,13 +32,24 @@ declare global {
 		[id: number]: string;
 	};
 
+	type RawMonitorSample = {
+		status: number;
+		response_time: number;
+		created_at: Date | null;
+	}
+
 	type MonitorSample = {
 		status: number;
 		responseTime: number;
-		createdAt: Date;
+		createdAt: Date | null;
 	};
 
-	type MonitorData = { [url: string]: MonitorSample[] };
+	type MonitorData = { [url: string]: RawMonitorSample[] };
+
+	type StatusLabel = "success" | "warning" | "error" | "no-request";
+
+	// Monitor sample with label for status colour CSS class
+	type Sample = MonitorSample & { label: StatusLabel };
 
 	type ValueCount = {
 		[value: string]: number;

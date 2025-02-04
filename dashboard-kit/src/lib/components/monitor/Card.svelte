@@ -1,6 +1,6 @@
 <script lang="ts">
 	import ResponseTime from './ResponseTime.svelte';
-	import { periodToMarkers } from '$lib/period';
+	import { periodToMarkers, type MonitorPeriod } from '$lib/period';
 	import type { NotificationState } from '$lib/notification';
 	import { getServerURL } from '$lib/url';
 
@@ -31,6 +31,7 @@
 			if (response.status === 201) {
 				triggerNotificationMessage('Deleted successfully', 'success');
 				removeMonitor(url);
+				period = period;
 			} else {
 				triggerNotificationMessage('Failed to delete monitor');
 			}
@@ -47,25 +48,49 @@
 			if (samples[i].label === 'no-request') {
 				continue;
 			}
-			if (samples[i].label === 'success' || samples[i].label === 'delay') {
+			if (samples[i].label === 'success') {
 				success++;
 			}
 			total++;
 		}
 
 		if (total === 0) {
+			return null;
+		}
+
+		return success / total;
+	}
+
+	function formatUptime(uptime: number | null) {
+		if (uptime === null) {
 			return 'N/A';
 		}
 
-		const per = (success / total) * 100;
-		// If 100% display without decimal
-		return per === 100 ? '100' : per.toFixed(2);
+		if (uptime === 0 || uptime === 1) {
+			return (uptime * 100).toString() + '%';
+		}
+		return (uptime * 100).toFixed(2) + '%';
 	}
 
-	function periodSample(period: string): MonitorSample[] {
+	function periodTimespanLabel(period: string) {
+		switch (period) {
+			case '24h':
+				return '24 hours ago';
+			case '7d':
+				return '1 week ago';
+			case '30d':
+				return '1 month ago';
+			case '60d':
+				return '2 months ago';
+			default:
+				return '';
+		}
+	}
+
+	function periodSample(period: MonitorPeriod) {
 		/* Sample ping recordings at regular intervals if number of bars fewer than 
 		total recordings the current period length */
-		let sample: MonitorSample[] = [];
+		let sample: RawMonitorSample[] = [];
 		switch (period) {
 			case '30d':
 				// Sample 1 in 4
@@ -91,14 +116,14 @@
 		return sample;
 	}
 
-	function getSamples(period: string) {
+	function getSamples(period: MonitorPeriod) {
 		const markers = periodToMarkers(period);
-		const samples: Sample[] = Array.from({ length: markers }).fill({
+		const samples: Sample[] = Array.from({ length: markers }, () => ({
 			label: 'no-request',
 			responseTime: 0,
 			status: 0,
 			createdAt: null
-		});
+		}));
 
 		if (!markers) {
 			return samples;
@@ -111,8 +136,8 @@
 			samples[i + start] = {
 				label: 'no-request',
 				status: sampledData[i].status,
-				responseTime: sampledData[i]['response_time'],
-				createdAt: new Date(sampledData[i]['created_at'])
+				responseTime: sampledData[i].response_time,
+				createdAt: new Date(sampledData[i].created_at)
 			};
 			if (sampledData[i].status >= 200 && sampledData[i].status <= 299) {
 				samples[i + start].label = 'success';
@@ -120,8 +145,6 @@
 				samples[i + start].label = 'error';
 			}
 		}
-
-		// samples[samples.length-1].label = 'error'
 
 		return samples;
 	}
@@ -147,13 +170,21 @@
 			prefix = 'http://';
 			body = url.replace('http://', '');
 		}
+
 		return { prefix, body };
 	}
 
-	// Monitor sample with label for status colour CSS class
-	type Sample = MonitorSample & { label: string };
+	function hasSuccess(samples: Sample[]) {
+		for (let i = samples.length; i >= 0; i--) {
+			if (samples[i] && (samples[i].label === 'success' || samples[i].responseTime > 0)) {
+				return true;
+			}
+		}
 
-	let uptime = '';
+		return false;
+	}
+
+	let uptime: number | null;
 	let currentStatus: 'success' | 'error' | 'no-request' = 'no-request';
 	let samples: Sample[];
 	let separatedURL = {
@@ -173,7 +204,7 @@
 	export let url: string,
 		data: MonitorData,
 		userID: string,
-		period: string,
+		period: MonitorPeriod,
 		anyError: boolean,
 		notification: NotificationState,
 		removeMonitor: (url: string) => void;
@@ -207,18 +238,9 @@
 					stroke="currentColor"
 					class="size-6"
 				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-					/>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
 				</svg>
 			</button>
-		</div>
-		<div class="card-text-right">
-			<div class="uptime">
-				Uptime: {currentStatus === 'no-request' ? 'Pending' : `${uptime}%`}
-			</div>
 		</div>
 	</div>
 	{#if samples !== undefined}
@@ -234,7 +256,27 @@
 				></div>
 			{/each}
 		</div>
-		{#if samples[samples.length - 1].label !== 'no-request'}
+		<div class="mx-[2rem] mb-4 mt-3 flex text-[0.75em] !font-semibold text-[#505050]">
+			<div class="flex flex-1">
+				<div>
+					{periodTimespanLabel(period)}
+				</div>
+				<div class="mx-4 h-[50%] flex-grow border-b border-[#505050]"></div>
+			</div>
+			<div
+				class="text-[var(--dim-text)]"
+				class:!text-[#ffc1c1]={uptime !== null && uptime < 0.75}
+				class:!text-[#bee7c5]={uptime !== null && uptime > 0.95}
+				class:!text-[rgb(235,235,129)]={uptime !== null && uptime >= 0.75 && uptime <= 0.95}
+			>
+				{uptime === null ? 'Pending' : `${formatUptime(uptime)} uptime`}
+			</div>
+			<div class="flex flex-1">
+				<div class="mx-4 h-[50%] flex-grow border-b border-[#505050]"></div>
+				<div>Now</div>
+			</div>
+		</div>
+		{#if samples[samples.length - 1].label !== 'no-request' && hasSuccess(samples)}
 			<div class="response-time">
 				<ResponseTime bind:data={samples} {period} />
 			</div>
@@ -247,6 +289,7 @@
 		width: min(100%, 1000px);
 		border: 1px solid #2e2e2e;
 		margin: 2.2em auto;
+		padding-bottom: 1.5em;
 	}
 	.card-error {
 		box-shadow:
@@ -267,10 +310,12 @@
 		margin-left: 10px;
 		letter-spacing: 0.01em;
 		color: white;
+		word-break: break-all;
+		align-content: center;
 	}
 	.measurements {
 		display: flex;
-		padding: 1em 2em 2em;
+		padding: 1em 2em 0;
 	}
 	.measurement {
 		margin: 0 0.1%;
@@ -307,8 +352,8 @@
 		color: var(--dim-text);
 	}
 	.delete > svg {
-		width: 16px;
-		height: 16px;
+		width: 18px;
+		height: 18px;
 	}
 	.card-status {
 		display: grid;
@@ -334,7 +379,7 @@
 		background: transparent;
 		border: none;
 		cursor: pointer;
-		margin-left: 10px;
+		margin-left: auto;
 		padding: 2px 4px;
 		border-radius: 4px;
 	}
@@ -345,5 +390,17 @@
 	.bin-icon {
 		width: 12px;
 		filter: invert(0.3);
+	}
+
+	@media screen and (max-width: 600px) {
+		.card-text {
+			margin: 1.5em 1.5em 0;
+		}
+		.measurements {
+			padding: 1em 1.5em 0;
+		}
+		.card {
+			padding-bottom: 0.5em;
+		}
 	}
 </style>

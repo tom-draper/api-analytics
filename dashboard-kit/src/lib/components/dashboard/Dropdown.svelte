@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 
-	let dropdown;
+	let dropdown: HTMLDivElement;
 
 	function selectOption(option: string | null) {
 		selected = option;
