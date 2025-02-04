@@ -17,12 +17,14 @@
 <style scoped>
 	.notification {
 		position: fixed;
-		right: 2em;
-		bottom: 2em;
+		/* right: 2em; */
+		bottom: 0;
 		display: grid;
 		place-items: center;
-		padding: 1em 2em;
-		border-radius: 6px;
+		z-index:100;
+		padding: 0.5em 2em;
+		/* border-radius: 6px; */
+		width: 100%;
 		opacity: 0;
 		transition: opacity 0.2s linear;
 		font-weight: 500;

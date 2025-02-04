@@ -86,7 +86,7 @@
 		}
 	}
 
-	function periodSample(period: MonitorPeriod) {
+	function periodSample(data: MonitorData, period: MonitorPeriod) {
 		/* Sample ping recordings at regular intervals if number of bars fewer than 
 		total recordings the current period length */
 		let sample: RawMonitorSample[] = [];
@@ -115,7 +115,7 @@
 		return sample;
 	}
 
-	function getSamples(period: MonitorPeriod) {
+	function getSamples(data: MonitorData, period: MonitorPeriod) {
 		const markers = periodToMarkers(period);
 		const samples: Sample[] = Array.from({ length: markers }, () => ({
 			label: 'no-request',
@@ -128,7 +128,7 @@
 			return samples;
 		}
 
-		const sampledData = periodSample(period);
+		const sampledData = periodSample(data, period);
 		const start = markers - sampledData.length;
 
 		for (let i = 0; i < sampledData.length; i++) {
@@ -192,9 +192,9 @@
 	};
 
 	// If card period or url changes at any time, rebuild
-	$: {
+	$: if (data) {
 		separatedURL = separateURL(url);
-		samples = getSamples(period);
+		samples = getSamples(data, period);
 		currentStatus = getCurrentStatus(samples) || currentStatus;
 		anyError = anyError || currentStatus === 'error';
 		uptime = getUptime(samples);

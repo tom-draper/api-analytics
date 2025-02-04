@@ -24,9 +24,9 @@
 
 	async function postMonitor() {
 		if (monitorURL == null) {
-			triggerNotificationMessage('URL is blank.');
+			triggerNotificationMessage('Monitor URL is blank.');
 			return;
-		} else if (monitorCount >= 3) {
+		} else if (monitorCount >= monitorLimit) {
 			triggerNotificationMessage('Monitor limit reached.');
 			return;
 		}
@@ -37,7 +37,6 @@
 		try {
 			const response = await fetch(`${serverURL}/api/monitor/add`, {
 				method: 'POST',
-				headers: {},
 				body: JSON.stringify({
 					user_id: userID,
 					url: getFullURL(monitorURL, secure),
@@ -46,24 +45,26 @@
 				}),
 			});
 			if (response.status === 201) {
-				triggerNotificationMessage('Created successfully', 'success');
+				triggerNotificationMessage(`Monitor ${monitorCount + 1}/${monitorLimit} created successfully`, 'success');
 				const fullURL = getFullURL(monitorURL, secure);
 				addEmptyMonitor(fullURL);
-				showTrackNew = false;
+				showTrackNew = false;  // Collapse controls for adding new monitor
 			} else if (response.status === 409) {
-				triggerNotificationMessage('URL already monitored', 'warn');
+				triggerNotificationMessage('Endpoint already monitored.', 'warn');
 			} else {
-				triggerNotificationMessage('Failed to create monitor');
+				triggerNotificationMessage('Failed to create monitor.');
 			}
 		} catch (e) {
 			console.log(e);
-			triggerNotificationMessage('Failed to create monitor');
+			triggerNotificationMessage('Failed to create monitor.');
 		}
 	}
 
 	let monitorURL: string;
 	const options = ['https', 'http'];
 	let urlPrefix = options[0];
+
+	const monitorLimit = 3;
 
 	export let userID: string,
 		showTrackNew: boolean,
