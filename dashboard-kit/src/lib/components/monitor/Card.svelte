@@ -31,7 +31,6 @@
 			if (response.status === 201) {
 				triggerNotificationMessage('Deleted successfully', 'success');
 				removeMonitor(url);
-				period = period;
 			} else {
 				triggerNotificationMessage('Failed to delete monitor');
 			}
@@ -386,6 +385,7 @@
 	.delete:hover {
 		background: var(--red);
 		color: var(--background);
+		filter: contrast(1.5);
 	}
 	.bin-icon {
 		width: 12px;

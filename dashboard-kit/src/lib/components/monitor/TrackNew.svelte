@@ -27,14 +27,14 @@
 			triggerNotificationMessage('URL is blank.');
 			return;
 		} else if (monitorCount >= 3) {
-			triggerNotificationMessage('Maximum 3 monitors allowed.');
+			triggerNotificationMessage('Monitor limit reached.');
 			return;
 		}
 
+		const secure = urlPrefix === 'https';
+		const serverURL = getServerURL();
+
 		try {
-			const secure = urlPrefix === 'https';
-			const fullURL = getFullURL(monitorURL, secure);
-			const serverURL = getServerURL();
 			const response = await fetch(`${serverURL}/api/monitor/add`, {
 				method: 'POST',
 				headers: {},
@@ -47,6 +47,7 @@
 			});
 			if (response.status === 201) {
 				triggerNotificationMessage('Created successfully', 'success');
+				const fullURL = getFullURL(monitorURL, secure);
 				addEmptyMonitor(fullURL);
 				showTrackNew = false;
 			} else if (response.status === 409) {

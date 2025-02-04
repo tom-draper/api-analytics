@@ -21,10 +21,13 @@
 		bottom: 2em;
 		display: grid;
 		place-items: center;
-		padding: 1.6em 3em;
+		padding: 1em 2em;
 		border-radius: 6px;
 		opacity: 0;
 		transition: opacity 0.2s linear;
+		font-weight: 500;
+		user-select: none;
+		filter: contrast(1.2);
 	}
 
 	.show {
@@ -35,13 +38,19 @@
 		background: #521e24c7;
 		background: rgba(76, 27, 31, 0.95);
 		color: #cc3444;
+		background: var(--red);
+		color: var(--dark-background);
 	}
 	.warn {
 		background: rgba(186, 186, 100, 0.95);
 		color: yellow;
+		background: rgb(235, 235, 129);
+		color: var(--dark-background);
 	}
 	.success {
 		background: rgba(47, 66, 58, 0.95);
 		color: var(--highlight);
+		background: var(--highlight);
+		color: var(--dark-background);
 	}
 </style>

@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { periodToDays } from '$lib/period';
-	import type { Period } from '$lib/settings';
+	import { periodToDays, type Period } from '$lib/period';
 	import { ColumnIndex } from '$lib/consts';
 
 	function daysAgo(date: Date): number {

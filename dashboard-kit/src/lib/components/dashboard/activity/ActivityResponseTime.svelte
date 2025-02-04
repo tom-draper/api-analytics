@@ -1,16 +1,14 @@
 <script lang="ts">
-	import { periodToDays } from '$lib/period';
-	import type { Period } from '$lib/settings';
+	import { periodToDays, type Period } from '$lib/period';
 	import { initFreqMap } from '$lib/activity';
 	import { ColumnIndex } from '$lib/consts';
 
 	function getPlotLayout(period: Period) {
 		const days = periodToDays(period);
-		let periodAgo = new Date();
-		if (days != null) {
+		let periodAgo: Date | null = null;
+		if (days !== null) {
+			periodAgo = new Date();
 			periodAgo.setDate(periodAgo.getDate() - days);
-		} else {
-			periodAgo = null;
 		}
 		const now = new Date();
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import Card from '$lib/components/monitor/Card.svelte';
 	import TrackNew from '$lib/components/monitor/TrackNew.svelte';
 	import Notification from '$lib/components/dashboard/Notification.svelte';
@@ -44,8 +44,8 @@
 	}
 
 	function removeMonitor(url: string) {
-		delete data[url];
-		data = data; // Trigger reactivity to update display
+		data = Object.fromEntries(Object.entries(data).filter(([key]) => key !== url));
+		error = false;
 	}
 
 	function allPending(data: MonitorData) {
@@ -102,13 +102,31 @@
 	let status: Status;
 	let statusTitle: string;
 
+	let intervalID: NodeJS.Timeout;
+
 	$: if (data) {
 		status = getStatus(data, error);
+		console.log(status);
 		statusTitle = getStatusTitle(status);
+		console.log(statusTitle);
 	}
 
 	onMount(async () => {
 		data = await fetchData();
+
+		const refreshData = async () => {
+			data = await fetchData();
+		};
+
+		if (intervalID) {
+			clearInterval(intervalID);
+		}
+		intervalID = setInterval(refreshData, 1800000); // Refresh data every 30 minutes
+	});
+	
+	onDestroy(() => {
+		// Cleanup interval on component destroy
+		clearInterval(intervalID);
 	});
 </script>
 
@@ -124,11 +142,14 @@
 				>
 					<Lightning />
 				</div>
-				<div class="status-text"
+				<div
+					class="status-text"
 					class:text-[#bee7c5]={status === 'online'}
 					class:text-[#ffc1c1]={status === 'offline'}
 					class:text-[#c0c0c0]={status === 'setup' || status === 'pending'}
-				>{statusTitle}</div>
+				>
+					{statusTitle}
+				</div>
 			</div>
 		{/if}
 	</div>
@@ -306,8 +327,6 @@
 		margin: 0 0.5em;
 		width: 16px;
 		transition: color 0.4s ease-in-out;
-
-		/* filter: contrast(1.5); */
 	}
 	.active > svg {
 		transition: none;
