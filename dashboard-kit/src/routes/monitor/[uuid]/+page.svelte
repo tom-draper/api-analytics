@@ -45,6 +45,7 @@
 
 	function removeMonitor(url: string) {
 		data = Object.fromEntries(Object.entries(data).filter(([key]) => key !== url));
+		// Reset error flag in case deleted monitor was the cause
 		error = false;
 	}
 
@@ -106,9 +107,7 @@
 
 	$: if (data) {
 		status = getStatus(data, error);
-		console.log(status);
 		statusTitle = getStatusTitle(status);
-		console.log(statusTitle);
 	}
 
 	onMount(async () => {
