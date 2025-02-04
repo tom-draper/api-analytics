@@ -18,13 +18,13 @@
 		path={formatPath('/dashboard', params)}
 		img="dashboard.png"
 	/>
-	<!-- <Highlight
+	<Highlight
 		title="Explorer"
 		description="A deep-dive into your logged requests."
-		path={`/dashboard${queryString ? `?${queryString}` : ''}`}
+		path={formatPath('/explorer', params)}
 		img="dashboard.png"
 	/>
-	<Highlight
+	<!--<Highlight
 		title="Showcase"
 		description="A public customisable dashboard. Show off your achivements."
 		path={`/dashboard${queryString ? `?${queryString}` : ''}`}

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import type { DashboardSettings } from '$lib/settings';
 	import List from './List.svelte';
 
@@ -207,7 +206,6 @@
 		cursor: pointer;
 		border-radius: 4px;
 		font-size: 0.85em;
-		/* transition: background 0.05s ease-in; */
 	}
 	.export-csv-btn:hover {
 		background: var(--highlight);

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Period } from '$lib/settings';
+	import type { Period } from '$lib/period';
 	import ActivityRequests from './ActivityRequests.svelte';
 	import ActivityResponseTime from './ActivityResponseTime.svelte';
 	import ActivitySuccessRate from './ActivitySuccessRate.svelte';

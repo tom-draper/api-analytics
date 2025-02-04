@@ -149,7 +149,6 @@
 		};
 	}
 
-
 	function generatePlot(data: RequestsData) {
 		if (plotDiv.data) {
 			refreshPlot(data);
