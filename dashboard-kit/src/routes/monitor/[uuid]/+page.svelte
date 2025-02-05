@@ -94,7 +94,7 @@
 	let showTrackNew = false;
 	let notification: NotificationState = {
 		message: '',
-		style: 'error',
+		style: 'success',
 		show: false
 	};
 
