@@ -22,7 +22,7 @@
 		display: grid;
 		place-items: center;
 		z-index:100;
-		padding: 0.5em 2em;
+		padding: 0.3em 2em;
 		/* border-radius: 6px; */
 		width: 100%;
 		opacity: 0;
@@ -41,18 +41,20 @@
 		background: rgba(76, 27, 31, 0.95);
 		color: #cc3444;
 		background: var(--red);
+		background: rgba(228, 97, 97, 0.8);
 		color: var(--dark-background);
 	}
 	.warn {
 		background: rgba(186, 186, 100, 0.95);
 		color: yellow;
-		background: rgb(235, 235, 129);
+		background: rgba(235, 235, 129, 0.8);
 		color: var(--dark-background);
 	}
 	.success {
 		background: rgba(47, 66, 58, 0.95);
 		color: var(--highlight);
 		background: var(--highlight);
+		background: rgba(63, 207, 142, 0.8);
 		color: var(--dark-background);
 	}
 </style>
