@@ -47,6 +47,7 @@
 			if (samples[i].label === 'no-request') {
 				continue;
 			}
+
 			if (samples[i].label === 'success') {
 				success++;
 			}
@@ -154,7 +155,7 @@
 			return 'no-request';
 		} else if (latest.label === 'error') {
 			return 'error';
-		} else if (latest.label == 'success') {
+		} else if (latest.label === 'success') {
 			return 'success';
 		}
 	}
@@ -171,6 +172,16 @@
 		}
 
 		return { prefix, body };
+	}
+
+	function getTitle(sample: Sample) {
+		if (sample.createdAt === null) {
+			return '';
+		} else if (sample.status === 0) {
+			return `No response\n${sample.createdAt.toLocaleString()}`;
+		} else {
+			return `Status: ${sample.status}\n${sample.createdAt.toLocaleString()}`;
+		}
 	}
 
 	function hasSuccess(samples: Sample[]) {
@@ -245,14 +256,7 @@
 	{#if samples !== undefined}
 		<div class="measurements">
 			{#each samples as sample}
-				<div
-					class="measurement {sample.label}"
-					title={sample.createdAt === null
-						? ''
-						: sample.status === 0
-							? `No response\n${sample.createdAt.toLocaleString()}`
-							: `Status: ${sample.status}\n${sample.createdAt.toLocaleString()}`}
-				></div>
+				<div class="measurement {sample.label}" title={getTitle(sample)}></div>
 			{/each}
 		</div>
 		<div class="mx-[2rem] mb-4 mt-3 flex text-[0.75em] !font-semibold text-[#505050]">

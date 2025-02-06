@@ -6,8 +6,8 @@
 	import { ColumnIndex, pageSize } from '$lib/consts';
 	import { getServerURL } from '$lib/url';
 	import { dataStore } from '$lib/dataStore';
-	import Navigation from '$lib/components/explorer/Navigation.svelte';
-	import Viewer from '$lib/components/explorer/Viewer.svelte';
+	import Navigation from '$components/explorer/Navigation.svelte';
+	import Viewer from '$components/explorer/Viewer.svelte';
 
 	const userID = formatUUID($page.params.uuid);
 

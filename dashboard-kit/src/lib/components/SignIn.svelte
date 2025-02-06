@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getServerURL } from '$lib/url';
 	import { formatPath } from '$lib/path';
-	import { page } from "$app/state"
+	import { page } from '$app/state';
 
 	let apiKey: string = '';
 	let loading: boolean = false;
@@ -11,11 +11,11 @@
 
 	async function submit() {
 		if (!apiKey) {
-            return;
-        }
+			return;
+		}
 
 		loading = true;
-		
+
 		const url = getServerURL();
 
 		try {
@@ -50,18 +50,8 @@
 		{:else if type === 'explorer'}
 			<h2 class="font-bold">Explorer</h2>
 		{/if}
-		<input
-			type="text"
-			bind:value={apiKey}
-			placeholder="Enter API key"
-			on:keydown={enter}
-		/>
-		<button
-			id="formBtn"
-			on:click={submit}
-			class="text-sm"
-			class:no-display={loading}>Load</button
-		>
+		<input type="text" bind:value={apiKey} placeholder="Enter API key" on:keydown={enter} />
+		<button id="formBtn" on:click={submit} class="text-sm" class:no-display={loading}>Load</button>
 		<div id="formBtn" class="grid place-items-center" class:no-display={!loading}>
 			<div class="h-auto place-items-center">
 				<div class="loader !h-[1em] !w-[1em]"></div>

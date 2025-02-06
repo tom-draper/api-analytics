@@ -2,44 +2,40 @@
 	import { onMount } from 'svelte';
 	import animate from '$lib/animate';
 	import { formatPath } from '$lib/path';
+	import { page } from '$app/state';
 
-	let queryString: string = '';
+	let params: string;
+	$: params = page.url.searchParams.toString();
 
 	onMount(() => {
-		// Start animation after delay
 		animate();
+		// Start animation loop after delay
 		setInterval(animate, 8000);
-
-		// Retrieve current URL parameters
-		const params = new URLSearchParams(window.location.search);
-		queryString = params.toString();
 	});
 </script>
 
 <div class="landing-page-container">
 	<div class="landing-page">
-		<div class="text-left flex-1">
-			<h1 class="font-bold my-8">API Analytics</h1>
+		<div class="flex-1 text-left">
+			<h1 class="my-8 font-bold">API Analytics</h1>
 			<h2 class="font-bold">Monitoring and analytics for API frameworks.</h2>
 			<div class="links">
-				<a
-					href={formatPath('/generate', queryString)}
-					class="link"
-				>
+				<a href={formatPath('/generate', params)} class="link">
 					<div class="text">
 						Try now – it's <span class="italic">free</span>
 					</div>
 				</a>
-				<a
-					href={formatPath('/dashboard/demo', queryString)}
-					class="link secondary"
-				>
+				<a href={formatPath('/dashboard/demo', params)} class="link secondary">
 					<div class="text">Demo</div>
 				</a>
 			</div>
 		</div>
 		<div class="right relative grid place-items-center">
-			<img class="logo max-w-[1400px] w-[700px] mb-[-50px]" src="images/logos/home-logo.png" alt="" />
+			<img
+				class="logo mb-[-50px] w-[700px] max-w-[1400px]"
+				src="images/logos/home-logo.png"
+				alt=""
+			/>
 			<img
 				id="hover-1"
 				style="position: absolute;"

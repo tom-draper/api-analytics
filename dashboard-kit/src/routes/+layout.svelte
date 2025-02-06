@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '../app.css';
-	import Footer from '$lib/components/Footer.svelte';
+	import Footer from '$components/Footer.svelte';
 	import { page } from '$app/state';
 	let { children } = $props();
 

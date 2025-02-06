@@ -86,35 +86,32 @@
 
 	function getUsers(data: RequestsData) {
 		const users: Users = {};
-		for (let i = 0; i < data.length; i++) {
-			const userID = getUserIdentifier(data[i]);
+
+		for (const row of data) {
+			const userID = getUserIdentifier(row);
 			if (!userID) {
 				continue;
 			}
 
-			const createdAt = data[i][ColumnIndex.CreatedAt];
-			const location = data[i][ColumnIndex.Location];
-			if (!(userID in users)) {
-				const ipAddress = data[i][ColumnIndex.IPAddress];
-				const customUserID = data[i][ColumnIndex.UserID];
+			const createdAt = row[ColumnIndex.CreatedAt];
+			const location = row[ColumnIndex.Location];
+			let user = users[userID];
+
+			if (user) {
+				user.requests++;
+				user.locations[location] = (user.locations[location] || 0) + 1;
+
+				if (createdAt > user.lastRequested) {
+					user.lastRequested = createdAt;
+				}
+			} else {
 				users[userID] = {
-					ipAddress,
-					customUserID,
+					ipAddress: row[ColumnIndex.IPAddress],
+					customUserID: row[ColumnIndex.UserID],
 					lastRequested: createdAt,
 					requests: 1,
 					locations: location ? { [location]: 1 } : {}
 				};
-			} else {
-				users[userID].requests += 1;
-				if (location in users[userID].locations) {
-					users[userID].locations[location] += 1;
-				} else {
-					users[userID].locations[location] = 1;
-				}
-			}
-
-			if (createdAt > users[userID].lastRequested) {
-				users[userID].lastRequested = createdAt;
 			}
 		}
 

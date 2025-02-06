@@ -1,11 +1,11 @@
 <script lang="ts">
 	import type { NotificationState } from '$lib/notification';
 	import { getServerURL } from '$lib/url';
-	import Dropdown from '$lib/components/dashboard/Dropdown.svelte';
+	import Dropdown from '$components/dashboard/Dropdown.svelte';
 
 	function triggerNotificationMessage(
 		message: string,
-		style: 'error' | 'warn' | 'success' = 'error',
+		style: 'error' | 'warn' | 'success' = 'error'
 	) {
 		notification.message = message;
 		notification.style = style;
@@ -41,14 +41,17 @@
 					user_id: userID,
 					url: getFullURL(monitorURL, secure),
 					ping: true,
-					secure: secure,
-				}),
+					secure: secure
+				})
 			});
 			if (response.status === 201) {
-				triggerNotificationMessage(`Monitor ${monitorCount + 1}/${monitorLimit} created successfully`, 'success');
+				triggerNotificationMessage(
+					`Monitor ${monitorCount + 1}/${monitorLimit} created successfully`,
+					'success'
+				);
 				const fullURL = getFullURL(monitorURL, secure);
 				addEmptyMonitor(fullURL);
-				showTrackNew = false;  // Collapse controls for adding new monitor
+				showTrackNew = false; // Collapse controls for adding new monitor
 			} else if (response.status === 409) {
 				triggerNotificationMessage('Endpoint already monitored.', 'warn');
 			} else {
@@ -77,11 +80,7 @@
 	<div class="card-text">
 		<div class="url">
 			<div class="text-sm">
-				<Dropdown
-					{options}
-					bind:selected={urlPrefix}
-					defaultOption={null}
-				/>
+				<Dropdown {options} bind:selected={urlPrefix} defaultOption={null} />
 			</div>
 			<input
 				type="text"
@@ -92,9 +91,7 @@
 			<button class="add" on:click={postMonitor}>Add</button>
 		</div>
 		<div class="detail">
-			Endpoints are pinged by our servers every 30 mins and response <b
-				>status</b
-			>
+			Endpoints are pinged by our servers every 30 mins and response <b>status</b>
 			and response <b>time</b> are logged.
 		</div>
 	</div>
@@ -139,7 +136,7 @@
 		background: var(--light-background);
 		cursor: pointer;
 		font-size: 0.85em;
-		color: var(--background)
+		color: var(--background);
 	}
 	.add {
 		background: var(--highlight);

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Landing from '$lib/components/home/Landing.svelte';
-	import Highlight from '$lib/components/home/Highlight.svelte';
-	import GettingStarted from '$lib/components/home/GettingStarted.svelte';
-	import DocLinks from '$lib/components/home/DocumentLinks.svelte';
+	import Landing from '$components/home/Landing.svelte';
+	import Highlight from '$components/home/Highlight.svelte';
+	import GettingStarted from '$components/home/GettingStarted.svelte';
+	import DocLinks from '$components/home/DocumentLinks.svelte';
 	import { page } from '$app/state';
 	import { formatPath } from '$lib/path';
 

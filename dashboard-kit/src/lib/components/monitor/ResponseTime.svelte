@@ -14,28 +14,28 @@
 				title: null,
 				gridcolor: 'gray',
 				showgrid: false,
-				fixedrange: true,
+				fixedrange: true
 			},
 			xaxis: {
 				title: { text: 'Date' },
 				showgrid: false,
 				fixedrange: true,
-				visible: false,
+				visible: false
 			},
-			dragmode: false,
+			dragmode: false
 		};
 	}
 
 	function bars(data: Sample[], period: MonitorPeriod) {
 		const markers = periodToMarkers(period);
-		
+
 		if (!markers) {
 			return;
 		}
 
-		const dates: (Date | null)[] = Array.from({length: markers});
-		const x: (number | null)[] = Array.from({length: markers});
-		const requests: (number | null)[] = Array.from({length: markers});
+		const dates: (Date | null)[] = Array.from({ length: markers });
+		const x: (number | null)[] = Array.from({ length: markers });
+		const requests: (number | null)[] = Array.from({ length: markers });
 		for (let i = 0; i < markers; i++) {
 			requests[markers - i - 1] = data[i].responseTime;
 			dates[markers - i - 1] = data[i].createdAt;
@@ -65,8 +65,8 @@
 				fill: 'tonexty',
 				text: dates,
 				hovertemplate: `<b>%{y:.0f}ms</b><br>%{text|%d %b %Y %H:%M:%S}</b><extra></extra>`,
-				showlegend: false,
-			},
+				showlegend: false
+			}
 		];
 	}
 
@@ -77,11 +77,10 @@
 			config: {
 				responsive: true,
 				showSendToCloud: false,
-				displayModeBar: false,
-			},
+				displayModeBar: false
+			}
 		};
 	}
-
 
 	function generatePlot(data: Sample[], period: MonitorPeriod) {
 		if (plotDiv.data) {
@@ -93,20 +92,11 @@
 
 	async function newPlot(data: Sample[], period: MonitorPeriod) {
 		const plotData = getPlotData(data, period);
-		Plotly.newPlot(
-			plotDiv,
-			plotData.data,
-			plotData.layout,
-			plotData.config,
-		);
+		Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
 	}
 
 	function refreshPlot(data: Sample[], period: MonitorPeriod) {
-		Plotly.react(
-			plotDiv,
-			bars(data, period),
-			getPlotLayout(),
-		)
+		Plotly.react(plotDiv, bars(data, period), getPlotLayout());
 	}
 
 	let plotDiv: HTMLDivElement;

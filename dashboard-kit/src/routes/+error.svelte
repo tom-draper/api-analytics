@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Error from '$lib/components/Error.svelte';
+    import Error from '$components/Error.svelte';
     import { page } from '$app/state';
 
     const message = page.status === 404 ? '' : page.error && page.error.message ? page.error.message : '';

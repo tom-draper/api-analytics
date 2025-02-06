@@ -9,9 +9,7 @@
 
 		// Convert the difference to days
 		const millisecondsPerDay = 24 * 60 * 60 * 1000;
-		const differenceInDays = Math.floor(
-			differenceInMilliseconds / millisecondsPerDay,
-		);
+		const differenceInDays = Math.floor(differenceInMilliseconds / millisecondsPerDay);
 
 		return differenceInDays;
 	}
@@ -26,73 +24,59 @@
 		return Math.floor((now.getTime() - time) / (60 * 60 * 1000));
 	}
 
-	type NumberSuccessCounter = Map<
-		number,
-		{ total: number; successful: number }
-	>;
+	type NumberSuccessCounter = Map<number, { total: number; successful: number }>;
 
 	function getSuccessRate(data: RequestsData) {
 		const success: NumberSuccessCounter = new Map();
-		let minDate = new Date(8640000000000000);
-		for (let i = 0; i < data.length; i++) {
-			const date = new Date(data[i][ColumnIndex.CreatedAt]);
+		let minDate = Infinity;
+
+		for (const row of data) {
+			const date = new Date(row[ColumnIndex.CreatedAt]);
 			if (period === '24 hours' || period === 'Week') {
 				// Hourly
 				date.setMinutes(0, 0, 0);
 			} else {
 				date.setHours(0, 0, 0, 0);
 			}
+
 			const time = date.getTime();
-			if (!success.has(time)) {
-				success.set(time, { total: 0, successful: 0 });
+			let entry = success.get(time);
+			if (!entry) {
+				entry = { total: 0, successful: 0 };
+				success.set(time, entry);
 			}
-			if (
-				data[i][ColumnIndex.Status] >= 200 &&
-				data[i][ColumnIndex.Status] <= 299
-			) {
-				success.get(time).successful++;
+
+			entry.total++;
+			if (row[ColumnIndex.Status] >= 200 && row[ColumnIndex.Status] <= 299) {
+				entry.successful++;
 			}
-			success.get(time).total++;
-			if (date < minDate) {
-				minDate = date;
+
+			if (time < minDate) {
+				minDate = time;
 			}
 		}
 
 		let successArr: number[];
+
 		if (period === '24 hours' || period === 'Week') {
-			// Hourly
-			let hours: number;
-			if (period === '24 hours') {
-				hours = 24;
-			} else {
-				hours = 24 * 7;
-			}
+			const hours = period === '24 hours' ? 24 : 24 * 7;
+			successArr = new Array(hours).fill(0);
 
-			successArr = new Array(hours).fill(0); // -0.1 -> 0
-
-			for (const time of success.keys()) {
+			for (const [time, entry] of success.entries()) {
 				const idx = hoursAgoTime(time);
-				if (success.get(time).total && idx >= 0 && idx < hours) {
-					successArr[successArr.length - 1 - idx] =
-						success.get(time).successful / success.get(time).total;
+				if (idx >= 0 && idx < hours) {
+					successArr[successArr.length - 1 - idx] = entry.successful / entry.total;
 				}
 			}
 		} else {
-			let days: number;
-			if (period === 'All time') {
-				days = daysAgo(minDate);
-			} else {
-				days = periodToDays(period);
-			}
-
+			let days = period === 'All time' ? daysAgo(minDate) : periodToDays(period);
 			days = Math.min(days, 500); // Limit to 500 days
+			successArr = new Array(days).fill(0);
 
-			successArr = new Array(days).fill(0); // -0.1 -> 0
-			for (const time of success.keys()) {
+			for (const [time, entry] of success.entries()) {
 				const idx = daysAgoTime(time);
-				if (success.get(time).total && idx >= 0 && idx < days) {
-					successArr[successArr.length - 1 - idx] =
-						success.get(time).successful / success.get(time).total;
+				if (idx >= 0 && idx < days) {
+					successArr[successArr.length - 1 - idx] = entry.successful / entry.total;
 				}
 			}
 		}
@@ -116,9 +100,7 @@
 			{#each successRate as value}
 				<div
 					class="error level-{Math.floor(value * 10)}"
-					title={value >= 0
-						? `Success rate: ${(value * 100).toFixed(1)}%`
-						: 'No requests'}
+					title={value >= 0 ? `Success rate: ${(value * 100).toFixed(1)}%` : 'No requests'}
 				></div>
 			{/each}
 		</div>

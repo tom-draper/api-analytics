@@ -1,31 +1,31 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import Requests from '$lib/components/dashboard/Requests.svelte';
-	import Logo from '$lib/components/dashboard/Logo.svelte';
-	import ResponseTimes from '$lib/components/dashboard/ResponseTimes.svelte';
-	import Users from '$lib/components/dashboard/Users.svelte';
-	import Endpoints from '$lib/components/dashboard/Endpoints.svelte';
-	import SuccessRate from '$lib/components/dashboard/SuccessRate.svelte';
-	import Activity from '$lib/components/dashboard/activity/Activity.svelte';
-	import Version from '$lib/components/dashboard/Version.svelte';
-	import UsageTime from '$lib/components/dashboard/UsageTime.svelte';
-	import Location from '$lib/components/dashboard/Location.svelte';
-	import Device from '$lib/components/dashboard/device/Device.svelte';
+	import Requests from '$components/dashboard/Requests.svelte';
+	import Logo from '$components/dashboard/Logo.svelte';
+	import ResponseTimes from '$components/dashboard/ResponseTimes.svelte';
+	import Users from '$components/dashboard/Users.svelte';
+	import Endpoints from '$components/dashboard/Endpoints.svelte';
+	import SuccessRate from '$components/dashboard/SuccessRate.svelte';
+	import Activity from '$components/dashboard/activity/Activity.svelte';
+	import Version from '$components/dashboard/Version.svelte';
+	import UsageTime from '$components/dashboard/UsageTime.svelte';
+	import Location from '$components/dashboard/Location.svelte';
+	import Device from '$components/dashboard/device/Device.svelte';
 	import { dateInPeriod, dateInPrevPeriod } from '$lib/period';
 	import generateDemoData from '$lib/demo';
 	import formatUUID from '$lib/uuid';
-	import Settings from '$lib/components/dashboard/Settings.svelte';
+	import Settings from '$components/dashboard/Settings.svelte';
 	import type { DashboardSettings } from '$lib/settings';
 	import { initSettings } from '$lib/settings';
 	import type { NotificationState } from '$lib/notification';
-	import Notification from '$lib/components/dashboard/Notification.svelte';
+	import Notification from '$components/dashboard/Notification.svelte';
 	import exportCSV from '$lib/exportData';
 	import { ColumnIndex, columns, pageSize } from '$lib/consts';
-	import Error from '$lib/components/Error.svelte';
-	import TopUsers from '$lib/components/dashboard/TopUsers.svelte';
+	import Error from '$components/Error.svelte';
+	import TopUsers from '$components/dashboard/TopUsers.svelte';
 	import { getServerURL } from '$lib/url';
-	import Navigation from '$lib/components/dashboard/Navigation.svelte';
+	import Navigation from '$components/dashboard/Navigation.svelte';
 	import { userTargeted } from '$lib/user';
 	import { dataStore } from '$lib/dataStore';
 
@@ -93,14 +93,11 @@
 	}
 
 	function isHiddenEndpoint(endpoint: string) {
-		const firstChar = endpoint.charAt(0);
-		const lastChar = endpoint.charAt(endpoint.length - 1);
+		const normalized = endpoint.replace(/^\/|\/$/g, ''); // Trim leading/trailing slashes
 		return (
 			settings.hiddenEndpoints.has(endpoint) ||
-			(firstChar === '/' && settings.hiddenEndpoints.has(endpoint.slice(1))) ||
-			(lastChar === '/' && settings.hiddenEndpoints.has(endpoint.slice(0, -1))) ||
-			(firstChar !== '/' && settings.hiddenEndpoints.has('/' + endpoint)) ||
-			(lastChar !== '/' && settings.hiddenEndpoints.has(endpoint + '/')) ||
+			settings.hiddenEndpoints.has('/' + normalized) ||
+			settings.hiddenEndpoints.has(normalized) ||
 			wildCardMatch(endpoint)
 		);
 	}
@@ -137,7 +134,7 @@
 		const hostnameFreq: ValueCount = {};
 		for (let i = 0; i < data.length; i++) {
 			const hostname = data[i][ColumnIndex.Hostname];
-			if (hostname === null || hostname === '' || hostname === 'null') {
+			if (hostname === null || hostname === '') {
 				continue;
 			}
 			if (hostname in hostnameFreq) {

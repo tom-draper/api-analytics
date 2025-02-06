@@ -103,7 +103,6 @@
 		const clientCount: ValueCount = {};
 		const clientGetter = cachedFunction(getClient);
 		for (let i = 0; i < data.length; i++) {
-			console.log(userAgents);
 			const userAgent = userAgents[data[i][ColumnIndex.UserAgent]] || '';
 			const client = clientGetter(userAgent);
 			if (client in clientCount) {
