@@ -23,10 +23,6 @@
 
 		// Ensure we don't go out of bounds
 		const page: Page = data.requests.slice(Math.max(0, startIdx), Math.max(0, endIdx)).reverse();
-		// const page: Page = data.requests.slice(
-		// 	(pageNumber - 1) * pageSize,
-		// 	(pageNumber - 1) * pageSize + pageSize
-		// );
 
 		if (page.length < pageSize) {
 			const length = page.length;

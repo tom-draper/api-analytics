@@ -13,7 +13,7 @@
 			<img class="github-logo" height="30px" src="/images/logos/github.png" alt="" />
 		</a>
 	{:else}
-		<div class="text-[#5a5a5a] mb-[2em] text-[0.8em]">Keep your API key safe and secure.</div>
+		<div class="mb-[2em] text-[0.8em] text-[#5a5a5a]">Keep your API key safe and secure.</div>
 	{/if}
 	<div class="logo">API Analytics</div>
 	<img class="footer-logo" src="/images/logos/lightning-green.svg" alt="" />

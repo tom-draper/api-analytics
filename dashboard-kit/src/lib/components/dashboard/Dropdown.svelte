@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+	import { onMount } from 'svelte';
 
 	let dropdown: HTMLDivElement;
 
@@ -15,13 +15,17 @@
 		}
 	}
 
+	function toggleOpen() {
+		open = !open
+	}
+
 	onMount(() => {
-		document.addEventListener('click', closeDropdown)
+		document.addEventListener('click', closeDropdown);
 
 		return () => {
 			document.removeEventListener('click', closeDropdown);
-		}
-	})
+		};
+	});
 
 	export let open: boolean = false;
 	export let options: string[], selected: string | null, defaultOption: string;
@@ -32,9 +36,7 @@
 		<button
 			class="current"
 			class:square-bottom={open}
-			on:click={(e) => {
-				open = !open;
-			}}
+			on:click={toggleOpen}
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"

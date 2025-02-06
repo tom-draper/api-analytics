@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { periodToDays } from '$lib/period';
-	import type { Period } from '$lib/settings';
+	import { periodToDays, type Period } from '$lib/period';
 	import { ColumnIndex } from '$lib/consts';
 
 	function getPlotLayout() {
@@ -33,24 +32,24 @@
 	function lines(data: RequestsData) {
 		const n = 5;
 		const x = [...Array(n).keys()];
-		const uniqueUsers = Array.from({ length: n }, () => new Set());
+		const uniqueUsers: Set<string>[] = Array(n);
+		for (let i = 0; i < n; i++) {
+			uniqueUsers[i] = new Set();
+		}
 
 		if (data.length > 0) {
 			const start = data[0][ColumnIndex.CreatedAt].getTime();
 			const end = data[data.length - 1][ColumnIndex.CreatedAt].getTime();
 			const range = end - start;
+			const interval = range > 0 ? range / n : 1; // Avoid division by zero
 
-			for (let i = 0; i < data.length; i++) {
-				const userID = getUserIdentifier(data[i]);
-				if (!userID) {
-					continue;
-				}
+			for (const row of data) {
+				const userID = getUserIdentifier(row);
+				if (!userID) continue;
 
-				const time = data[i][ColumnIndex.CreatedAt].getTime();
-				const diff = time - start;
-				const idx = Math.min(n - 1, Math.floor(diff / (range / n)));
+				const time = row[ColumnIndex.CreatedAt].getTime();
+				const idx = Math.min(n - 1, Math.floor((time - start) / interval));
 
-				// Add the userID to the correct bucket
 				uniqueUsers[idx].add(userID);
 			}
 		}
@@ -59,8 +58,8 @@
 
 		return [
 			{
-				x: x,
-				y: y,
+				x,
+				y,
 				type: 'lines',
 				marker: { color: 'transparent' },
 				showlegend: false,
@@ -127,8 +126,9 @@
 
 	function getUsers(data: RequestsData): Set<string> {
 		const users: Set<string> = new Set();
-		for (let i = 0; i < data.length; i++) {
-			const userID = getUserIdentifier(data[i]);
+
+		for (const row of data) {
+			const userID = getUserIdentifier(row);
 			if (userID) {
 				users.add(userID);
 			}

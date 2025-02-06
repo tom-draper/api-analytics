@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Lightning from "$lib/components/Lightning.svelte";
+	import Lightning from "$components/Lightning.svelte";
 
 	export let loading: boolean;
 </script>

@@ -8,12 +8,12 @@
 	export let title: string;
 </script>
 
-<div class="text-[var(--faint-text)]">
-	<button onclick={toggleHidden} class="flex m-auto px-4 w-full">
-		<div class="mr-auto px-2">
+<div class="text-[var(--faint-text)] text-sm text-left">
+	<button onclick={toggleHidden} class="flex m-auto py-2 w-full">
+		<div class="mr-auto">
 			{title}
 		</div>
-		<div class="px-2 mt-auto">
+		<div class="mt-auto">
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				fill="none"
@@ -27,7 +27,9 @@
 		</div>
 	</button>
 
-	<div class:no-display={hidden}>
-        content
+	<div class="pb-2 pt-1" class:no-display={hidden}>
+		<div class="p-2 border border-solid border-[#2e2e2e] rounded">
+			content
+		</div>
     </div>
 </div>

@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import Card from '$lib/components/monitor/Card.svelte';
-	import TrackNew from '$lib/components/monitor/TrackNew.svelte';
-	import Notification from '$lib/components/dashboard/Notification.svelte';
+	import Card from '$components/monitor/Card.svelte';
+	import TrackNew from '$components/monitor/TrackNew.svelte';
+	import Notification from '$components/dashboard/Notification.svelte';
 	import formatUUID from '$lib/uuid';
 	import type { NotificationState } from '$lib/notification';
 	import { getServerURL } from '$lib/url';
 	import { page } from '$app/stores';
-	import Lightning from '$lib/components/Lightning.svelte';
+	import Lightning from '$components/Lightning.svelte';
 	import type { MonitorPeriod } from '$lib/period';
 
 	const userID = formatUUID($page.params.uuid);

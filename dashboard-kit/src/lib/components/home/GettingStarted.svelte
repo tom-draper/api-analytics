@@ -1,6 +1,6 @@
 <script lang="ts">
 	import frameworkExamples from '$lib/framework';
-	import CodeHighlighter from '$lib/components/home/CodeHighlighter.svelte';
+	import CodeHighlighter from '$components/home/CodeHighlighter.svelte';
 
 	type Language = 'python' | 'javascript' | 'go' | 'rust' | 'ruby' | 'csharp' | 'php';
 	type Framework =

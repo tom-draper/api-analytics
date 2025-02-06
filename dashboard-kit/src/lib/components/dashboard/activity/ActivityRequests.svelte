@@ -25,86 +25,70 @@
 				title: { text: 'Requests' },
 				gridcolor: 'gray',
 				showgrid: false,
-				fixedrange: true,
+				fixedrange: true
 			},
 			xaxis: {
 				title: { text: 'Date' },
 				fixedrange: true,
 				range: [periodAgo, now],
-				visible: false,
+				visible: false
 			},
-			dragmode: false,
+			dragmode: false
 		};
 	}
 
+	function modifyDate(date: Date, days: number | null) {
+		if (days === 1) {
+			// Round down to multiple of 5
+			date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
+		} else if (days === 7) {
+			date.setMinutes(0, 0, 0);
+		} else {
+			date.setHours(0, 0, 0, 0);
+		}
+		return date;
+	}
+
 	function bars(data: RequestsData, period: Period) {
-		const requestFreq = initFreqMap(period, () => ({
-			count: 0,
-		}));
+		const requestFreq = initFreqMap(period, () => ({ count: 0 }));
 		const userFreq = initFreqMap(period, () => new Set());
 
 		const days = periodToDays(period);
-		for (let i = 0; i < data.length; i++) {
-			const date = new Date(data[i][ColumnIndex.CreatedAt]);
-			if (days !== null && days === 1) {
-				// Round down to multiple of 5
-				date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
-			} else if (days !== null && days === 7) {
-				date.setMinutes(0, 0, 0);
 
-			} else {
-				date.setHours(0, 0, 0, 0);
-			}
+		for (let i = 0; i < data.length; i++) {
+			const date = modifyDate(new Date(data[i][ColumnIndex.CreatedAt]), days);
 			const ipAddress = data[i][ColumnIndex.IPAddress];
 			const time = date.getTime();
-			if (userFreq.has(time)) {
-				userFreq.get(time).add(ipAddress);
-			} else {
-				userFreq.set(time, new Set());
+
+			let userSet = userFreq.get(time);
+			if (!userSet) {
+				userSet = new Set();
+				userFreq.set(time, userSet);
 			}
+			userSet.add(ipAddress);
 
-			if (requestFreq.has(time)) {
-				requestFreq.get(time).count++;
-			} else {
-				requestFreq.set(time, { count: 1 });
+			// Update request frequency
+			let freqObj = requestFreq.get(time);
+			if (!freqObj) {
+				freqObj = { count: 0 };
+				requestFreq.set(time, freqObj);
 			}
+			freqObj.count++;
 		}
 
-		// Combine date and frequency count into (x, y) tuples for sorting
-		const requestFreqArr = new Array(requestFreq.size);
-		let i = 0;
-		for (const [time, requestsCount] of requestFreq.entries()) {
-			const userCount = userFreq.has(time) ? userFreq.get(time).size : 0;
-			requestFreqArr[i] = {
-				date: time,
-				requestCount: requestsCount.count,
-				userCount: userCount,
-			};
-			i++;
-		}
-		// Sort by date
-		requestFreqArr.sort((a, b) => {
-			return a.date - b.date;
-		});
+		const requestFreqArr = Array.from(requestFreq, ([time, requestsCount]) => ({
+			date: time,
+			requestCount: requestsCount.count,
+			userCount: userFreq.get(time)?.size || 0
+		})).sort((a, b) => a.date - b.date);
 
-		// Split into two lists
-		const dates = new Array(requestFreqArr.length);
-		const requests = new Array(requestFreqArr.length);
-		const requestsText = new Array(requestFreqArr.length);
-		const users = new Array(requestFreqArr.length);
-		const usersText = new Array(requestFreqArr.length);
-		for (let i = 0; i < requestFreqArr.length; i++) {
-			dates[i] = new Date(requestFreqArr[i].date);
-			// Subtract users due to bar stacking
-			requests[i] =
-				requestFreqArr[i].requestCount - requestFreqArr[i].userCount;
-
-			// Keep actual requests count for hover text
-			requestsText[i] = `${requestFreqArr[i].requestCount} requests`;
-			users[i] = requestFreqArr[i].userCount;
-			usersText[i] =
-				`${requestFreqArr[i].requestCount} requests from ${requestFreqArr[i].userCount} users`;
-		}
+		const dates = requestFreqArr.map(({ date }) => new Date(date));
+		const requests = requestFreqArr.map(({ requestCount, userCount }) => requestCount - userCount);
+		const users = requestFreqArr.map(({ userCount }) => userCount);
+		const requestsText = requestFreqArr.map(({ requestCount }) => `${requestCount} requests`);
+		const usersText = requestFreqArr.map(
+			({ requestCount, userCount }) => `${requestCount} requests from ${userCount} users`
+		);
 
 		return [
 			{
@@ -114,7 +98,7 @@
 				type: 'bar',
 				marker: { color: '#3fcf8e' },
 				hovertemplate: `<b>%{text}</b><br>%{x|%d %b %Y %H:%M}</b><extra></extra>`,
-				showlegend: false,
+				showlegend: false
 			},
 			{
 				x: dates,
@@ -123,8 +107,8 @@
 				type: 'bar',
 				marker: { color: '#228458' },
 				hovertemplate: `<b>%{text}</b><br>%{x|%d %b %Y %H:%M}</b><extra></extra>`,
-				showlegend: false,
-			},
+				showlegend: false
+			}
 		];
 	}
 
@@ -135,11 +119,10 @@
 			config: {
 				responsive: true,
 				showSendToCloud: false,
-				displayModeBar: false,
-			},
+				displayModeBar: false
+			}
 		};
 	}
-
 
 	function generatePlot(data: RequestsData, period: Period) {
 		if (plotDiv.data) {
@@ -151,20 +134,11 @@
 
 	async function newPlot(data: RequestsData, period: Period) {
 		const plotData = getPlotData(data, period);
-		Plotly.newPlot(
-			plotDiv,
-			plotData.data,
-			plotData.layout,
-			plotData.config,
-		);
+		Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
 	}
 
 	function refreshPlot(data: RequestsData, period: Period) {
-		Plotly.react(
-			plotDiv,
-			bars(data, period),
-			getPlotLayout(period),
-		)
+		Plotly.react(plotDiv, bars(data, period), getPlotLayout(period));
 	}
 
 	let plotDiv: HTMLDivElement;

@@ -2,7 +2,7 @@
 	export let status: number, message: string;
 </script>
 
-<div class="text-[var(--highlight)] min-h-[75vh] overflow-hidden">
+<div class="min-h-[75vh] overflow-hidden text-[var(--highlight)]">
 	<div
 		class="hanging-lightning"
 		class:hanging-lightning-no-requests={status !== 500}
@@ -22,8 +22,10 @@
 	</div>
 	<div class="message-container relative">
 		{#if status !== 400 && status !== 500}
-			<div class="absolute top-0 text-center w-full mt-[-0.6em] font-bold text-3xl !text-[var(--highlight)]">
-				<div class="flex justify-center mr-1">
+			<div
+				class="absolute top-0 mt-[-0.6em] w-full text-center text-3xl font-bold !text-[var(--highlight)]"
+			>
+				<div class="mr-1 flex justify-center">
 					<span class="pr-4">4</span>
 					<span class="pl-4">4</span>
 				</div>
