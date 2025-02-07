@@ -3,10 +3,10 @@
 	import { onMount } from 'svelte';
 	import generateDemoData from '$lib/demo';
 	import formatUUID from '$lib/uuid';
-	import { ColumnIndex, pageSize } from '$lib/consts';
+	import { ColumnIndex, methodMap, pageSize } from '$lib/consts';
 	import { getServerURL } from '$lib/url';
 	import { dataStore } from '$lib/dataStore';
-	import Navigation from '$components/explorer/Navigation.svelte';
+	import Navigation from '$components/explorer/navigation/Navigation.svelte';
 	import Viewer from '$components/explorer/Viewer.svelte';
 
 	const userID = formatUUID($page.params.uuid);
@@ -110,7 +110,44 @@
 		});
 	}
 
+	function initFilter(data: RequestsData) {
+		return {
+			timespan: {
+				start: data[0][ColumnIndex.CreatedAt],
+				end: data[data.length - 1][ColumnIndex.CreatedAt]
+			},
+			status: new Set(['success', 'client', 'server']),
+			methods: getMethods(data),
+			paths: new Set()
+		};
+	}
+
+	function getMethods(data: RequestsData) {
+		const values = new Set<number>();
+		for (const row of data) {
+			values.add(row[ColumnIndex.Method]);
+		}
+
+		const methods = new Set<string>();
+		for (const value of values) {
+			methods.add(methodMap[value]);
+		}
+
+		return methods;
+	}
+
+	type Filter = {
+		timespan: {
+			start: Date;
+			end: Date;
+		};
+		status: Set<'success' | 'client' | 'server'>;
+		methods: Set<string>;
+		paths: Set<string>;
+	};
+
 	let data: DashboardData;
+	let filter: Filter;
 
 	onMount(async () => {
 		dataStore.subscribe((value) => {
@@ -129,6 +166,8 @@
 
 			parseDates(data.requests);
 			sortByTime(data.requests);
+
+			filter = initFilter(data.requests);
 		}
 	});
 </script>
