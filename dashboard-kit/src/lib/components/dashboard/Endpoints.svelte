@@ -1,30 +1,32 @@
 <script lang="ts">
 	import { ColumnIndex, methodMap } from '$lib/consts';
 
-	type EndpointFreq = Map<
-		string,
-		{ path: string; status: number; count: number }
-	>;
+	type EndpointFreq = Map<string, { path: string; status: number; count: number }>;
 
 	type MapValue<A> = A extends Map<unknown, infer V> ? V : never;
 
 	function endpointFreq(data: RequestsData) {
 		const freq: EndpointFreq = new Map();
-		for (let i = 0; i < data.length; i++) {
+		for (const row of data) {
 			// Create groups of endpoints by path + status
-			const path = ignoreParams ? data[i][ColumnIndex.Path].split('?')[0] : data[i][ColumnIndex.Path];
-			const status = data[i][ColumnIndex.Status];
+			const path = ignoreParams
+				? row[ColumnIndex.Path].split('?')[0]
+				: row[ColumnIndex.Path];
+			const status = row[ColumnIndex.Status];
 			const endpointID = `${path}${status}`;
-			if (!freq.has(endpointID)) {
-				const method = methodMap[data[i][ColumnIndex.Method]];
-				freq.set(endpointID, {
+			let endpoint = freq.get(endpointID);
+			if (!endpoint) {
+				const method = methodMap[row[ColumnIndex.Method]];
+				endpoint = {
 					path: `${method}  ${path}`,
 					status: status,
-					count: 0,
-				});
+					count: 0
+				};
+				freq.set(endpointID, endpoint);
 			}
-			freq.get(endpointID).count++;
+			endpoint.count++;
 		}
+
 		return freq;
 	}
 
@@ -148,11 +150,7 @@
 						class="endpoint"
 						id="endpoint-{i}"
 						title="Status: {endpoint.status}"
-						on:click={() =>
-							setTargetEndpoint(
-								endpoint.path.split(' ')[2],
-								endpoint.status,
-							)}
+						on:click={() => setTargetEndpoint(endpoint.path.split(' ')[2], endpoint.status)}
 					>
 						<div class="path">
 							<span class="font-semibold">{endpoint.count.toLocaleString()}</span>
@@ -161,14 +159,11 @@
 						<div
 							class="background"
 							style="width: {(endpoint.count / maxCount) * 100}%"
-							class:success={(endpoint.status >= 200 &&
-								endpoint.status <= 299) ||
+							class:success={(endpoint.status >= 200 && endpoint.status <= 299) ||
 								endpoint.status === 0}
-							class:bad={endpoint.status >= 400 &&
-								endpoint.status <= 499}
+							class:bad={endpoint.status >= 400 && endpoint.status <= 499}
 							class:error={endpoint.status >= 500}
-							class:other={endpoint.status >= 300 &&
-								endpoint.status <= 399}
+							class:other={endpoint.status >= 300 && endpoint.status <= 399}
 						></div>
 					</button>
 				</div>
@@ -233,7 +228,6 @@
 		font-size: 0.85em;
 		width: 100%;
 		cursor: pointer;
-
 	}
 	.endpoint:hover {
 		background: linear-gradient(270deg, transparent, var(--background));

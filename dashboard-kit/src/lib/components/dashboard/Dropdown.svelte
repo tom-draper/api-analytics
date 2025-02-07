@@ -16,7 +16,7 @@
 	}
 
 	function toggleOpen() {
-		open = !open
+		open = !open;
 	}
 
 	onMount(() => {
@@ -33,11 +33,7 @@
 
 <div class="dropdown" id="dropdown" bind:this={dropdown}>
 	<div class="inner" class:no-click={!open}>
-		<button
-			class="current"
-			class:square-bottom={open}
-			on:click={toggleOpen}
-		>
+		<button class="current" class:square-bottom={open} on:click={toggleOpen}>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				fill="none"

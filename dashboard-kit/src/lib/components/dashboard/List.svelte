@@ -46,6 +46,7 @@
 				<div class="item">
 					<button
 						class="remove-btn"
+						aria-label="Remove item"
 						on:click={() => {
 							removeItem(item);
 						}}
