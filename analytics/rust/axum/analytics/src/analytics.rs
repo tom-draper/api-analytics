@@ -6,18 +6,16 @@ use http::{
     Extensions, HeaderMap,
 };
 use lazy_static::lazy_static;
-use reqwest::blocking::Client;
+use reqwest::Client;
 use serde::Serialize;
 use std::{
     net::{IpAddr, SocketAddr},
     task::{Context, Poll},
-    thread::spawn,
     time::Instant,
 };
-use std::{
-    pin::Pin,
-    sync::{Arc, Mutex},
-};
+use std::{pin::Pin, sync::Arc};
+use tokio::sync::RwLock;
+use tokio::time::{interval, Duration};
 use tower::{Layer, Service};
 
 #[derive(Debug, Clone, Serialize)]
@@ -77,7 +75,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             privacy_level: 0,
-            server_url: String::from("https://www.apianalytics-server.com/"),
+            server_url: "https://www.apianalytics-server.com/".to_string(),
             get_hostname: Arc::new(get_hostname),
             get_ip_address: Arc::new(get_ip_address),
             get_path: Arc::new(get_path),
@@ -159,16 +157,40 @@ fn get_user_id(_req: &Request<Body>) -> String {
 
 #[derive(Clone)]
 pub struct Analytics {
-    api_key: String,
     config: Config,
 }
 
 impl Analytics {
     pub fn new(api_key: String) -> Self {
-        Self {
-            api_key,
-            config: Config::default(),
-        }
+        let config = Config::default();
+        let api_key_clone = api_key.clone();
+        let privacy_level = config.privacy_level;
+        let server_url = config.server_url.clone();
+
+        tokio::spawn(async move {
+            let mut interval = interval(Duration::from_secs(60));
+            loop {
+                interval.tick().await; // Wait for the next interval
+
+                let mut requests = REQUESTS.write().await;
+                if !requests.is_empty() {
+                    let payload = Payload::new(
+                        api_key_clone.clone(),
+                        requests.clone(),
+                        privacy_level,
+                    );
+
+                    requests.clear(); // Clear requests after reading
+                    drop(requests); // Explicitly drop the lock
+
+                    let url = server_url.clone();
+
+                    tokio::spawn(async move { post_requests(payload, url).await });
+                }
+            }
+        });
+
+        Self { config }
     }
 
     pub fn with_privacy_level(mut self, privacy_level: i32) -> Self {
@@ -223,7 +245,6 @@ impl<S> Layer<S> for Analytics {
 
     fn layer(&self, inner: S) -> Self::Service {
         AnalyticsMiddleware {
-            api_key: Arc::new(self.api_key.clone()),
             config: Arc::new(self.config.clone()),
             inner,
         }
@@ -232,14 +253,12 @@ impl<S> Layer<S> for Analytics {
 
 #[derive(Clone)]
 pub struct AnalyticsMiddleware<S> {
-    api_key: Arc<String>,
     config: Arc<Config>,
     inner: S,
 }
 
 lazy_static! {
-    static ref REQUESTS: Mutex<Vec<RequestData>> = Mutex::new(vec![]);
-    static ref LAST_POSTED: Mutex<Instant> = Mutex::new(Instant::now());
+    static ref REQUESTS: Arc<RwLock<Vec<RequestData>>> = Arc::new(RwLock::new(vec![]));
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -255,37 +274,44 @@ impl Payload {
         Self {
             api_key,
             requests,
-            framework: String::from("Axum"),
+            framework: "Axum".to_string(),
             privacy_level,
         }
     }
 }
 
-fn post_requests(data: Payload, server_url: String) {
-    let _ = Client::new()
+async fn post_requests(data: Payload, server_url: String) {
+    let client = Client::new();
+    let response = client
         .post(server_url + "api/log-request")
         .json(&data)
-        .send();
+        .send()
+        .await;
+
+    match response {
+        Ok(resp) if resp.status().is_success() => {
+            return;
+        }
+        Ok(resp) => {
+            eprintln!(
+                "Failed to send analytics data. Server responded with status: {}",
+                resp.status()
+            );
+        }
+        Err(err) => {
+            eprintln!("Error sending analytics data: {}", err);
+        }
+    }
 }
 
-fn log_request(api_key: &str, request_data: RequestData, config: &Config) {
-    REQUESTS.lock().unwrap().push(request_data);
-    if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > 60.0 {
-        let payload = Payload::new(
-            api_key.to_owned(),
-            REQUESTS.lock().unwrap().to_vec(),
-            config.privacy_level,
-        );
-        let server_url = config.server_url.to_owned();
-        REQUESTS.lock().unwrap().clear();
-        post_requests(payload, server_url);
-        *LAST_POSTED.lock().unwrap() = Instant::now();
-    }
+async fn log_request(request_data: RequestData) {
+    let mut requests = REQUESTS.write().await;
+    requests.push(request_data);
 }
 
 impl<S> Service<Request<Body>> for AnalyticsMiddleware<S>
 where
-    S: Service<Request<Body>, Response = Response> + Send + 'static,
+    S: Service<Request<Body>, Response = Response> + Clone + Send + Sync + 'static,
     S::Future: Send + 'static,
 {
     type Response = S::Response;
@@ -300,8 +326,6 @@ where
     fn call(&mut self, req: Request<Body>) -> Self::Future {
         let now = Instant::now();
 
-        let api_key = Arc::clone(&self.api_key);
-        let config = Arc::clone(&self.config);
         let hostname = (self.config.get_hostname)(&req);
         let ip_address = (self.config.get_ip_address)(&req);
         let path = (self.config.get_path)(&req);
@@ -314,6 +338,8 @@ where
         Box::pin(async move {
             let res: Response = future.await?;
 
+            let response_time = now.elapsed().as_millis().min(u32::MAX as u128) as u32;
+
             let request_data = RequestData::new(
                 hostname,
                 ip_address,
@@ -321,12 +347,12 @@ where
                 user_agent,
                 method,
                 res.status().as_u16(),
-                now.elapsed().as_millis().try_into().unwrap(),
+                response_time,
                 user_id,
                 Utc::now().to_rfc3339(),
             );
 
-            spawn(move || log_request(&api_key, request_data, &config));
+            tokio::spawn(log_request(request_data));
 
             Ok(res)
         })
