@@ -1,25 +1,26 @@
 <script lang="ts">
+	import { type Filter } from '$lib/filter';
 	import type { ComponentType } from 'svelte';
 
-	let hidden: boolean = true;
+	let hidden: boolean = false;
 
 	function toggleHidden() {
 		hidden = !hidden;
 	}
 
-	export let title: string, content: ComponentType;
+	export let title: string, content: ComponentType, filter: Filter, data: DashboardData;
 </script>
 
 <div class="text-left text-sm text-[var(--faint-text)]">
 	<button
 		onclick={toggleHidden}
-		class="m-auto flex w-full px-2 py-2 text-[var(--faint-text)] hover:text-[#ededed]"
+		class="m-auto flex w-full px-2 py-2 text-[var(--faint-text)] hover:text-[#ededed] rounded hover:bg-[#202020]"
 		class:!text-[#ededed]={!hidden}
 	>
 		<div class="mr-auto">
 			{title}
 		</div>
-		<div class="mt-auto">
+		<div class="my-auto">
 			{#if hidden}
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -46,10 +47,10 @@
 		</div>
 	</button>
 
-	<div class="pb-2 pt-1" class:no-display={hidden}>
-		<div class="rounded border border-solid border-[#2e2e2e]">
+	<div class="pb-2 pt-1" class:no-display={hidden || !data}>
+		<div class="rounded border border-solid border-[#2e2e2e] text-xs">
 			{#if content}
-				<svelte:component this={content} />
+				<svelte:component this={content} bind:filter={filter} bind:data={data} />
 			{/if}
 		</div>
 	</div>

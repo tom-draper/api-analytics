@@ -20,20 +20,20 @@
 	}
 
 	function nextPage() {
-		if (pageNumber < Math.ceil(data.requests.length / pageSize)) {
+		if (pageNumber < Math.ceil(data.length / pageSize)) {
 			pageNumber++;
 		}
 	}
 
-	function getPage(data: DashboardData, pageNumber: number) {
-		const totalRequests = data.requests.length;
+	function getPage(data: RequestsData, pageNumber: number) {
+		const totalRequests = data.length;
 
 		// Calculate start and end indices for slicing in reverse
 		const startIdx = totalRequests - pageNumber * pageSize;
 		const endIdx = startIdx + pageSize;
 
 		// Ensure we don't go out of bounds
-		const page: Page = data.requests.slice(Math.max(0, startIdx), Math.max(0, endIdx)).reverse();
+		const page: Page = data.slice(Math.max(0, startIdx), Math.max(0, endIdx)).reverse();
 
 		if (page.length < pageSize) {
 			const length = page.length;
@@ -46,10 +46,10 @@
 		return page;
 	}
 
-	export let data: DashboardData;
+	export let data: RequestsData;
 </script>
 
-<div>
+<div class="min-h-[inherit]">
 	<table class="w-full text-left text-[0.75em] text-[var(--dim-text)]">
 		<thead>
 			<tr class="text-[var(--faint-text)]">
@@ -65,7 +65,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#if data}
+			{#if page}
 				{#each page as request}
 					<tr
 						class="text-[1em]"
@@ -121,17 +121,58 @@
 			{/if}
 		</tbody>
 	</table>
-	<div class="grid px-2 text-xs text-[var(--dim-text)]">
+	<div class="grid px-3 text-xs text-[var(--dim-text)]">
 		<div class="ml-auto flex gap-2">
-			<button class="px-2 py-2 hover:text-[#ededed]" onclick={prevPage}>Prev</button>
-			<button class="px-2 py-2 hover:text-[#ededed]" onclick={nextPage}>Next</button>
+			{#if data && data.length}
+				<div class="content-center px-1">
+					Page {pageNumber} of {data ? Math.ceil(data.length / pageSize).toLocaleString() : 0}
+				</div>
+				<button
+					class="px-1 py-2 hover:text-[#ededed] disabled:text-[var(--dim-text)]"
+					onclick={prevPage}
+					disabled={pageNumber === 1}
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="currentColor"
+						class="size-4"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+						/>
+					</svg>
+				</button>
+				<button
+					class="px-1 py-2 hover:text-[#ededed] disabled:text-[var(--dim-text)]"
+					onclick={nextPage}
+					disabled={pageNumber === (data ? Math.ceil(data.length / pageSize) : 0)}
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="currentColor"
+						class="size-4"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+						/>
+					</svg>
+				</button>
+			{/if}
 		</div>
 	</div>
 </div>
 
 <style scoped>
 	table {
-		height: inherit;
+		min-height: inherit;
 	}
 	tr {
 		border-top: 1px solid #2e2e2e;
@@ -172,14 +213,5 @@
 	}
 	.error-bg {
 		background: radial-gradient(rgba(228, 97, 97, 0.14), rgba(228, 97, 97, 0.18));
-	}
-	.white-green {
-		color: #bee7c5;
-	}
-	.white-red {
-		color: #ffc1c1;
-	}
-	.white-yellow {
-		color: #c0c0c0;
 	}
 </style>
