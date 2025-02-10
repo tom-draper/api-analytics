@@ -13,10 +13,12 @@
 	<script src="https://cdn.plot.ly/plotly-latest.min.js" type="text/javascript" defer></script>
 </svelte:head>
 
-<footer>
-	<Footer
-		generic={currentRoute !== '/generate' &&
-			currentRoute !== '/dashboard' &&
-			currentRoute !== '/monitor'}
-	/>
-</footer>
+{#if currentRoute !== '/explorer/[uuid]'}
+	<footer>
+		<Footer
+			generic={currentRoute !== '/generate' &&
+				currentRoute !== '/dashboard' &&
+				currentRoute !== '/monitor'}
+		/>
+	</footer>
+{/if}

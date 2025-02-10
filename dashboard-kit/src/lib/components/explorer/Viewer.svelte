@@ -3,23 +3,25 @@
 	import Search from './Search.svelte';
 	import Table from './Table.svelte';
 
-	export let data: DashboardData;
+	export let data: DashboardData, filteredData: RequestsData;
 </script>
 
 <div class="ml-[20em] w-[100%] text-[var(--faded-text)]">
 	<Search />
 
-	<div class="mx-4 mb-2 text-left text-xs text-[var(--dim-text)]">
-		0 out of {data ? data.requests.length : 0} rows filtered
+	<div class="mx-4 h-[16px] text-left text-xs text-[var(--dim-text)]">
+		{#if data && filteredData && data.requests.length !== filteredData.length}
+			Showing {filteredData.length.toLocaleString()} out of {data.requests.length.toLocaleString()} rows
+		{/if}
 	</div>
 
 	<div>
 		{#if data}
-			<Graph data={data.requests} />
+			<Graph data={filteredData} />
 		{/if}
 	</div>
 
 	<div class="min-h-[70vh]">
-		<Table {data} />
+		<Table data={filteredData} />
 	</div>
 </div>

@@ -3,11 +3,14 @@
 	import { onMount } from 'svelte';
 	import generateDemoData from '$lib/demo';
 	import formatUUID from '$lib/uuid';
-	import { ColumnIndex, methodMap, pageSize } from '$lib/consts';
+	import { ColumnIndex, pageSize } from '$lib/consts';
 	import { getServerURL } from '$lib/url';
 	import { dataStore } from '$lib/dataStore';
 	import Navigation from '$components/explorer/navigation/Navigation.svelte';
 	import Viewer from '$components/explorer/Viewer.svelte';
+	import { statusBad, statusError, statusRedirect, statusSuccess } from '$lib/status';
+	import { defaultFilter, type Filter } from '$lib/filter';
+	import { nextDay, toDay } from '$lib/date';
 
 	const userID = formatUUID($page.params.uuid);
 
@@ -110,44 +113,40 @@
 		});
 	}
 
-	function initFilter(data: RequestsData) {
-		return {
-			timespan: {
-				start: data[0][ColumnIndex.CreatedAt],
-				end: data[data.length - 1][ColumnIndex.CreatedAt]
-			},
-			status: new Set(['success', 'client', 'server']),
-			methods: getMethods(data),
-			paths: new Set()
-		};
-	}
-
-	function getMethods(data: RequestsData) {
-		const values = new Set<number>();
+	function applyFilter(data: RequestsData, filter: Filter) {
+		const filteredData: RequestsData = [];
+		const startDate = toDay(new Date(filter.timespan[0]));
+		const endDate = toDay(nextDay(new Date(filter.timespan[1])));
 		for (const row of data) {
-			values.add(row[ColumnIndex.Method]);
+			const status = row[ColumnIndex.Status];
+			if (
+				((filter.status.success && statusSuccess(status)) ||
+					(filter.status.redirect && statusRedirect(status)) ||
+					(filter.status.client && statusBad(status)) ||
+					(filter.status.server && statusError(status))) &&
+				row[ColumnIndex.CreatedAt] >= startDate &&
+				row[ColumnIndex.CreatedAt] <= endDate &&
+				filter.methods[row[ColumnIndex.Method]] &&
+				filter.hostnames[row[ColumnIndex.Hostname]]
+			) {
+				filteredData.push(row);
+			}
 		}
 
-		const methods = new Set<string>();
-		for (const value of values) {
-			methods.add(methodMap[value]);
-		}
-
-		return methods;
+		return filteredData;
 	}
 
-	type Filter = {
-		timespan: {
-			start: Date;
-			end: Date;
-		};
-		status: Set<'success' | 'client' | 'server'>;
-		methods: Set<string>;
-		paths: Set<string>;
-	};
+	function resetFilter() {
+		filter = defaultFilter(data.requests);
+	}
 
 	let data: DashboardData;
+	let filteredRequests: RequestsData;
 	let filter: Filter;
+
+	$: if (data && filter) {
+		filteredRequests = applyFilter(data.requests, filter);
+	}
 
 	onMount(async () => {
 		dataStore.subscribe((value) => {
@@ -167,14 +166,14 @@
 			parseDates(data.requests);
 			sortByTime(data.requests);
 
-			filter = initFilter(data.requests);
+			resetFilter();
 		}
 	});
 </script>
 
 <main>
 	<div class="flex">
-		<Navigation />
-		<Viewer {data} />
+		<Navigation bind:data bind:filteredRequests bind:filter />
+		<Viewer {data} filteredData={filteredRequests} />
 	</div>
 </main>

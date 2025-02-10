@@ -14,10 +14,6 @@
 		return 0;
 	}
 
-	function build(data: RequestsData) {
-
-	}
-
 	function calcualteMetrics(data: RequestsData) {
 		const responseTimes: number[] = new Array(data.length);
 		for (let i = 0; i < data.length; i++) {
@@ -33,7 +29,7 @@
 		return {
 			title: false,
 			autosize: true,
-			margin: { r: 15, l: 15, t: 5, b: 10, pad: 10 },
+			margin: { r: 0, l: 0, t: 5, b: 0, pad: 10 },
 			hovermode: 'closest',
 			plot_bgcolor: 'transparent',
 			paper_bgcolor: 'transparent',
@@ -85,7 +81,7 @@
 				x: responseTimes,
 				y: counts,
 				type: 'bar',
-				marker: { color: '#707070' },
+				marker: { color: '#505050' },
 				hovertemplate: `<b>%{y} occurances</b><br>%{x:.1f}ms</b><extra></extra>`,
 				showlegend: false,
 			},
@@ -174,6 +170,9 @@
 </div>
 
 <style scoped>
+	.card {
+		overflow: hidden;
+	}
 	.values {
 		display: flex;
 		color: var(--highlight);
