@@ -66,7 +66,7 @@
 		</thead>
 		<tbody>
 			{#if page}
-				{#each page as request}
+				{#each page as request, i}
 					<tr
 						class="text-[1em]"
 						class:success-bg={request[ColumnIndex.Status] &&
@@ -79,6 +79,7 @@
 						class:error-bg={request[ColumnIndex.Status] && statusError(request[ColumnIndex.Status])}
 						class:error-border={request[ColumnIndex.Status] &&
 							statusError(request[ColumnIndex.Status])}
+						class:bottom-row={i === page.length - 1}
 					>
 						<td class="!pr-0">
 							<div class="grid place-items-center">
@@ -180,6 +181,9 @@
 		border-right: 1px solid transparent;
 		border-radius: 4px;
 		padding-left: 1em;
+	}
+	.bottom-row {
+		border-bottom: 1px solid var(--background);
 	}
 	th {
 		border: none;

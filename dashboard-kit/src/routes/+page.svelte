@@ -5,6 +5,7 @@
 	import DocLinks from '$components/home/DocumentLinks.svelte';
 	import { page } from '$app/state';
 	import { formatPath } from '$lib/path';
+	import Pricing from '$components/home/Pricing.svelte';
 
 	let params: string;
 	$: params = page.url.searchParams.toString();
@@ -36,6 +37,7 @@
 		path={formatPath('/monitoring', params)}
 		img="monitoring.png"
 	/>
+	<Pricing />
 	<GettingStarted />
 	<DocLinks />
 </div>
