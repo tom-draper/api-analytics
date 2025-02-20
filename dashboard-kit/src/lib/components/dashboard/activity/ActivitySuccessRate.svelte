@@ -131,7 +131,7 @@
 		margin: 1.5em 2.5em 2em;
 	}
 	.level-0 {
-		background: rgb(40, 40, 40);
+		background: #282828;
 	}
 	.level-1 {
 		background: #e46161;

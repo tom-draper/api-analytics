@@ -28,6 +28,7 @@
 	import Navigation from '$components/dashboard/Navigation.svelte';
 	import { userTargeted } from '$lib/user';
 	import { dataStore } from '$lib/dataStore';
+	import Health from '$components/dashboard/health/Health.svelte';
 
 	const userID = formatUUID($page.params.uuid);
 
@@ -360,6 +361,7 @@
 					<Location data={periodData.current} bind:targetLocation={settings.targetLocation} />
 					<Device data={periodData.current} userAgents={data.userAgents} />
 				</div>
+				<Health data={periodData.current} />
 				<UsageTime data={periodData.current} />
 				<TopUsers data={periodData.current} bind:targetUser={settings.targetUser} />
 			</div>
