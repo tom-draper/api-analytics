@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import Lightning from '$components/Lightning.svelte';
 </script>
 
@@ -14,7 +13,7 @@
 		<div class="price mb-[2rem]">Free</div>
 		<div class="mb-8"><a href="/generate">Get Started</a></div>
 		<ul>
-			<li class="feature text-[#ededed]">50,000 request storage</li>
+			<li class="feature text-[#ededed]">100,000 request storage</li>
 			<li class="feature">Dashboard access</li>
 			<li class="feature">Explorer access</li>
 			<li class="feature">Raw data access</li>
@@ -26,7 +25,7 @@
 			<Lightning />
 		</div>
 		<h3>Pro</h3>
-		<div class="price">$5.99/month</div>
+		<div class="price">$4.99/month</div>
 		<div class=" mb-[1rem] text-xs">Cancel anytime</div>
 		<div class="mb-8"><button>Upgrade</button></div>
 		<ul>
