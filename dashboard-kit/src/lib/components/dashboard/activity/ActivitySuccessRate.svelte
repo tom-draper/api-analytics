@@ -28,7 +28,7 @@
 
 	function getSuccessRate(data: RequestsData) {
 		const success: NumberSuccessCounter = new Map();
-		let minDate = Infinity;
+		let minDate = new Date(8640000000000000);
 
 		for (const row of data) {
 			const date = new Date(row[ColumnIndex.CreatedAt]);
@@ -51,8 +51,8 @@
 				entry.successful++;
 			}
 
-			if (time < minDate) {
-				minDate = time;
+			if (time < minDate.getTime()) {
+				minDate = date;
 			}
 		}
 

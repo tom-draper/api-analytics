@@ -25,3 +25,17 @@ export function userTargeted(targetUser: { ipAddress: string, userID: string, co
 		return targetUser.userID === userID;
 	}
 }
+
+export function formatDisplayUserID(
+	targetUser: { ipAddress: string; userID: string; composite: boolean } | null
+) {
+	if (!targetUser) {
+		return '';
+	}
+
+	if (targetUser.composite && targetUser.ipAddress && targetUser.userID) {
+		return `${targetUser.ipAddress} + ${targetUser.userID}`;
+	} else {
+		return targetUser.userID || targetUser.ipAddress || '';
+	}
+}

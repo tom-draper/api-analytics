@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { replaceState } from '$app/navigation';
+	import { page } from '$app/state';
 	import { ColumnIndex } from '$lib/consts';
 
 	function getFlagEmoji(countryCode: string) {
@@ -49,6 +51,15 @@
 		return locationBars;
 	}
 
+	function setLocationParam(location: string | null) {
+		if (location === null) {
+			page.url.searchParams.delete('location')
+		} else {
+			page.url.searchParams.set('location', location);
+		}
+		replaceState(page.url, page.state);
+	}
+
 	let locations: LocationBar[] = [];
 
 	$: if (data) {
@@ -65,24 +76,23 @@
 		<div class="bars">
 			{#each locations.slice(0, 12) as location}
 				<div class="bar-container">
-					<div
+					<button
+						aria-label="location"
 						class="bar"
 						title="{countryCodeToName(
 							location.location,
 						)}: {location.frequency.toLocaleString()} requests"
 						on:click={() => {
-							if (targetLocation === location.location) {
-								targetLocation = null;
-							} else {
-								targetLocation = location.location;
-							}
+							const value = targetLocation === location.location ? null : location.location;
+							targetLocation = value;
+							setLocationParam(value);
 						}}
 					>
 						<div
 							class="bar-inner"
 							style="height: {location.height * 100}%"
 						></div>
-					</div>
+					</button>
 					<div class="label">{getFlagEmoji(location.location)}</div>
 				</div>
 			{/each}

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { formatUserID, getUserIdentifier } from '$lib/user';
 	import { ColumnIndex } from '$lib/consts';
+	import { page } from "$app/state";
+	import { replaceState } from '$app/navigation';
 
 	type Users = {
 		[userID: string]: User;
@@ -44,22 +46,62 @@
 				ipAddress,
 				userID
 			};
+			if (targetUser.composite) {
+				setUserParams(ipAddress, userID);
+			} else {
+				setUserIDParam(userID);
+			}
 		} else if (targetUser.composite) {
 			const formattedUserID = formatUserID(ipAddress, userID);
 			const formattedTargetUserID = formatUserID(targetUser.ipAddress, targetUser.userID);
 			targetUser = null;
 			if (formattedUserID !== formattedTargetUserID) {
 				selectUser(ipAddress, userID); // If a different user was selected, select this one instead
+			} else {
+				setUserParams(null, null);
 			}
 		} else {
 			if (userID === targetUser.userID) {
 				targetUser.composite = true;
 				targetUser.ipAddress = ipAddress;
+				setIPAddressParam(ipAddress);
 			} else {
 				targetUser = null;
 				selectUser(ipAddress, userID); // If a different user was selected, select this one instead
 			}
 		}
+	}
+
+	function setUserParams(ipAddress: string | null, userID: string | null) {
+		if (ipAddress === null) {
+			page.url.searchParams.delete('ipAddress'); 
+		} else {
+			page.url.searchParams.set('ipAddress', ipAddress); 
+		}
+		if (userID === null) {
+			page.url.searchParams.delete('userID')
+		} else {
+			page.url.searchParams.set('userID', userID);
+		}
+		replaceState(page.url, page.state);
+	}
+
+	function setIPAddressParam(ipAddress: string | null) {
+		if (ipAddress === null) {
+			page.url.searchParams.delete('ipAddress'); 
+		} else {
+			page.url.searchParams.set('ipAddress', ipAddress); 
+		}
+		replaceState(page.url, page.state);
+	}
+
+	function setUserIDParam(userID: string | null) {
+		if (userID === null) {
+			page.url.searchParams.delete('userID')
+		} else {
+			page.url.searchParams.set('userID', userID);
+		}
+		replaceState(page.url, page.state);
 	}
 
 	function build(data: RequestsData) {
@@ -187,17 +229,17 @@
 
 	function resetPage() {
 		pageNumber = 1;
-		page = getPage();
+		dataPage = getPage();
 	}
 
 	function nextPage() {
 		pageNumber += 1;
-		page = getPage();
+		dataPage = getPage();
 	}
 
 	function prevPage() {
 		pageNumber -= 1;
-		page = getPage();
+		dataPage = getPage();
 	}
 
 	function getPage() {
@@ -209,7 +251,7 @@
 	}
 
 	let topUsers: User[] | null = null;
-	let page: User[] | null = null;
+	let dataPage: User[] | null = null;
 	let userIDActive = false;
 	let locationsActive = false;
 	let pageNumber = 1;
@@ -229,7 +271,7 @@
 	export let data: RequestsData, targetUser: TargetUser | null;
 </script>
 
-{#if topUsers}
+{#if dataPage}
 	<div class="card">
 		<h2 class="card-title">Top Users</h2>
 		<div class="table-container">
@@ -248,12 +290,12 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each page as { ipAddress, customUserID, requests, locations, lastRequested }, i}
+					{#each dataPage as { ipAddress, customUserID, requests, locations, lastRequested }, i}
 						<tr
 							class="highlight-row"
 							class:highlighted-row={targetUser !== null && userTargeted(ipAddress, customUserID)}
 							class:dim-row={targetUser !== null && !userTargeted(ipAddress, customUserID)}
-							class:last-row={i === page.length - 1}
+							class:last-row={i === dataPage.length - 1}
 						>
 							<td on:click={() => selectUser(ipAddress, customUserID)}>{ipAddress}</td>
 							{#if userIDActive}

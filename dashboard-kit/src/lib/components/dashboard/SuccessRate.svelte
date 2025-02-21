@@ -132,7 +132,7 @@
 		class:yellow={successRate !== null && successRate > 75 && successRate < 90}
 		class:green={successRate === null || successRate > 90}
 	>
-		{successRate ? `${successRate.toFixed(1)}%` : 'N/A'}
+		{successRate !== null ? `${successRate.toFixed(1)}%` : 'N/A'}
 	</div>
 	<div id="plotly">
 		<div id="plotDiv" bind:this={plotDiv}>
