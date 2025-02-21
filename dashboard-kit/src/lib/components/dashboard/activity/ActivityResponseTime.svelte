@@ -46,18 +46,6 @@
 		const days = periodToDays(period);
 
 		for (const row of data) {
-			// const timestamp = row[ColumnIndex.CreatedAt].getTime();
-
-			// // Normalize timestamps efficiently
-			// let time: number;
-			// if (days === 1) {
-			// 	time = Math.floor(timestamp / (5 * 60 * 1000)) * (5 * 60 * 1000); // Round to 5 min
-			// } else if (days === 7) {
-			// 	time = Math.floor(timestamp / 3600000) * 3600000; // Round to hour
-			// } else {
-			// 	time = Math.floor(timestamp / 86400000) * 86400000; // Round to day
-			// }
-
 			const date = new Date(row[ColumnIndex.CreatedAt]);
 			if (days === 1) {
 				// Round down to multiple of 5

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto, replaceState } from '$app/navigation';
+	import { page } from '$app/state';
 	import { ColumnIndex, methodMap } from '$lib/consts';
 
 	type EndpointFreq = Map<string, { path: string; status: number; count: number }>;
@@ -39,21 +41,49 @@
 		);
 	}
 
-	function setTargetEndpoint(endpoint: string | null, status: number | null) {
-		if (endpoint === null || status === null) {
+	function removeEndpointParams() {
+		page.url.searchParams.delete('path');
+		page.url.searchParams.delete('status');
+		replaceState(page.url, page.state);
+	}
+
+	function setPathParam(path: string | null) {
+		if (path === null) {
+			page.url.searchParams.delete('path');
+		} else {
+			page.url.searchParams.set('path', path)
+		}
+		replaceState(page.url, page.state);
+	}
+
+	function setStatusParam(status: number | null) {
+		if (status === null) {
+			page.url.searchParams.delete('status');
+		} else {
+			page.url.searchParams.set('status', status.toString())
+		}
+		replaceState(page.url, page.state);
+	}
+
+	function setTargetEndpoint(path: string | null, status: number | null) {
+		if (path === null || status === null) {
 			// Trigger reset if input is null
 			targetPath = null;
 			targetStatus = null;
+			removeEndpointParams();
 		} else if (targetPath === null) {
 			// At starting state, set the path first
-			targetPath = endpoint;
+			targetPath = path;
+			setPathParam(path);
 		} else if (endpoints.length > 1 && targetStatus === null) {
 			// Path already set, now narrow down status (if multiple endpoints still exist)
 			targetStatus = status;
+			setStatusParam(status);
 		} else {
 			// Path and status already set, reset
 			targetPath = null;
 			targetStatus = null;
+			removeEndpointParams();
 		}
 	}
 

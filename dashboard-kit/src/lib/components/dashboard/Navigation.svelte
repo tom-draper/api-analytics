@@ -1,12 +1,35 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import type { DashboardSettings, Period } from '$lib/settings';
+	import { page as p } from '$app/state';
+	import { goto, replaceState } from '$app/navigation';
+	import type { DashboardSettings } from '$lib/settings';
 	import formatUUID from '$lib/uuid';
 	import Dropdown from './Dropdown.svelte';
+	import type { Period } from '$lib/period';
 
 	const timePeriods: Period[] = ['24 hours', 'Week', 'Month', '6 months', 'Year', 'All time'];
 
 	const userID = formatUUID($page.params.uuid);
+
+	function setPeriodParam(period: Period) {
+		p.url.searchParams.set('period', period.toLocaleLowerCase().replace(' ', ''))
+		replaceState(p.url, p.state)
+	}
+
+	function setHostnameParam(hostname: string | null) {
+		if (hostname === null) {
+			p.url.searchParams.delete('hostname')
+		} else {
+			p.url.searchParams.set('hostname', hostname);
+		}
+		replaceState(p.url, p.state)
+	}
+
+	$: hostname = settings.hostname;
+
+	$: {
+		setHostnameParam(hostname ?? null)
+	}
 
 	let dropdownOpen: boolean = false;
 
@@ -59,6 +82,7 @@
 				on:click={() => {
 					settings.period = period;
 					dropdownOpen = false;
+					setPeriodParam(period);
 				}}
 			>
 				{period}
@@ -172,7 +196,6 @@
 	}
 
 	@media screen and (max-width: 800px) {
-
 	}
 
 	@media screen and (max-width: 1300px) {
