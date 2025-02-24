@@ -34,19 +34,15 @@ if __name__ == '__main__':
 	},
 	FastAPI: {
 		install: 'pip install api-analytics[fastapi]',
-	    example: `import uvicorn
-from fastapi import FastAPI
-from api_analytics.fastapi import Analytics
+	    example: `from fastapi import FastAPI
+from api_analytics.fastapi import Analytics, Config
+
+config = Config(
+    get_user_id=lambda request: request.headers.get('X-AUTH-TOKEN', '')
+)
 
 app = FastAPI()
-app.add_middleware(Analytics, api_key=<API-KEY>)  # Add middleware
-
-@app.get('/')
-async def root():
-    return {'message': 'Hello, World!'}
-
-if __name__ == '__main__':
-    uvicorn.run('app:app', reload=True)`,
+app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware`,
 	},
 	Tornado: {
 		install: 'pip install api-analytics[tornado]',

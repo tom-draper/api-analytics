@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { page as p } from '$app/state';
-	import { goto, replaceState } from '$app/navigation';
+	import { replaceState } from '$app/navigation';
 	import type { DashboardSettings } from '$lib/settings';
 	import formatUUID from '$lib/uuid';
 	import Dropdown from './Dropdown.svelte';

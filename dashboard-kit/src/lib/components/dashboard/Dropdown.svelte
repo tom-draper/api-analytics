@@ -28,7 +28,7 @@
 	});
 
 	export let open: boolean = false;
-	export let options: string[], selected: string | null, defaultOption: string;
+	export let options: string[], selected: string | null, defaultOption: string | null;
 </script>
 
 <div class="dropdown" id="dropdown" bind:this={dropdown}>

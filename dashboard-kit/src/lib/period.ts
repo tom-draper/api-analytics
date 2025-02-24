@@ -9,6 +9,8 @@ export type Period =
 
 export type MonitorPeriod = '24h' | '7d' | '30d' | '60d'
 
+export const defaultPeriod: Period = 'Week';
+
 export function periodToDays(period: Period): number | null {
 	switch (period) {
 		case '24 hours':
@@ -47,6 +49,9 @@ export function dateInPeriod(date: Date, period: Period) {
 		return true;
 	}
 	const days = periodToDays(period);
+	if (days === null) {
+		return true;
+	}
 	const periodAgo = new Date();
 	periodAgo.setDate(periodAgo.getDate() - days);
 	return date > periodAgo;
@@ -57,6 +62,9 @@ export function dateInPrevPeriod(date: Date, period: Period) {
 		return true;
 	}
 	const days = periodToDays(period);
+	if (days === null) {
+		return true;
+	}
 	const startPeriodAgo = new Date();
 	startPeriodAgo.setDate(startPeriodAgo.getDate() - days * 2);
 	const endPeriodAgo = new Date();
