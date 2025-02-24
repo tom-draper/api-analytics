@@ -43,13 +43,15 @@
 
 <div class="generate">
 	<div class="content place-items-center">
-		{#if type === 'dashboard'}
-			<h2 class="font-bold">Dashboard</h2>
-		{:else if type === 'monitor'}
-			<h2 class="font-bold">Monitor</h2>
-		{:else if type === 'explorer'}
-			<h2 class="font-bold">Explorer</h2>
-		{/if}
+		<h2 class="font-bold">
+			{#if type === 'dashboard'}
+				Dashboard
+			{:else if type === 'monitor'}
+				Monitor
+			{:else if type === 'explorer'}
+				Explorer
+			{/if}
+		</h2>
 		<input type="text" bind:value={apiKey} placeholder="Enter API key" on:keydown={enter} />
 		<button id="formBtn" on:click={submit} class="text-sm" class:no-display={loading}>Load</button>
 		<div id="formBtn" class="grid place-items-center" class:no-display={!loading}>

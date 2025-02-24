@@ -7,6 +7,10 @@
 	import Method from './filters/Method.svelte';
 	import Hostname from './filters/Hostname.svelte';
 
+	function resetFilter() {
+		filter = defaultFilter(data.requests);
+	}
+
 	export let data: DashboardData, filteredRequests: RequestsData, filter: Filter;
 </script>
 
@@ -19,9 +23,7 @@
 			{#if data && filteredRequests && data.requests.length !== filteredRequests.length}
 				<button
 					class="ml-auto flex items-center rounded border border-[#2e2e2e] px-2 text-xs text-[var(--faint-text)] hover:text-[#ededed]"
-					onclick={() => {
-						filter = defaultFilter(data.requests);
-					}}
+					onclick={resetFilter}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"

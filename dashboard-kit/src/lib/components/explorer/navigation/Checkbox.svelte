@@ -1,12 +1,17 @@
 <script lang="ts">
 	$: color;
+
+	function toggleChecked() {
+		checked = !checked;
+	}
+
 	export let checked: boolean, label: string, color: string;
 </script>
 
 <div class="flex items-center gap-2 px-2 py-2">
 	<button
 		class="flex items-center gap-2 px-1 hover:text-[#ededed]"
-		onclick={() => (checked = !checked)}
+		onclick={toggleChecked}
 	>
 		<div class="flex items-center gap-2">
 			<div

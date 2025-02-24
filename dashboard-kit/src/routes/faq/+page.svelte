@@ -6,18 +6,22 @@
 	}
 </script>
 
+<svelte:head>
+	<link rel="stylesheet" href="/css/prism.css" />
+</svelte:head>
+
 <div class="info-page-container">
 	<h1>Frequently Asked Questions</h1>
 
 	{#each faq as question, i}
-		<div class="mb-6">
+		<div class="mb-4">
 			<button
 				class="question-btn"
 				on:click={() => {
 					toggleAnswer(i);
 				}}
 			>
-				<div class="flex-1 m-auto">
+				<div class="m-auto flex-1">
 					{question.question}
 				</div>
 				<div class="dropdown-icon-container">
@@ -30,11 +34,7 @@
 							stroke="currentColor"
 							class="size-6"
 						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="m4.5 15.75 7.5-7.5 7.5 7.5"
-							/>
+							<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
 						</svg>
 					{:else}
 						<svg
@@ -45,11 +45,7 @@
 							stroke="currentColor"
 							class="size-6"
 						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="m19.5 8.25-7.5 7.5-7.5-7.5"
-							/>
+							<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
 						</svg>
 					{/if}
 				</div>
@@ -64,8 +60,8 @@
 <style scoped>
 	h1 {
 		margin: 1.2em 0 !important;
-        font-size: 2em;
-        font-weight: 700;
+		font-size: 2em;
+		font-weight: 700;
 	}
 	.hidden {
 		display: none;
@@ -76,8 +72,8 @@
 		background: var(--light-background);
 		border: 1px solid #2e2e2e;
 		color: #ededed;
-		padding: 1.2em 3rem;
-		font-size: 1.2em;
+		padding: 1em 2rem;
+		font-size: 1em;
 		text-align: left;
 		min-width: 100%;
 		cursor: pointer;
@@ -90,5 +86,6 @@
 	.answer {
 		padding: 2em 3rem;
 		color: #c3c3c3;
+		font-size: 0.95em;
 	}
 </style>

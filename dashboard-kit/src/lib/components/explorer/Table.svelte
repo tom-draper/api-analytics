@@ -131,6 +131,7 @@
 				<button
 					class="px-1 py-2 hover:text-[#ededed] disabled:text-[var(--dim-text)]"
 					onclick={prevPage}
+					aria-label="Previous page"
 					disabled={pageNumber === 1}
 					><svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -150,6 +151,7 @@
 				<button
 					class="px-1 py-2 hover:text-[#ededed] disabled:text-[var(--dim-text)]"
 					onclick={nextPage}
+					aria-label="Next page"
 					disabled={pageNumber === (data ? Math.ceil(data.length / pageSize) : 0)}
 					><svg
 						xmlns="http://www.w3.org/2000/svg"

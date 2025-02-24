@@ -16,8 +16,7 @@
 	import generateDemoData from '$lib/demo';
 	import formatUUID from '$lib/uuid';
 	import Settings from '$components/dashboard/Settings.svelte';
-	import type { DashboardSettings } from '$lib/settings';
-	import { initSettings } from '$lib/settings';
+	import { initSettings, type DashboardSettings } from '$lib/settings';
 	import type { NotificationState } from '$lib/notification';
 	import Notification from '$components/dashboard/Notification.svelte';
 	import exportCSV from '$lib/exportData';
@@ -29,6 +28,7 @@
 	import { userTargeted } from '$lib/user';
 	import { dataStore } from '$lib/dataStore';
 	import Health from '$components/dashboard/health/Health.svelte';
+	import { periodParamToPeriod } from '$lib/params';
 
 	const userID = formatUUID($page.params.uuid);
 
@@ -38,9 +38,8 @@
 
 		const current = [];
 		const previous = [];
-		for (let i = 0; i < data.length; i++) {
+		for (const request of data) {
 			// Created inverted version of the if statement to reduce nesting
-			const request = data[i];
 			const status = request[ColumnIndex.Status];
 			const path = request[ColumnIndex.Path];
 			const hostname = request[ColumnIndex.Hostname];
@@ -267,8 +266,18 @@
 		});
 	}
 
+	function getSettings() {
+		const settings = initSettings();
+
+		const period = $page.url.searchParams.get('period');
+		if (period) {
+			settings.period = periodParamToPeriod(period);
+		}
+		return settings;
+	}
+
 	let data: DashboardData;
-	let settings: DashboardSettings = initSettings();
+	let settings: DashboardSettings = getSettings();
 	let showSettings: boolean = false;
 	let hostnames: string[];
 	const notification: NotificationState = {
