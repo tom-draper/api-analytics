@@ -33,7 +33,7 @@
 			}}
 		/>
 		<div class="flex flex-col justify-between">
-			<div class="grid place-items-center pb-1 text-center text-xs">
+			<div class="grid place-items-center pb-1 text-center text-[13px]">
 				<div class="flex">
 					<div class="flex-grow">
 						{toDay(new Date(values[0])).toLocaleDateString()}
@@ -44,7 +44,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="text-center text-xs">
+			<div class="text-center text-[13px]">
 				{daysBetween(new Date(values[0]), new Date(values[1]))} days
 			</div>
 		</div>

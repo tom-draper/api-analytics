@@ -92,12 +92,26 @@
 		return await fetchData();
 	}
 
+	// async function getDemoData() {
+	// 	return new Promise<DashboardData>((resolve) => {
+	// 		const data = generateDemoData();
+	// 		setTimeout(() => {
+	// 			resolve(data);
+	// 		});
+	// 	});
+	// }
 	async function getDemoData() {
 		return new Promise<DashboardData>((resolve) => {
-			const data = generateDemoData();
-			setTimeout(() => {
-				resolve(data);
+			const worker = new Worker(new URL('$lib/worker.ts', import.meta.url), {
+				type: 'module'
 			});
+
+			worker.onmessage = (event) => {
+				resolve(event.data);
+				worker.terminate(); // Cleanup worker after use
+			};
+
+			worker.postMessage(null);
 		});
 	}
 
