@@ -14,7 +14,7 @@
 <div class="text-left text-sm text-[var(--faint-text)]">
 	<button
 		onclick={toggleHidden}
-		class="m-auto flex w-full px-2 py-2 text-[var(--faint-text)] hover:text-[#ededed] rounded hover:bg-[#202020]"
+		class="m-auto flex w-full px-2 py-2 text-[var(--faint-text)] hover:text-[#ededed] rounded"
 		class:!text-[#ededed]={!hidden}
 	>
 		<div class="mr-auto">

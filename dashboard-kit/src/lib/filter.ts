@@ -1,4 +1,4 @@
-import { ColumnIndex, methodMap } from "./consts";
+import { ColumnIndex } from "./consts";
 
 export type Filter = {
     timespan: [number, number];
@@ -14,6 +14,7 @@ export type Filter = {
     hostnames: {
         [hostname: string]: boolean;
     }
+    responseTime: [number, number];
     paths: Set<string>;
 };
 
@@ -30,6 +31,7 @@ export function defaultFilter(data: RequestsData) {
             client: true,
             server: true
         },
+        responseTime: [0, Infinity],
         methods: getMethods(data),
         hostnames: getHostnames(data),
         paths: new Set()

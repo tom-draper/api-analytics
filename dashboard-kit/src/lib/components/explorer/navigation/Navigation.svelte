@@ -6,6 +6,7 @@
 	import Timespan from './filters/Timespan.svelte';
 	import Method from './filters/Method.svelte';
 	import Hostname from './filters/Hostname.svelte';
+	import ResponseTime from './filters/ResponseTime.svelte';
 
 	function resetFilter() {
 		filter = defaultFilter(data.requests);
@@ -15,7 +16,7 @@
 </script>
 
 <nav
-	class="fixed flex h-full w-[20em] flex-col border-r border-[#2e2e2e] bg-[var(--light-background)]"
+	class="fixed flex h-full w-[20em] flex-col border-r border-[#2e2e2e] bg-[var(--light-background)] overflow-y-auto"
 >
 	<div class="flex-grow p-2">
 		<div class="flex px-2 pb-4 pt-2">
@@ -44,14 +45,15 @@
 		<Expandable title="Status" content={Status} bind:filter bind:data />
 		<Expandable title="Method" content={Method} bind:filter bind:data />
 		<Expandable title="Hostname" content={Hostname} bind:filter bind:data />
+		<!-- <Expandable title="Hostname" content={Hostname} bind:filter bind:data /> -->
+		<!-- <Expandable title="Hostname" content={Hostname} bind:filter bind:data /> -->
+		<!-- <Expandable title="Hostname" content={Hostname} bind:filter bind:data /> -->
+		<Expandable title="Response Time" content={ResponseTime} bind:filter bind:data />
 	</div>
 
-	<div class="grid h-[6em] place-items-center">
-		<div class="h-[21px] text-[var(--highlight)]">
+	<div class="grid place-items-center my-10">
+		<div class="h-[24px] text-[var(--highlight)]">
 			<Lightning />
 		</div>
 	</div>
 </nav>
-
-<style>
-</style>
