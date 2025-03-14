@@ -51,17 +51,20 @@ def _post_requests(
         logger.debug("Aborting post to server: Server URL is not set.")
         return
 
-    response = requests.post(
-        url,
-        json={
-            "api_key": api_key,
-            "requests": requests_data,
-            "framework": framework,
-            "privacy_level": privacy_level,
-        },
-        timeout=10,
-    )
-    logger.debug(f"Response from server ({response.status_code}): {response.text}")
+    try:
+        response = requests.post(
+            url,
+            json={
+                "api_key": api_key,
+                "requests": requests_data,
+                "framework": framework,
+                "privacy_level": privacy_level,
+            },
+            timeout=10,
+        )
+        logger.debug(f"Response from server ({response.status_code}): {response.text}")
+    except Exception as e:
+        logger.debug(f'Failed to post logs: {e}')
 
 
 def _endpoint_url(server_url: Union[str, None]):

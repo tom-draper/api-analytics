@@ -19,7 +19,7 @@ license = {file = "LICENSE"}
 name = "tornado-analytics"
 readme = "README.md"
 requires-python = ">=3.6"
-version = "1.2.3"
+version = "1.2.4"
 
 [project.optional-dependencies]
 build = ["build", "twine"]
