@@ -76,7 +76,7 @@ func getUserID(c *gin.Context) {
 
 type DashboardData struct {
 	UserAgents UserAgentsLookup `json:"user_agents"`
-	Requests   [][10]any        `json:"requests"`
+	Requests   [][12]any        `json:"requests"`
 }
 
 type UserAgentsLookup map[int]string
@@ -86,11 +86,13 @@ type DashboardRequestRow struct {
 	IPAddress    pgtype.CIDR `json:"ip_address"`
 	Path         string      `json:"path"`
 	UserAgent    *int        `json:"user_agent"` // Nullable
+	Referrer     *string     `json:"referrer"`   // Nullable
 	Method       int16       `json:"method"`
 	Status       int16       `json:"status"`
 	ResponseTime int16       `json:"response_time"`
-	Location     *string     `json:"location"` // Nullable
-	UserID       *string     `json:"user_id"`  // Nullable, custom user identifier field specific to each API service
+	Location     *string     `json:"location"`  // Nullable
+	UserHash     *string     `json:"user_hash"` // Nullable
+	UserID       *string     `json:"user_id"`   // Nullable, custom user identifier field specific to each API service
 	CreatedAt    time.Time   `json:"created_at"`
 }
 
@@ -149,7 +151,7 @@ func getRequestsHandler() gin.HandlerFunc {
 			return
 		}
 
-		requests := [][10]any{}
+		requests := [][12]any{}
 		userAgentIDs := make(map[int]struct{})
 		currentPage := 1
 		if targetPage != 0 {
@@ -158,7 +160,7 @@ func getRequestsHandler() gin.HandlerFunc {
 
 		for {
 			// Note: table joins currently avoided due to memory limitations
-			query := "SELECT ip_address, path, hostname, user_agent_id, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 ORDER BY created_at LIMIT $2 OFFSET $3;"
+			query := "SELECT ip_address, path, hostname, user_agent_id, referrer, user_hash, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 ORDER BY created_at LIMIT $2 OFFSET $3;"
 			offset := (currentPage - 1) * pageSize
 			rows, err := connection.Query(context.Background(), query, apiKey, pageSize, offset)
 			if err != nil {
@@ -172,7 +174,7 @@ func getRequestsHandler() gin.HandlerFunc {
 			var count int
 			var skipped int
 			for rows.Next() {
-				err = rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
+				err = rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Referrer, &request.UserHash, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
 				if err != nil {
 					skipped++
 					continue
@@ -184,8 +186,10 @@ func getRequestsHandler() gin.HandlerFunc {
 				}
 				hostname := getNullableString(request.Hostname)
 				location := getNullableString(request.Location)
+				userHash := getNullableString(request.UserHash)
+				referrer := getNullableString(request.Referrer)
 				userID := getNullableString(request.UserID)
-				requests = append(requests, [10]any{ip, request.Path, hostname, request.UserAgent, request.Method, request.ResponseTime, request.Status, location, userID, request.CreatedAt})
+				requests = append(requests, [12]any{ip, request.Path, hostname, request.UserAgent, request.Method, request.ResponseTime, request.Status, location, userID, request.CreatedAt, userHash, referrer})
 				if request.UserAgent != nil {
 					if _, ok := userAgentIDs[*request.UserAgent]; !ok {
 						userAgentIDs[*request.UserAgent] = struct{}{}
@@ -289,10 +293,10 @@ func getPaginatedRequestsHandler() gin.HandlerFunc {
 			return
 		}
 
-		requests := [][10]any{}
+		requests := [][12]any{}
 		userAgentIDs := make(map[int]struct{})
 
-		query := "SELECT ip_address, path, hostname, user_agent_id, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 ORDER BY created_at LIMIT $2 OFFSET $3;"
+		query := "SELECT ip_address, path, hostname, user_agent_id, referrer, user_hash, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 ORDER BY created_at LIMIT $2 OFFSET $3;"
 		rows, err := connection.Query(context.Background(), query, apiKey, pageSize, (page-1)*pageSize)
 		if err != nil {
 			log.LogToFile(fmt.Sprintf("key=%s: Invalid API key - %s", apiKey, err.Error()))
@@ -301,7 +305,7 @@ func getPaginatedRequestsHandler() gin.HandlerFunc {
 		}
 		request := new(DashboardRequestRow) // Reuseable request struct
 		for rows.Next() {
-			err = rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
+			err = rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Referrer, &request.UserHash, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
 			if err != nil {
 				continue
 			}
@@ -312,8 +316,10 @@ func getPaginatedRequestsHandler() gin.HandlerFunc {
 			}
 			hostname := getNullableString(request.Hostname)
 			location := getNullableString(request.Location)
+			userHash := getNullableString(request.UserHash)
+			referrer := getNullableString(request.Referrer)
 			userID := getNullableString(request.UserID)
-			requests = append(requests, [10]any{ip, request.Path, hostname, request.UserAgent, request.Method, request.ResponseTime, request.Status, location, userID, request.CreatedAt})
+			requests = append(requests, [12]any{ip, request.Path, hostname, request.UserAgent, referrer, userHash, request.Method, request.ResponseTime, request.Status, location, userID, request.CreatedAt})
 			if request.UserAgent != nil {
 				if _, ok := userAgentIDs[*request.UserAgent]; !ok {
 					userAgentIDs[*request.UserAgent] = struct{}{}
@@ -445,14 +451,14 @@ func updateLastAccessed(connection *pgx.Conn, apiKey string) error {
 	return err
 }
 
-func buildRequestDataCompact(rows pgx.Rows, cols [10]any) [][10]any {
+func buildRequestDataCompact(rows pgx.Rows, cols [12]any) [][12]any {
 	// First value in list holds column names
-	requests := [][10]any{cols}
+	requests := [][12]any{cols}
 	var request DashboardRequestRow
 	for rows.Next() {
-		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
+		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.UserHash, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.Referrer, &request.UserID, &request.CreatedAt)
 		if err == nil {
-			requests = append(requests, [10]any{request.IPAddress, request.Path, request.Hostname, request.UserAgent, request.Method, request.ResponseTime, request.Status, request.Location, request.UserID, request.CreatedAt})
+			requests = append(requests, [12]any{request.IPAddress, request.Path, request.Hostname, request.UserAgent, request.UserHash, request.Method, request.ResponseTime, request.Status, request.Location, request.Referrer, request.UserID, request.CreatedAt})
 		}
 	}
 	return requests
@@ -507,7 +513,7 @@ func getData(c *gin.Context) {
 
 	// Read data into list of objects to return
 	if queries.compact {
-		cols := [10]any{"ip_address", "path", "hostname", "user_agent", "method", "response_time", "status", "location", "user_id", "created_at"}
+		cols := [12]any{"ip_address", "path", "hostname", "user_agent", "user_hash", "method", "response_time", "status", "location", "referrer", "user_id", "created_at"}
 		requests := buildRequestDataCompact(rows, cols)
 		log.LogToFile(fmt.Sprintf("key=%s: Data access successful (%d)", apiKey, len(requests)-1))
 		c.JSON(http.StatusOK, requests)
@@ -529,7 +535,7 @@ func getData(c *gin.Context) {
 
 func buildDataFetchQuery(apiKey string, queries DataFetchQueries) (string, []any) {
 	var query strings.Builder
-	query.WriteString("SELECT r.ip_address, r.path, r.hostname, u.user_agent, r.method, r.response_time, r.status, r.location, r.user_id, r.created_at FROM requests r JOIN user_agents u ON r.user_agent_id = u.id WHERE api_key = $1")
+	query.WriteString("SELECT r.ip_address, r.path, r.hostname, u.user_agent, r.user_hash, r.method, r.response_time, r.status, r.location, r.referrer, r.user_id, r.created_at FROM requests r JOIN user_agents u ON r.user_agent_id = u.id WHERE api_key = $1")
 
 	arguments := []any{apiKey}
 
@@ -655,10 +661,12 @@ type RequestData struct {
 	IPAddress    string    `json:"ip_address"`
 	Path         string    `json:"path"`
 	UserAgent    string    `json:"user_agent"`
+	UserHash     string    `json:"user_hash"`
 	Method       int16     `json:"method"`
 	Status       int16     `json:"status"`
 	ResponseTime int16     `json:"response_time"`
 	Location     string    `json:"location"`
+	Referrer     string    `json:"referrer"`
 	UserID       string    `json:"user_id"`
 	CreatedAt    time.Time `json:"created_at"`
 }
@@ -668,10 +676,12 @@ type RequestRow struct {
 	IPAddress    pgtype.CIDR `json:"ip_address"`
 	Path         string      `json:"path"`
 	UserAgent    *string     `json:"user_agent"`
+	UserHash     *string     `json:"user_hash"`
 	Method       int16       `json:"method"`
 	Status       int16       `json:"status"`
 	ResponseTime int16       `json:"response_time"`
 	Location     *string     `json:"location"`
+	Referrer     *string     `json:"referrer"`
 	UserID       *string     `json:"user_id"` // Custom user identifier field specific to each API service
 	CreatedAt    time.Time   `json:"created_at"`
 }
@@ -680,7 +690,7 @@ func buildRequestData(rows pgx.Rows) []RequestData {
 	requests := make([]RequestData, 0)
 	var request RequestRow
 	for rows.Next() {
-		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
+		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.UserHash, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.Referrer, &request.UserID, &request.CreatedAt)
 		if err == nil {
 			var ip string
 			if request.IPAddress.IPNet != nil {
@@ -689,16 +699,20 @@ func buildRequestData(rows pgx.Rows) []RequestData {
 			hostname := getNullableString(request.Hostname)
 			userAgent := getNullableString(request.UserAgent)
 			location := getNullableString(request.Location)
+			referrer := getNullableString(request.Referrer)
+			userHash := getNullableString(request.UserHash)
 			userID := getNullableString(request.UserID)
 			requests = append(requests, RequestData{
 				IPAddress:    ip,
 				Path:         request.Path,
 				Hostname:     hostname,
 				UserAgent:    userAgent,
+				UserHash:     userHash,
 				Method:       request.Method,
 				Status:       request.Status,
 				ResponseTime: request.ResponseTime,
 				Location:     location,
+				Referrer:     referrer,
 				UserID:       userID,
 				CreatedAt:    request.CreatedAt,
 			})
