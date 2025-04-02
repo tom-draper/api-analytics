@@ -1,8 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"net"
 	"net/http"
@@ -57,6 +58,7 @@ type RequestData struct {
 	UserAgent    string `json:"user_agent"`
 	Method       string `json:"method"`
 	Status       int16  `json:"status"`
+	Referrer     string `json:"referrer"`
 	ResponseTime int16  `json:"response_time"`
 	UserID       string `json:"user_id"`
 	CreatedAt    string `json:"created_at"`
@@ -106,17 +108,15 @@ func checkHealth(c *gin.Context) {
 func getMaxInsert() int {
 	const defaultValue int = 2000
 
-	errMsg := fmt.Sprintf("Failed to load .env file. Using default value MAX_INSERT=%d.", defaultValue)
-
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.LogToFile(errMsg)
+		log.LogToFile(fmt.Sprintf("Failed to load .env file. Using default value MAX_INSERT=%d.", defaultValue))
 		return defaultValue
 	}
 
-	value := os.Getenv(fmt.Sprintf("MAX_INSERT environment variable is blank. Using default value MAX_INSERT=%d.", defaultValue))
+	value := os.Getenv("MAX_INSERT")
 	if value == "" {
-		log.LogToFile(errMsg)
+		log.LogToFile(fmt.Sprintf("MAX_INSERT environment variable is blank. Using default value MAX_INSERT=%d.", defaultValue))
 		return defaultValue
 	}
 
@@ -143,12 +143,13 @@ func getCountryCode(IPAddress string) string {
 	if ip == nil {
 		return ""
 	}
+
 	record, err := db.Country(ip)
 	if err != nil {
 		return ""
 	}
-	location := record.Country.IsoCode
-	return location
+
+	return record.Country.IsoCode
 }
 
 func storeNewUserAgents(userAgents map[string]struct{}) error {
@@ -236,6 +237,27 @@ func getUserAgentIDs(userAgents map[string]struct{}) (map[string]int, error) {
 	return ids, nil
 }
 
+// CreateVisitorID generates a hash from an IP address and user agent string
+func getUserHash(ipAddress string, userAgent string) string {
+	if ipAddress == "" && userAgent == "" {
+		return ""
+	}
+
+	// Combine the IP address and user agent with a separator
+	combined := strings.TrimSpace(ipAddress) + "|" + strings.TrimSpace(userAgent)
+
+	// Create SHA-256 hash
+	hasher := sha256.New()
+	hasher.Write([]byte(combined))
+	hashBytes := hasher.Sum(nil)
+
+	// Convert to hex string
+	hashString := hex.EncodeToString(hashBytes)
+
+	// Return the full hash or a shorter version if needed
+	return hashString[:32] // Return first 32 chars (16 bytes) of the hash
+}
+
 func logRequestHandler() gin.HandlerFunc {
 	var rateLimiter = ratelimit.RateLimiter{}
 
@@ -283,21 +305,21 @@ func logRequestHandler() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
 		}
-		
+
 		if payload.APIKey == "" {
 			msg := "API key requied."
 			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
 		}
-		
+
 		if rateLimiter.RateLimited(payload.APIKey) {
 			msg := "Too many requests."
 			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusTooManyRequests, gin.H{"status": http.StatusTooManyRequests, "message": msg})
 			return
 		}
-		
+
 		if len(payload.Requests) == 0 {
 			msg := "Payload contains no logged requests."
 			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
@@ -316,22 +338,19 @@ func logRequestHandler() gin.HandlerFunc {
 		payload.APIKey = strings.ReplaceAll(payload.APIKey, "\"", "")
 
 		var query strings.Builder
-		query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, status, response_time, method, framework, location, user_id, created_at, user_agent_id) VALUES ")
+		query.WriteString("INSERT INTO requests (api_key, path, hostname, ip_address, user_hash, status, response_time, method, framework, location, user_id, created_at, user_agent_id) VALUES ")
 		arguments := make([]any, 0)
 		inserted := 0
 		userAgents := make([]string, 0)
 		uniqueUserAgents := map[string]struct{}{}
 		for _, request := range payload.Requests {
-			// Temporary request per minute limit
 			if inserted >= maxInsert {
 				break
 			}
 
-			var location string
-			if payload.PrivacyLevel < P3 {
-				// Location inferred from IP and stored for privacy level P1 and P2
-				location = getCountryCode(request.IPAddress)
-			}
+			location := getCountryCode(request.IPAddress)
+
+			userHash := getUserHash(request.IPAddress, request.UserAgent)
 
 			if payload.PrivacyLevel > P1 {
 				// Client IP address discarded for privacy level P2 and P3
@@ -346,6 +365,13 @@ func logRequestHandler() gin.HandlerFunc {
 
 			method, ok := methodID[request.Method]
 			if !ok {
+				continue
+			}
+
+			if len(request.Referrer) > 255 {
+				request.Referrer = request.Referrer[:255]
+			}
+			if !database.ValidString(request.Referrer) {
 				continue
 			}
 
@@ -377,6 +403,10 @@ func logRequestHandler() gin.HandlerFunc {
 				continue
 			}
 
+			if request.ResponseTime < 0 {
+				continue
+			}
+
 			// If not at final row in query, separate with comma
 			if inserted > 0 && inserted < maxInsert && inserted < len(payload.Requests) {
 				query.WriteString(",")
@@ -391,19 +421,22 @@ func logRequestHandler() gin.HandlerFunc {
 
 			numArgs := len(arguments)
 			query.WriteString(
-				fmt.Sprintf("($%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d)",
-					numArgs+1,
-					numArgs+2,
-					numArgs+3,
-					numArgs+4,
-					numArgs+5,
-					numArgs+6,
-					numArgs+7,
-					numArgs+8,
-					numArgs+9,
-					numArgs+10,
-					numArgs+11,
-					numArgs+12),
+				fmt.Sprintf("($%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d)",
+					numArgs+1, // api_key
+					numArgs+2, // path
+					numArgs+3, // hostname
+					numArgs+4, // ip_address
+					numArgs+5, // user_hash
+					numArgs+6, // referrer
+					numArgs+7, // status
+					numArgs+8, // response_time
+					numArgs+9, // method
+					numArgs+10, // framework
+					numArgs+11, // location
+					numArgs+12, // user_id
+					numArgs+13, // created_at
+					numArgs+14, // user_agent_id
+				),
 			)
 			arguments = append(
 				arguments,
@@ -411,6 +444,8 @@ func logRequestHandler() gin.HandlerFunc {
 				request.Path,
 				request.Hostname,
 				ipAddress,
+				userHash,
+				request.Referrer,
 				request.Status,
 				request.ResponseTime,
 				method,
@@ -418,7 +453,8 @@ func logRequestHandler() gin.HandlerFunc {
 				location,
 				request.UserID,
 				request.CreatedAt,
-				0)
+				0, // Placeholder for user_agent_id
+			)
 			inserted += 1
 		}
 
@@ -438,7 +474,7 @@ func logRequestHandler() gin.HandlerFunc {
 		// Insert user agent IDs into arguments
 		for i, userAgent := range userAgents {
 			if id, ok := userAgentIDs[userAgent]; ok {
-				arguments[(i*12)+11] = id
+				arguments[(i*14)+13] = id
 			}
 		}
 
