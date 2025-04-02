@@ -37,7 +37,7 @@
 </script>
 
 <nav class="button-nav text-sm">
-	<a class="info" href={userID ? `/explorer/${userID}` : '/explorer'}>
+	<!-- <a class="info" href={userID ? `/explorer/${userID}` : '/explorer'}>
 		<div class="info-content">
 			Try the Log Explorer <svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -54,7 +54,7 @@
 				/>
 			</svg>
 		</div>
-	</a>
+	</a> -->
 	<div class="donate">
 		<a target="_blank" href="https://www.buymeacoffee.com/tomdraper" class="donate-link">Donate</a>
 	</div>

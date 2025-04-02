@@ -82,7 +82,7 @@
 <style scoped>
 	.card {
 		margin: 2em 0 2em 1em;
-		width: 420px;
+		width: 430px;
 	}
 	.card-title {
 		display: flex;
@@ -93,9 +93,7 @@
 	.toggle > .active {
 		background: var(--highlight);
 	}
-	.os,
-	.client,
-	.device {
+	.client {
 		display: none;
 	}
 	.display {

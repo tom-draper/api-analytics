@@ -8,6 +8,7 @@ export type DashboardSettings = {
 		path: string | null;
 		status: number | null;
 	};
+	targetReferrer: string | null;
 	targetLocation: string | null;
 	targetUser: {
 		ipAddress: string,
@@ -27,6 +28,7 @@ export function initSettings(): DashboardSettings {
 			path: null,
 			status: null,
 		},
+		targetReferrer: null,
 		targetLocation: null,
 		targetUser: null,
 		hiddenEndpoints: new Set(),

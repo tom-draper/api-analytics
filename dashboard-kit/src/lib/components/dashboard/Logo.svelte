@@ -34,8 +34,8 @@
 		height: auto !important;
 	}
 	.loader {
-		height: 20px !important;
-		width: 20px !important;
+		height: 36px !important;
+		width: 36px !important;
 	}
 	@media screen and (max-width: 1030px) {
 		.card {

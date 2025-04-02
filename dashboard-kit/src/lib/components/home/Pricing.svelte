@@ -13,9 +13,8 @@
 		<div class="price mb-[2rem]">Free</div>
 		<div class="mb-8"><a href="/generate">Get Started</a></div>
 		<ul>
-			<li class="feature text-[#ededed]">100,000 request storage</li>
+			<li class="feature text-[#ededed]">50,000 request storage</li>
 			<li class="feature">Dashboard access</li>
-			<li class="feature">Explorer access</li>
 			<li class="feature">Raw data access</li>
 			<li class="feature">Up to 3 monitors</li>
 		</ul>
