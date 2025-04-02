@@ -99,7 +99,7 @@
 		</div>
 	{:else}
 		<div class="no-locations">
-			<div class="no-locations-text">No Locations Found</div>
+			<div class="no-locations-text">No locations found</div>
 		</div>
 	{/if}
 </div>

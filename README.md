@@ -15,11 +15,11 @@ Currently compatible with:
 
 ### 1. Generate an API key
 
-Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It's also required when accessing your API analytics dashboard and data.
+Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It will be required when accessing your API analytics dashboard and logged data.
 
 ### 2. Add middleware to your API
 
-Add our lightweight middleware to your API. Almost all processing is handled by the server so there is minimal impact on the performance of your API.
+Add the lightweight middleware to your API. Almost all data processing is handled by the server so there is minimal impact on the performance of your API.
 
 #### FastAPI
 
@@ -523,12 +523,12 @@ app.Run();
 
 ### 3. View your analytics
 
-Your API will now log and store incoming request data on all routes. Your logged data can be viewed using two methods:
+Your API will now log and store incoming request data on all routes. Logged data can be viewed using two methods:
 
 1. Through visualizations and statistics on the dashboard
 2. Accessed directly via the data API
 
-You can use the same API key across multiple APIs, but all requests will appear in the same dashboard. We recommend generating a new API key for each of your API servers.
+You can use the same API key across multiple APIs, but all requests will appear in the same dashboard. It's recommended to generate a new API key for each of your API servers.
 
 #### Dashboard
 
@@ -540,7 +540,7 @@ Demo: [apianalytics.dev/dashboard/demo](https://apianalytics.dev/dashboard/demo)
 
 #### Data API
 
-Raw logged request data can be accessed with our REST API. Simply send a GET request to `https://apianalytics-server.com/api/data` with your API key set as `X-AUTH-TOKEN` in the headers.
+Raw logged request data can be fetched from the data API. Simply send a GET request to `https://apianalytics-server.com/api/data` with your API key set as `X-AUTH-TOKEN` in the headers.
 
 ##### Python
 
@@ -580,7 +580,7 @@ curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 You can filter your data by providing URL parameters in your request.
 
 - `page` - the page number, with a max page size of 50,000 (defaults to 1)
-- `date` - the exact day the requests occurred on (`YYYY-MM-DD`)
+- `date` - the day the requests occurred on (`YYYY-MM-DD`)
 - `dateFrom` - a lower bound of a date range the requests occurred in (`YYYY-MM-DD`)
 - `dateTo` - a upper bound of a date range the requests occurred in (`YYYY-MM-DD`)
 - `hostname` - the hostname of your service
@@ -649,13 +649,13 @@ For any given request to your API, data recorded is strictly limited to:
 
 Data collected is only ever used to populate your analytics dashboard, and never shared with a third-party. All stored data is pseudo-anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
 
-View our full <a href="https://www.apianalytics.dev/privacy-policy">privacy policy</a> and <a href="https://www.apianalytics.dev/frequently-asked-questions">frequently asked questions</a> on our website.
+View our full <a href="https://www.apianalytics.dev/privacy-policy">privacy policy</a> and <a href="https://www.apianalytics.dev/faq">frequently asked questions</a> on our website.
 
 ### Data Deletion
 
 At any time, you can delete all stored data associated with your API key by going to [apianalytics.dev/delete](https://apianalytics.dev/delete) and entering your API key.
 
-API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity.
+API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity, or 3 months have elapsed without logging a request.
 
 ## Monitoring
 

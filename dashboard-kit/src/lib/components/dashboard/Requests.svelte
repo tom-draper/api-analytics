@@ -96,15 +96,26 @@
 	}
 
 	function getRequestsPerHour(data: RequestsData) {
-		let requestsPerHour: number = 0;
-		if (data.length > 0) {
-			const days = periodToDays(period);
-			if (days != null) {
-				requestsPerHour = data.length / (24 * days);
-			}
+		if (data.length === 0) {
+			return 0;
+		}
+		if (data.length === 1) {
+			return 1;
 		}
 
-		return requestsPerHour;
+		let days = periodToDays(period);
+		if (days === null) {
+			days = daysBetween(
+				data[0][ColumnIndex.CreatedAt],
+				data[data.length - 1][ColumnIndex.CreatedAt]
+			);
+		}
+		return data.length / (24 * days);
+	}
+
+	function daysBetween(date1: Date, date2: Date) {
+		const diff = date2.getTime() - date1.getTime();
+		return Math.floor(diff / (1000 * 60 * 60 * 24));
 	}
 
 	function togglePeriod() {
@@ -133,8 +144,8 @@
 		<div class="card-title">
 			Requests <span class="per-hour">/ hour</span>
 		</div>
-		{#if requestsPerHour}
-			<div class="value">{requestsPerHour.toFixed(2)}</div>
+		{#if requestsPerHour !== undefined}
+			<div class="value">{requestsPerHour === 0 ? '0' : requestsPerHour.toFixed(2)}</div>
 		{/if}
 	{:else}
 		{#if percentageChange}

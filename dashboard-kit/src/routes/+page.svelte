@@ -5,7 +5,7 @@
 	import DocLinks from '$components/home/DocumentLinks.svelte';
 	import { page } from '$app/state';
 	import { formatPath } from '$lib/path';
-	import Pricing from '$components/home/Pricing.svelte';
+	// import Pricing from '$components/home/Pricing.svelte';
 
 	let params: string;
 	$: params = page.url.searchParams.toString();
@@ -19,16 +19,10 @@
 		path={formatPath('/dashboard', params)}
 		img="dashboard.png"
 	/>
-	<Highlight
+	<!-- <Highlight
 		title="Explorer"
 		description="A deep-dive into your logged requests."
 		path={formatPath('/explorer', params)}
-		img="dashboard.png"
-	/>
-	<!--<Highlight
-		title="Showcase"
-		description="A public customisable dashboard. Show off your achivements."
-		path={`/dashboard${queryString ? `?${queryString}` : ''}`}
 		img="dashboard.png"
 	/> -->
 	<Highlight
@@ -37,7 +31,7 @@
 		path={formatPath('/monitoring', params)}
 		img="monitoring.png"
 	/>
-	<Pricing />
+	<!-- <Pricing /> -->
 	<GettingStarted />
 	<DocLinks />
 </div>

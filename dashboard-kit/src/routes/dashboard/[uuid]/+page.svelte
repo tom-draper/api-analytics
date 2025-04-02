@@ -29,6 +29,7 @@
 	import { dataStore } from '$lib/dataStore';
 	import Health from '$components/dashboard/health/Health.svelte';
 	import { periodParamToPeriod } from '$lib/params';
+	import Referrer from '$components/dashboard/Referrer.svelte';
 
 	const userID = formatUUID($page.params.uuid);
 
@@ -42,6 +43,7 @@
 			// Created inverted version of the if statement to reduce nesting
 			const status = request[ColumnIndex.Status];
 			const path = request[ColumnIndex.Path];
+			const referrer = request[ColumnIndex.Path];
 			const hostname = request[ColumnIndex.Hostname];
 			const location = request[ColumnIndex.Location];
 			const ipAddress = request[ColumnIndex.IPAddress];
@@ -52,6 +54,7 @@
 				(!settings.disable404 || status !== 404) &&
 				(settings.targetEndpoint.path === null || settings.targetEndpoint.path === path) &&
 				(settings.targetEndpoint.status === null || settings.targetEndpoint.status === status) &&
+				(settings.targetReferrer === null || settings.targetReferrer === referrer) &&
 				(settings.targetLocation === null || settings.targetLocation === location) &&
 				!isHiddenEndpoint(path) &&
 				(settings.hostname === null || settings.hostname === hostname)
@@ -370,9 +373,16 @@
 					<Location data={periodData.current} bind:targetLocation={settings.targetLocation} />
 					<Device data={periodData.current} userAgents={data.userAgents} />
 				</div>
-				<Health data={periodData.current} />
-				<UsageTime data={periodData.current} />
-				<TopUsers data={periodData.current} bind:targetUser={settings.targetUser} />
+				<div class="flex">
+					<div class="flex-grow">
+						<!-- <Health data={periodData.current} /> -->
+						<UsageTime data={periodData.current} />
+						<TopUsers data={periodData.current} bind:targetUser={settings.targetUser} />
+					</div>
+					<div>
+						<!-- <Referrer data={periodData.current} bind:targetReferrer={settings.targetReferrer} bind:ignoreParams={settings.ignoreParams}/> -->
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>

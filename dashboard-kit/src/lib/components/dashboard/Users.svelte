@@ -116,12 +116,19 @@
 			return 0;
 		}
 
-		const days = periodToDays(period);
+		let days = periodToDays(period);
 		if (days === null) {
-			return 0;
+			days = daysBetween(
+				data[0][ColumnIndex.CreatedAt],
+				data[data.length - 1][ColumnIndex.CreatedAt]
+			);
 		}
-
 		return users.size / (24 * days);
+	}
+
+	function daysBetween(date1: Date, date2: Date) {
+		const diff = date2.getTime() - date1.getTime();
+		return Math.floor(diff / (1000 * 60 * 60 * 24));
 	}
 
 	function getUsers(data: RequestsData): Set<string> {
@@ -164,7 +171,7 @@
 		<div class="card-title">
 			Users <span class="per-hour">/ hour</span>
 		</div>
-		{#if usersPerHour}
+		{#if usersPerHour !== undefined}
 			<div class="value">
 				{usersPerHour === 0 ? '0' : usersPerHour.toFixed(2)}
 			</div>
