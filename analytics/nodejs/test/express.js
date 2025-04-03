@@ -10,9 +10,9 @@ const app = express();
 app.use(expressAnalytics(apiKey));
 
 app.get("/", (req, res) => {
-  res.send({ message: "Hello World" });
+	res.send({ message: "Hello World" });
 });
 
 app.listen(8080, () => {
-  console.log(`Server listening at http://localhost:8080`);
+	console.log(`Server listening at http://localhost:8080`);
 });
