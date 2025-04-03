@@ -11,3 +11,4 @@ main*
 dist
 *.exe
 *.mmdb
+dashboard-kit

@@ -67,8 +67,8 @@ func TestNewClient(t *testing.T) {
 		t.Fatalf("Expected client to be initialized, got nil")
 	}
 
-	if client.endpointURL != defaultServerURL+"api/log-request" {
-		t.Errorf("Expected endpointURL to be '%s', got '%s'", defaultServerURL+"api/log-request", client.endpointURL)
+	if client.endpointURL != DefaultServerURL+"api/log-request" {
+		t.Errorf("Expected endpointURL to be '%s', got '%s'", DefaultServerURL+"api/log-request", client.endpointURL)
 	}
 }
 
