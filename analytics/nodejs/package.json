@@ -23,7 +23,8 @@
     "dashboard",
     "express",
     "fastify",
-    "koa"
+    "koa",
+    "hono"
   ],
   "author": "Tom Draper",
   "license": "ISC",
