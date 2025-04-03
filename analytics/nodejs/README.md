@@ -117,14 +117,14 @@ print(response.json())
 
 ```js
 fetch("https://apianalytics-server.com/api/data", {
-  headers: { "X-AUTH-TOKEN": <API-KEY> },
+    headers: { "X-AUTH-TOKEN": <API-KEY> },
 })
-  .then((response) => {
-    return response.json();
-  })
-  .then((data) => {
-    console.log(data);
-  });
+    .then((response) => {
+        return response.json();
+    })
+    .then((data) => {
+        console.log(data);
+    });
 ```
 
 ##### cURL
@@ -167,10 +167,10 @@ const app = express();
 
 const config = new Config();
 config.getIPAddress = (req) => {
-  return req.headers["X-Forwarded-For"];
+    return req.headers["X-Forwarded-For"];
 }
 config.getUserAgent = (req) => {
-  return req.headers["User-Agent"];
+    return req.headers["User-Agent"];
 }
 app.use(expressAnalytics(<API-KEY>, config));  // Add middleware
 ```
@@ -185,10 +185,10 @@ const fastify = Fastify();
 
 const config = new Config();
 config.getIPAddress = (req) => {
-  return req.headers["X-Forwarded-For"];
+    return req.headers["X-Forwarded-For"];
 }
 config.getUserAgent = (req) => {
-  return req.headers["User-Agent"];
+    return req.headers["User-Agent"];
 }
 fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>, config));  // Add middleware
 ```
@@ -203,12 +203,30 @@ const app = new Koa();
 
 const config = new Config();
 config.getIPAddress = (req) => {
-  return req.headers["X-Forwarded-For"];
+    return req.headers["X-Forwarded-For"];
 }
 config.getUserAgent = (req) => {
-  return req.headers["User-Agent"];
+    return req.headers["User-Agent"];
 }
 app.use(koaAnalytics(<API-KEY>, config));  // Add middleware
+```
+
+### Hono
+
+```js
+import { Hono } from "hono";
+import { honoAnalytics, Config } from "node-api-analytics";
+
+const app = new Hono();
+
+const config = new Config();
+config.getIPAddress = (req) => {
+    return req.headers["X-Forwarded-For"];
+}
+config.getUserAgent = (req) => {
+    return req.headers["User-Agent"];
+}
+app.use(honoAnalytics(<API-KEY>, config));  // Add middleware
 ```
 
 ## Client ID and Privacy
@@ -233,7 +251,7 @@ With any of these privacy levels, there is the option to define a custom user ID
 ```js
 const config = new Config();
 config.getUserID = (req) => {
-  return req.headers["X-AUTH-TOKEN"] ?? '';
+    return req.headers["X-AUTH-TOKEN"] ?? '';
 }
 ```
 
