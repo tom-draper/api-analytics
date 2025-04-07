@@ -16,6 +16,7 @@
 
 <style scoped>
 	.notification {
+		font-size: 14px;
 		position: fixed;
 		/* right: 2em; */
 		bottom: 0;
