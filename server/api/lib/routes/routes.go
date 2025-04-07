@@ -151,10 +151,8 @@ func getRequestsHandler() gin.HandlerFunc {
 
 		requests := [][10]any{}
 		userAgentIDs := make(map[int]struct{})
-		var currentPage int
-		if targetPage == 0 {
-			currentPage = 1
-		} else {
+		currentPage := 1
+		if targetPage != 0 {
 			currentPage = targetPage
 		}
 
