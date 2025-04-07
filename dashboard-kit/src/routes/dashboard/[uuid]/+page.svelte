@@ -276,6 +276,46 @@
 		if (period) {
 			settings.period = periodParamToPeriod(period);
 		}
+		const hostname = $page.url.searchParams.get('hostname');
+		if (hostname) {
+			settings.hostname = hostname;
+		}
+		const location = $page.url.searchParams.get('location');
+		if (location) {
+			settings.targetLocation = location;
+		}
+		const path = $page.url.searchParams.get('path');
+		if (path) {
+			settings.targetEndpoint.path = path;
+		}
+		const status = $page.url.searchParams.get('status');
+		if (status) {
+			settings.targetEndpoint.status = parseInt(status);
+		}
+		const userID = $page.url.searchParams.get('userID');
+		if (userID) {
+			if (settings.targetUser === null) {
+				settings.targetUser = {
+					ipAddress: '',
+					userID: '',
+					composite: false
+				};
+			}
+			settings.targetUser.userID = userID;
+		}
+
+		const ipAddress = $page.url.searchParams.get('ipAddress');
+		if (ipAddress) {
+			if (settings.targetUser === null) {
+				settings.targetUser = {
+					ipAddress: '',
+					userID: '',
+					composite: false
+				};
+			}
+			settings.targetUser.ipAddress = ipAddress;
+		}
+
 		return settings;
 	}
 
