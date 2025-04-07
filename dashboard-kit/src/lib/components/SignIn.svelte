@@ -23,7 +23,7 @@
 
 			if (response.status === 200) {
 				const userID = await response.json();
-				window.location.href = formatPath(`/${page}/${userID.replaceAll('-', '')}`, params);
+				window.location.href = formatPath(`/${type}/${userID.replaceAll('-', '')}`, params);
 			}
 		} catch (e) {
 			console.log(e);

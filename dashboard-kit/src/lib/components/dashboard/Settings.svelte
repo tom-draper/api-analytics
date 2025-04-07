@@ -39,7 +39,7 @@
 	<div class="container" on:click={handleClick}>
 		<h2 class="title">Settings</h2>
 		<div class="disable404 setting mb-2">
-			<div class="setting-label">Hide 404</div>
+			<div class="setting-label">Ignore status 404</div>
 			<input
 				type="checkbox"
 				name="disable404"
