@@ -8,7 +8,7 @@ type FrameworkExamples = {
 
 const frameworkExamples: FrameworkExamples = {
 	Django: {
-		install: 'pip install api-analytics',
+		install: 'pip install api-analytics[django]',
 		codeFile: 'settings.py',
 		example: `ANALYTICS_API_KEY = <API-KEY>
 
@@ -18,7 +18,7 @@ MIDDLEWARE = [
 ]`,
 	},
 	Flask: {
-		install: 'pip install api-analytics',
+		install: 'pip install api-analytics[flask]',
 		example: `from flask import Flask
 from api_analytics.flask import add_middleware
 
@@ -33,8 +33,8 @@ if __name__ == '__main__':
     app.run()`,
 	},
 	FastAPI: {
-		install: 'pip install fastapi-analytics',
-		example: `import uvicorn
+		install: 'pip install api-analytics[fastapi]',
+	    example: `import uvicorn
 from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
 
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     uvicorn.run('app:app', reload=True)`,
 	},
 	Tornado: {
-		install: 'pip install tornado-analytics',
+		install: 'pip install api-analytics[tornado]',
 		example: `import asyncio
 from tornado.web import Application
 from api_analytics.tornado import Analytics
@@ -112,7 +112,7 @@ fastify.listen({ port: 8080 }, function (err, address) {
 	},
 	Koa: {
 		install: 'npm install node-api-analytics',
-		example: `import Koa from "koa";
+		example: `import Koa from 'koa';
 import { koaAnalytics } from 'node-api-analytics';
 
 const app = new Koa();
@@ -139,17 +139,19 @@ import(
 )
 
 func root(c * gin.Context) {
-    jsonData:= []byte(\`{"message": "Hello, World!"}\`)
-    c.Data(http.StatusOK, "application/json", jsonData)
+    data := map[string]string{
+        "message": "Hello, World!",
+    }
+    c.JSON(http.StatusOK, data)
 }
 
 func main() {
-    router := gin.Default()
+    r := gin.Default()
     
-    router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
+    r.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
-    router.GET("/", root)
-    router.Run(":8080")
+    r.GET("/", root)
+    r.Run(":8080")
 }`,
 	},
 	Echo: {
@@ -164,17 +166,19 @@ import (
 )
 
 func root(c echo.Context) error {
-    jsonData := []byte(\`{"message": "Hello, World!"}\`)
-    return c.JSON(http.StatusOK, jsonData)
+    data := map[string]string{
+        "message": "Hello, World!",
+    }
+    return c.JSON(http.StatusOK, data)
 }
 
 func main() {
-    router := echo.New()
+    e := echo.New()
 
-    router.Use(analytics.Analytics(<API-KEY>))
+    e.Use(analytics.Analytics(<API-KEY>))
 
-    router.GET("/", root)
-    router.Start(":8080")
+    e.GET("/", root)
+    e.Start(":8080")
 }`,
 	},
 	Fiber: {
@@ -188,8 +192,10 @@ import (
 )
 
 func root(c *fiber.Ctx) error {
-    jsonData := []byte(\`{"message": "Hello, World!"}\`)
-    return c.SendString(string(jsonData))
+    data := map[string]string{
+        "message": "Hello, World!",
+    }
+    return c.JSON(data)
 }
 
 func main() {
@@ -213,19 +219,26 @@ import (
 )
 
 func root(w http.ResponseWriter, r *http.Request) {
+    data := map[string]string{
+        "message": "Hello, World!",
+    }
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusOK)
-    jsonData := []byte(\`{"message": "Hello, World!"}\`)
-    w.Write(jsonData)
+
+    err := json.NewEncoder(w).Encode(data)
+    if err != nil {
+        http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
+        return
+    }
 }
 
 func main() {
-    router := chi.NewRouter()
+    r := chi.NewRouter()
 
-    router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
+    r.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
-    router.GET("/", root)
-    router.Run(":8080")
+    r.GET("/", root)
+    r.Run(":8080")
 }`,
 	},
 	Actix: {

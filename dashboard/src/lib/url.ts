@@ -1,8 +1,9 @@
-import { SERVER_URL } from './consts';
+import { serverURL } from './consts';
+import { page } from '$app/state'
 
 function getSourceURL() {
-	const url = new URL(window.location.href);
-	const source = url.searchParams.get('source');
+	const params = page.url.searchParams;
+	const source = params.get('source');
 	if (source === '' || source === null) {
 		return null;
 	}
@@ -25,5 +26,5 @@ function cleanURL(url: string) {
 }
 
 export function getServerURL() {
-	return getSourceURL() ?? getEnvSourceURL() ?? SERVER_URL;
+	return getSourceURL() ?? getEnvSourceURL() ?? serverURL;
 }

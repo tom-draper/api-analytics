@@ -1,6 +1,4 @@
-**/.git
-**/.svn
-**/.hg
-**/node_modules
-public/prism.js
-.gitignore
+# Package Managers
+package-lock.json
+pnpm-lock.yaml
+yarn.lock

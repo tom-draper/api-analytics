@@ -1,4 +1,15 @@
-import type { Period } from './settings';
+export type Period =
+	| '24 hours'
+	| 'Week'
+	| 'Month'
+	| '3 months'
+	| '6 months'
+	| 'Year'
+	| 'All time';
+
+export type MonitorPeriod = '24h' | '7d' | '30d' | '60d'
+
+export const defaultPeriod: Period = 'Week';
 
 export function periodToDays(period: Period): number | null {
 	switch (period) {
@@ -19,7 +30,7 @@ export function periodToDays(period: Period): number | null {
 	}
 }
 
-export function periodToMarkers(period: string): number | null {
+export function periodToMarkers(period: MonitorPeriod): number | null {
 	switch (period) {
 		case '24h':
 			return 38;
@@ -38,6 +49,9 @@ export function dateInPeriod(date: Date, period: Period) {
 		return true;
 	}
 	const days = periodToDays(period);
+	if (days === null) {
+		return true;
+	}
 	const periodAgo = new Date();
 	periodAgo.setDate(periodAgo.getDate() - days);
 	return date > periodAgo;
@@ -48,6 +62,9 @@ export function dateInPrevPeriod(date: Date, period: Period) {
 		return true;
 	}
 	const days = periodToDays(period);
+	if (days === null) {
+		return true;
+	}
 	const startPeriodAgo = new Date();
 	startPeriodAgo.setDate(startPeriodAgo.getDate() - days * 2);
 	const endPeriodAgo = new Date();

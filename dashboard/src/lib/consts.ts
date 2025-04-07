@@ -1,4 +1,6 @@
-export const SERVER_URL: string = 'https://www.apianalytics-server.com';
+export const serverURL = 'https://www.apianalytics-server.com';
+
+export const pageSize = 200_000;
 
 export const columns = [
 	'ip_address',
@@ -35,4 +37,17 @@ export const graphColors = [
 	'#F9968B', // Salmon
 	'#B1A2CA', // Purple
 	'#E46161', // Red
+];
+
+// Integer to method string mapping used by server
+export const methodMap = [
+	'GET',
+	'POST',
+	'PUT',
+	'PATCH',
+	'DELETE',
+	'OPTIONS',
+	'CONNECT',
+	'HEAD',
+	'TRACE',
 ];
