@@ -161,7 +161,7 @@ func main() {
 
 import (
     "net/http"
-    echo "github.com/labstack/echo/v4"
+    "github.com/labstack/echo/v4"
     analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
 )
 
@@ -213,8 +213,9 @@ func main() {
 		example: `package main
 
 import (
+    "encoding/json"
     "net/http"
-    "github.com/go-chi/chi/v5"
+    chi "github.com/go-chi/chi/v5"
     analytics "github.com/tom-draper/api-analytics/analytics/go/chi"
 )
 
@@ -238,7 +239,7 @@ func main() {
     r.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
     r.GET("/", root)
-    r.Run(":8080")
+    http.ListenAndServe(":8080", r)
 }`,
 	},
 	Actix: {
