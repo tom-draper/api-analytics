@@ -167,8 +167,8 @@ export function expressAnalytics(apiKey, config = new Config()) {
 	const analytics = new Analytics(apiKey, "Express", config);
 	return (req, res, next) => {
 		const start = performance.now();
-		
-		res.on('finish', () => {
+
+		res.on("finish", () => {
 			const requestData = {
 				hostname: config.getHostname(req),
 				ip_address: getIPAddress(req, config),
@@ -183,7 +183,7 @@ export function expressAnalytics(apiKey, config = new Config()) {
 
 			analytics.logRequest(requestData);
 		});
-		
+
 		next();
 	};
 }

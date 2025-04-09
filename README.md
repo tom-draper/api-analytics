@@ -5,7 +5,7 @@ A free and lightweight API analytics solution, complete with a dashboard.
 Currently compatible with:
 
 - Python: <b>FastAPI</b>, <b>Flask</b>, <b>Django</b> and <b>Tornado</b>
-- Node.js: <b>Express</b>, <b>Fastify</b> and <b>Koa</b>
+- Node.js: <b>Express</b>, <b>Fastify</b>, <b>Koa</b> and <b>Hono</b>
 - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
 - Rust: <b>Actix</b>, <b>Axum</b> and <b>Rocket</b>
 - Ruby: <b>Rails</b> and <b>Sinatra</b>
@@ -163,15 +163,15 @@ const fastify = Fastify();
 useFastifyAnalytics(fastify, apiKey);
 
 fastify.get('/', function (request, reply) {
-  reply.send({ message: 'Hello World!' });
+    reply.send({ message: 'Hello World!' });
 })
 
 fastify.listen({ port: 8080 }, function (err, address) {
-  console.log('Server listening at https://localhost:8080');
-  if (err) {
-    fastify.log.error(err);
-    process.exit(1);
-  }
+    console.log('Server listening at https://localhost:8080');
+    if (err) {
+        fastify.log.error(err);
+        process.exit(1);
+    }
 })
 ```
 
@@ -192,12 +192,30 @@ const app = new Koa();
 app.use(koaAnalytics(<API-KEY>)); // Add middleware
 
 app.use((ctx) => {
-  ctx.body = { message: 'Hello, World!' };
+    ctx.body = { message: 'Hello, World!' };
 });
 
 app.listen(8080, () =>
-  console.log('Server listening at http://localhost:8080')
+    console.log('Server listening at http://localhost:8080')
 );
+```
+
+#### Hono
+
+```js
+import { Hono } from 'hono';
+import { serve } from '@hono/node-server';
+import { honoAnalytics } from 'node-api-analytics';
+
+const app = new Hono();
+
+app.use('*', honoAnalytics(<API-KEY>));
+
+app.get('/', (c) => c.text('Hello, world!'));
+
+serve(app, (info) => {
+	console.log(`Server running at http://localhost:${info.port}`);
+});
 ```
 
 #### Gin
@@ -217,18 +235,20 @@ import (
     analytics "github.com/tom-draper/api-analytics/analytics/go/gin"
 )
 
-func root(c *gin.Context) {
-    jsonData := []byte(`{"message": "Hello, World!"}`)
-    c.Data(http.StatusOK, "application/json", jsonData)
+func root(c * gin.Context) {
+    data := map[string]string{
+        "message": "Hello, World!",
+    }
+    c.JSON(http.StatusOK, data)
 }
 
 func main() {
-    router := gin.Default()
+    r := gin.Default()
     
-    router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
+    r.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
-    router.GET("/", root)
-    router.Run(":8080")
+    r.GET("/", root)
+    r.Run(":8080")
 }
 ```
 
@@ -251,19 +271,19 @@ import (
 )
 
 func root(c echo.Context) error {
-    jsonData := []byte(`{"message": "Hello, World!"}`)
-    return c.JSON(http.StatusOK, jsonData)
+    data := map[string]string{
+        "message": "Hello, World!",
+    }
+    return c.JSON(http.StatusOK, data)
 }
 
 func main() {
-    apiKey := getAPIKey()
+    e := echo.New()
 
-    router := echo.New()
+    e.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
-    router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
-
-    router.GET("/", root)
-    router.Start(":8080")
+    e.GET("/", root)
+    e.Start(":8080")
 }
 ```
 
@@ -284,8 +304,10 @@ import (
 )
 
 func root(c *fiber.Ctx) error {
-    jsonData := []byte(`{"message": "Hello, World!"}`)
-    return c.SendString(string(jsonData))
+    data := map[string]string{
+        "message": "Hello, World!",
+    }
+    return c.JSON(data)
 }
 
 func main() {
@@ -316,19 +338,26 @@ import (
 )
 
 func root(w http.ResponseWriter, r *http.Request) {
+    data := map[string]string{
+        "message": "Hello, World!",
+    }
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusOK)
-    jsonData := []byte(`{"message": "Hello, World!"}`)
-    w.Write(jsonData)
+
+    err := json.NewEncoder(w).Encode(data)
+    if err != nil {
+        http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
+        return
+    }
 }
 
 func main() {
-    router := chi.NewRouter()
+    r := chi.NewRouter()
 
-    router.Use(analytics.Analytics(<API-KEY>)) // Add middleware
+    r.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
-    router.GET("/", root)
-    router.Run(":8080")
+    r.GET("/", root)
+    r.Run(":8080")
 }
 ```
 
@@ -548,7 +577,7 @@ Raw logged request data can be fetched from the data API. Simply send a GET requ
 import requests
 
 headers = {
- "X-AUTH-TOKEN": <API-KEY>
+    "X-AUTH-TOKEN": <API-KEY>
 }
 
 response = requests.get("https://apianalytics-server.com/api/data", headers=headers)
@@ -559,14 +588,14 @@ print(response.json())
 
 ```js
 fetch("https://apianalytics-server.com/api/data", {
-  headers: { "X-AUTH-TOKEN": <API-KEY> },
+    headers: { "X-AUTH-TOKEN": <API-KEY> },
 })
-  .then((response) => {
-    return response.json();
-  })
-  .then((data) => {
-    console.log(data);
-  });
+    .then((response) => {
+        return response.json();
+    })
+    .then((data) => {
+        console.log(data);
+    });
 ```
 
 ##### cURL

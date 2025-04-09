@@ -20,18 +20,20 @@ func getAPIKey() string {
 	return apiKey
 }
 
-func root(c *gin.Context) {
-	jsonData := []byte(`{"message": "Hello World!"}`)
-	c.Data(http.StatusOK, "application/json", jsonData)
+func root(c * gin.Context) {
+    data := map[string]string{
+        "message": "Hello, World!",
+    }
+    c.JSON(http.StatusOK, data)
 }
 
 func main() {
 	apiKey := getAPIKey()
 
-	router := gin.Default()
+	r := gin.Default()
 
-	router.Use(analytics.Analytics(apiKey))
+	r.Use(analytics.Analytics(apiKey))
 
-	router.GET("/", root)
-	router.Run(":8080")
+	r.GET("/", root)
+	r.Run(":8080")
 }

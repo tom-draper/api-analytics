@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"os"
 
@@ -21,19 +22,26 @@ func getAPIKey() string {
 }
 
 func root(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	jsonData := []byte(`{"message": "Hello World!"}`)
-	w.Write(jsonData)
+    data := map[string]string{
+        "message": "Hello, World!",
+    }
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+
+    err := json.NewEncoder(w).Encode(data)
+    if err != nil {
+        http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
+        return
+    }
 }
 
 func main() {
 	apiKey := getAPIKey()
 
-	router := chi.NewRouter()
+	r := chi.NewRouter()
 
-	router.Use(analytics.Analytics(apiKey))
+	r.Use(analytics.Analytics(apiKey))
 
-	router.Get("/", root)
-	http.ListenAndServe(":8080", router)
+	r.Get("/", root)
+	http.ListenAndServe(":8080", r)
 }
