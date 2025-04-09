@@ -20,8 +20,10 @@ func getAPIKey() string {
 }
 
 func root(c *fiber.Ctx) error {
-	jsonData := []byte(`{"message": "Hello World!"}`)
-	return c.SendString(string(jsonData))
+    data := map[string]string{
+        "message": "Hello, World!",
+    }
+    return c.JSON(data)
 }
 
 func main() {

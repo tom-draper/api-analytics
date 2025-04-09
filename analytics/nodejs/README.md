@@ -6,11 +6,11 @@ A free and lightweight API analytics solution, complete with a dashboard.
 
 ### 1. Generate an API key
 
-Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It's also required in order to access your API analytics dashboard and data.
+Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It will be required when accessing your API analytics dashboard and logged data.
 
 ### 2. Add middleware to your API
 
-Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on the performance of your API.
+Add the lightweight middleware to your API. Almost all data processing is handled by the server so there is minimal impact on the performance of your API.
 
 [![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://www.npmjs.com/package/node-api-analytics)
 
@@ -48,15 +48,15 @@ const fastify = Fastify();
 useFastifyAnalytics(fastify, apiKey);
 
 fastify.get('/', function (request, reply) {
-  reply.send({ message: 'Hello World!' });
+    reply.send({ message: 'Hello World!' });
 })
 
 fastify.listen({ port: 8080 }, function (err, address) {
-  console.log('Server listening at https://localhost:8080');
-  if (err) {
-    fastify.log.error(err);
-    process.exit(1);
-  }
+    console.log('Server listening at https://localhost:8080');
+    if (err) {
+        fastify.log.error(err);
+        process.exit(1);
+    }
 })
 ```
 
@@ -71,22 +71,40 @@ const app = new Koa();
 app.use(koaAnalytics(<API-KEY>));  // Add middleware
 
 app.use((ctx) => {
-  ctx.body = { message: 'Hello World!' };
+    ctx.body = { message: 'Hello World!' };
 });
 
 app.listen(8080, () =>
-  console.log('Server listening at https://localhost:8080');
+    console.log('Server listening at https://localhost:8080');
 );
+```
+
+#### Hono
+
+```js
+import { Hono } from 'hono';
+import { serve } from '@hono/node-server';
+import { honoAnalytics } from 'node-api-analytics';
+
+const app = new Hono();
+
+app.use('*', honoAnalytics(<API-KEY>));
+
+app.get('/', (c) => c.text('Hello, world!'));
+
+serve(app, (info) => {
+	console.log(`Server running at http://localhost:${info.port}`);
+});
 ```
 
 ### 3. View your analytics
 
-Your API will now log and store incoming request data on all routes. Your logged data can be viewed using two methods:
+Your API will now log and store incoming request data on all routes. Logged data can be viewed using two methods:
 
 1. Through visualizations and statistics on the dashboard
 2. Accessed directly via the data API
 
-You can use the same API key across multiple APIs, but all of your data will appear in the same dashboard. We recommend generating a new API key for each additional API server you want analytics for.
+You can use the same API key across multiple APIs, but all requests will appear in the same dashboard. It's recommended to generate a new API key for each of your API servers.
 
 #### Dashboard
 
@@ -98,7 +116,7 @@ Demo: [apianalytics.dev/dashboard/demo](https://apianalytics.dev/dashboard/demo)
 
 #### Data API
 
-Logged data for all requests can be accessed via our REST API. Simply send a GET request to `https://apianalytics-server.com/api/data` with your API key set as `X-AUTH-TOKEN` in the headers.
+Raw logged request data can be fetched from the data API. Simply send a GET request to `https://apianalytics-server.com/api/data` with your API key set as `X-AUTH-TOKEN` in the headers.
 
 ##### Python
 
@@ -106,7 +124,7 @@ Logged data for all requests can be accessed via our REST API. Simply send a GET
 import requests
 
 headers = {
- "X-AUTH-TOKEN": <API-KEY>
+    "X-AUTH-TOKEN": <API-KEY>
 }
 
 response = requests.get("https://apianalytics-server.com/api/data", headers=headers)
@@ -138,14 +156,14 @@ curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 You can filter your data by providing URL parameters in your request.
 
 - `page` - the page number, with a max page size of 50,000 (defaults to 1)
-- `date` - the exact day the requests occurred on (`YYYY-MM-DD`)
+- `date` - the day the requests occurred on (`YYYY-MM-DD`)
 - `dateFrom` - a lower bound of a date range the requests occurred in (`YYYY-MM-DD`)
 - `dateTo` - a upper bound of a date range the requests occurred in (`YYYY-MM-DD`)
 - `hostname` - the hostname of your service
 - `ipAddress` - the IP address of the client
 - `status` - the status code of the response
 - `location` - a two-character location code of the client
-- `user_id` - a custom user identifier (only relevant if a `getUserID` mapper function has been set)
+- `user_id` - a custom user identifier (only relevant if a `getUserID` mapper function has been set within config)
 
 Example:
 
@@ -246,7 +264,7 @@ const config = new Config();
 config.privacyLevel = 2; // Disable IP storing and location inference
 ```
 
-With any of these privacy levels, there is the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user. In the dashboard, this custom user ID will identify the user in conjunction with the IP address or as an alternative.
+With any of these privacy levels, you have the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key held in the `X-AUTH-TOKEN` header field which is used to identify a user of your service. In the dashboard, this custom user ID will identify the user in conjunction with the IP address or as an alternative depending on the privacy level set.
 
 ```js
 const config = new Config();
@@ -257,35 +275,45 @@ config.getUserID = (req) => {
 
 ## Data and Security
 
-All data is stored securely in compliance with The EU General Data Protection Regulation (GDPR).
+All data is stored securely, and in compliance with The EU General Data Protection Regulation (GDPR).
 
-For any given request to your API, data recorded is limited to:
+For any given request to your API, data recorded is strictly limited to:
 
-- Path requested by client
-- Client IP address (optional)
-- Client operating system
-- Client browser
 - Request method (GET, POST, PUT, etc.)
-- Time of request
-- Status code
+- Endpoint requested
+- User agent
+- Client IP address (optional)
+- Timestamp of the request
+- Response status code
 - Response time
-- API hostname
-- API framework (Express, Fastify, Koa etc.)
+- Hostname of API
+- API framework in use (FastAPI, Flask, Express, etc.)
 
-Data collected is only ever used to populate your analytics dashboard. All stored data is pseudo-anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
+Data collected is only ever used to populate your analytics dashboard, and never shared with a third-party. All stored data is pseudo-anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
+
+View our full <a href="https://www.apianalytics.dev/privacy-policy">privacy policy</a> and <a href="https://www.apianalytics.dev/faq">frequently asked questions</a> on our website.
 
 ### Data Deletion
 
-At any time you can delete all stored data associated with your API key by going to [apianalytics.dev/delete](https://apianalytics.dev/delete) and entering your API key.
+At any time, you can delete all stored data associated with your API key by going to [apianalytics.dev/delete](https://apianalytics.dev/delete) and entering your API key.
 
-API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity.
+API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity, or 3 months have elapsed without logging a request.
 
 ## Monitoring
 
-Active API monitoring can be set up by heading to [apianalytics.dev/monitoring](https://apianalytics.dev/monitoring) to enter your API key. Our servers will regularly ping chosen API endpoints to monitor uptime and response time. 
-<!-- Optional email alerts when your endpoints are down can be subscribed to. -->
+Active API monitoring can be set up by heading to [apianalytics.dev/monitoring](https://apianalytics.dev/monitoring) to enter your API key. Our servers will regularly ping chosen endpoints to monitor uptime and response time. 
 
 ![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)
+
+## Limitations
+
+In order to keep the service free, up to 1.5 million requests can be stored against an API key. This is enforced as a rolling limit; old requests will be replaced by new requests. If your API would rapidly exceed this limit, we recommend you try other solutions or check out [self-hosting](./server/self-hosting/README.md).
+
+## Self-Hosting
+
+The project can be self-hosted by following the [guide](./server/self-hosting/README.md).
+
+Please note: Self-hosting is still undergoing testing, development and further improvements to make it as easy as possible to deploy. It is currently recommended that you avoid self-hosting for production use.
 
 ## Contributions
 

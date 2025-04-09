@@ -21,17 +21,19 @@ func getAPIKey() string {
 }
 
 func root(c echo.Context) error {
-	jsonData := []byte(`{"message": "Hello World!"}`)
-	return c.JSONBlob(http.StatusOK, jsonData)
+    data := map[string]string{
+        "message": "Hello, World!",
+    }
+    return c.JSON(http.StatusOK, data)
 }
 
 func main() {
 	apiKey := getAPIKey()
 
-	router := echo.New()
+	e := echo.New()
 
-	router.Use(analytics.Analytics(apiKey))
+	e.Use(analytics.Analytics(apiKey))
 
-	router.GET("/", root)
-	router.Start(":8080")
+	e.GET("/", root)
+	e.Start(":8080")
 }
