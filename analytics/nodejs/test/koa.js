@@ -10,9 +10,9 @@ const app = new Koa();
 app.use(koaAnalytics(apiKey));
 
 app.use((ctx) => {
-  ctx.body = { message: "Hello World!" };
+	ctx.body = { message: "Hello World!" };
 });
 
 app.listen(8080, () =>
-  console.log("Server listening at http://localhost:8080")
+	console.log("Server listening at http://localhost:8080")
 );
