@@ -202,6 +202,12 @@ app.listen(8080, () =>
 
 #### Hono
 
+[![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://www.npmjs.com/package/node-api-analytics)
+
+```bash
+npm install node-api-analytics
+```
+
 ```js
 import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
