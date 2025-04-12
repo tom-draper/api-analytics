@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="350" height="190">
+  <line x1="50" y1="160" x2="130" y2="60" stroke="rgb(26, 240, 115)" stroke-width="18"/>
+  <line x1="130" y1="60" x2="220" y2="130" stroke="rgb(26, 240, 115)" stroke-width="18"/>
+  <line x1="220" y1="130" x2="300" y2="30" stroke="rgb(26, 240, 115)" stroke-width="18"/>
+  <g>
+    <circle cx="50" cy="160" r="20" fill="rgb(26, 240, 115)"/>
+    <circle cx="50" cy="160" r="12" fill="currentColor"/>
+  </g>
+  <g>
+    <circle cx="130" cy="60" r="20" fill="rgb(26, 240, 115)"/>
+    <circle cx="130" cy="60" r="12" fill="currentColor"/>
+  </g>
+  <g>
+    <circle cx="220" cy="130" r="20" fill="rgb(26, 240, 115)"/>
+    <circle cx="220" cy="130" r="12" fill="currentColor"/>
+  </g>
+  <g>
+    <circle cx="300" cy="30" r="20" fill="rgb(26, 240, 115)"/>
+    <circle cx="300" cy="30" r="12" fill="currentColor"/>
+  </g>
+</svg>

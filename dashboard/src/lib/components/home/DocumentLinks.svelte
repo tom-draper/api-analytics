@@ -1,4 +1,4 @@
-<div class="docs m-auto flex w-fit pb-16">
+<div class="docs m-auto flex w-fit pb-16 pt-4">
 	<div class="doc-link-container">
 		<a class="doc-link" href="/faq">FAQ</a>
 	</div>

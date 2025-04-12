@@ -248,7 +248,6 @@
 	}
 	.add-middleware {
 		margin: auto;
-		padding-bottom: 2em;
 		border-radius: 6px;
 		margin-top: -480px;
 		z-index: 2;

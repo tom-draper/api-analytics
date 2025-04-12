@@ -3,6 +3,7 @@
 	import Highlight from '$components/home/Highlight.svelte';
 	import GettingStarted from '$components/home/GettingStarted.svelte';
 	import DocLinks from '$components/home/DocumentLinks.svelte';
+	import NginxAnalytics from '$components/home/NginxAnalytics.svelte';
 	import { page } from '$app/state';
 	import { formatPath } from '$lib/path';
 	// import Pricing from '$components/home/Pricing.svelte';
@@ -33,5 +34,6 @@
 	/>
 	<!-- <Pricing /> -->
 	<GettingStarted />
+	<NginxAnalytics />
 	<DocLinks />
 </div>
