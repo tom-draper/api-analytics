@@ -373,7 +373,6 @@
 	}
 
 	.highlighted-row td {
-		/* color: var(--highlight) !important; */
 		color: #ededed !important;
 	}
 

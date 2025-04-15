@@ -25,8 +25,8 @@ const faq = [
         showing: false,
     },
     {
-        question: 'How do you comply with GDPR?',
-        answer: 'We adhere to GDPR regulations and requirements. All data is stored securely on London-based servers. Our privacy policy can be found <a href="https://www.apianalytics.dev/privacy-policy">here</a>.',
+        question: 'Do you comply with GDPR?',
+        answer: 'We adhere to GDPR regulations and requirements. All data is stored securely on London-based servers. Data is retained only for the duration necessary to deliver this service and is used solely for that purpose. You may delete your stored data at any time. It is never shared with or sold to any other third parties. Our privacy policy can be found <a href="https://www.apianalytics.dev/privacy-policy">here</a>.',
         showing: false,
     },
     {

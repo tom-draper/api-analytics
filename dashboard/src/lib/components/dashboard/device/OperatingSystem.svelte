@@ -77,7 +77,7 @@
 		return {
 			title: false,
 			autosize: true,
-			margin: { r: 30, l: 30, t: 10, b: 20, pad: 0 },
+			margin: { r: 30, l: 30, t: 25, b: 20, pad: 0 },
 			hovermode: 'closest',
 			plot_bgcolor: 'transparent',
 			paper_bgcolor: 'transparent',

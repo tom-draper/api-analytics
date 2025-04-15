@@ -196,7 +196,7 @@ app.use((ctx) => {
 });
 
 app.listen(8080, () =>
-    console.log('Server listening at http://localhost:8080')
+    console.log('Server listening at http://localhost:8080');
 );
 ```
 
@@ -220,7 +220,7 @@ app.use('*', honoAnalytics(<API-KEY>));
 app.get('/', (c) => c.text('Hello, world!'));
 
 serve(app, (info) => {
-	console.log(`Server running at http://localhost:${info.port}`);
+	console.log(`Server listening at http://localhost:${info.port}`);
 });
 ```
 

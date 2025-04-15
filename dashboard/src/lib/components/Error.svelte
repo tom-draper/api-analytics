@@ -95,8 +95,6 @@
 	}
 
 	.message-container {
-		/* background: radial-gradient(circle closest-corner at center 125px, #222, transparent 20%) no-repeat; */
-		/* background: radial-gradient(circle closest-corner at center 125px, black, transparent 20%) no-repeat; */
 		text-align: center;
 	}
 	.message {
@@ -111,17 +109,14 @@
 		-webkit-background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
-		/* margin-bottom: 6em; */
 		filter: saturate(1.3);
 	}
 	.message-no-requests {
-		/* background: radial-gradient(circle farthest-corner at center center, var(--highlight), #333) no-repeat; */
 		background: radial-gradient(circle farthest-corner at center center, var(--highlight), #111)
 			no-repeat;
 		background-clip: text;
 	}
 	.message-error {
-		/* background: radial-gradient(circle farthest-corner at center center, var(--red), #333) no-repeat; */
 		background: radial-gradient(circle farthest-corner at center center, var(--red), #111) no-repeat;
 		background-clip: text;
 	}

@@ -272,6 +272,7 @@ func logRequestHandler() gin.HandlerFunc {
 		"Sinatra":      15,
 		"Rocket":       16,
 		"ASP.NET Core": 17,
+		"Hono": 18,
 	}
 
 	return func(c *gin.Context) {

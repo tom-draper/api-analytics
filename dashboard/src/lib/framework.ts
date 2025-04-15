@@ -124,8 +124,24 @@ app.use((ctx) => {
 });
 
 app.listen(8080, () =>
-    console.log('Server listening at https://localhost:8080')
-); `,
+    console.log('Server listening at http://localhost:8080');
+);`,
+	},
+	Hono: {
+		install: 'npm install node-api-analytics',
+		example: `import { Hono } from 'hono';
+import { serve } from '@hono/node-server';
+import { honoAnalytics } from 'node-api-analytics';
+
+const app = new Hono();
+
+app.use('*', honoAnalytics(<API-KEY>));
+
+app.get('/', (c) => c.text('Hello, world!'));
+
+serve(app, (info) => {
+	console.log('Server listening at http://localhost:' + info.port);
+});`,
 	},
 	Gin: {
 		install:

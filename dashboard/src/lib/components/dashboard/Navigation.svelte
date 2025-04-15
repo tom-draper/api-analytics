@@ -9,10 +9,8 @@
 
 	const timePeriods: Period[] = ['24 hours', 'Week', 'Month', '6 months', 'Year', 'All time'];
 
-	const userID = formatUUID($page.params.uuid);
-
 	function setPeriodParam(period: Period) {
-		p.url.searchParams.set('period', period.toLocaleLowerCase().replace(' ', ''))
+		p.url.searchParams.set('period', period.toLocaleLowerCase().replace(' ', '-'))
 		replaceState(p.url, p.state)
 	}
 
@@ -96,31 +94,6 @@
 		margin: 2.5em 2rem 0;
 		display: flex;
 	}
-	.info {
-		background: var(--background);
-		padding: 2px 12px;
-		color: var(--dim-text);
-		cursor: pointer;
-		border: 1px solid #2e2e2e;
-		border-radius: 4px;
-		font-weight: 400;
-	}
-	.info-content {
-		display: flex;
-		align-items: center;
-		cursor: pointer;
-	}
-	.info-content > svg {
-		margin-left: 0.6em;
-		width: 16px;
-		transition: transform 0.15s ease;
-	}
-	.info:hover .info-content > svg {
-		transform: translateX(2px);
-	}
-	.info:hover {
-		background: #161616;
-	}
 	.time-period {
 		display: flex;
 		border: 1px solid #2e2e2e;
@@ -201,9 +174,6 @@
 	@media screen and (max-width: 1300px) {
 		.button-nav {
 			margin: 2.5em 3rem 0;
-		}
-		.info {
-			display: none;
 		}
 	}
 

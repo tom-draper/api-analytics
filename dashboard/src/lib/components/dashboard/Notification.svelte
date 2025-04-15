@@ -18,13 +18,11 @@
 	.notification {
 		font-size: 14px;
 		position: fixed;
-		/* right: 2em; */
 		bottom: 0;
 		display: grid;
 		place-items: center;
 		z-index:100;
 		padding: 0.3em 2em;
-		/* border-radius: 6px; */
 		width: 100%;
 		opacity: 0;
 		transition: opacity 0.2s linear;

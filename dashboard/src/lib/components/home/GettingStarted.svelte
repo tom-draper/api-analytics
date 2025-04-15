@@ -11,6 +11,7 @@
 		| 'Express'
 		| 'Fastify'
 		| 'Koa'
+		| 'Hono'
 		| 'Gin'
 		| 'Echo'
 		| 'Fiber'
@@ -36,6 +37,7 @@
 		{ language: 'javascript', framework: 'Express' },
 		{ language: 'javascript', framework: 'Fastify' },
 		{ language: 'javascript', framework: 'Koa' },
+		{ language: 'javascript', framework: 'Hono' },
 		{ language: 'go', framework: 'Gin' },
 		{ language: 'go', framework: 'Echo' },
 		{ language: 'go', framework: 'Fiber' },
