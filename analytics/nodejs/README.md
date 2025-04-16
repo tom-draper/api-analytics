@@ -93,7 +93,7 @@ app.use('*', honoAnalytics(<API-KEY>));
 app.get('/', (c) => c.text('Hello, world!'));
 
 serve(app, (info) => {
-	console.log(`Server running at http://localhost:${info.port}`);
+    console.log(`Server running at http://localhost:${info.port}`);
 });
 ```
 
