@@ -220,7 +220,7 @@ app.use('*', honoAnalytics(<API-KEY>));
 app.get('/', (c) => c.text('Hello, world!'));
 
 serve(app, (info) => {
-	console.log(`Server listening at http://localhost:${info.port}`);
+    console.log(`Server listening at http://localhost:${info.port}`);
 });
 ```
 
