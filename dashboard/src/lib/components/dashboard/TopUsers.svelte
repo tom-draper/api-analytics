@@ -258,7 +258,7 @@
 	const pageSize = 10;
 	const maxPages = 100;
 
-	$: if (data && !targetUser) {
+	$: if (data) {
 		build(data);
 	}
 
@@ -271,7 +271,7 @@
 	export let data: RequestsData, targetUser: TargetUser | null;
 </script>
 
-{#if dataPage}
+{#if dataPage !== null}
 	<div class="card">
 		<h2 class="card-title">Top Users</h2>
 		<div class="table-container">

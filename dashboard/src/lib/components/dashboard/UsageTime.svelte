@@ -22,7 +22,6 @@
 		for (let i = 0; i < data.length; i++) {
 			const date = data[i][ColumnIndex.CreatedAt];
 			const time = date.getHours();
-			// @ts-ignore
 			responseTimes[time]++;
 		}
 

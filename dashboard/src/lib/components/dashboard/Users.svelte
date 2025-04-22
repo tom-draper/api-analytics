@@ -32,10 +32,7 @@
 	function lines(data: RequestsData) {
 		const n = 5;
 		const x = [...Array(n).keys()];
-		const uniqueUsers: Set<string>[] = Array(n);
-		for (let i = 0; i < n; i++) {
-			uniqueUsers[i] = new Set();
-		}
+		const uniqueUsers: Set<string>[] = Array.from({ length: n }, () => new Set<string>());
 
 		if (data.length > 0) {
 			const start = data[0][ColumnIndex.CreatedAt].getTime();
@@ -48,6 +45,8 @@
 				if (!userID) continue;
 
 				const time = row[ColumnIndex.CreatedAt].getTime();
+				if (time < start) continue;
+
 				const idx = Math.min(n - 1, Math.floor((time - start) / interval));
 
 				uniqueUsers[idx].add(userID);

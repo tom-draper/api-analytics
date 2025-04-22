@@ -1,21 +1,18 @@
 <script lang="ts">
-	import Lightning from "$components/Lightning.svelte";
+	import Lightning from '$components/Lightning.svelte';
+	import Loading from '$components/Loading.svelte';
 
 	export let loading: boolean;
 </script>
 
 <div class="card">
-	{#if loading}
-		<div class="placeholder">
-			<div class="spinner">
-				<div class="loader" ></div>
-			</div>
-		</div>
-	{:else}
-		<div class="lightning">
+	<div class="lightning">
+		{#if loading}
+			<Loading />
+		{:else}
 			<Lightning />
-		</div>
-	{/if}
+		{/if}
+	</div>
 </div>
 
 <style scoped>
@@ -28,14 +25,8 @@
 	}
 	.lightning {
 		width: 25px;
+		height: 44px;
 		color: var(--highlight);
-	}
-	.spinner {
-		height: auto !important;
-	}
-	.loader {
-		height: 36px !important;
-		width: 36px !important;
 	}
 	@media screen and (max-width: 1030px) {
 		.card {

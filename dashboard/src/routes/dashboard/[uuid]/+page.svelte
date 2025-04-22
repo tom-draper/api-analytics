@@ -30,8 +30,41 @@
 	import Health from '$components/dashboard/health/Health.svelte';
 	import { periodParamToPeriod } from '$lib/params';
 	import Referrer from '$components/dashboard/Referrer.svelte';
+	import Loading from '$components/Loading.svelte';
+	import { get } from 'svelte/store';
 
 	const userID = formatUUID($page.params.uuid);
+
+	// Added loading message state
+	let loadingMessages = shuffleList([
+		'Loading dashboard...',
+		'Processing data...',
+		'Fetching analytics...',
+		'Crunching numbers...',
+		'Hang on tight...',
+		'Almost there...',
+		'Preparing insights...',
+		'Analyzing requests...',
+		'Visualizing data...',
+		'Building your dashboard...',
+		'Compiling results...',
+		'Running with scissors (carefully)...',
+		'Aligning the stars...',
+		'Summoning data spirits...',
+		'Double checking everything...',
+		'Connecting the dots...',
+		'Unlocking the insights...',
+		'Preparing for launch...',
+		'Mapping the trends...',
+	]);
+
+	function shuffleList(list: string[]) {
+		for (let i = list.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[list[i], list[j]] = [list[j], list[i]];
+		}
+		return list;
+	}
 
 	function getPeriodData(data: RequestsData, settings: DashboardSettings) {
 		const inRange = getInRange();
@@ -346,24 +379,25 @@
 	}
 
 	onMount(async () => {
-		dataStore.subscribe((value) => {
-			if (value) {
-				data = value;
-			}
-		});
+		const storeData = get(dataStore);
+		if (storeData && storeData.requests.length > 0) {
+			parseDates(storeData.requests);
+			sortByTime(storeData.requests);
+			data = storeData;
+			loading = false;
+		} else {
+			const dashboardData = await getDashboardData();
 
-		if (!data) {
-			data = await getDashboardData();
-
-			if (data.requests.length === pageSize) {
-				// Fetch page 2 and onwards if initial fetch didn't get all data
+			if (dashboardData.requests.length === pageSize) {
 				fetchAdditionalPages();
 			} else {
 				loading = false;
 			}
 
-			parseDates(data.requests);
-			sortByTime(data.requests);
+			parseDates(dashboardData.requests);
+			sortByTime(dashboardData.requests);
+			data = dashboardData;
+			dataStore.set(dashboardData); // Optional but ensures state is saved
 		}
 	});
 </script>
@@ -432,8 +466,16 @@
 	<Error status={fetchStatus.status} message={fetchStatus.message} />
 {:else}
 	<div class="placeholder">
-		<div class="spinner">
-			<div class="loader"></div>
+		<div class="spinner-container">
+			<!-- <div class="loader"></div> -->
+			<div class="w-[25px]">
+				<Loading />
+			</div>
+			<div class="loading-text-container">
+				{#each loadingMessages as message, i}
+					<div class="loading-text">{message}</div>
+				{/each}
+			</div>
 		</div>
 	</div>
 {/if}
@@ -464,15 +506,91 @@
 		flex-grow: 1;
 		margin-right: 2em;
 	}
+
 	.placeholder {
 		min-height: 80vh;
 		display: grid;
 		place-items: center;
+		text-align: center;
 	}
 
-	.loader {
-		width: 40px;
-		height: 40px;
+	.spinner-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 3.8rem;
+		width: 500px;
+	}
+
+	/* Multi-text animation container */
+	.loading-text-container {
+		position: relative;
+		height: 1.5em;
+		width: 100%;
+		text-align: center;
+		overflow: hidden;
+	}
+
+	/* Individual loading texts */
+	.loading-text {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		font-size: 14px;
+		color: #707070;
+		opacity: 0;
+		/* Ensure each text sits on its own GPU layer */
+		will-change: opacity;
+		transform: translateZ(0);
+		animation-timing-function: ease-in-out;
+	}
+	.loading-text:nth-child(1) {
+		animation: fadeText 28s infinite 0s;
+	}
+	.loading-text:nth-child(2) {
+		animation: fadeText 28s infinite 3.5s;
+	}
+	.loading-text:nth-child(3) {
+		animation: fadeText 28s infinite 7s;
+	}
+	.loading-text:nth-child(4) {
+		animation: fadeText 28s infinite 10.5s;
+	}
+	.loading-text:nth-child(5) {
+		animation: fadeText 28s infinite 14s;
+	}
+	.loading-text:nth-child(6) {
+		animation: fadeText 28s infinite 17.5s;
+	}
+	.loading-text:nth-child(7) {
+		animation: fadeText 28s infinite 21s;
+	}
+	.loading-text:nth-child(8) {
+		animation: fadeText 28s infinite 24.5s;
+	}
+
+	@keyframes fadeText {
+		0% {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		5% {
+			opacity: 1;
+			transform: translateY(0);
+		}
+		12.5% {
+			opacity: 1;
+			transform: translateY(0);
+		}
+		17.5% {
+			opacity: 0;
+			transform: translateY(-10px);
+		}
+		100% {
+			opacity: 0;
+			transform: translateY(-10px);
+		}
 	}
 
 	@keyframes gradient-shift {

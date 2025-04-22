@@ -1,13 +1,34 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import { page as p } from '$app/state';
 	import { replaceState } from '$app/navigation';
 	import type { DashboardSettings } from '$lib/settings';
-	import formatUUID from '$lib/uuid';
 	import Dropdown from './Dropdown.svelte';
 	import type { Period } from '$lib/period';
 
 	const timePeriods: Period[] = ['24 hours', 'Week', 'Month', '6 months', 'Year', 'All time'];
+
+	const donateMessages = [
+		'Donate',
+		'Support',
+		'Contribute',
+		'Contribute today',
+		'Support the project',
+		'Keep API Analytics running',
+		'Keep the project going',
+		'Keep the project alive',
+		'Donate to API Analytics',
+		'Support API Analytics',
+		'Give back',
+		'Keep API Analytics running: Contribute today',
+		'Support us',
+		'Buy us a coffee',
+		'Give us a tip',
+		'Make a donation',
+		'Support the development',
+		'Help with server costs',
+	]
+
+	const donateMessage = donateMessages[Math.floor(Math.random() * donateMessages.length)];
 
 	function setPeriodParam(period: Period) {
 		p.url.searchParams.set('period', period.toLocaleLowerCase().replace(' ', '-'))
@@ -54,7 +75,7 @@
 		</div>
 	</a> -->
 	<div class="donate">
-		<a target="_blank" href="https://www.buymeacoffee.com/tomdraper" class="donate-link">Donate</a>
+		<a target="_blank" href="https://www.buymeacoffee.com/tomdraper" class="donate-link">{donateMessage}</a>
 	</div>
 	<button
 		class="settings"
@@ -141,7 +162,7 @@
 		margin-left: auto;
 		display: grid;
 		place-items: center;
-		margin-right: 1em;
+		margin-right: 1rem;
 	}
 
 	.dropdown-container {
@@ -161,8 +182,8 @@
 		width: 20px;
 		height: 20px;
 		filter: contrast(0.45);
-		margin-top: 2px;
 		transition: 0.1s;
+		max-width: 20px;
 	}
 	.settings-icon:hover {
 		filter: contrast(0.01);
@@ -177,7 +198,7 @@
 		}
 	}
 
-	@media screen and (max-width: 820px) {
+	@media screen and (max-width: 900px) {
 		.button-nav {
 			flex-direction: column;
 		}
@@ -202,6 +223,7 @@
 		.donate {
 			display: none;
 		}
+
 	}
 	@media screen and (max-width: 660px) {
 		.time-period {

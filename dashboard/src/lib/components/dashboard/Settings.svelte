@@ -49,7 +49,7 @@
 			/>
 		</div>
 		<div class="disable404 setting mb-8">
-			<div class="setting-label">Ignore Params</div>
+			<div class="setting-label">Ignore URL params</div>
 			<input
 				type="checkbox"
 				name="ignoreParams"
