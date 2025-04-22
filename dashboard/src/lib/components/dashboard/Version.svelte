@@ -25,11 +25,11 @@
 		return {
 			title: false,
 			autosize: true,
-			margin: { r: 35, l: 70, t: 10, b: 20, pad: 0 },
+			margin: { r: 30, l: 30, t: 30, b: 25, pad: 0 },
 			hovermode: 'closest',
 			plot_bgcolor: 'transparent',
 			paper_bgcolor: 'transparent',
-			height: 180,
+			height: 196,
 			yaxis: {
 				title: { text: 'Requests' },
 				gridcolor: 'gray',
@@ -68,6 +68,7 @@
 				values: count,
 				labels: versions,
 				type: 'pie',
+				hole: 0.6,
 				marker: {
 					colors: graphColors,
 				},
@@ -101,17 +102,17 @@
 	let versions: Set<string>;
 	let plotDiv: HTMLDivElement;
 
-	$: if (plotDiv && data && endpointsRendered) {
+	$: if (plotDiv && data) {
 		build(data);
 	}
 
-	export let data: RequestsData, endpointsRendered: boolean;
+	export let data: RequestsData;
 </script>
 
-<div class="card" class:hidden={versions === undefined || versions.size <= 1}>
+<div class="card flex-1 pb-[1em]" class:hidden={versions === undefined || versions.size <= 1}>
 	<div class="card-title">Version</div>
 	<div id="plotly">
-		<div id="plotDiv" bind:this={plotDiv}>
+		<div id="plotDiv" class="mr-[20px]" bind:this={plotDiv}>
 			<!-- Plotly chart will be drawn inside this DIV -->
 		</div>
 	</div>
@@ -120,14 +121,14 @@
 <style scoped>
 	.card {
 		margin: 2em 0 2em 0;
-		padding-bottom: 1em;
+		/* padding-bottom: 1em; */
 		flex: 1;
 	}
 	.hidden {
 		display: none;
 	}
 	#plotDiv {
-		margin-right: 20px;
+		padding-right: 20px;
 	}
 	@media screen and (max-width: 1030px) {
 		.card {
