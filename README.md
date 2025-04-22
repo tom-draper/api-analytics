@@ -582,11 +582,9 @@ Raw logged request data can be fetched from the data API. Simply send a GET requ
 ```py
 import requests
 
-headers = {
+response = requests.get("https://apianalytics-server.com/api/data", headers={
     "X-AUTH-TOKEN": <API-KEY>
-}
-
-response = requests.get("https://apianalytics-server.com/api/data", headers=headers)
+})
 print(response.json())
 ```
 
@@ -690,11 +688,11 @@ View our full <a href="https://www.apianalytics.dev/privacy-policy">privacy poli
 
 At any time, you can delete all stored data associated with your API key by going to [apianalytics.dev/delete](https://apianalytics.dev/delete) and entering your API key.
 
-API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity, or 3 months have elapsed without logging a request.
+API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity, or if 3 months have elapsed without logging a request.
 
-## Monitoring
+## Active Monitoring
 
-Active API monitoring can be set up by heading to [apianalytics.dev/monitoring](https://apianalytics.dev/monitoring) to enter your API key. Our servers will regularly ping chosen endpoints to monitor uptime and response time. 
+Active endpoint monitoring can be set up by heading to [apianalytics.dev/monitoring](https://apianalytics.dev/monitoring) to enter your API key. Our servers will regularly ping chosen endpoints to monitor uptime and response time. 
 
 ![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)
 
