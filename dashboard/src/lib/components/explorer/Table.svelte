@@ -2,7 +2,7 @@
 	import { ColumnIndex, methodMap } from '$lib/consts';
 	import { statusBad, statusError, statusSuccess } from '$lib/status';
 
-	const pageSize = 32;
+	const pageSize = 18;
 	let pageNumber = 1;
 	let page: Page;
 
@@ -49,26 +49,26 @@
 	export let data: RequestsData;
 </script>
 
-<div class="min-h-[inherit]">
-	<table class="w-full text-left text-[0.75em] text-[var(--dim-text)]">
+<div class="min-h-[inherit] flex flex-col">
+	<table class="w-full text-left text-[14px] text-[var(--dim-text)] flex flex-col flex-1">
 		<thead>
-			<tr class="text-[var(--faint-text)]">
-				<th></th>
-				<th>Timestamp</th>
-				<th>Status</th>
-				<th>Hostname</th>
-				<th>Path</th>
-				<th>Method</th>
-				<th>IP Address</th>
-				<th>User ID</th>
-				<th>Response Time (ms)</th>
+			<tr class="text-[var(--faint-text)] flex w-full">
+				<th class="flex-none w-8"></th>
+				<th class="flex-1">Timestamp</th>
+				<th class="flex-none w-24 text-left">Status</th>
+				<th class="flex-1">Hostname</th>
+				<th class="flex-1">Path</th>
+				<th class="flex-none w-16 text-left">Method</th>
+				<th class="flex-1">IP Address</th>
+				<th class="flex-1">User ID</th>
+				<th class="flex-1">Response Time (ms)</th>
 			</tr>
 		</thead>
-		<tbody>
+		<tbody class="flex-1 flex flex-col">
 			{#if page}
 				{#each page as request, i}
 					<tr
-						class="text-[1em]"
+						class="text-[14px] flex w-full flex-1"
 						class:success-bg={request[ColumnIndex.Status] &&
 							statusSuccess(request[ColumnIndex.Status])}
 						class:success-border={request[ColumnIndex.Status] &&
@@ -81,7 +81,7 @@
 							statusError(request[ColumnIndex.Status])}
 						class:bottom-row={i === page.length - 1}
 					>
-						<td class="!pr-0">
+						<td class="!pr-0 flex-none w-8 flex items-center justify-start">
 							<div class="grid place-items-center">
 								<div
 									class="h-2 w-2 rounded-sm"
@@ -94,12 +94,13 @@
 								></div>
 							</div>
 						</td>
-						<td class="text-[var(--faint-text)]"
+						<td class="text-[var(--faint-text)] flex-1 flex items-center justify-start"
 							>{request[ColumnIndex.CreatedAt]
 								? request[ColumnIndex.CreatedAt].toLocaleString()
 								: null}</td
 						>
 						<td
+							class="flex-none w-24 flex items-center justify-start"
 							class:text-[var(--highlight)]={request[ColumnIndex.Status] &&
 								statusSuccess(request[ColumnIndex.Status])}
 							class:text-[var(--red)]={request[ColumnIndex.Status] &&
@@ -107,16 +108,16 @@
 							class:text-[rgb(235,235,129)]={request[ColumnIndex.Status] &&
 								statusBad(request[ColumnIndex.Status])}>{request[ColumnIndex.Status]}</td
 						>
-						<td class="text-[var(--faint-text)]">{request[ColumnIndex.Hostname]}</td>
-						<td class="text-[var(--faint-text)]">{request[ColumnIndex.Path]}</td>
-						<td
+						<td class="text-[var(--faint-text)] flex-1 flex items-center justify-start">{request[ColumnIndex.Hostname]}</td>
+						<td class="text-[var(--faint-text)] flex-1 flex items-center justify-start">{request[ColumnIndex.Path]}</td>
+						<td class="flex-none w-16 flex items-center justify-start"
 							>{request[ColumnIndex.Method] !== null
 								? methodMap[request[ColumnIndex.Method]]
 								: null}</td
 						>
-						<td>{request[ColumnIndex.IPAddress]}</td>
-						<td>{request[ColumnIndex.UserID]}</td>
-						<td>{request[ColumnIndex.ResponseTime]}</td>
+						<td class="flex-1 flex items-center justify-start">{request[ColumnIndex.IPAddress]}</td>
+						<td class="flex-1 flex items-center justify-start">{request[ColumnIndex.UserID]}</td>
+						<td class="flex-1 flex items-center justify-start">{request[ColumnIndex.ResponseTime]}</td>
 					</tr>
 				{/each}
 			{/if}
@@ -176,13 +177,24 @@
 <style scoped>
 	table {
 		min-height: inherit;
+		display: flex;
+		flex-direction: column;
 	}
 	tr {
 		border-top: 1px solid #2e2e2e;
 		border-left: 1px solid transparent;
 		border-right: 1px solid transparent;
 		border-radius: 4px;
-		padding-left: 1em;
+	}
+	tbody {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+	}
+	tbody tr {
+		display: flex;
+		flex: 1;
+		align-items: center;
 	}
 	.bottom-row {
 		border-bottom: 1px solid var(--background);
@@ -190,6 +202,15 @@
 	th {
 		border: none;
 		font-weight: 600;
+		padding: 0.2em 1em;
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+		text-align: left;
+	}
+	td {
+		padding: 1px 1em;
+		text-align: left;
 	}
 	.success-border:hover {
 		border: 1px solid rgba(63, 207, 142, 0.5) !important;
@@ -199,12 +220,6 @@
 	}
 	.error-border:hover {
 		border: 1px solid rgba(228, 97, 97, 0.5) !important;
-	}
-	th {
-		padding: 0.2em 1em;
-	}
-	td {
-		padding: 1px 1em;
 	}
 	.success-bg,
 	.warn-bg,

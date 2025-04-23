@@ -4,7 +4,7 @@
 <div class="flex w-full justify-center py-16 pb-18">
 	<div class="container mx-auto max-w-4xl px-6">
 		<div
-			class="overflow-hidden rounded border border-[#2e2e2e] bg-[#181818] shadow-lg transition-all hover:shadow-xl"
+			class="overflow-hidden rounded border border-[#2e2e2e] bg-[#181818] transition-all"
 		>
 			<div class="flex flex-col items-center gap-6 p-6 md:flex-row">
 				<div class="shrink-0">

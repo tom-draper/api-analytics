@@ -50,7 +50,7 @@
 
 <div class="p-4 pr-0 text-sm text-[var(--faded-text)]">
 	<div class="absolute grid h-[36px] place-items-center px-4">
-		<div class="h-[16px] text-[var(--highlight)]">
+		<div class="h-[18px] text-[var(--highlight)]">
 			<Lightning />
 		</div>
 	</div>
@@ -59,7 +59,7 @@
 		name=""
 		id=""
 		placeholder={getPlaceholder()}
-		class="m-auto h-[36px] w-full border border-solid border-[#2e2e2e] bg-[var(--background)] pl-10 text-left"
+		class="m-auto h-[36px] w-full border border-solid border-[#2e2e2e] text-[14px] bg-[var(--background)] pl-10 text-left"
 	/>
 </div>
 

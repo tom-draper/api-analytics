@@ -4,7 +4,7 @@
 </script>
 <div class="lightning-wrapper">
 	<!-- Background (darker version) -->
-     <div class="lightning-bg text-[#1B5E4B]">
+     <div class="lightning-bg text-[#228458]">
          <Lightning />
      </div>
 

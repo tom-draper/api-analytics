@@ -55,6 +55,7 @@
 		'Connecting the dots...',
 		'Unlocking the insights...',
 		'Preparing for launch...',
+		'Making notes...',
 		'Mapping the trends...',
 	]);
 
@@ -109,7 +110,7 @@
 	}
 
 	function getInRange() {
-		if (settings.period === 'All time') {
+		if (settings.period === 'all time') {
 			return allTimePeriod;
 		}
 
@@ -119,7 +120,7 @@
 	}
 
 	function getInPrevRange() {
-		if (settings.period === 'All time') {
+		if (settings.period === 'all time') {
 			return allTimePeriod;
 		}
 
@@ -367,7 +368,6 @@
 	};
 	let loading: boolean = true;
 	let fetchStatus: { failed: boolean; status: number; message: string };
-	let endpointsRendered: boolean = false;
 
 	// If data or settings are changed, recalcualte data
 	$: if (data) {
@@ -439,7 +439,7 @@
 					bind:targetStatus={settings.targetEndpoint.status}
 					bind:ignoreParams={settings.ignoreParams}
 				/>
-				<Version data={periodData.current} bind:endpointsRendered />
+				<Version data={periodData.current} />
 			</div>
 			<div class="right">
 				<Activity data={periodData.current} period={settings.period} />

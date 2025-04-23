@@ -5,7 +5,7 @@
 	export let filter: Filter;
 </script>
 
-<div class="flex flex-col text-[13px]">
+<div class="flex flex-col text-[14px]">
 	<div class="flex items-center border-b border-solid border-[#2e2e2e]">
 		{#if filter}
 			<Checkbox bind:checked={filter.status.success} label="Success" color="var(--highlight)" />

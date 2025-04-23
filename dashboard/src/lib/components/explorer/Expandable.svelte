@@ -11,7 +11,7 @@
 	export let title: string, content: ComponentType, filter: Filter, data: DashboardData;
 </script>
 
-<div class="text-left text-sm text-[var(--faint-text)]">
+<div class="text-left text-[16px] text-[var(--faint-text)]">
 	<button
 		onclick={toggleHidden}
 		class="m-auto flex w-full px-2 py-2 text-[var(--faint-text)] hover:text-[#ededed] rounded"
@@ -48,7 +48,7 @@
 	</button>
 
 	<div class="pb-2 pt-1" class:no-display={hidden || !data}>
-		<div class="rounded border border-solid border-[#2e2e2e] text-xs">
+		<div class="rounded border border-solid border-[#2e2e2e] text-[14px]">
 			{#if content}
 				<svelte:component this={content} bind:filter={filter} bind:data={data} />
 			{/if}

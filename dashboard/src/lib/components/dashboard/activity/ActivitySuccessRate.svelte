@@ -70,6 +70,9 @@
 			}
 		} else {
 			let days = period === 'All time' ? daysAgo(minDate) : periodToDays(period);
+			if (days === null) {
+				throw new Error('Invalid period');
+			}
 			days = Math.min(days, 500); // Limit to 500 days
 			successArr = new Array(days).fill(0);
 

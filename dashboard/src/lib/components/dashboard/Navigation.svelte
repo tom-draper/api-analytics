@@ -4,8 +4,9 @@
 	import type { DashboardSettings } from '$lib/settings';
 	import Dropdown from './Dropdown.svelte';
 	import type { Period } from '$lib/period';
+	import { onMount } from 'svelte';
 
-	const timePeriods: Period[] = ['24 hours', 'Week', 'Month', '6 months', 'Year', 'All time'];
+	const timePeriods: Period[] = ['24 hours', 'week', 'month', '6 months', 'year', 'all time'];
 
 	const donateMessages = [
 		'Donate',
@@ -19,35 +20,42 @@
 		'Donate to API Analytics',
 		'Support API Analytics',
 		'Give back',
-		'Keep API Analytics running: Contribute today',
 		'Support us',
 		'Buy us a coffee',
 		'Give us a tip',
 		'Make a donation',
 		'Support the development',
-		'Help with server costs',
-	]
-
-	const donateMessage = donateMessages[Math.floor(Math.random() * donateMessages.length)];
+		'Help with server costs'
+	];
 
 	function setPeriodParam(period: Period) {
-		p.url.searchParams.set('period', period.toLocaleLowerCase().replace(' ', '-'))
-		replaceState(p.url, p.state)
+		if (period === "week") {
+			// Week is default period, so avoid param to keep simple
+			p.url.searchParams.delete('period');
+		} else {
+			p.url.searchParams.set('period', period.toLocaleLowerCase().replace(' ', '-'));
+			replaceState(p.url, p.state);
+		}
 	}
 
 	function setHostnameParam(hostname: string | null) {
 		if (hostname === null) {
-			p.url.searchParams.delete('hostname')
+			p.url.searchParams.delete('hostname');
 		} else {
 			p.url.searchParams.set('hostname', hostname);
 		}
-		replaceState(p.url, p.state)
+		replaceState(p.url, p.state);
 	}
+
+	let donateMessage: string;
+	onMount(() => {
+		donateMessage = donateMessages[Math.floor(Math.random() * donateMessages.length)];
+	});
 
 	$: hostname = settings.hostname;
 
 	$: {
-		setHostnameParam(hostname ?? null)
+		setHostnameParam(hostname ?? null);
 	}
 
 	let dropdownOpen: boolean = false;
@@ -55,7 +63,7 @@
 	export let settings: DashboardSettings, showSettings: boolean, hostnames: string[];
 </script>
 
-<nav class="button-nav text-sm">
+<nav class="button-nav flex text-sm">
 	<!-- <a class="info" href={userID ? `/explorer/${userID}` : '/explorer'}>
 		<div class="info-content">
 			Try the Log Explorer <svg
@@ -74,8 +82,12 @@
 			</svg>
 		</div>
 	</a> -->
-	<div class="donate">
-		<a target="_blank" href="https://www.buymeacoffee.com/tomdraper" class="donate-link">{donateMessage}</a>
+	<div class="donate ml-auto grid">
+		<a
+			target="_blank"
+			href="https://www.buymeacoffee.com/tomdraper"
+			class="donate-link text-[#464646]">{donateMessage}</a
+		>
 	</div>
 	<button
 		class="settings"
@@ -85,7 +97,7 @@
 	>
 		<img class="settings-icon" src="/images/icons/cog.png" alt="" />
 	</button>
-	<div class="dropdown-container" class:no-display={hostnames.length <= 1}>
+	<div class="dropdown-container mr-[10px]" class:no-display={hostnames.length <= 1}>
 		<Dropdown
 			options={hostnames.slice(0, 25)}
 			bind:selected={settings.hostname}
@@ -93,10 +105,10 @@
 			defaultOption={'All hostnames'}
 		/>
 	</div>
-	<div class="nav-btn time-period">
+	<div class="nav-btn time-period flex overflow-hidden rounded-[4px] border border-[#2e2e2e]">
 		{#each timePeriods as period}
 			<button
-				class="time-period-btn"
+				class="time-period-btn cursor-pointer border-none bg-[var(--background)] px-[12px] py-[4px] text-[var(--dim-text)]"
 				class:time-period-btn-active={settings.period === period}
 				on:click={() => {
 					settings.period = period;
@@ -113,20 +125,6 @@
 <style scoped>
 	.button-nav {
 		margin: 2.5em 2rem 0;
-		display: flex;
-	}
-	.time-period {
-		display: flex;
-		border: 1px solid #2e2e2e;
-		border-radius: 4px;
-		overflow: hidden;
-	}
-	.time-period-btn {
-		background: var(--background);
-		padding: 4px 12px;
-		border: none;
-		color: var(--dim-text);
-		cursor: pointer;
 	}
 	.time-period-btn:hover {
 		background: #161616;
@@ -159,20 +157,13 @@
 		text-align: right;
 	}
 	.donate {
-		margin-left: auto;
+		/* margin-left: auto; */
 		display: grid;
 		place-items: center;
 		margin-right: 1rem;
 	}
 
-	.dropdown-container {
-		margin-right: 10px;
-	}
-
 	.donate-link {
-		color: rgb(73, 73, 73);
-		color: rgb(82, 82, 82);
-		color: #464646;
 		transition: 0.1s;
 	}
 	.donate-link:hover {
@@ -187,9 +178,6 @@
 	}
 	.settings-icon:hover {
 		filter: contrast(0.01);
-	}
-
-	@media screen and (max-width: 800px) {
 	}
 
 	@media screen and (max-width: 1300px) {
@@ -223,7 +211,6 @@
 		.donate {
 			display: none;
 		}
-
 	}
 	@media screen and (max-width: 660px) {
 		.time-period {

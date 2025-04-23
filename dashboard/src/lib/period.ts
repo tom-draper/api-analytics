@@ -1,29 +1,29 @@
 export type Period =
 	| '24 hours'
-	| 'Week'
-	| 'Month'
+	| 'week'
+	| 'month'
 	| '3 months'
 	| '6 months'
-	| 'Year'
-	| 'All time';
+	| 'year'
+	| 'all time';
 
 export type MonitorPeriod = '24h' | '7d' | '30d' | '60d'
 
-export const defaultPeriod: Period = 'Week';
+export const defaultPeriod: Period = 'week';
 
 export function periodToDays(period: Period): number | null {
 	switch (period) {
 		case '24 hours':
 			return 1;
-		case 'Week':
+		case 'week':
 			return 7;
-		case 'Month':
+		case 'month':
 			return 30;
 		case '3 months':
 			return 90;
 		case '6 months':
 			return 30 * 7;
-		case 'Year':
+		case 'year':
 			return 365;
 		default:
 			return null;
@@ -45,7 +45,7 @@ export function periodToMarkers(period: MonitorPeriod): number | null {
 }
 
 export function dateInPeriod(date: Date, period: Period) {
-	if (period === 'All time') {
+	if (period === 'all time') {
 		return true;
 	}
 	const days = periodToDays(period);
@@ -58,7 +58,7 @@ export function dateInPeriod(date: Date, period: Period) {
 }
 
 export function dateInPrevPeriod(date: Date, period: Period) {
-	if (period === 'All time') {
+	if (period === 'all time') {
 		return true;
 	}
 	const days = periodToDays(period);

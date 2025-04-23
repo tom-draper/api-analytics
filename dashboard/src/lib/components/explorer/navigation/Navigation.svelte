@@ -52,7 +52,7 @@
 	</div>
 
 	<div class="grid place-items-center my-10">
-		<div class="h-[24px] text-[var(--highlight)]">
+		<div class="h-[28px] text-[var(--highlight)]">
 			<Lightning />
 		</div>
 	</div>

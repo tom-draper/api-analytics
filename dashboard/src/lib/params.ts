@@ -6,19 +6,19 @@ export function periodParamToPeriod(period: string): Period {
         case '24-hours':
             return '24 hours';
         case 'week':
-            return 'Week';
+            return 'week';
         case 'month':
-            return 'Month';
+            return 'month';
         case '3-months':
             return '3 months';
         case '6-months':
             return '6 months';
         case 'year':
-            return 'Year';
+            return 'year';
         case 'all-time':
-            return 'All time';
+            return 'all time';
         default:
-            return 'Week';
+            return 'week';
     }
 }
 
@@ -26,17 +26,17 @@ export function periodToParamString(period: Period) {
     switch (period) {
         case '24 hours':
             return '24-hours';
-        case 'Week':
+        case 'week':
             return 'week';
-        case 'Month':
+        case 'month':
             return 'month';
         case '3 months':
             return '3-months';
         case '6 months':
             return '6-months';
-        case 'Year':
+        case 'year':
             return 'year';
-        case 'All time':
+        case 'all time':
             return 'all-time';
         default:
             return 'week';
