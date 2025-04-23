@@ -32,7 +32,7 @@
 
 		for (const row of data) {
 			const date = new Date(row[ColumnIndex.CreatedAt]);
-			if (period === '24 hours' || period === 'Week') {
+			if (period === '24 hours' || period === 'week') {
 				// Hourly
 				date.setMinutes(0, 0, 0);
 			} else {
@@ -58,7 +58,7 @@
 
 		let successArr: number[];
 
-		if (period === '24 hours' || period === 'Week') {
+		if (period === '24 hours' || period === 'week') {
 			const hours = period === '24 hours' ? 24 : 24 * 7;
 			successArr = new Array(hours).fill(0);
 
@@ -69,7 +69,7 @@
 				}
 			}
 		} else {
-			let days = period === 'All time' ? daysAgo(minDate) : periodToDays(period);
+			let days = period === 'all time' ? daysAgo(minDate) : periodToDays(period);
 			if (days === null) {
 				throw new Error('Invalid period');
 			}
