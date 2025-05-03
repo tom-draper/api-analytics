@@ -135,15 +135,15 @@ func (c *Client) Shutdown() {
 	close(c.done)
 
 	// Drain the requestChannel
-    var remainingRequests []RequestData
-    for request := range c.requestChannel {
-        remainingRequests = append(remainingRequests, request)
-    }
+	var remainingRequests []RequestData
+	for request := range c.requestChannel {
+		remainingRequests = append(remainingRequests, request)
+	}
 
-    // Push any remaining requests
-    if len(remainingRequests) > 0 {
-        c.pushRequests(remainingRequests)
-    }
+	// Push any remaining requests
+	if len(remainingRequests) > 0 {
+		c.pushRequests(remainingRequests)
+	}
 
 	close(c.requestChannel)
 }

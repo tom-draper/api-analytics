@@ -20,12 +20,12 @@ type Config struct {
 func NewConfig() *Config {
 	return &Config{
 		PrivacyLevel: 0,
-		ServerURL: core.DefaultServerURL,
-		GetPath: GetPath,
-		GetHostname: GetHostname,
+		ServerURL:    core.DefaultServerURL,
+		GetPath:      GetPath,
+		GetHostname:  GetHostname,
 		GetUserAgent: GetUserAgent,
 		GetIPAddress: GetIPAddress,
-		GetUserID: GetUserID,
+		GetUserID:    GetUserID,
 	}
 }
 
