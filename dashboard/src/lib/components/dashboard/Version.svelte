@@ -25,7 +25,7 @@
 		return {
 			title: false,
 			autosize: true,
-			margin: { r: 30, l: 30, t: 30, b: 25, pad: 0 },
+			margin: { r: 30, l: 30, t: 25, b: 25, pad: 0 },
 			hovermode: 'closest',
 			plot_bgcolor: 'transparent',
 			paper_bgcolor: 'transparent',
@@ -109,7 +109,7 @@
 	export let data: RequestsData;
 </script>
 
-<div class="card flex-1 pb-[1em]" class:hidden={versions === undefined || versions.size <= 1}>
+<div class="card flex-1" class:hidden={versions === undefined || versions.size <= 1}>
 	<div class="card-title">Version</div>
 	<div id="plotly">
 		<div id="plotDiv" class="mr-[20px]" bind:this={plotDiv}>

@@ -24,9 +24,18 @@
 		'Buy us a coffee',
 		'Give us a tip',
 		'Make a donation',
-		'Support the development',
+		'Support development',
 		'Help with server costs'
 	];
+
+	const timePeriodsDisplay: Record<Period, string> = {
+		'24 hours': '24 hours',
+		week: 'Week',
+		month: 'Month',
+		'6 months': '6 months',
+		year: 'Year',
+		'all time': 'All time'
+	}
 
 	function setPeriodParam(period: Period) {
 		if (period === "week") {
@@ -116,7 +125,7 @@
 					setPeriodParam(period);
 				}}
 			>
-				{period}
+				{timePeriodsDisplay[period]}
 			</button>
 		{/each}
 	</div>

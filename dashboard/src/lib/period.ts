@@ -2,7 +2,6 @@ export type Period =
 	| '24 hours'
 	| 'week'
 	| 'month'
-	| '3 months'
 	| '6 months'
 	| 'year'
 	| 'all time';
@@ -19,8 +18,6 @@ export function periodToDays(period: Period): number | null {
 			return 7;
 		case 'month':
 			return 30;
-		case '3 months':
-			return 90;
 		case '6 months':
 			return 30 * 7;
 		case 'year':
