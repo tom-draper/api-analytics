@@ -43,8 +43,8 @@
 			p.url.searchParams.delete('period');
 		} else {
 			p.url.searchParams.set('period', period.toLocaleLowerCase().replace(' ', '-'));
-			replaceState(p.url, p.state);
 		}
+		replaceState(p.url, p.state);
 	}
 
 	function setHostnameParam(hostname: string | null) {
