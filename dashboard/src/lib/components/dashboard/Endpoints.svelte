@@ -11,9 +11,7 @@
 		const freq: EndpointFreq = new Map();
 		for (const row of data) {
 			// Create groups of endpoints by path + status
-			const path = ignoreParams
-				? row[ColumnIndex.Path].split('?')[0]
-				: row[ColumnIndex.Path];
+			const path = ignoreParams ? row[ColumnIndex.Path].split('?')[0] : row[ColumnIndex.Path];
 			const status = row[ColumnIndex.Status];
 			const endpointID = `${path}${status}`;
 			let endpoint = freq.get(endpointID);
@@ -34,10 +32,11 @@
 
 	function statusMatch(status: number) {
 		return (
-			activeBtn === 'all' ||
-			(activeBtn === 'success' && status >= 200 && status <= 299) ||
-			(activeBtn === 'client' && status >= 400 && status <= 499) ||
-			(activeBtn === 'server' && status >= 500)
+			activeFilter === 'all' ||
+			(activeFilter === 'success' && status >= 200 && status <= 299) ||
+			(activeFilter === 'redirect' && status >= 300 && status <= 399) ||
+			(activeFilter === 'client' && status >= 400 && status <= 499) ||
+			(activeFilter === 'server' && status >= 500)
 		);
 	}
 
@@ -51,7 +50,7 @@
 		if (path === null) {
 			page.url.searchParams.delete('path');
 		} else {
-			page.url.searchParams.set('path', path)
+			page.url.searchParams.set('path', path);
 		}
 		replaceState(page.url, page.state);
 	}
@@ -60,7 +59,7 @@
 		if (status === null) {
 			page.url.searchParams.delete('status');
 		} else {
-			page.url.searchParams.set('status', status.toString())
+			page.url.searchParams.set('status', status.toString());
 		}
 		replaceState(page.url, page.state);
 	}
@@ -112,8 +111,8 @@
 		};
 	}
 
-	function setBtn(value: typeof activeBtn) {
-		activeBtn = value;
+	function setFilter(value: EndpointFilter) {
+		activeFilter = value;
 	}
 
 	let endpoints: {
@@ -122,9 +121,12 @@
 		count: number;
 	}[];
 	let maxCount: number;
-	let activeBtn: 'all' | 'success' | 'client' | 'server' = 'all';
 
-	$: if (data && activeBtn) {
+	type EndpointFilter = 'all' | 'redirect' | 'success' | 'client' | 'server';
+
+	let activeFilter: EndpointFilter = 'all';
+
+	$: if (data && activeFilter) {
 		({ endpoints, maxCount } = getEndpoints(data));
 	}
 
@@ -135,52 +137,71 @@
 </script>
 
 <div class="card">
-	<div class="card-title">
+	<div class="card-title flex">
 		Endpoints
-		<div class="toggle">
+		<div class="toggle ml-auto">
 			<button
-				class="cancel"
-				class:visible={targetPath !== null}
-				on:click={() => {
-					setTargetEndpoint(null, null);
-				}}>Clear</button
-			>
-			<button
-				class:active={activeBtn === 'all'}
-				on:click={() => {
-					setBtn('all');
+				class:active={activeFilter === 'all'}
+				onclick={() => {
+					setFilter('all');
 				}}>All</button
 			>
 			<button
-				class:active={activeBtn === 'success'}
-				on:click={() => {
-					setBtn('success');
+				class:active={activeFilter === 'success'}
+				onclick={() => {
+					setFilter('success');
 				}}>Success</button
 			>
 			<button
-				class:bad-active={activeBtn === 'client'}
-				on:click={() => {
-					setBtn('client');
+				class:redirect-active={activeFilter === 'redirect'}
+				onclick={() => {
+					setFilter('redirect');
+				}}>Redirect</button
+			>
+			<button
+				class:bad-active={activeFilter === 'client'}
+				onclick={() => {
+					setFilter('client');
 				}}>Client</button
 			>
 			<button
-				class:error-active={activeBtn === 'server'}
-				on:click={() => {
-					setBtn('server');
+				class:error-active={activeFilter === 'server'}
+				onclick={() => {
+					setFilter('server');
 				}}>Server</button
 			>
 		</div>
 	</div>
 
+	{#if targetPath !== null}
+		<div class="flex px-[25px] pt-3 mb-[-8px] text-[13px] text-[#707070]">
+			<div class="flex-grow text-left mr-3">
+				<div class="">
+					{#if targetStatus === null}
+						{targetPath}
+					{:else}
+						{targetPath}, status: {targetStatus}
+					{/if}
+				</div>
+			</div>
+			<button
+				class="hover:text-[#ededed]"
+				onclick={() => {
+					setTargetEndpoint(null, null);
+				}}>Clear</button
+			>
+		</div>
+	{/if}
+
 	{#if endpoints != undefined}
 		<div class="endpoints">
 			{#each endpoints as endpoint, i}
-				<div class="endpoint-container">
+				<div class="endpoint-container flex">
 					<button
 						class="endpoint"
 						id="endpoint-{i}"
 						title="Status: {endpoint.status}"
-						on:click={() => setTargetEndpoint(endpoint.path.split(' ')[2], endpoint.status)}
+						onclick={() => setTargetEndpoint(endpoint.path.split(' ')[2], endpoint.status)}
 					>
 						<div class="path">
 							<span class="font-semibold">{endpoint.count.toLocaleString()}</span>
@@ -189,11 +210,11 @@
 						<div
 							class="background"
 							style="width: {(endpoint.count / maxCount) * 100}%"
-							class:success={(endpoint.status >= 200 && endpoint.status <= 299) ||
-								endpoint.status === 0}
+							class:success={endpoint.status >= 200 && endpoint.status <= 299}
+							class:redirect={endpoint.status >= 300 && endpoint.status <= 399}
 							class:bad={endpoint.status >= 400 && endpoint.status <= 499}
 							class:error={endpoint.status >= 500}
-							class:other={endpoint.status >= 300 && endpoint.status <= 399}
+							class:other={endpoint.status <= 100}
 						></div>
 					</button>
 				</div>
@@ -205,12 +226,6 @@
 <style scoped>
 	.card {
 		min-height: 361px;
-	}
-	.card-title {
-		display: flex;
-	}
-	.toggle {
-		margin-left: auto;
 	}
 	.toggle > button {
 		font-size: 13.333px;
@@ -227,24 +242,29 @@
 		background: rgb(88, 88, 88);
 	}
 
-	.toggle > .active {
-		background: var(--highlight);
-	}
-	.toggle > .bad-active {
-		background: rgb(235, 235, 129);
-	}
-	.toggle > .error-active {
-		background: var(--red);
-	}
-
+	.success,
+	.toggle > .active,
 	.toggle > .active:hover {
 		background: var(--highlight);
 	}
+	.redirect,
+	.toggle > .redirect-active,
+	.toggle > .redirect-active:hover {
+		background: #4c9cff;
+		background: #4598ff;
+	}
+	.bad,
+	.toggle > .bad-active,
 	.toggle > .bad-active:hover {
 		background: rgb(235, 235, 129);
 	}
+	.error,
+	.toggle > .error-active,
 	.toggle > .error-active:hover {
 		background: var(--red);
+	}
+	.other {
+		background: rgb(241, 164, 20);
 	}
 	.endpoints {
 		margin: 0.9em 20px 0.6em;
@@ -260,7 +280,6 @@
 		cursor: pointer;
 	}
 	.endpoint:hover {
-		background: linear-gradient(270deg, transparent, var(--background));
 		background: linear-gradient(270deg, transparent, #444);
 	}
 	.path {
@@ -271,35 +290,7 @@
 		color: #505050;
 		padding: 3px 12px;
 		overflow-wrap: break-word;
-
 		font-family: 'Noto Sans' !important;
-	}
-	.endpoint-container {
-		display: flex;
-	}
-	.success {
-		background: var(--highlight);
-	}
-	.bad {
-		background: rgb(235, 235, 129);
-	}
-	.error {
-		background: var(--red);
-	}
-	.other {
-		background: rgb(241, 164, 20);
-	}
-	.cancel {
-		display: none;
-	}
-	.toggle > .cancel {
-		background: gold;
-	}
-	.toggle > .cancel:hover {
-		background: gold;
-	}
-	.visible {
-		display: inline;
 	}
 	.background {
 		border-radius: 3px;

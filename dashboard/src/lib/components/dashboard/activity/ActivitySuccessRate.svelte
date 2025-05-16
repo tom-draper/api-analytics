@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { periodToDays, type Period } from '$lib/period';
 	import { ColumnIndex } from '$lib/consts';
+	import { statusSuccessful } from '$lib/status';
 
 	function daysAgo(date: Date): number {
 		const now = new Date();
@@ -47,7 +48,7 @@
 			}
 
 			entry.total++;
-			if (row[ColumnIndex.Status] >= 200 && row[ColumnIndex.Status] <= 299) {
+			if (statusSuccessful(row[ColumnIndex.Status])) {
 				entry.successful++;
 			}
 

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { ColumnIndex } from '$lib/consts';
+	import { statusSuccessful } from '$lib/status';
 
 	function getPlotLayout() {
 		return {
@@ -32,10 +33,7 @@
 		for (let i = 0; i < data.length; i++) {
 			const idx = Math.min(Math.floor(i / (data.length / n)), n - 1);
 
-			if (
-				data[i][ColumnIndex.Status] >= 200 &&
-				data[i][ColumnIndex.Status] <= 299
-			) {
+			if (statusSuccessful(data[i][ColumnIndex.Status])) {
 				y[idx] += 1;
 			}
 		}
@@ -99,10 +97,7 @@
 
 		let successfulRequests = 0;
 		for (let i = 0; i < data.length; i++) {
-			if (
-				data[i][ColumnIndex.Status] >= 200 &&
-				data[i][ColumnIndex.Status] <= 299
-			) {
+			if (statusSuccessful(data[i][ColumnIndex.Status])) {
 				successfulRequests++;
 			}
 		}
