@@ -44,19 +44,11 @@
 	<div class="card-title">
 		Device
 		<div class="toggle">
-			<button
-				class:active={activeBtn === 'client'}
-				on:click={() => setBtn('client')}>
+			<button class:active={activeBtn === 'client'} on:click={() => setBtn('client')}>
 				Client
 			</button>
-			<button
-				class:active={activeBtn === 'os'}
-				on:click={() => setBtn('os')}>
-				OS
-			</button>
-			<button
-				class:active={activeBtn === 'device'}
-				on:click={() => setBtn('device')}>
+			<button class:active={activeBtn === 'os'} on:click={() => setBtn('os')}> OS </button>
+			<button class:active={activeBtn === 'device'} on:click={() => setBtn('device')}>
 				Device
 			</button>
 		</div>

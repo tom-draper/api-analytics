@@ -1,4 +1,4 @@
-function randomChoice(p) {
+function randomChoice(p: number[]) {
 	let rnd = p.reduce((a, b) => a + b) * Math.random();
 	return p.findIndex((a) => (rnd -= a) < 0);
 }
@@ -307,15 +307,7 @@ function samplePoisson(lambda: number, T: number) {
 	return nEvents - 1;
 }
 
-function gaussianRand() {
-	let rand = 0;
-	for (let i = 0; i < 6; i += 1) {
-		rand += Math.random();
-	}
-	return rand / 6;
-}
-
-function randn_bm(min, max, skew) {
+function randn_bm(min: number, max: number, skew: number) {
 	let u = 0,
 		v = 0;
 	while (u === 0) u = Math.random(); //Converting [0,1) to (0,1)
@@ -331,10 +323,6 @@ function randn_bm(min, max, skew) {
 		num += min; // offset to min
 	}
 	return num;
-}
-
-function gaussianRandom(start: number, end: number) {
-	return Math.floor(start + gaussianRand() * (end - start + 1));
 }
 
 function scaleRange(range: Range, scale: number): Range {

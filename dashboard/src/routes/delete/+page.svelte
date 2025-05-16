@@ -37,27 +37,17 @@
 <div class="generate">
 	<div class="content">
 		<h2 class="font-bold">Delete Account</h2>
-		<input
-			type="text"
-			bind:value={apiKey}
-			placeholder="Enter API key"
-			on:keydown={enter}
-		/>
-		<button
-			id="formBtn"
-			on:click={submit}
-   class="text-sm"
-			class:no-display={state != 'delete'}>Delete</button
+		<input type="text" bind:value={apiKey} placeholder="Enter API key" on:keydown={enter} />
+		<button id="formBtn" on:click={submit} class="text-sm" class:no-display={state != 'delete'}
+			>Delete</button
 		>
 		<button id="formBtn" class="text-sm" class:no-display={state != 'loading'}>
 			<div class="spinner">
 				<div class="loader" />
 			</div>
 		</button>
-		<button
-			id="formBtn"
-			class="copied-btn text-sm"
-			class:no-display={state != 'deleted'}>Deleted</button
+		<button id="formBtn" class="copied-btn text-sm" class:no-display={state != 'deleted'}
+			>Deleted</button
 		>
 		<button id="formBtn" class="text-sm" class:no-display={state != 'error'}>Error</button>
 	</div>

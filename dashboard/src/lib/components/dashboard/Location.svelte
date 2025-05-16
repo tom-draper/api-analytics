@@ -2,6 +2,7 @@
 	import { replaceState } from '$app/navigation';
 	import { page } from '$app/state';
 	import { ColumnIndex } from '$lib/consts';
+	import { setParam } from '$lib/params';
 
 	function getFlagEmoji(countryCode: string) {
 		const codePoints = countryCode
@@ -41,7 +42,7 @@
 				return {
 					location: location,
 					frequency: count,
-					height: count / max,
+					height: count / max
 				};
 			})
 			.sort((a, b) => {
@@ -52,12 +53,7 @@
 	}
 
 	function setLocationParam(location: string | null) {
-		if (location === null) {
-			page.url.searchParams.delete('location')
-		} else {
-			page.url.searchParams.set('location', location);
-		}
-		replaceState(page.url, page.state);
+		setParam('location', location)
 	}
 
 	let locations: LocationBar[] = [];
@@ -80,7 +76,7 @@
 						aria-label="location"
 						class="bar"
 						title="{countryCodeToName(
-							location.location,
+							location.location
 						)}: {location.frequency.toLocaleString()} requests"
 						on:click={() => {
 							const value = targetLocation === location.location ? null : location.location;
@@ -88,10 +84,7 @@
 							setLocationParam(value);
 						}}
 					>
-						<div
-							class="bar-inner"
-							style="height: {location.height * 100}%"
-						></div>
+						<div class="bar-inner" style="height: {location.height * 100}%"></div>
 					</button>
 					<div class="label">{getFlagEmoji(location.location)}</div>
 				</div>

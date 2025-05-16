@@ -2,6 +2,7 @@
 	import { replaceState } from '$app/navigation';
 	import { page } from '$app/state';
 	import { ColumnIndex } from '$lib/consts';
+	import { setParam } from '$lib/params';
 
 	type ReferrerFreq = Map<string, { referrer: string; count: number }>;
 
@@ -11,9 +12,7 @@
 		const freq: ReferrerFreq = new Map();
 		for (const row of data) {
 			// Create groups of endpoints by path + status
-			const referrer = ignoreParams
-				? row[ColumnIndex.Path].split('?')[0]
-				: row[ColumnIndex.Path];
+			const referrer = ignoreParams ? row[ColumnIndex.Path].split('?')[0] : row[ColumnIndex.Path];
 
 			let referrerCount = freq.get(referrer);
 			if (!referrerCount) {
@@ -35,12 +34,7 @@
 	}
 
 	function setReferrerParam(referrer: string | null) {
-		if (referrer === null) {
-			page.url.searchParams.delete('referrer');
-		} else {
-			page.url.searchParams.set('referrer', referrer)
-		}
-		replaceState(page.url, page.state);
+		setParam('referrer', referrer);
 	}
 
 	function setTargetEndpoint(referrer: string | null) {
@@ -71,9 +65,6 @@
 			return b.count - a.count;
 		});
 
-		console.log(freqArr)
-		console.log(maxCount);
-
 		return {
 			referrers: freqArr.slice(0, 50),
 			maxCount
@@ -90,15 +81,11 @@
 		({ referrers, maxCount } = getReferrers(data));
 	}
 
-	export let data: RequestsData,
-		targetReferrer: string | null,
-		ignoreParams: boolean;
+	export let data: RequestsData, targetReferrer: string | null, ignoreParams: boolean;
 </script>
 
 <div class="card">
-	<div class="card-title">
-		Referrer
-	</div>
+	<div class="card-title">Referrer</div>
 
 	{#if referrers != undefined}
 		<div class="endpoints">
@@ -113,10 +100,7 @@
 							<span class="font-semibold">{referrer.count.toLocaleString()}</span>
 							{referrer.referrer}
 						</div>
-						<div
-							class="background"
-							style="width: {(referrer.count / maxCount) * 100}%"
-						></div>
+						<div class="background" style="width: {(referrer.count / maxCount) * 100}%"></div>
 					</button>
 				</div>
 			{/each}

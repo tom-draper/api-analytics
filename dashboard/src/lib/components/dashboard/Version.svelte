@@ -34,21 +34,19 @@
 				title: { text: 'Requests' },
 				gridcolor: 'gray',
 				showgrid: false,
-				fixedrange: true,
+				fixedrange: true
 			},
 			xaxis: {
-				visible: false,
+				visible: false
 			},
-			dragmode: false,
+			dragmode: false
 		};
 	}
 
 	function pieChart(data: RequestsData) {
 		const versionCount: ValueCount = {};
 		for (let i = 0; i < data.length; i++) {
-			const match = data[i][ColumnIndex.Path].match(
-				/[^a-z0-9](v\d)[^a-z0-9]/i,
-			);
+			const match = data[i][ColumnIndex.Path].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
 			if (!match) {
 				continue;
 			}
@@ -70,9 +68,9 @@
 				type: 'pie',
 				hole: 0.6,
 				marker: {
-					colors: graphColors,
-				},
-			},
+					colors: graphColors
+				}
+			}
 		];
 	}
 
@@ -83,20 +81,15 @@
 			config: {
 				responsive: true,
 				showSendToCloud: false,
-				displayModeBar: false,
-			},
+				displayModeBar: false
+			}
 		};
 	}
 
 	function genPlot(data: RequestsData) {
 		const plotData = getPlotData(data);
 		//@ts-ignore
-		new Plotly.newPlot(
-			plotDiv,
-			plotData.data,
-			plotData.layout,
-			plotData.config,
-		);
+		new Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
 	}
 
 	let versions: Set<string>;

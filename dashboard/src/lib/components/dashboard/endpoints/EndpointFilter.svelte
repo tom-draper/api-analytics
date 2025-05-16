@@ -1,27 +1,17 @@
 <script lang="ts">
 	import type { EndpointFilterType } from '$lib/endpoints';
 
-	export let activeFilter: EndpointFilterType;
-	
-	// In Svelte 5, we define events directly in the component props
-	export let filterChange: (e: CustomEvent<EndpointFilterType>) => void;
-	
 	function setFilter(value: EndpointFilterType): void {
 		filterChange?.(new CustomEvent('filterChange', { detail: value }));
 	}
+
+	export let activeFilter: EndpointFilterType,
+		filterChange: (e: CustomEvent<EndpointFilterType>) => void;
 </script>
 
 <div class="toggle">
-	<button
-		class:active={activeFilter === 'all'}
-		on:click={() => setFilter('all')}
-	>
-		All
-	</button>
-	<button
-		class:active={activeFilter === 'success'}
-		on:click={() => setFilter('success')}
-	>
+	<button class:active={activeFilter === 'all'} on:click={() => setFilter('all')}> All </button>
+	<button class:active={activeFilter === 'success'} on:click={() => setFilter('success')}>
 		Success
 	</button>
 	<button
@@ -30,16 +20,10 @@
 	>
 		Redirect
 	</button>
-	<button
-		class:bad-active={activeFilter === 'client'}
-		on:click={() => setFilter('client')}
-	>
+	<button class:bad-active={activeFilter === 'client'} on:click={() => setFilter('client')}>
 		Client
 	</button>
-	<button
-		class:error-active={activeFilter === 'server'}
-		on:click={() => setFilter('server')}
-	>
+	<button class:error-active={activeFilter === 'server'} on:click={() => setFilter('server')}>
 		Server
 	</button>
 </div>
@@ -64,17 +48,17 @@
 	.toggle > .active:hover {
 		background: var(--highlight);
 	}
-	
+
 	.toggle > .redirect-active,
 	.toggle > .redirect-active:hover {
 		background: #4598ff;
 	}
-	
+
 	.toggle > .bad-active,
 	.toggle > .bad-active:hover {
 		background: rgb(235, 235, 129);
 	}
-	
+
 	.toggle > .error-active,
 	.toggle > .error-active:hover {
 		background: var(--red);

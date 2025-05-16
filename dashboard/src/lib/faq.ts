@@ -21,12 +21,12 @@ const faq = [
     },
     {
         question: 'How can I create an account?',
-        answer: 'Account creation is complete free and takes a second to do. Accounts are controlled entirely through a unique randomly-generated API key. Get your API key <a href="https://www.apianalytics.dev/generate">here</a>.',
+        answer: 'Account creation is complete free and takes a second to do. Accounts are controlled entirely through a unique randomly-generated API key. Get your API key <a href="/generate">here</a>.',
         showing: false,
     },
     {
         question: 'Do you comply with GDPR?',
-        answer: 'We adhere to GDPR regulations and requirements. All data is stored securely on London-based servers. Data is retained only for the duration necessary to deliver this service and is used solely for that purpose. You may delete your stored data at any time. It is never shared with or sold to any other third parties. Our privacy policy can be found <a href="https://www.apianalytics.dev/privacy-policy">here</a>.',
+        answer: 'We adhere to GDPR regulations and requirements. All data is stored securely on London-based servers. Data is retained only for the duration necessary to deliver this service and is used solely for that purpose. You may delete your stored data at any time. It is never shared with or sold to any other third parties. Our privacy policy can be found <a href="/privacy-policy">here</a>.',
         showing: false,
     },
     {
@@ -36,7 +36,7 @@ const faq = [
     },
     {
         question: 'Why are there requests missing from my dashboard?',
-        answer: 'In order to keep the service free, we can currently only store up to 1.5 million requests per user. If you have hit this limit, old requests will be replaced with new requests.<br><br>Occassionally we will have an outage that is reflected in your dashboard. You can track outages <a href="https://www.apianalytics.dev/outages">here</a>.',
+        answer: 'In order to keep the service free, we can currently only store up to 1.5 million requests per user. If you have hit this limit, old requests will be replaced with new requests.<br><br>Occassionally we will have an outage that is reflected in your dashboard. You can track outages <a href="/outages">here</a>.',
         showing: false,
     },
     {
@@ -51,7 +51,7 @@ const faq = [
     },
     {
         question: 'How can I delete my logged request data?',
-        answer: 'You can delete your account and all associated data at any time by entering your API key <a href="https://www.apianalytics.dev/delete">here</a>.',
+        answer: 'You can delete your account and all associated data at any time by entering your API key <a href="/delete">here</a>.',
         showing: false,
     },
     {

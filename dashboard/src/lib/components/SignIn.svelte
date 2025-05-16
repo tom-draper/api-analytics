@@ -43,7 +43,7 @@
 
 <div class="generate">
 	<div class="content place-items-center">
-		<h2 class="font-bold">
+		<h2 class="font-bold text-[2em] mb-[1em] text-[var(--highlight)]">
 			{#if type === 'dashboard'}
 				Dashboard
 			{:else if type === 'monitor'}
@@ -63,11 +63,6 @@
 </div>
 
 <style scoped>
-	h2 {
-		font-size: 2em;
-		color: var(--highlight);
-		margin-bottom: 1em;
-	}
 	.loader {
 		border: 3px solid #343434;
 		border-top: 3px solid var(--highlight);

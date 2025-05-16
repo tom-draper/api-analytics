@@ -11,8 +11,8 @@
 				bargap: 0,
 				bgcolor: 'transparent',
 				angularaxis: { direction: 'clockwise', showgrid: false },
-				radialaxis: { gridcolor: '#303030' },
-			},
+				radialaxis: { gridcolor: '#303030' }
+			}
 		};
 	}
 
@@ -27,7 +27,7 @@
 
 		const requestFreqArr = Array.from({ length: 24 }, (_, i) => ({
 			hour: i,
-			responseTime: responseTimes[i],
+			responseTime: responseTimes[i]
 		})).sort((a, b) => {
 			return a.hour - b.hour;
 		});
@@ -49,8 +49,8 @@
 				theta: dates,
 				marker: { color: '#3fcf8e' },
 				type: 'barpolar',
-				hovertemplate: `<b>%{r}</b> requests at <b>%{theta}</b><extra></extra>`,
-			},
+				hovertemplate: `<b>%{r}</b> requests at <b>%{theta}</b><extra></extra>`
+			}
 		];
 	}
 
@@ -61,8 +61,8 @@
 			config: {
 				responsive: true,
 				showSendToCloud: false,
-				displayModeBar: false,
-			},
+				displayModeBar: false
+			}
 		};
 	}
 
@@ -76,20 +76,11 @@
 
 	async function newPlot(data: RequestsData) {
 		const plotData = getPlotData(data);
-		Plotly.newPlot(
-			plotDiv,
-			plotData.data,
-			plotData.layout,
-			plotData.config,
-		);
+		Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
 	}
 
 	function refreshPlot(data: RequestsData) {
-		Plotly.react(
-			plotDiv,
-			bars(data),
-			getPlotLayout(),
-		)
+		Plotly.react(plotDiv, bars(data), getPlotLayout());
 	}
 
 	let plotDiv: HTMLDivElement;

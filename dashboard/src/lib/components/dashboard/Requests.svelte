@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { periodToDays } from '$lib/period';
-	import type { Period } from '$lib/settings';
+	import { periodToDays, type Period } from '$lib/period';
 	import { ColumnIndex } from '$lib/consts';
 
 	function getPlotLayout() {
@@ -96,11 +95,8 @@
 	}
 
 	function getRequestsPerHour(data: RequestsData) {
-		if (data.length === 0) {
-			return 0;
-		}
-		if (data.length === 1) {
-			return 1;
+		if (data.length === 0 || data.length === 1) {
+			return data.length;
 		}
 
 		let days = periodToDays(period);

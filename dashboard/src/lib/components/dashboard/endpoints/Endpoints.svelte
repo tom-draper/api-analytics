@@ -5,11 +5,6 @@
 	import EndpointFilter from './EndpointFilter.svelte';
 	import { type Endpoint, type EndpointFilterType, getEndpoints } from '$lib/endpoints';
 
-	export let data: RequestsData;
-	export let targetPath: string | null;
-	export let targetStatus: number | null;
-	export let ignoreParams: boolean;
-
 	let activeFilter: EndpointFilterType = 'all';
 	let endpoints: Endpoint[] = [];
 	let maxCount = 0;
@@ -36,9 +31,11 @@
 		replaceState(page.url, page.state);
 	}
 
-	function handleEndpointSelection(e: CustomEvent<{ path: string | null; status: number | null }>): void {
+	function handleEndpointSelection(
+		e: CustomEvent<{ path: string | null; status: number | null }>
+	): void {
 		const { path, status } = e.detail;
-		
+
 		if (path === null || status === null) {
 			// Reset selection
 			targetPath = null;
@@ -65,23 +62,30 @@
 	}
 
 	function clearSelection(): void {
-		handleEndpointSelection(new CustomEvent('selectEndpoint', { 
-			detail: { path: null, status: null } 
-		}));
+		handleEndpointSelection(
+			new CustomEvent('selectEndpoint', {
+				detail: { path: null, status: null }
+			})
+		);
 	}
+
+	export let data: RequestsData,
+		targetPath: string | null,
+		targetStatus: number | null,
+		ignoreParams: boolean;
 </script>
 
 <div class="card">
 	<div class="card-title flex">
 		Endpoints
 		<div class="ml-auto">
-			<EndpointFilter {activeFilter} filterChange={handleFilterChange}/>
+			<EndpointFilter {activeFilter} filterChange={handleFilterChange} />
 		</div>
 	</div>
 
 	{#if targetPath !== null}
-		<div class="flex px-[25px] pt-3 mb-[-8px] text-[13px] text-[#707070]">
-			<div class="flex-grow text-left mr-3">
+		<div class="mb-[-8px] flex px-[25px] pt-3 text-[13px] text-[#707070]">
+			<div class="mr-3 flex-grow text-left">
 				<div>
 					{#if targetStatus === null}
 						{targetPath}
@@ -95,11 +99,7 @@
 	{/if}
 
 	{#if endpoints.length > 0}
-		<EndpointList 
-			{endpoints} 
-			{maxCount} 
-			selectEndpoint={handleEndpointSelection}
-		/>
+		<EndpointList {endpoints} {maxCount} selectEndpoint={handleEndpointSelection} />
 	{/if}
 </div>
 
@@ -107,7 +107,7 @@
 	.card {
 		min-height: 361px;
 	}
-	
+
 	@media screen and (max-width: 1030px) {
 		.card {
 			width: auto;

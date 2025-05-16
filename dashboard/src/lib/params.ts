@@ -1,44 +1,19 @@
-import type { Period } from "./period";
+import { replaceState } from "$app/navigation";
+import { page } from "$app/state";
 
-
-export function periodParamToPeriod(period: string): Period {
-    switch (period) {
-        case '24-hours':
-            return '24 hours';
-        case 'week':
-            return 'week';
-        case 'month':
-            return 'month';
-        case '3-months':
-            return '3 months';
-        case '6-months':
-            return '6 months';
-        case 'year':
-            return 'year';
-        case 'all-time':
-            return 'all time';
-        default:
-            return 'week';
+export function setParam(param: string, value: string | null) {
+    if (value === null) {
+        page.url.searchParams.delete(param);
+    } else {
+        page.url.searchParams.set(param, value);
     }
+    replaceState(page.url, page.state);
 }
 
-export function periodToParamString(period: Period) {
-    switch (period) {
-        case '24 hours':
-            return '24-hours';
-        case 'week':
-            return 'week';
-        case 'month':
-            return 'month';
-        case '3 months':
-            return '3-months';
-        case '6 months':
-            return '6-months';
-        case 'year':
-            return 'year';
-        case 'all time':
-            return 'all-time';
-        default:
-            return 'week';
+export function setParamNoReplace(param: string, value: string | null) {
+    if (value === null) {
+        page.url.searchParams.delete(param);
+    } else {
+        page.url.searchParams.set(param, value);
     }
 }

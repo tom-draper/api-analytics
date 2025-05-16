@@ -1,17 +1,14 @@
 <script lang="ts">
 	import { ColumnIndex } from '$lib/consts';
 	import { cachedFunction } from '$lib/cache';
-	import {
-		type Candidate,
-		maintainCandidates,
-	} from '$lib/candidates';
+	import { type Candidate, maintainCandidates } from '$lib/candidates';
 
 	const deviceCandidates: Candidate[] = [
 		{ name: 'iPhone', regex: /iPhone/, matches: 0 },
 		{ name: 'Android', regex: /Android/, matches: 0 },
 		{ name: 'Samsung', regex: /Tizen\//, matches: 0 },
 		{ name: 'Mac', regex: /Macintosh/, matches: 0 },
-		{ name: 'Windows', regex: /Windows/, matches: 0 },
+		{ name: 'Windows', regex: /Windows/, matches: 0 }
 	];
 
 	function getDevice(userAgent: string | null): string {
@@ -46,19 +43,19 @@
 				title: { text: 'Requests' },
 				gridcolor: 'gray',
 				showgrid: false,
-				fixedrange: true,
+				fixedrange: true
 			},
 			xaxis: {
-				visible: false,
+				visible: false
 			},
-			dragmode: false,
+			dragmode: false
 		};
 	}
 
 	const colors = [
 		'#3FCF8E', // Green
 		'#E46161', // Red
-		'#EBEB81', // Yellow
+		'#EBEB81' // Yellow
 	];
 
 	function donut(data: RequestsData) {
@@ -74,9 +71,7 @@
 			}
 		}
 
-		const dataPoints = Object.entries(deviceCount).sort(
-			(a, b) => b[1] - a[1],
-		);
+		const dataPoints = Object.entries(deviceCount).sort((a, b) => b[1] - a[1]);
 
 		const devices = new Array(dataPoints.length);
 		const counts = new Array(dataPoints.length);
@@ -94,9 +89,9 @@
 				type: 'pie',
 				hole: 0.6,
 				marker: {
-					colors: colors,
-				},
-			},
+					colors: colors
+				}
+			}
 		];
 	}
 
@@ -107,8 +102,8 @@
 			config: {
 				responsive: true,
 				showSendToCloud: false,
-				displayModeBar: false,
-			},
+				displayModeBar: false
+			}
 		};
 	}
 
@@ -122,20 +117,11 @@
 
 	async function newPlot(data: RequestsData) {
 		const plotData = getPlotData(data);
-		Plotly.newPlot(
-			plotDiv,
-			plotData.data,
-			plotData.layout,
-			plotData.config,
-		);
+		Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
 	}
 
 	function refreshPlot(data: RequestsData) {
-		Plotly.react(
-			plotDiv,
-			donut(data),
-			getPlotLayout(),
-		)
+		Plotly.react(plotDiv, donut(data), getPlotLayout());
 	}
 
 	let plotDiv: HTMLDivElement;

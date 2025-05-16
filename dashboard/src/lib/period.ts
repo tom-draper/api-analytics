@@ -68,3 +68,14 @@ export function dateInPrevPeriod(date: Date, period: Period) {
 	endPeriodAgo.setDate(endPeriodAgo.getDate() - days);
 	return startPeriodAgo < date && date < endPeriodAgo;
 }
+
+export function isPeriod(period: string): period is Period {
+	return (
+		period === '24 hours' ||
+		period === 'week' ||
+		period === 'month' ||
+		period === '6 months' ||
+		period === 'year' ||
+		period === 'all time'
+	);
+}

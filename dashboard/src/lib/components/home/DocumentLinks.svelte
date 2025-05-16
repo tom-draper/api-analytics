@@ -1,38 +1,24 @@
 <div class="docs m-auto flex w-fit pb-16 pt-4">
-	<div class="doc-link-container">
-		<a class="doc-link" href="/faq">FAQ</a>
+	<div class="doc-link-container flex-1 grid place-items-center">
+		<a class="doc-link flex-1 bg-[#181818] hover:bg-[#161616]" href="/faq">FAQ</a>
 	</div>
-	<div class="doc-link-container">
-		<a class="doc-link" href="/privacy-policy">Privacy Policy</a>
+	<div class="doc-link-container flex-1 grid place-items-center">
+		<a class="doc-link flex-1 bg-[#181818] hover:bg-[#161616]" href="/privacy-policy">Privacy Policy</a>
 	</div>
-	<div class="doc-link-container">
-		<a class="doc-link" href="/outages">Outages</a>
+	<div class="doc-link-container flex-1 grid place-items-center">
+		<a class="doc-link flex-1 bg-[#181818] hover:bg-[#161616]" href="/outages">Outages</a>
 	</div>
 </div>
 
 <style scoped>
-	.doc-link-container {
-		flex: 1;
-		display: grid;
-		place-items: center;
-	}
 	.doc-link {
-		flex: 1;
 		color: #5f5f5f;
-		background: #181818;
 		border-radius: 4px;
 		min-width: 10em;
 		max-width: 15em;
 		margin: auto;
 		padding: 0.8em 1.5em;
-		display: flex;
 		margin: 0 1em;
-		text-align: center;
-		justify-content: center;
-	}
-
-	a:hover {
-		background: #161616;
 	}
 
 	@media (max-width: 800px) {

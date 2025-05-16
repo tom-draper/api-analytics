@@ -1,3 +1,5 @@
+import { shuffleList } from "./shuffle";
+
 export const serverURL = 'https://www.apianalytics-server.com';
 
 export const pageSize = 200_000;
@@ -51,3 +53,26 @@ export const methodMap = [
 	'HEAD',
 	'TRACE',
 ];
+
+export const loadingMessages = shuffleList([
+	'Loading dashboard...',
+	'Processing data...',
+	'Fetching analytics...',
+	'Crunching numbers...',
+	'Hang on tight...',
+	'Almost there...',
+	'Preparing insights...',
+	'Analyzing requests...',
+	'Visualizing data...',
+	'Building your dashboard...',
+	'Compiling results...',
+	'Running with scissors (carefully)...',
+	'Aligning the stars...',
+	'Summoning data spirits...',
+	'Double checking everything...',
+	'Connecting the dots...',
+	'Unlocking the insights...',
+	'Preparing for launch...',
+	'Making notes...',
+	'Mapping the trends...'
+]);

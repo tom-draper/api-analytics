@@ -158,20 +158,11 @@
 
 	async function newPlot(data: RequestsData) {
 		const plotData = getPlotData(data);
-		Plotly.newPlot(
-			plotDiv,
-			plotData.data,
-			plotData.layout,
-			plotData.config,
-		);
+		Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
 	}
 
 	function refreshPlot(data: RequestsData) {
-		Plotly.react(
-			plotDiv,
-			donut(data),
-			getPlotLayout(),
-		)
+		Plotly.react(plotDiv, donut(data), getPlotLayout());
 	}
 
 	let plotDiv: HTMLDivElement;

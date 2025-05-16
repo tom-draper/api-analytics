@@ -1,25 +1,20 @@
 <script>
-	import Lightning from "./Lightning.svelte";
-
+	import Lightning from './Lightning.svelte';
 </script>
-<div class="lightning-wrapper">
-	<!-- Background (darker version) -->
-     <div class="lightning-bg text-[#228458]">
-         <Lightning />
-     </div>
 
-    <!-- Foreground (lighter version) -->
-     <div class="lightning-fill text-[var(--highlight)]">
-         <Lightning />
-     </div>
+<div class="lightning-wrapper relative h-auto">
+	<!-- Background (darker version) -->
+	<div class="lightning-bg text-[#228458]">
+		<Lightning />
+	</div>
+
+	<!-- Foreground (lighter version) -->
+	<div class="lightning-fill text-[var(--highlight)]">
+		<Lightning />
+	</div>
 </div>
 
 <style scoped>
-	.lightning-wrapper {
-		position: relative;
-		height: auto;
-	}
-
 	.lightning-bg,
 	.lightning-fill {
 		position: absolute;

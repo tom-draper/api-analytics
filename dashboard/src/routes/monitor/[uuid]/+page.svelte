@@ -122,7 +122,7 @@
 		}
 		intervalID = setInterval(refreshData, 1800000); // Refresh data every 30 minutes
 	});
-	
+
 	onDestroy(() => {
 		// Cleanup interval on component destroy
 		clearInterval(intervalID);

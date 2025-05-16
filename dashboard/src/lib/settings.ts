@@ -35,4 +35,3 @@ export function initSettings(): DashboardSettings {
 		ignoreParams: true,
 	};
 }
-

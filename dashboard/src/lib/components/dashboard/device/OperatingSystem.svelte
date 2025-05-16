@@ -1,9 +1,6 @@
 <script lang="ts">
 	import { cachedFunction } from '$lib/cache';
-	import {
-		type Candidate,
-		maintainCandidates,
-	} from '$lib/candidates';
+	import { type Candidate, maintainCandidates } from '$lib/candidates';
 	import { ColumnIndex, graphColors } from '$lib/consts';
 
 	const osCandidates: Candidate[] = [
@@ -11,18 +8,18 @@
 		{
 			name: 'Windows 95',
 			regex: /(Windows 95)|(Win95)|(Windows_95)/,
-			matches: 0,
+			matches: 0
 		},
 		{ name: 'Windows 98', regex: /(Windows 98)|(Win98)/, matches: 0 },
 		{
 			name: 'Windows 2000',
 			regex: /(Windows NT 5.0)|(Windows 2000)/,
-			matches: 0,
+			matches: 0
 		},
 		{
 			name: 'Windows XP',
 			regex: /(Windows NT 5.1)|(Windows XP)/,
-			matches: 0,
+			matches: 0
 		},
 		{ name: 'Windows Server 2003', regex: /(Windows NT 5.2)/, matches: 0 },
 		{ name: 'Windows Vista', regex: /(Windows NT 6.0)/, matches: 0 },
@@ -32,7 +29,7 @@
 		{
 			name: 'Windows NT 4.0',
 			regex: /(Windows NT 4.0)|(WinNT4.0)|(WinNT)|(Windows NT)/,
-			matches: 0,
+			matches: 0
 		},
 		{ name: 'Windows ME', regex: /Windows ME/, matches: 0 },
 		{ name: 'OpenBSD', regex: /OpenBSD/, matches: 0 },
@@ -46,9 +43,10 @@
 		{ name: 'OS/2', regex: /OS\/2/, matches: 0 },
 		{
 			name: 'Search Bot',
-			regex: /(APIs-Google)|(AdsBot)|(nuhk)|(Googlebot)|(Storebot)|(Google-Site-Verification)|(Mediapartners)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves\/Teoma)|(ia_archiver)/,
-			matches: 0,
-		},
+			regex:
+				/(APIs-Google)|(AdsBot)|(nuhk)|(Googlebot)|(Storebot)|(Google-Site-Verification)|(Mediapartners)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves\/Teoma)|(ia_archiver)/,
+			matches: 0
+		}
 	];
 
 	function getOS(userAgent: string | null): string {
@@ -87,12 +85,12 @@
 				title: { text: 'Requests' },
 				gridcolor: 'gray',
 				showgrid: false,
-				fixedrange: true,
+				fixedrange: true
 			},
 			xaxis: {
-				visible: false,
+				visible: false
 			},
-			dragmode: false,
+			dragmode: false
 		};
 	}
 
@@ -127,9 +125,9 @@
 				type: 'pie',
 				hole: 0.6,
 				marker: {
-					colors: graphColors,
-				},
-			},
+					colors: graphColors
+				}
+			}
 		];
 	}
 
@@ -140,8 +138,8 @@
 			config: {
 				responsive: true,
 				showSendToCloud: false,
-				displayModeBar: false,
-			},
+				displayModeBar: false
+			}
 		};
 	}
 
@@ -155,20 +153,11 @@
 
 	async function newPlot(data: RequestsData) {
 		const plotData = getPlotData(data);
-		Plotly.newPlot(
-			plotDiv,
-			plotData.data,
-			plotData.layout,
-			plotData.config,
-		);
+		Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
 	}
 
 	function refreshPlot(data: RequestsData) {
-		Plotly.react(
-			plotDiv,
-			donut(data),
-			getPlotLayout(),
-		)
+		Plotly.react(plotDiv, donut(data), getPlotLayout());
 	}
 
 	let plotDiv: HTMLDivElement;

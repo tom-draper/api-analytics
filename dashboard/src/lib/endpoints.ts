@@ -18,13 +18,13 @@ export interface EndpointsResult {
  */
 function createEndpointFrequencyMap(data: RequestsData, ignoreParams: boolean): Map<string, Endpoint> {
     const freq = new Map<string, Endpoint>();
-    
+
     for (const row of data) {
         // Create groups of endpoints by path + status
         const path = ignoreParams ? row[ColumnIndex.Path].split('?')[0] : row[ColumnIndex.Path];
         const status = row[ColumnIndex.Status];
         const endpointID = `${path}${status}`;
-        
+
         let endpoint = freq.get(endpointID);
         if (!endpoint) {
             const method = methodMap[row[ColumnIndex.Method]];
@@ -37,7 +37,7 @@ function createEndpointFrequencyMap(data: RequestsData, ignoreParams: boolean): 
         }
         endpoint.count++;
     }
-    
+
     return freq;
 }
 
@@ -58,8 +58,8 @@ function statusMatchesFilter(status: number, activeFilter: EndpointFilterType): 
  * Returns filtered and sorted endpoints and the maximum count
  */
 export function getEndpoints(
-    data: RequestsData, 
-    activeFilter: EndpointFilterType, 
+    data: RequestsData,
+    activeFilter: EndpointFilterType,
     ignoreParams: boolean
 ): EndpointsResult {
     const freq = createEndpointFrequencyMap(data, ignoreParams);
@@ -67,7 +67,7 @@ export function getEndpoints(
     // Convert to array and filter by status
     const endpoints: Endpoint[] = [];
     let maxCount = 0;
-    
+
     for (const endpoint of freq.values()) {
         if (statusMatchesFilter(endpoint.status, activeFilter)) {
             endpoints.push(endpoint);

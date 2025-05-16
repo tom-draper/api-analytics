@@ -12,7 +12,7 @@
 	import UsageTime from '$components/dashboard/UsageTime.svelte';
 	import Location from '$components/dashboard/Location.svelte';
 	import Device from '$components/dashboard/device/Device.svelte';
-	import { dateInPeriod, dateInPrevPeriod } from '$lib/period';
+	import { dateInPeriod, dateInPrevPeriod, isPeriod } from '$lib/period';
 	import generateDemoData from '$lib/demo';
 	import formatUUID from '$lib/uuid';
 	import Settings from '$components/dashboard/Settings.svelte';
@@ -20,7 +20,7 @@
 	import type { NotificationState } from '$lib/notification';
 	import Notification from '$components/dashboard/Notification.svelte';
 	import exportCSV from '$lib/exportData';
-	import { ColumnIndex, columns, pageSize } from '$lib/consts';
+	import { ColumnIndex, columns, loadingMessages, pageSize } from '$lib/consts';
 	import Error from '$components/Error.svelte';
 	import TopUsers from '$components/dashboard/TopUsers.svelte';
 	import { getServerURL } from '$lib/url';
@@ -28,44 +28,11 @@
 	import { userTargeted } from '$lib/user';
 	import { dataStore } from '$lib/dataStore';
 	import Health from '$components/dashboard/health/Health.svelte';
-	import { periodParamToPeriod } from '$lib/params';
 	import Referrer from '$components/dashboard/Referrer.svelte';
 	import Loading from '$components/Loading.svelte';
 	import { get } from 'svelte/store';
 
 	const userID = formatUUID($page.params.uuid);
-
-	// Added loading message state
-	let loadingMessages = shuffleList([
-		'Loading dashboard...',
-		'Processing data...',
-		'Fetching analytics...',
-		'Crunching numbers...',
-		'Hang on tight...',
-		'Almost there...',
-		'Preparing insights...',
-		'Analyzing requests...',
-		'Visualizing data...',
-		'Building your dashboard...',
-		'Compiling results...',
-		'Running with scissors (carefully)...',
-		'Aligning the stars...',
-		'Summoning data spirits...',
-		'Double checking everything...',
-		'Connecting the dots...',
-		'Unlocking the insights...',
-		'Preparing for launch...',
-		'Making notes...',
-		'Mapping the trends...',
-	]);
-
-	function shuffleList(list: string[]) {
-		for (let i = list.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			[list[i], list[j]] = [list[j], list[i]];
-		}
-		return list;
-	}
 
 	function getPeriodData(data: RequestsData, settings: DashboardSettings) {
 		const inRange = getInRange();
@@ -307,8 +274,8 @@
 		const settings = initSettings();
 
 		const period = $page.url.searchParams.get('period');
-		if (period) {
-			settings.period = periodParamToPeriod(period);
+		if (period && isPeriod(period)) {
+			settings.period = period;
 		}
 		const hostname = $page.url.searchParams.get('hostname');
 		if (hostname) {

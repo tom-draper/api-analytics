@@ -1,20 +1,18 @@
 <script lang="ts">
 </script>
 
-<div class="flex w-full justify-center py-16 pb-18">
+<div class="pb-18 flex w-full justify-center py-16">
 	<div class="container mx-auto max-w-4xl px-6">
-		<div
-			class="overflow-hidden rounded border border-[#2e2e2e] bg-[#181818] transition-all"
-		>
+		<div class="overflow-hidden rounded border border-[#2e2e2e] bg-[#181818] transition-all">
 			<div class="flex flex-col items-center gap-6 p-6 md:flex-row">
 				<div class="shrink-0">
 					<img src="images/logos/nginx-analytics.svg" alt="Nginx Analytics" class="h-24 w-auto" />
 				</div>
 				<div class="flex-1 text-center md:text-left">
 					<h2 class="mb-2 text-xl font-bold text-white">Using Nginx?</h2>
-					<p class="mb-4 text-neutral-300 p-0">
-						Try <span class="font-medium text-[var(--highlight)]">Nginx Analytics</span>, a flexible and
-						fully self-hosted solution for real-time monitoring.
+					<p class="mb-4 p-0 text-neutral-300">
+						Try <span class="font-medium text-[var(--highlight)]">Nginx Analytics</span>, a flexible
+						and fully self-hosted solution for real-time monitoring.
 					</p>
 					<a
 						href="https://github.com/tom-draper/nginx-analytics"

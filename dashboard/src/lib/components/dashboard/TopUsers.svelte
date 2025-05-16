@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { formatUserID, getUserIdentifier } from '$lib/user';
 	import { ColumnIndex } from '$lib/consts';
-	import { page } from "$app/state";
-	import { replaceState } from '$app/navigation';
+	import { setParam, setParamNoReplace } from '$lib/params';
 
 	type Users = {
 		[userID: string]: User;
@@ -73,35 +72,16 @@
 	}
 
 	function setUserParams(ipAddress: string | null, userID: string | null) {
-		if (ipAddress === null) {
-			page.url.searchParams.delete('ipAddress'); 
-		} else {
-			page.url.searchParams.set('ipAddress', ipAddress); 
-		}
-		if (userID === null) {
-			page.url.searchParams.delete('userID')
-		} else {
-			page.url.searchParams.set('userID', userID);
-		}
-		replaceState(page.url, page.state);
+		setParamNoReplace('ipAddress', ipAddress);
+		setParam('userID', userID);
 	}
 
 	function setIPAddressParam(ipAddress: string | null) {
-		if (ipAddress === null) {
-			page.url.searchParams.delete('ipAddress'); 
-		} else {
-			page.url.searchParams.set('ipAddress', ipAddress); 
-		}
-		replaceState(page.url, page.state);
+		setParam('ipAddress', ipAddress);
 	}
 
 	function setUserIDParam(userID: string | null) {
-		if (userID === null) {
-			page.url.searchParams.delete('userID')
-		} else {
-			page.url.searchParams.set('userID', userID);
-		}
-		replaceState(page.url, page.state);
+		setParam('userID', userID);
 	}
 
 	function build(data: RequestsData) {

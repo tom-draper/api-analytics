@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { page as p } from '$app/state';
-	import { replaceState } from '$app/navigation';
 	import type { DashboardSettings } from '$lib/settings';
 	import Dropdown from './Dropdown.svelte';
 	import type { Period } from '$lib/period';
 	import { onMount } from 'svelte';
+	import { setParam } from '$lib/params';
 
 	const timePeriods: Period[] = ['24 hours', 'week', 'month', '6 months', 'year', 'all time'];
 
@@ -35,25 +34,14 @@
 		'6 months': '6 months',
 		year: 'Year',
 		'all time': 'All time'
-	}
+	};
 
 	function setPeriodParam(period: Period) {
-		if (period === "week") {
-			// Week is default period, so avoid param to keep simple
-			p.url.searchParams.delete('period');
-		} else {
-			p.url.searchParams.set('period', period.toLocaleLowerCase().replace(' ', '-'));
-		}
-		replaceState(p.url, p.state);
+		setParam('period', period);
 	}
 
 	function setHostnameParam(hostname: string | null) {
-		if (hostname === null) {
-			p.url.searchParams.delete('hostname');
-		} else {
-			p.url.searchParams.set('hostname', hostname);
-		}
-		replaceState(p.url, p.state);
+		setParam('hostname', hostname);
 	}
 
 	let donateMessage: string;

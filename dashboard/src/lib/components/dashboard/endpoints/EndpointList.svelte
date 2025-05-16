@@ -1,17 +1,17 @@
 <script lang="ts">
 	import type { Endpoint } from '$lib/endpoints';
 
-	export let endpoints: Endpoint[];
-	export let maxCount: number;
-	
-	// In Svelte 5, we define events directly in the component props
-	export let selectEndpoint: (e: CustomEvent<{ path: string | null; status: number | null }>) => void;
-
 	function handleSelect(path: string, status: number): void {
-		selectEndpoint?.(new CustomEvent('selectEndpoint', { 
-			detail: { path, status } 
-		}));
+		selectEndpoint?.(
+			new CustomEvent('selectEndpoint', {
+				detail: { path, status }
+			})
+		);
 	}
+
+	export let endpoints: Endpoint[],
+		maxCount: number,
+		selectEndpoint: (e: CustomEvent<{ path: string | null; status: number | null }>) => void;
 </script>
 
 <div class="endpoints">
@@ -45,7 +45,7 @@
 	.endpoints {
 		margin: 0.9em 20px 0.6em;
 	}
-	
+
 	.endpoint {
 		border-radius: 3px;
 		margin: 5px 0;
@@ -56,11 +56,11 @@
 		width: 100%;
 		cursor: pointer;
 	}
-	
+
 	.endpoint:hover {
 		background: linear-gradient(270deg, transparent, #444);
 	}
-	
+
 	.path {
 		position: relative;
 		flex-grow: 1;
@@ -71,7 +71,7 @@
 		overflow-wrap: break-word;
 		font-family: 'Noto Sans' !important;
 	}
-	
+
 	.background {
 		border-radius: 3px;
 		color: var(--light-background);
@@ -82,23 +82,23 @@
 		position: absolute;
 		top: 0;
 	}
-	
+
 	.success {
 		background: var(--highlight);
 	}
-	
+
 	.redirect {
 		background: #4598ff;
 	}
-	
+
 	.bad {
 		background: rgb(235, 235, 129);
 	}
-	
+
 	.error {
 		background: var(--red);
 	}
-	
+
 	.other {
 		background: rgb(241, 164, 20);
 	}
