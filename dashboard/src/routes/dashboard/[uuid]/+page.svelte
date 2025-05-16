@@ -5,7 +5,7 @@
 	import Logo from '$components/dashboard/Logo.svelte';
 	import ResponseTimes from '$components/dashboard/ResponseTimes.svelte';
 	import Users from '$components/dashboard/Users.svelte';
-	import Endpoints from '$components/dashboard/Endpoints.svelte';
+	import Endpoints from '$components/dashboard/endpoints/Endpoints.svelte';
 	import SuccessRate from '$components/dashboard/SuccessRate.svelte';
 	import Activity from '$components/dashboard/activity/Activity.svelte';
 	import Version from '$components/dashboard/Version.svelte';
