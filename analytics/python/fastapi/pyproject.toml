@@ -1,25 +1,18 @@
-[build-system]
-build-backend = "setuptools.build_meta"
-requires = [
-  "setuptools>=42",
-  "wheel",
-]
-
 [project]
+name = "fastapi-analytics"
+version = "1.2.5"
+description = "Monitoring and analytics for FastAPI applications."
+readme = "README.md"
 authors = [{name = "Tom Draper", email = "tomjdraper1@gmail.com"}]
+license = {file = "LICENSE"}
+requires-python = ">=3.6"
+keywords = ["analytics", "api", "dashboard", "fastapi", "middleware"]
 classifiers = [
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
 ]
 dependencies = ["fastapi", "requests"]
-description = "Monitoring and analytics for FastAPI applications."
-keywords = ["analytics", "api", "dashboard", "fastapi", "middleware"]
-license = {file = "LICENSE"}
-name = "fastapi-analytics"
-readme = "README.md"
-requires-python = ">=3.6"
-version = "1.2.4"
 
 [project.optional-dependencies]
 build = ["build", "twine"]

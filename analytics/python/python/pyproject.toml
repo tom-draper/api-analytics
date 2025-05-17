@@ -1,25 +1,25 @@
 [build-system]
 build-backend = "setuptools.build_meta"
 requires = [
-  "setuptools>=42",
+  "setuptools>=61.0",
   "wheel",
 ]
 
 [project]
+name = "api-analytics"
+version = "1.2.7"
+description = "Monitoring and analytics for Python API frameworks."
+readme = "README.md"
 authors = [{name = "Tom Draper", email = "tomjdraper1@gmail.com"}]
+license = {file = "LICENSE"}
+requires-python = ">=3.6"
+keywords = ["analytics", "api", "dashboard", "django", "fastapi", "flask", "tornado", "middleware"]
 classifiers = [
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
 ]
 dependencies = ["requests"]
-description = "Monitoring and analytics for Python API frameworks."
-keywords = ["analytics", "api", "dashboard", "django", "fastapi", "flask", "tornado", "middleware"]
-license = {file = "LICENSE"}
-name = "api-analytics"
-readme = "README.md"
-requires-python = ">=3.6"
-version = "1.2.6"
 
 [project.optional-dependencies]
 build = ["build", "twine"]
