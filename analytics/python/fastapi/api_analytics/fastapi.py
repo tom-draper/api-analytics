@@ -57,6 +57,8 @@ class Analytics(BaseHTTPMiddleware):
 
         @staticmethod
         def get_ip_address(request: Request) -> Union[str, None]:
+            if request.client is None:
+                return None
             return request.client.host
 
         @staticmethod
