@@ -16,7 +16,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func keyFunc(c *gin.Context) string {
+func rateLimitKey(c *gin.Context) string {
 	return c.ClientIP()
 }
 
@@ -61,7 +61,7 @@ func main() {
 	})
 	rateLimiter := ratelimit.RateLimiter(store, &ratelimit.Options{
 		ErrorHandler: errorHandler,
-		KeyFunc:      keyFunc,
+		KeyFunc:      rateLimitKey,
 	})
 	app.Use(rateLimiter)
 
