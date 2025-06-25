@@ -725,7 +725,6 @@ func buildRequestData(rows pgx.Rows) []RequestData {
 				Path:         request.Path,
 				Hostname:     hostname,
 				UserAgent:    userAgent,
-				UserHash:     userHash,
 				Method:       request.Method,
 				Status:       request.Status,
 				ResponseTime: request.ResponseTime,
