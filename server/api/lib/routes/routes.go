@@ -66,10 +66,10 @@ type DashboardRequestRow struct {
 	Method       int16       `json:"method"`
 	Status       int16       `json:"status"`
 	ResponseTime int16       `json:"response_time"`
-	Location     *string     `json:"location"`  // Nullable
+	Location     *string     `json:"location"` // Nullable
 	// UserHash     *string     `json:"user_hash"` // Nullable
-	UserID       *string     `json:"user_id"`   // Nullable, custom user identifier field specific to each API service
-	CreatedAt    time.Time   `json:"created_at"`
+	UserID    *string   `json:"user_id"` // Nullable, custom user identifier field specific to each API service
+	CreatedAt time.Time `json:"created_at"`
 }
 
 func getMaxLoad() int {
@@ -341,51 +341,6 @@ func getPaginatedRequestsHandler() gin.HandlerFunc {
 	}
 }
 
-// func getUserAPIKey(connection *pgx.Conn, userID string) (string, error) {
-// 	// Avoiding table join due to memory limitations
-// 	var apiKey string
-// 	query := "SELECT api_key FROM users WHERE user_id = $1;"
-// 	err := connection.QueryRow(context.Background(), query, userID).Scan(&apiKey)
-// 	return apiKey, err
-// }
-
-// func getUserAgents(connection *pgx.Conn, userAgentIDs map[int]struct{}) (map[int]string, error) {
-// 	// Convert user agent int IDs to equivalent strings
-// 	userAgents := make(map[int]string)
-// 	if len(userAgentIDs) == 0 {
-// 		return userAgents, nil
-// 	}
-
-// 	var userAgentsQuery strings.Builder
-// 	userAgentsQuery.WriteString("SELECT id, user_agent FROM user_agents WHERE id IN (")
-// 	arguments := []any{}
-// 	var i int
-// 	for id := range userAgentIDs {
-// 		userAgentsQuery.WriteString("$" + strconv.Itoa(i+1))
-// 		arguments = append(arguments, id)
-// 		if i < len(userAgentIDs)-1 {
-// 			userAgentsQuery.WriteString(",")
-// 		}
-// 		i++
-// 	}
-// 	userAgentsQuery.WriteString(");")
-// 	rows, err := connection.Query(context.Background(), userAgentsQuery.String(), arguments...)
-// 	if err != nil {
-// 		return userAgents, err
-// 	}
-// 	for rows.Next() {
-// 		var id int
-// 		var name string
-// 		err := rows.Scan(&id, &name)
-// 		if err == nil {
-// 			userAgents[id] = name
-// 		}
-// 	}
-// 	rows.Close()
-
-// 	return userAgents, nil
-// }
-
 func getNullableString(value *string) string {
 	if value == nil {
 		return ""
@@ -619,10 +574,10 @@ func parseQueryDateTime(date string) time.Time {
 }
 
 type RequestData struct {
-	Hostname     string    `json:"hostname"`
-	IPAddress    string    `json:"ip_address"`
-	Path         string    `json:"path"`
-	UserAgent    string    `json:"user_agent"`
+	Hostname  string `json:"hostname"`
+	IPAddress string `json:"ip_address"`
+	Path      string `json:"path"`
+	UserAgent string `json:"user_agent"`
 	// UserHash     string    `json:"user_hash"`
 	Method       int16     `json:"method"`
 	Status       int16     `json:"status"`
@@ -634,25 +589,25 @@ type RequestData struct {
 }
 
 type RequestRow struct {
-	Hostname     *string     `json:"hostname"`
-	IPAddress    pgtype.CIDR `json:"ip_address"`
-	Path         string      `json:"path"`
-	UserAgent    *string     `json:"user_agent"`
+	Hostname  *string     `json:"hostname"`
+	IPAddress pgtype.CIDR `json:"ip_address"`
+	Path      string      `json:"path"`
+	UserAgent *string     `json:"user_agent"`
 	// UserHash     *string     `json:"user_hash"`
-	Method       int16       `json:"method"`
-	Status       int16       `json:"status"`
-	ResponseTime int16       `json:"response_time"`
-	Location     *string     `json:"location"`
-	Referrer     *string     `json:"referrer"`
-	UserID       *string     `json:"user_id"` // Custom user identifier field specific to each API service
-	CreatedAt    time.Time   `json:"created_at"`
+	Method       int16     `json:"method"`
+	Status       int16     `json:"status"`
+	ResponseTime int16     `json:"response_time"`
+	Location     *string   `json:"location"`
+	Referrer     *string   `json:"referrer"`
+	UserID       *string   `json:"user_id"` // Custom user identifier field specific to each API service
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 func buildRequestData(rows pgx.Rows) []RequestData {
 	requests := make([]RequestData, 0)
 	var request RequestRow
 	for rows.Next() {
-		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt, &request.Referrer,)
+		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt, &request.Referrer)
 		if err == nil {
 			var ip string
 			if request.IPAddress.IPNet != nil {
@@ -678,52 +633,9 @@ func buildRequestData(rows pgx.Rows) []RequestData {
 			})
 		}
 	}
+
 	return requests
 }
-
-// func deleteUserRequests(apiKey string, c *gin.Context, connection *pgx.Conn) error {
-// 	// Delete all user's API request data
-// 	query := "DELETE FROM requests WHERE api_key = $1;"
-// 	_, err := connection.Exec(context.Background(), query, apiKey)
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
-// 		return err
-// 	}
-// 	return nil
-// }
-
-// func deleteUserAccount(apiKey string, c *gin.Context, connection *pgx.Conn) error {
-// 	// Delete user account record
-// 	query := "DELETE FROM users WHERE api_key = $1;"
-// 	_, err := connection.Exec(context.Background(), query, apiKey)
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
-// 		return err
-// 	}
-// 	return nil
-// }
-
-// func deleteUserMonitors(apiKey string, c *gin.Context, connection *pgx.Conn) error {
-// 	// Delete all user's monitored urls
-// 	query := "DELETE FROM monitor WHERE api_key = $1;"
-// 	_, err := connection.Exec(context.Background(), query, apiKey)
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
-// 		return err
-// 	}
-// 	return nil
-// }
-
-// func deleteUserPings(apiKey string, c *gin.Context, connection *pgx.Conn) error {
-// 	// Delete all user's recorded pings to all monitored urls
-// 	query := "DELETE FROM pings WHERE api_key = $1;"
-// 	_, err := connection.Exec(context.Background(), query, apiKey)
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
-// 		return err
-// 	}
-// 	return nil
-// }
 
 func deleteData(c *gin.Context) {
 	apiKey := c.Param("apiKey")
@@ -782,7 +694,6 @@ func getUserMonitor(c *gin.Context) {
 		}
 	}
 
-	// Return API request data
 	c.JSON(http.StatusOK, monitors)
 }
 
@@ -841,7 +752,6 @@ func addUserMonitor(c *gin.Context) {
 		return
 	}
 
-	// Get monitor count
 	var monitorCount int
 	query = "SELECT count(*) FROM monitor WHERE api_key = $1;"
 	err = connection.QueryRow(context.Background(), query, apiKey).Scan(&monitorCount)
@@ -868,30 +778,7 @@ func addUserMonitor(c *gin.Context) {
 
 	log.LogToFile(fmt.Sprintf("key=%s: Monitor '%s' created successfully", apiKey, monitor.URL))
 
-	// Return success response
 	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "New monitor created successfully."})
-}
-
-func deleteMonitor(apiKey string, url string, c *gin.Context, connection *pgx.Conn) error {
-	// Delete user's monitor to this specific url
-	query := "DELETE FROM monitor WHERE api_key = $1 AND url = $2;"
-	_, err := connection.Exec(context.Background(), query, apiKey, url)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
-		return err
-	}
-	return nil
-}
-
-func deletePings(apiKey string, url string, c *gin.Context, connection *pgx.Conn) error {
-	// Delete user's recorded pings to monitored url
-	query := "DELETE FROM pings WHERE api_key = $1 AND url = $2;"
-	_, err := connection.Exec(context.Background(), query, apiKey, url)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
-		return err
-	}
-	return nil
 }
 
 func deleteUserMonitor(c *gin.Context) {
@@ -931,14 +818,14 @@ func deleteUserMonitor(c *gin.Context) {
 	}
 
 	// Delete monitor from database
-	err = deleteMonitor(apiKey, body.URL, c, connection)
+	err = database.DeleteURLMonitorWithConnection(context.Background(), connection, apiKey, body.URL)
 	if err != nil {
 		log.LogToFile(fmt.Sprintf("key=%s: Failed to delete monitor - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return
 	}
 	// Delete recorded pings from database for this monitor
-	err = deletePings(apiKey, body.URL, c, connection)
+	err = database.DeleteURLPingsWithConnection(context.Background(), connection, apiKey, body.URL)
 	if err != nil {
 		log.LogToFile(fmt.Sprintf("key=%s: Failed to delete pings - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
