@@ -20,19 +20,7 @@ import (
 )
 
 func genAPIKey(c *gin.Context) {
-	connection, err := database.NewConnection()
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("API key generation failed - %s", err.Error()))
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
-		return
-	}
-	defer connection.Close(context.Background())
-
-	// Fetch all API request data associated with this account
-	query := "INSERT INTO users (api_key, user_id, created_at, last_accessed) VALUES (gen_random_uuid(), gen_random_uuid(), NOW(), NOW()) RETURNING api_key;"
-
-	var apiKey string
-	err = connection.QueryRow(context.Background(), query).Scan(&apiKey)
+	apiKey, err := database.CreateUser()
 	if err != nil {
 		log.LogToFile(fmt.Sprintf("API key generation failed - %s", err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
@@ -41,36 +29,24 @@ func genAPIKey(c *gin.Context) {
 
 	log.LogToFile(fmt.Sprintf("key=%s: API key generation successful", apiKey))
 
-	// Return API key
 	c.JSON(http.StatusOK, apiKey)
 }
 
 func getUserID(c *gin.Context) {
-	// Get user ID associated with API key
 	var apiKey string = c.Param("apiKey")
 	if apiKey == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
 
-	connection, err := database.NewConnection()
+	// Get user ID associated with API key
+	userID, err := database.GetUserID(apiKey)
 	if err != nil {
 		log.LogToFile(fmt.Sprintf("key=%s: User ID fetch failed - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
-	defer connection.Close(context.Background())
 
-	// Fetch user ID corresponding with API key
-	var userID string
-	query := "SELECT user_id FROM users WHERE api_key = $1;"
-	err = connection.QueryRow(context.Background(), query, apiKey).Scan(&userID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
-		return
-	}
-
-	// Return user ID
 	c.JSON(http.StatusOK, userID)
 }
 
@@ -91,7 +67,7 @@ type DashboardRequestRow struct {
 	Status       int16       `json:"status"`
 	ResponseTime int16       `json:"response_time"`
 	Location     *string     `json:"location"`  // Nullable
-	UserHash     *string     `json:"user_hash"` // Nullable
+	// UserHash     *string     `json:"user_hash"` // Nullable
 	UserID       *string     `json:"user_id"`   // Nullable, custom user identifier field specific to each API service
 	CreatedAt    time.Time   `json:"created_at"`
 }
@@ -160,7 +136,7 @@ func getRequestsHandler() gin.HandlerFunc {
 
 		for {
 			// Note: table joins currently avoided due to memory limitations
-			query := "SELECT ip_address, path, hostname, user_agent_id, referrer, user_hash, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 ORDER BY created_at LIMIT $2 OFFSET $3;"
+			query := "SELECT ip_address, path, hostname, user_agent_id, method, response_time, status, location, user_id, created_at, referrer FROM requests WHERE api_key = $1 ORDER BY created_at LIMIT $2 OFFSET $3;"
 			offset := (currentPage - 1) * pageSize
 			rows, err := connection.Query(context.Background(), query, apiKey, pageSize, offset)
 			if err != nil {
@@ -174,22 +150,21 @@ func getRequestsHandler() gin.HandlerFunc {
 			var count int
 			var skipped int
 			for rows.Next() {
-				err = rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Referrer, &request.UserHash, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
+				err = rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt, &request.Referrer)
 				if err != nil {
 					skipped++
 					continue
 				}
 
-				var ip string
+				var ipAddress string
 				if request.IPAddress.IPNet != nil {
-					ip = request.IPAddress.IPNet.IP.String()
+					ipAddress = request.IPAddress.IPNet.IP.String()
 				}
 				hostname := getNullableString(request.Hostname)
 				location := getNullableString(request.Location)
-				userHash := getNullableString(request.UserHash)
 				referrer := getNullableString(request.Referrer)
 				userID := getNullableString(request.UserID)
-				requests = append(requests, [12]any{ip, request.Path, hostname, request.UserAgent, request.Method, request.ResponseTime, request.Status, location, userID, request.CreatedAt, userHash, referrer})
+				requests = append(requests, [12]any{ipAddress, request.Path, hostname, request.UserAgent, request.Method, request.ResponseTime, request.Status, location, userID, request.CreatedAt, referrer})
 				if request.UserAgent != nil {
 					if _, ok := userAgentIDs[*request.UserAgent]; !ok {
 						userAgentIDs[*request.UserAgent] = struct{}{}
@@ -242,9 +217,9 @@ func getRequestsHandler() gin.HandlerFunc {
 
 		// Record user dashboard access
 		if targetPage == 0 {
-			message = fmt.Sprintf("key=%s: Dashboard access successful (%d)", apiKey, len(requests))
+			message = fmt.Sprintf("key=%s: Dashboard access successful [%d]", apiKey, len(requests))
 		} else {
-			message = fmt.Sprintf("key=%s: Dashboard page %d access successful (%d)", apiKey, targetPage, len(requests))
+			message = fmt.Sprintf("key=%s: Dashboard page %d access successful [%d]", apiKey, targetPage, len(requests))
 		}
 		log.LogToFile(message)
 
@@ -296,7 +271,7 @@ func getPaginatedRequestsHandler() gin.HandlerFunc {
 		requests := [][12]any{}
 		userAgentIDs := make(map[int]struct{})
 
-		query := "SELECT ip_address, path, hostname, user_agent_id, referrer, user_hash, method, response_time, status, location, user_id, created_at FROM requests WHERE api_key = $1 ORDER BY created_at LIMIT $2 OFFSET $3;"
+		query := "SELECT ip_address, path, hostname, user_agent_id, method, response_time, status, location, user_id, created_at, referrer FROM requests WHERE api_key = $1 ORDER BY created_at LIMIT $2 OFFSET $3;"
 		rows, err := connection.Query(context.Background(), query, apiKey, pageSize, (page-1)*pageSize)
 		if err != nil {
 			log.LogToFile(fmt.Sprintf("key=%s: Invalid API key - %s", apiKey, err.Error()))
@@ -305,7 +280,7 @@ func getPaginatedRequestsHandler() gin.HandlerFunc {
 		}
 		request := new(DashboardRequestRow) // Reuseable request struct
 		for rows.Next() {
-			err = rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Referrer, &request.UserHash, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt)
+			err = rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt, &request.Referrer)
 			if err != nil {
 				continue
 			}
@@ -316,10 +291,9 @@ func getPaginatedRequestsHandler() gin.HandlerFunc {
 			}
 			hostname := getNullableString(request.Hostname)
 			location := getNullableString(request.Location)
-			userHash := getNullableString(request.UserHash)
 			referrer := getNullableString(request.Referrer)
 			userID := getNullableString(request.UserID)
-			requests = append(requests, [12]any{ip, request.Path, hostname, request.UserAgent, referrer, userHash, request.Method, request.ResponseTime, request.Status, location, userID, request.CreatedAt})
+			requests = append(requests, [12]any{ip, request.Path, hostname, request.UserAgent, request.Method, request.ResponseTime, request.Status, location, userID, request.CreatedAt, referrer})
 			if request.UserAgent != nil {
 				if _, ok := userAgentIDs[*request.UserAgent]; !ok {
 					userAgentIDs[*request.UserAgent] = struct{}{}
@@ -456,9 +430,9 @@ func buildRequestDataCompact(rows pgx.Rows, cols [12]any) [][12]any {
 	requests := [][12]any{cols}
 	var request DashboardRequestRow
 	for rows.Next() {
-		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.UserHash, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.Referrer, &request.UserID, &request.CreatedAt)
+		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt, &request.Referrer)
 		if err == nil {
-			requests = append(requests, [12]any{request.IPAddress, request.Path, request.Hostname, request.UserAgent, request.UserHash, request.Method, request.ResponseTime, request.Status, request.Location, request.Referrer, request.UserID, request.CreatedAt})
+			requests = append(requests, [12]any{request.IPAddress, request.Path, request.Hostname, request.UserAgent, request.Method, request.ResponseTime, request.Status, request.Location, request.UserID, request.CreatedAt, request.Referrer})
 		}
 	}
 	return requests
@@ -513,7 +487,7 @@ func getData(c *gin.Context) {
 
 	// Read data into list of objects to return
 	if queries.compact {
-		cols := [12]any{"ip_address", "path", "hostname", "user_agent", "user_hash", "method", "response_time", "status", "location", "referrer", "user_id", "created_at"}
+		cols := [12]any{"ip_address", "path", "hostname", "user_agent", "method", "response_time", "status", "location", "user_id", "created_at", "referrer"}
 		requests := buildRequestDataCompact(rows, cols)
 		log.LogToFile(fmt.Sprintf("key=%s: Data access successful (%d)", apiKey, len(requests)-1))
 		c.JSON(http.StatusOK, requests)
@@ -535,7 +509,7 @@ func getData(c *gin.Context) {
 
 func buildDataFetchQuery(apiKey string, queries DataFetchQueries) (string, []any) {
 	var query strings.Builder
-	query.WriteString("SELECT r.ip_address, r.path, r.hostname, u.user_agent, r.user_hash, r.method, r.response_time, r.status, r.location, r.referrer, r.user_id, r.created_at FROM requests r JOIN user_agents u ON r.user_agent_id = u.id WHERE api_key = $1")
+	query.WriteString("SELECT r.ip_address, r.path, r.hostname, u.user_agent, r.method, r.response_time, r.status, r.location, r.user_id, r.created_at, r.referrer FROM requests r JOIN user_agents u ON r.user_agent_id = u.id WHERE api_key = $1")
 
 	arguments := []any{apiKey}
 
@@ -661,7 +635,7 @@ type RequestData struct {
 	IPAddress    string    `json:"ip_address"`
 	Path         string    `json:"path"`
 	UserAgent    string    `json:"user_agent"`
-	UserHash     string    `json:"user_hash"`
+	// UserHash     string    `json:"user_hash"`
 	Method       int16     `json:"method"`
 	Status       int16     `json:"status"`
 	ResponseTime int16     `json:"response_time"`
@@ -676,7 +650,7 @@ type RequestRow struct {
 	IPAddress    pgtype.CIDR `json:"ip_address"`
 	Path         string      `json:"path"`
 	UserAgent    *string     `json:"user_agent"`
-	UserHash     *string     `json:"user_hash"`
+	// UserHash     *string     `json:"user_hash"`
 	Method       int16       `json:"method"`
 	Status       int16       `json:"status"`
 	ResponseTime int16       `json:"response_time"`
@@ -690,7 +664,7 @@ func buildRequestData(rows pgx.Rows) []RequestData {
 	requests := make([]RequestData, 0)
 	var request RequestRow
 	for rows.Next() {
-		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.UserHash, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.Referrer, &request.UserID, &request.CreatedAt)
+		err := rows.Scan(&request.IPAddress, &request.Path, &request.Hostname, &request.UserAgent, &request.Method, &request.ResponseTime, &request.Status, &request.Location, &request.UserID, &request.CreatedAt, &request.Referrer,)
 		if err == nil {
 			var ip string
 			if request.IPAddress.IPNet != nil {
@@ -700,14 +674,12 @@ func buildRequestData(rows pgx.Rows) []RequestData {
 			userAgent := getNullableString(request.UserAgent)
 			location := getNullableString(request.Location)
 			referrer := getNullableString(request.Referrer)
-			userHash := getNullableString(request.UserHash)
 			userID := getNullableString(request.UserID)
 			requests = append(requests, RequestData{
 				IPAddress:    ip,
 				Path:         request.Path,
 				Hostname:     hostname,
 				UserAgent:    userAgent,
-				UserHash:     userHash,
 				Method:       request.Method,
 				Status:       request.Status,
 				ResponseTime: request.ResponseTime,
@@ -1094,16 +1066,7 @@ func getUserPings(c *gin.Context) {
 }
 
 func checkHealth(c *gin.Context) {
-	connection, err := database.NewConnection()
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("Health check failed: %v", err))
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "unhealthy",
-			"error":  "Database connection failed",
-		})
-		return
-	}
-	err = connection.Ping(context.Background())
+	err := database.CheckConnection()
 	if err != nil {
 		log.LogToFile(fmt.Sprintf("Health check failed: %v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{
