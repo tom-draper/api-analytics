@@ -1,7 +1,7 @@
 package database
 
 import (
-	"context" 
+	"context"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -103,7 +103,6 @@ func DeleteRequestsWithConnection(ctx context.Context, conn *pgx.Conn, apiKey st
 	return err
 }
 
-
 func DeleteMonitors(apiKey string) error {
 	conn, err := NewConnection()
 	if err != nil {
@@ -133,6 +132,38 @@ func DeletePings(apiKey string) error {
 func DeletePingsWithConnection(ctx context.Context, conn *pgx.Conn, apiKey string) error {
 	query := "DELETE FROM pings WHERE api_key = $1;"
 	_, err := conn.Exec(ctx, query, apiKey)
+	return err
+}
+
+func DeleteURLMonitor(apiKey string, url string) error {
+	conn, err := NewConnection()
+	if err != nil {
+		return err
+	}
+	defer conn.Close(context.Background())
+
+	return DeleteURLMonitorWithConnection(context.Background(), conn, apiKey, url)
+}
+
+func DeleteURLMonitorWithConnection(ctx context.Context, conn *pgx.Conn, apiKey string, url string) error {
+	query := "DELETE FROM monitor WHERE api_key = $1 AND url = $2;"
+	_, err := conn.Exec(ctx, query, apiKey, url)
+	return err
+}
+
+func DeleteURLPings(apiKey string, url string) error {
+	conn, err := NewConnection()
+	if err != nil {
+		return err
+	}
+	defer conn.Close(context.Background())
+
+	return DeleteURLPingsWithConnection(context.Background(), conn, apiKey, url)
+}
+
+func DeleteURLPingsWithConnection(ctx context.Context, conn *pgx.Conn, apiKey string, url string) error {
+	query := "DELETE FROM pings WHERE api_key = $1 AND url = $2;"
+	_, err := conn.Exec(ctx, query, apiKey, url)
 	return err
 }
 
@@ -288,7 +319,7 @@ func GetUserAgentsWithConnection(ctx context.Context, conn *pgx.Conn, userAgentI
 
 	// Use pgx's built-in placeholder generation
 	query := "SELECT id, user_agent FROM user_agents WHERE id = ANY($1)"
-	
+
 	rows, err := conn.Query(ctx, query, ids)
 	if err != nil {
 		return nil, err
