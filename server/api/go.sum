@@ -225,6 +225,8 @@ github.com/tom-draper/api-analytics/server/database v0.0.0-20250625195445-a137d9
 github.com/tom-draper/api-analytics/server/database v0.0.0-20250625195445-a137d9688b1b/go.mod h1:D28ixzrzJTnMGBMqXlDyOLuUlUKWnuwVoUP0BhMKchs=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20250625210438-b86b91dfd5be h1:Oojh/2JAtTTv9E3hZRHDgMNPcKwY1uT6EV/ICQ1ISNw=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20250625210438-b86b91dfd5be/go.mod h1:D28ixzrzJTnMGBMqXlDyOLuUlUKWnuwVoUP0BhMKchs=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20250625213459-dd7e9a3d6143 h1:mAfaRzftg5Adl0g0g0JO+CkVXwy3kyyW7Pyc1iTkRGo=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20250625213459-dd7e9a3d6143/go.mod h1:D28ixzrzJTnMGBMqXlDyOLuUlUKWnuwVoUP0BhMKchs=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
 github.com/ugorji/go/codec v1.2.12 h1:9LC83zGrHhuUA9l16C9AHXAqEV/2wBQ4nkvumAE65EE=
