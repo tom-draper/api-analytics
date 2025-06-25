@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"net"
@@ -272,7 +271,7 @@ func logRequestHandler() gin.HandlerFunc {
 		"Sinatra":      15,
 		"Rocket":       16,
 		"ASP.NET Core": 17,
-		"Hono": 18,
+		"Hono":         18,
 	}
 
 	return func(c *gin.Context) {
@@ -284,21 +283,21 @@ func logRequestHandler() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
 		}
-		
+
 		if payload.APIKey == "" {
 			msg := "API key requied."
 			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
 		}
-		
+
 		if rateLimiter.RateLimited(payload.APIKey) {
 			msg := "Too many requests."
 			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusTooManyRequests, gin.H{"status": http.StatusTooManyRequests, "message": msg})
 			return
 		}
-		
+
 		if len(payload.Requests) == 0 {
 			msg := "Payload contains no logged requests."
 			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)

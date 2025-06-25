@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/tom-draper/api-analytics/server/api/lib/env"
 	"github.com/tom-draper/api-analytics/server/api/lib/log"
 	"github.com/tom-draper/api-analytics/server/api/lib/routes"
-	"github.com/tom-draper/api-analytics/server/api/lib/env"
 	"github.com/tom-draper/api-analytics/server/database"
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
