@@ -1,8 +1,6 @@
 package monitors
 
 import (
-	"context"
-	"log"
 	"testing"
 
 	"github.com/tom-draper/api-analytics/server/tools/usage/usage"
