@@ -1,4 +1,4 @@
-package lib
+package monitor
 
 import "os/exec"
 

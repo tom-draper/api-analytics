@@ -1,4 +1,4 @@
-package usage
+package requests
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/tom-draper/api-analytics/server/database"
+	"github.com/tom-draper/api-analytics/server/tools/usage/usage"
 )
 
 type RequestRow struct {
@@ -25,19 +26,19 @@ type RequestRow struct {
 }
 
 func HourlyRequestsCount(ctx context.Context) (int, error) {
-	return RequestsCount(ctx, hourly)
+	return RequestsCount(ctx, usage.hourly)
 }
 
 func DailyRequestsCount(ctx context.Context) (int, error) {
-	return RequestsCount(ctx, daily)
+	return RequestsCount(ctx, usage.daily)
 }
 
 func WeeklyRequestsCount(ctx context.Context) (int, error) {
-	return RequestsCount(ctx, weekly)
+	return RequestsCount(ctx, usage.weekly)
 }
 
 func MonthlyRequestsCount(ctx context.Context) (int, error) {
-	return RequestsCount(ctx, monthly)
+	return RequestsCount(ctx, usage.monthly)
 }
 
 func TotalRequestsCount(ctx context.Context) (int, error) {
@@ -66,19 +67,19 @@ func RequestsCount(ctx context.Context, interval string) (int, error) {
 }
 
 func HourlyRequests(ctx context.Context) ([]RequestRow, error) {
-	return Requests(ctx, hourly)
+	return Requests(ctx, usage.hourly)
 }
 
 func DailyRequests(ctx context.Context) ([]RequestRow, error) {
-	return Requests(ctx, daily)
+	return Requests(ctx, usage.daily)
 }
 
 func WeeklyRequests(ctx context.Context) ([]RequestRow, error) {
-	return Requests(ctx, weekly)
+	return Requests(ctx, usage.weekly)
 }
 
 func MonthlyRequests(ctx context.Context) ([]RequestRow, error) {
-	return Requests(ctx, monthly)
+	return Requests(ctx, usage.Monthly)
 }
 
 func TotalRequests(ctx context.Context) ([]RequestRow, error) {
@@ -113,33 +114,33 @@ func Requests(ctx context.Context, interval string) ([]RequestRow, error) {
 		requests = append(requests, request)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err // Check for any errors during iteration
+		return nil, err
 	}
 
 	return requests, nil
 }
 
-func HourlyUserRequests(ctx context.Context) ([]UserCount, error) {
-	return UserRequests(ctx, hourly)
+func HourlyUserRequests(ctx context.Context) ([]usage.UserCount, error) {
+	return UserRequests(ctx, usage.Hourly)
 }
 
-func DailyUserRequests(ctx context.Context) ([]UserCount, error) {
-	return UserRequests(ctx, daily)
+func DailyUserRequests(ctx context.Context) ([]usage.UserCount, error) {
+	return UserRequests(ctx, usage.Daily)
 }
 
-func WeeklyUserRequests(ctx context.Context) ([]UserCount, error) {
-	return UserRequests(ctx, weekly)
+func WeeklyUserRequests(ctx context.Context) ([]usage.UserCount, error) {
+	return UserRequests(ctx, usage.Weekly)
 }
 
-func MonthlyUserRequests(ctx context.Context) ([]UserCount, error) {
-	return UserRequests(ctx, monthly)
+func MonthlyUserRequests(ctx context.Context) ([]usage.UserCount, error) {
+	return UserRequests(ctx, usage.Monthly)
 }
 
-func TotalUserRequests(ctx context.Context) ([]UserCount, error) {
+func TotalUserRequests(ctx context.Context) ([]usage.UserCount, error) {
 	return UserRequests(ctx, "")
 }
 
-func UserRequests(ctx context.Context, interval string) ([]UserCount, error) {
+func UserRequests(ctx context.Context, interval string) ([]usage.UserCount, error) {
 	conn, err := database.NewConnection()
 	if err != nil {
 		return nil, err
@@ -158,9 +159,9 @@ func UserRequests(ctx context.Context, interval string) ([]UserCount, error) {
 	}
 	defer rows.Close()
 
-	var requests []UserCount
+	var requests []usage.UserCount
 	for rows.Next() {
-		var userRequests UserCount
+		var userRequests usage.UserCount
 		if err := rows.Scan(&userRequests.APIKey, &userRequests.Count); err != nil {
 			return nil, err
 		}
@@ -173,7 +174,7 @@ func UserRequests(ctx context.Context, interval string) ([]UserCount, error) {
 	return requests, nil
 }
 
-func UserRequestsOverLimit(ctx context.Context, limit int) ([]UserCount, error) {
+func UserRequestsOverLimit(ctx context.Context, limit int) ([]usage.UserCount, error) {
 	conn, err := database.NewConnection()
 	if err != nil {
 		return nil, err
@@ -187,9 +188,9 @@ func UserRequestsOverLimit(ctx context.Context, limit int) ([]UserCount, error) 
 	}
 	defer rows.Close()
 
-	var requests []UserCount
+	var requests []usage.UserCount
 	for rows.Next() {
-		var userRequests UserCount
+		var userRequests usage.UserCount
 		if err := rows.Scan(&userRequests.APIKey, &userRequests.Count); err != nil {
 			return nil, err
 		}
