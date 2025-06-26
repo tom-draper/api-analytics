@@ -1,9 +1,9 @@
-package usage
+package monitors
 
 import (
-	"context"
-	"log"
 	"testing"
+
+	"github.com/tom-draper/api-analytics/server/tools/usage/requests"
 )
 
 func TestMonitors(t *testing.T) {
@@ -94,6 +94,14 @@ func TestUserMonitors(t *testing.T) {
 	if len(monitors) == 0 {
 		t.Error("no monitors found")
 	}
+}
+
+func TestUserCountDisplay(t *testing.T) {
+	u := usage.UserCount{
+		APIKey: "test-key",
+		Count:  10,
+	}
+	u.Display()
 }
 
 func TestDailyUserMonitors(t *testing.T) {

@@ -15,10 +15,10 @@ type UserCount struct {
 }
 
 const (
-	hourly  = "1 hour"
-	daily   = "24 hours"
-	weekly  = "7 days"
-	monthly = "30 days"
+	Hourly  = "1 hour"
+	Daily   = "24 hours"
+	Weekly  = "7 days"
+	Monthly = "30 days"
 )
 
 var p = message.NewPrinter(language.English)

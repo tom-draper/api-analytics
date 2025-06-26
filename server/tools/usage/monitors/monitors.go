@@ -1,4 +1,4 @@
-package usage
+package monitors
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/tom-draper/api-analytics/server/database"
+	"github.com/tom-draper/api-analytics/server/tools/usage/usage"
 )
 
 type MonitorRow struct {
@@ -17,19 +18,19 @@ type MonitorRow struct {
 }
 
 func HourlyMonitorsCount(ctx context.Context) (int, error) {
-	return MonitorsCount(ctx, hourly)
+	return MonitorsCount(ctx, usage.Hourly)
 }
 
 func DailyMonitorsCount(ctx context.Context) (int, error) {
-	return MonitorsCount(ctx, daily)
+	return MonitorsCount(ctx, usage.Daily)
 }
 
 func WeeklyMonitorsCount(ctx context.Context) (int, error) {
-	return MonitorsCount(ctx, weekly)
+	return MonitorsCount(ctx, usage.Weekly)
 }
 
 func MonthlyMonitorsCount(ctx context.Context) (int, error) {
-	return MonitorsCount(ctx, monthly)
+	return MonitorsCount(ctx, usage.Monthly)
 }
 
 func TotalMonitorsCount(ctx context.Context) (int, error) {
@@ -57,19 +58,19 @@ func MonitorsCount(ctx context.Context, interval string) (int, error) {
 }
 
 func HourlyMonitors(ctx context.Context) ([]MonitorRow, error) {
-	return Monitors(ctx, hourly)
+	return Monitors(ctx, usage.Hourly)
 }
 
 func DailyMonitors(ctx context.Context) ([]MonitorRow, error) {
-	return Monitors(ctx, daily)
+	return Monitors(ctx, usage.Daily)
 }
 
 func WeeklyMonitors(ctx context.Context) ([]MonitorRow, error) {
-	return Monitors(ctx, weekly)
+	return Monitors(ctx, usage.Weekly)
 }
 
 func MonthlyMonitors(ctx context.Context) ([]MonitorRow, error) {
-	return Monitors(ctx, monthly)
+	return Monitors(ctx, usage.Monthly)
 }
 
 func TotalMonitors(ctx context.Context) ([]MonitorRow, error) {
@@ -109,27 +110,27 @@ func Monitors(ctx context.Context, interval string) ([]MonitorRow, error) {
 	return monitors, nil
 }
 
-func HourlyUserMonitors(ctx context.Context) ([]UserCount, error) {
-	return UserMonitors(ctx, hourly)
+func HourlyUserMonitors(ctx context.Context) ([]usage.UserCount, error) {
+	return UserMonitors(ctx, usage.Hourly)
 }
 
-func DailyUserMonitors(ctx context.Context) ([]UserCount, error) {
-	return UserMonitors(ctx, daily)
+func DailyUserMonitors(ctx context.Context) ([]usage.UserCount, error) {
+	return UserMonitors(ctx, usage.Daily)
 }
 
-func WeeklyUserMonitors(ctx context.Context) ([]UserCount, error) {
-	return UserMonitors(ctx, weekly)
+func WeeklyUserMonitors(ctx context.Context) ([]usage.UserCount, error) {
+	return UserMonitors(ctx, usage.Weekly)
 }
 
-func MonthlyUserMonitors(ctx context.Context) ([]UserCount, error) {
-	return UserMonitors(ctx, monthly)
+func MonthlyUserMonitors(ctx context.Context) ([]usage.UserCount, error) {
+	return UserMonitors(ctx, usage.Monthly)
 }
 
-func TotalUserMonitors(ctx context.Context) ([]UserCount, error) {
+func TotalUserMonitors(ctx context.Context) ([]usage.UserCount, error) {
 	return UserMonitors(ctx, "")
 }
 
-func UserMonitors(ctx context.Context, interval string) ([]UserCount, error) {
+func UserMonitors(ctx context.Context, interval string) ([]usage.UserCount, error) {
 	conn, err := database.NewConnection()
 	if err != nil {
 		return nil, err
@@ -147,9 +148,9 @@ func UserMonitors(ctx context.Context, interval string) ([]UserCount, error) {
 	}
 	defer rows.Close()
 
-	var monitors []UserCount
+	var monitors []usage.UserCount
 	for rows.Next() {
-		var userMonitors UserCount
+		var userMonitors usage.UserCount
 		if err := rows.Scan(&userMonitors.APIKey, &userMonitors.Count); err != nil {
 			return nil, err // Return error instead of silently continuing
 		}
