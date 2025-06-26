@@ -13,7 +13,6 @@ func GetIntegerEnvVariable(name string, defaultValue int) int {
 
 	value, err := strconv.Atoi(valueStr)
 	if err != nil {
-		log.LogToFile(fmt.Sprintf("%s environment variable is not an integer. Using default value %s=%d.", name, name, defaultValue))
 		return defaultValue
 	}
 
