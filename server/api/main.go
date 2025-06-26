@@ -1,12 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/tom-draper/api-analytics/server/api/lib/env"
-	"github.com/tom-draper/api-analytics/server/api/lib/log"
+	"github.com/tom-draper/api-analytics/server/api/lib/logging"
 	"github.com/tom-draper/api-analytics/server/api/lib/routes"
 	"github.com/tom-draper/api-analytics/server/database"
 
@@ -27,21 +31,7 @@ func getRateLimit() uint {
 	return uint(env.GetIntegerEnvVariable("RATE_LIMIT", 100))
 }
 
-func main() {
-	defer func() {
-		if err := recover(); err != nil {
-			log.LogToFile(fmt.Sprintf("Application crashed: %v", err))
-		}
-	}()
-
-	log.LogToFile("Starting api...")
-
-	err := database.LoadConfig()
-	if err != nil {
-		log.LogToFile("Failed to load database configuration: " + err.Error())
-		return
-	}
-
+func setupRouter() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
 
@@ -54,15 +44,61 @@ func main() {
 		Rate:  time.Second,
 		Limit: getRateLimit(),
 	})
-	rateLimiter := ratelimit.RateLimiter(store, &ratelimit.Options{
+	ratellimiter := ratelimit.RateLimiter(store, &ratelimit.Options{
 		ErrorHandler: errorHandler,
 		KeyFunc:      rateLimitKey,
 	})
-	app.Use(rateLimiter)
+	app.Use(ratellimiter)
 
 	routes.RegisterRouter(r)
 
-	if err := app.Run(":3000"); err != nil {
-		log.LogToFile(fmt.Sprintf("Failed to run server: %v", err))
+	return app
+}
+
+func main() {
+	defer func() {
+		if err := recover(); err != nil {
+			logging.Info(fmt.Sprintf("Application crashed: %v", err))
+		}
+	}()
+
+	logging.Init()
+	logging.Info("Starting api...")
+
+	if err := env.LoadEnv(); err != nil {
+		logging.Info(err.Error())
 	}
+
+	err := database.LoadConfig()
+	if err != nil {
+		logging.Info("Failed to load database configuration: " + err.Error())
+		return
+	}
+
+	app := setupRouter()
+
+	port := env.GetIntegerEnvVariable("PORT", 3000)
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: app,
+	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logging.Info(fmt.Sprintf("listen: %s\n", err))
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	logging.Info("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		logging.Info(fmt.Sprintf("Server forced to shutdown: %v", err))
+	}
+
+	logging.Info("Server exiting")
 }
