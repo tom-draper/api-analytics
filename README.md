@@ -571,7 +571,7 @@ Head to [apianalytics.dev/dashboard](https://apianalytics.dev/dashboard) and pas
 
 Demo: [apianalytics.dev/dashboard/demo](https://apianalytics.dev/dashboard/demo)
 
-![dashboard](https://user-images.githubusercontent.com/41476809/272061832-74ba4146-f4b3-4c05-b759-3946f4deb9de.png)
+![Dashboard](https://github.com/user-attachments/assets/0cdc0045-74f3-41c7-9484-3568121f6cab)
 
 #### Data API
 
