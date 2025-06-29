@@ -571,7 +571,7 @@ Head to [apianalytics.dev/dashboard](https://apianalytics.dev/dashboard) and pas
 
 Demo: [apianalytics.dev/dashboard/demo](https://apianalytics.dev/dashboard/demo)
 
-![dashboard](https://user-images.githubusercontent.com/41476809/272061832-74ba4146-f4b3-4c05-b759-3946f4deb9de.png)
+![Dashboard](https://github.com/user-attachments/assets/0cdc0045-74f3-41c7-9484-3568121f6cab)
 
 #### Data API
 
@@ -694,7 +694,7 @@ API keys and their associated logged request data are scheduled to be deleted af
 
 Active endpoint monitoring can be set up by heading to [apianalytics.dev/monitoring](https://apianalytics.dev/monitoring) to enter your API key. Our servers will regularly ping chosen endpoints to monitor uptime and response time. 
 
-![Monitoring](https://user-images.githubusercontent.com/41476809/208298759-f937b668-2d86-43a2-b615-6b7f0b2bc20c.png)
+![Monitoring](https://github.com/user-attachments/assets/c2b70027-1172-49aa-95c3-8a123cc4e63d)
 
 ## Limitations
 
