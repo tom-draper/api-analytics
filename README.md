@@ -11,6 +11,8 @@ Currently compatible with:
 - Ruby: <b>Rails</b> and <b>Sinatra</b>
 - C#: <b>ASP.NET Core</b>
 
+![banner](https://github.com/user-attachments/assets/4d366f69-bb9b-43b7-8b9e-97a341d1b057)
+
 ## Getting Started
 
 ### 1. Generate an API key
