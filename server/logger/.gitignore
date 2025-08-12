@@ -6,3 +6,5 @@ bin
 tmp
 
 GeoLite2-Country.mmdb
+
+!cmd/logger/main.go
