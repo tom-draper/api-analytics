@@ -1,28 +1,63 @@
-FROM golang:1.21
+# Build stage
+FROM golang:1.23-alpine AS builder
 
-# Set the Current Working Directory inside the container
+# Install necessary packages
+RUN apk add --no-cache git ca-certificates tzdata
+
+# Create non-root user
+RUN adduser -D -s /bin/sh -u 1001 appuser
+
+# Set working directory
+WORKDIR /build
+
+# Copy go mod files first for better Docker layer caching
+COPY go.mod go.sum ./
+
+# Download dependencies (this layer will be cached if go.mod/go.sum don't change)
+RUN go mod download && go mod verify
+
+# Copy source code
+COPY . .
+
+# Build the application with optimizations
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -ldflags='-w -s -extldflags "-static"' \
+    -a -installsuffix cgo \
+    -o logger ./cmd/logger
+
+# Final stage - minimal runtime image
+FROM alpine:3.18
+
+# Install ca-certificates for HTTPS and create app user
+RUN apk --no-cache add ca-certificates tzdata && \
+    adduser -D -s /bin/sh -u 1001 appuser
+
+# Set working directory
 WORKDIR /app
 
-# Copy the Go Modules and Sum Files
-COPY . /app
+# Copy the binary from builder
+COPY --from=builder /build/logger /app/logger
 
-# Build the Go app
-RUN go build -o monitor .
+# Copy GeoIP database if it exists (optional)
+COPY GeoLite2-Country.mmdb /app/GeoLite2-Country.mmdb
 
-# Install cron
-RUN apt-get update && apt-get install -y cron
+# Create logs directory and set permissions
+RUN mkdir -p /app/logs && \
+    chown -R appuser:appuser /app
 
-# Add crontab file in the cron directory
-COPY crontab /etc/cron.d/monitor-cron
+# Switch to non-root user
+USER appuser
 
-# Give execution rights on the cron job
-RUN chmod 0644 /etc/cron.d/monitor-cron
+# Expose port
+EXPOSE 8000
 
-# Apply cron job
-RUN crontab /etc/cron.d/monitor-cron
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8000/api/health || exit 1
 
-# Create the log file to be able to run tail
-RUN touch /var/log/cron.log
+# Set environment variables
+ENV GIN_MODE=release
+ENV LOG_LEVEL=info
 
-# Run the command on container startup
-CMD cron && tail -f /var/log/cron.log
+# Run the application
+CMD ["./logger"]
