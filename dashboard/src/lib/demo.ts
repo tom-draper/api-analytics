@@ -1266,7 +1266,7 @@ function createErrorSamples(
 	scale: number,
 	outages: Range[],
 ) {
-	const count = 450 * scale;
+	const count = 3000 * scale;
 	addDemoSamples(
 		demoRequests,
 		{

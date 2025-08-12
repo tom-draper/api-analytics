@@ -114,8 +114,8 @@
 	<div class="card-title">Success rate</div>
 	<div
 		class="value"
-		class:red={successRate !== null && successRate <= 75}
-		class:yellow={successRate !== null && successRate > 75 && successRate < 90}
+		class:red={successRate !== null && successRate <= 70}
+		class:yellow={successRate !== null && successRate > 70 && successRate < 90}
 		class:green={successRate === null || successRate > 90}
 	>
 		{successRate !== null ? `${successRate.toFixed(1)}%` : 'N/A'}
