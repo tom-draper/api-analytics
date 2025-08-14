@@ -18,14 +18,14 @@ public class Config
     public int PrivacyLevel { get; set; } = 0;
 }
 
-public class Analytics(RequestDelegate next, string apiKey, Config? config = null)
+public class Analytics(RequestDelegate next, string apiKey, Config? config = null, string? serverUrl = null)
 {
     private readonly RequestDelegate _next = next;
     private readonly string? _apiKey = apiKey;
     private readonly Config _config = config ?? new Config();
     private DateTime _lastPosted = DateTime.Now;
     private List<RequestData> _requests = [];
-    private readonly string _url = "https://www.apianalytics-server.com/api/log-request";
+    private readonly string _url = serverUrl ?? "https://www.apianalytics-server.com/api/log-request";
 
     private struct Payload
     {
@@ -90,7 +90,14 @@ public class Analytics(RequestDelegate next, string apiKey, Config? config = nul
         var json = JsonSerializer.Serialize(payload);
         var data = new StringContent(json, Encoding.UTF8, "application/json");
         var client = new HttpClient();
-        await client.PostAsync(_url, data);
+        try
+        {
+            await client.PostAsync(_url, data);
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine($"API Analytics error: {e}");
+        }
     }
 
     private async Task LogRequest(RequestData RequestData)
@@ -172,8 +179,8 @@ public class Analytics(RequestDelegate next, string apiKey, Config? config = nul
 
 public static class AnalyticsExtensions
 {
-    public static IApplicationBuilder UseAnalytics(this IApplicationBuilder app, string apiKey)
+    public static IApplicationBuilder UseAnalytics(this IApplicationBuilder app, string apiKey, string? serverUrl = null)
     {
-        return app.UseMiddleware<Analytics>(apiKey);
+        return app.UseMiddleware<Analytics>(apiKey, serverUrl);
     }
 }
