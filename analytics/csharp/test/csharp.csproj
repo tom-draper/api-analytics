@@ -14,9 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="analytics">
-      <HintPath>..\analytics\bin\Release\net8.0\analytics.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="../analytics/bin/Release/net8.0/analytics.dll" />
   </ItemGroup>
 
 </Project>
