@@ -197,6 +197,13 @@ At any time you can delete all stored data associated with your API key by going
 
 API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity.
 
+### Self-Hosting
+If you are self-hosting the server, you can add the url of your server to the middleware like this.
+
+```cs
+app.UseAnalytics("<API-KEY>", "https://your-server.com/api/log-request");
+```
+
 ## Monitoring
 
 Active API monitoring can be set up by heading to [apianalytics.dev/monitoring](https://apianalytics.dev/monitoring) to enter your API key. Our servers will regularly ping chosen API endpoints to monitor uptime and response time. 
