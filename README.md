@@ -700,7 +700,7 @@ Active endpoint monitoring can be set up by heading to [apianalytics.dev/monitor
 
 ## Limitations
 
-In order to keep the service free, up to 1.5 million requests can be stored against an API key. This is enforced as a rolling limit; old requests will be replaced by new requests. If your API would rapidly exceed this limit, we recommend you try other solutions or check out [self-hosting](./server/self-hosting/README.md).
+In order to keep the service free, up to 1 million requests can be stored against an API key. This is enforced as a rolling limit; old requests will be replaced by new requests. If your API would rapidly exceed this limit, we recommend you try other solutions or check out [self-hosting](./server/self-hosting/README.md).
 
 ## Self-Hosting
 
