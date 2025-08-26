@@ -13,6 +13,7 @@ import (
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func keyFunc(c *gin.Context) string {
@@ -35,6 +36,10 @@ func main() {
 	}()
 
 	log.LogToFile("Starting api...")
+
+	if godotenv.Load(".env") != nil {
+		log.LogToFile("Failed to load .env file.")
+	}
 
 	err := database.LoadConfig()
 	if err != nil {
