@@ -236,3 +236,10 @@ Whilst not recommeneded, it's possible to self-host the frontend dashboard by se
 ## Contributions
 
 Feel free to customise this project to your preference. Any feedback or improvements that can still generalise to most deployment environments is much appreciated.
+
+
+## Alternative with Traefik
+
+```bash
+docker compose -f docker-compose.dev.yml up -d
+```

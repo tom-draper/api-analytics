@@ -12,7 +12,7 @@ function getSourceURL() {
 
 function getEnvSourceURL() {
 	try {
-		return cleanURL(process.env.SERVER_URL);
+		return cleanURL(process.env.SERVER_URL || import.meta.env.VITE_SERVER_URL);
 	} catch (e) {
 		return null;
 	}

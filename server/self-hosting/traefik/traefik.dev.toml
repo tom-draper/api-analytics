@@ -1,0 +1,20 @@
+[global]
+  sendAnonymousUsage = false
+
+[log]
+  level = "DEBUG"
+
+[api]
+  dashboard = true
+  insecure = true
+
+[providers]
+  [providers.docker]
+    endpoint = "unix:///var/run/docker.sock"
+    exposedByDefault = false
+    watch = true
+    network = "api-analytics-network"
+
+[entryPoints]
+  [entryPoints.web]
+    address = ":80"

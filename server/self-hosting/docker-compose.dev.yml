@@ -1,0 +1,149 @@
+services:
+  api-analytics-traefik:
+    image: traefik:v3.5.0
+    container_name: api-analytics-traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "8080:8080" # Dashboard (Traefik dashboard asscess for development)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.dev.toml:/etc/traefik/traefik.toml
+    networks:
+      - api-analytics-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8080/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  api-analytics-db:
+    image: postgres:17
+    container_name: api-analytics-db
+    restart: unless-stopped
+    user: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    expose:
+      - 5432
+    env_file:
+      - .env.dev
+    networks:
+      - api-analytics-network
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api-analytics-dashboard:
+    build:
+      context: ../../dashboard
+      dockerfile: Dockerfile
+      args:
+        - SERVER_URL=http://localhost:3124
+    container_name: api-analytics-dashboard
+    restart: unless-stopped
+    env_file:
+      - .env.dev
+    depends_on:
+      api-analytics-db:
+        condition: service_healthy
+    networks:
+      - api-analytics-network
+    ports:
+      - "3123:3000"
+    expose:
+      - 3000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=api-analytics-network"
+      - "traefik.http.routers.dashboard.rule=Host(`localhost`)"
+      - "traefik.http.routers.dashboard.entrypoints=web"
+      - "traefik.http.services.dashboard.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  api-analytics-api:
+    container_name: api-analytics-api
+    build:
+      context: ../api
+      dockerfile: Dockerfile
+    ports:
+      - "3124:3000"
+    expose:
+      - 3000
+    env_file:
+      - .env.dev
+    depends_on:
+      api-analytics-db:
+        condition: service_healthy
+    environment:
+      POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@api-analytics-db:5432/${POSTGRES_DB}
+    networks:
+      - api-analytics-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=api-analytics-network"
+      - "traefik.http.routers.api.rule=(Host(`localhost`) && PathPrefix(`/api`)) || (Host(`localhost`) && PathPrefix(`/api/requests`) && Method(`GET`))"
+      - "traefik.http.services.api.loadbalancer.server.port=3000"
+      - "traefik.http.routers.api.entrypoints=web"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  api-analytics-logger:
+    container_name: api-analytics-logger
+    build:
+      context: ../logger
+      dockerfile: Dockerfile
+    ports:
+      - "3125:8000"
+    expose:
+      - 8000
+    depends_on:
+      api-analytics-db:
+        condition: service_healthy
+    environment:
+      POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@api-analytics-db:5432/${POSTGRES_DB}
+    networks:
+      - api-analytics-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=api-analytics-network"
+      - "traefik.http.routers.logger.rule=(Host(`localhost`) && PathPrefix(`/api/log-request`)) || (Host(`localhost`) && PathPrefix(`/api/requests`) && Method(`POST`))"
+      - "traefik.http.services.logger.loadbalancer.server.port=8000"
+      - "traefik.http.routers.logger.entrypoints=web"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  api-analytics-monitor:
+    container_name: api-analytics-monitor
+    build:
+      context: ../monitor
+      dockerfile: Dockerfile
+    depends_on:
+      api-analytics-db:
+        condition: service_healthy
+    environment:
+      POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@api-analytics-db:5432/${POSTGRES_DB}
+    networks:
+      - api-analytics-network
+    command: /bin/bash -c "printenv > /etc/environment && tail -f /dev/null"
+
+networks:
+  api-analytics-network:
+    name: api-analytics-network
+    driver: bridge
+
+volumes:
+  db-data:

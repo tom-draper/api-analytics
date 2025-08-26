@@ -8,6 +8,9 @@ COPY package.json package-lock.json ./
 RUN npm ci
 ENV PATH="/app/node_modules/.bin:$PATH"
 
+ARG SERVER_URL
+ENV VITE_SERVER_URL=$SERVER_URL
+
 # Copier le reste des fichiers du projet
 COPY . .
 
