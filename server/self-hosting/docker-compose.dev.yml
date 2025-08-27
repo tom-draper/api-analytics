@@ -37,13 +37,40 @@ services:
       timeout: 5s
       retries: 5
 
-  api-analytics-dashboard:
+  api-analytics-dashboard-dev:
+    build:
+      context: ../../dashboard
+      dockerfile: Dockerfile.dev
+    container_name: api-analytics-dashboard-dev
+    restart: unless-stopped
+    env_file:
+      - .env.dev
+    depends_on:
+      api-analytics-db:
+        condition: service_healthy
+    networks:
+      - api-analytics-network
+    ports:
+      - "5173:5173"
+    expose:
+      - 5173
+    command: vite dev --host 0.0.0.0 
+    volumes:
+      - ../../dashboard:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://0.0.0.0:5173"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  api-analytics-dashboard-build:
     build:
       context: ../../dashboard
       dockerfile: Dockerfile
       args:
-        - SERVER_URL=http://localhost:3124
-    container_name: api-analytics-dashboard
+        - SERVER_URL=http://localhost:3124   # api-analytics-api service URL
+        - RELATIVE_DASHBOARD_URL=/build
+    container_name: api-analytics-dashboard-build
     restart: unless-stopped
     env_file:
       - .env.dev
@@ -59,9 +86,11 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=api-analytics-network"
-      - "traefik.http.routers.dashboard.rule=Host(`localhost`)"
-      - "traefik.http.routers.dashboard.entrypoints=web"
-      - "traefik.http.services.dashboard.loadbalancer.server.port=3000"
+      - "traefik.http.routers.dashboard-build.rule=Host(`localhost`) && PathPrefix(`/build`)"
+      - "traefik.http.middlewares.dashboard-build-stripprefix.stripprefix.prefixes=/build"
+      - "traefik.http.routers.dashboard-build.middlewares=dashboard-build-stripprefix"
+      - "traefik.http.routers.dashboard-build.entrypoints=web"
+      - "traefik.http.services.dashboard-build.loadbalancer.server.port=3000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
       interval: 10s

@@ -244,6 +244,7 @@ Feel free to customise this project to your preference. Any feedback or improvem
 docker compose -f docker-compose.dev.yml up -d
 ```
 
-* Dashbaord is served at http://localhost
+* Dev Dashbaord is served at http://localhost:5173
+* Built Dashbaord is served at http://localhost/build
 * API is served at http://localhost/api (GET). `curl -X GET http://localhost/api/health`
 * Logger is served at http://localhost/api (POST) `curl -X POST http://localhost/api/requests`
