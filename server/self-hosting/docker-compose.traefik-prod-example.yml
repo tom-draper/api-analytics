@@ -1,0 +1,159 @@
+services:
+  api-analytics-traefik:
+    image: traefik:v3.5.0
+    container_name: api-analytics-traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "8080:8080" # Dashboard (optionnel, pour le développement)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./server/traefik/traefik.prod.yaml:/etc/traefik/traefik.yaml
+    networks:
+      - api-analytics-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8080/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  api-analytics-db:
+    image: postgres:17
+    container_name: api-analytics-db
+    restart: unless-stopped
+    user: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./server/database/schema.sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    expose:
+      - 5432
+    env_file:
+      - .env.prod
+    networks:
+      - api-analytics-network
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api-analytics-dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+      args:
+        - SERVER_URL=https://${DOMAIN_NAME}/analytics-backend
+        - RELATIVE_DASHBOARD_URL=/api-analytics
+    container_name: api-analytics-dashboard
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    depends_on:
+      api-analytics-db:
+        condition: service_healthy
+    networks:
+      - api-analytics-network
+      - reverse-proxy-webgateway
+    ports:
+      - "3000:3000"
+    expose:
+      - 3000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=reverse-proxy-webgateway"
+      - "traefik.http.routers.api-analytics-dashboard.rule=Host(`${DOMAIN_NAME}`) && PathPrefix(`/api-analytics`)"
+      - "traefik.http.middlewares.api-analytics-dashboard-stripprefix.stripprefix.prefixes=/api-analytics"
+      - "traefik.http.routers.api-analytics-dashboard.middlewares=api-analytics-dashboard-stripprefix"
+      - "traefik.http.routers.api-analytics-dashboard.entrypoints=https"
+      - "traefik.http.routers.api-analytics-dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.services.api-analytics-dashboard.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  api-analytics-api:
+    container_name: api-analytics-api
+    build:
+      context: ./server/api
+      dockerfile: Dockerfile
+    expose:
+      - 3000
+    env_file:
+      - .env.prod
+    depends_on:
+      api-analytics-db:
+        condition: service_healthy
+    environment:
+      POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@api-analytics-db:5432/${POSTGRES_DB}
+    networks:
+      - api-analytics-network
+      - reverse-proxy-webgateway
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=reverse-proxy-webgateway"
+      - "traefik.http.routers.api-analytics-api.rule=(Host(`${DOMAIN_NAME}`) && PathPrefix(`/analytics-backend/api`)) || (Host(`${DOMAIN_NAME}`) && PathPrefix(`/analytics-backend/api/requests`) && Method(`GET`))"
+      - "traefik.http.middlewares.api-analytics-api-stripprefix.stripprefix.prefixes=/analytics-backend"
+      - "traefik.http.routers.api-analytics-api.middlewares=api-analytics-api-stripprefix"
+      - "traefik.http.services.api-analytics-api.loadbalancer.server.port=3000"
+      - "traefik.http.routers.api-analytics-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.api-analytics-api.entrypoints=https"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  api-analytics-logger:
+    container_name: api-analytics-logger
+    build:
+      context: ./server/logger
+      dockerfile: Dockerfile
+    expose:
+      - 8000
+    depends_on:
+      api-analytics-db:
+        condition: service_healthy
+    environment:
+      POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@api-analytics-db:5432/${POSTGRES_DB}
+    networks:
+      - api-analytics-network
+      - reverse-proxy-webgateway
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=reverse-proxy-webgateway"
+      - "traefik.http.routers.api-analytics-logger.rule=(Host(`${DOMAIN_NAME}`) && PathPrefix(`/analytics-backend/api/log-request`)) || (Host(`${DOMAIN_NAME}`) && PathPrefix(`/analytics-backend/api/requests`) && Method(`POST`))"
+      - "traefik.http.middlewares.api-analytics-logger-stripprefix.stripprefix.prefixes=/analytics-backend"
+      - "traefik.http.routers.api-analytics-logger.middlewares=api-analytics-logger-stripprefix"
+      - "traefik.http.services.api-analytics-logger.loadbalancer.server.port=8000"
+      - "traefik.http.routers.api-analytics-logger.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.api-analytics-logger.entrypoints=https"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  api-analytics-monitor:
+    container_name: api-analytics-monitor
+    build:
+      context: ./server/monitor
+      dockerfile: Dockerfile
+    depends_on:
+      api-analytics-db:
+        condition: service_healthy
+    environment:
+      POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@api-analytics-db:5432/${POSTGRES_DB}
+    command: /bin/bash -c "printenv > /etc/environment && tail -f /dev/null"
+
+networks:
+  api-analytics-network:
+    name: api-analytics-network
+    driver: bridge
+  reverse-proxy-webgateway:
+    name: reverse-proxy-webgateway
+    external: true
+
+volumes:
+  db-data:
