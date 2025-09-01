@@ -1,0 +1,12 @@
+# Étape de construction
+FROM node:20-alpine AS builder
+
+# needed for healthcheck
+RUN apk add --no-cache curl
+
+WORKDIR /app
+
+# Copier les fichiers de dépendances
+COPY package.json package-lock.json ./
+RUN npm ci
+ENV PATH="/app/node_modules/.bin:$PATH"
