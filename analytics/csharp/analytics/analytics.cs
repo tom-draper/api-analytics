@@ -22,12 +22,11 @@ public class Config
     public string ServerUrl { get; set; } = "https://www.apianalytics-server.com/api/log-request";
 }
 
-public class Analytics : IDisposable
+public class AnalyticsService : IDisposable
 {
-    private readonly RequestDelegate _next;
-    private readonly string? _apiKey;
+    private readonly string _apiKey;
     private readonly Config _config;
-    private readonly ILogger<Analytics> _logger;
+    private readonly ILogger<AnalyticsService> _logger;
     private readonly HttpClient _httpClient;
     private readonly ConcurrentQueue<RequestData> _requests = new();
     private readonly Timer _flushTimer;
@@ -36,15 +35,11 @@ public class Analytics : IDisposable
     private static readonly TimeSpan FlushInterval = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan HttpTimeout = TimeSpan.FromMinutes(5);
 
-    public Analytics(RequestDelegate next, string apiKey, Config? config = null)
+    public AnalyticsService(string apiKey, Config config, ILogger<AnalyticsService> logger)
     {
-        _next = next ?? throw new ArgumentNullException(nameof(next));
         _apiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));
-        _config = config ?? new Config();
-
-        // Create logger manually if not provided
-        using var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-        _logger = loggerFactory.CreateLogger<Analytics>();
+        _config = config ?? throw new ArgumentNullException(nameof(config));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         _httpClient = new HttpClient()
         {
@@ -148,7 +143,6 @@ public class Analytics : IDisposable
         }
     }
 
-
     private async Task FlushRequestsAsync()
     {
         if (!_flushSemaphore.Wait(0)) // Non-blocking wait
@@ -162,7 +156,7 @@ public class Analytics : IDisposable
 
             if (requestsToFlush.Count > 0)
                 await PostRequestsAsync(requestsToFlush);
-            }
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred during timed flush of analytics data.");
@@ -173,7 +167,7 @@ public class Analytics : IDisposable
         }
     }
 
-    private void LogRequest(RequestData requestData)
+    public void LogRequest(RequestData requestData)
     {
         if (string.IsNullOrEmpty(_apiKey))
             return;
@@ -182,41 +176,20 @@ public class Analytics : IDisposable
         // No immediate flush - only timer-based flushing every 60 seconds
     }
 
-    public async Task InvokeAsync(HttpContext context)
+    public RequestData CreateRequestData(HttpContext context, long responseTimeMs, DateTime createdAt)
     {
-        var watch = Stopwatch.StartNew();
-        var createdAt = DateTime.UtcNow;
-
-        try
+        return new RequestData
         {
-            await _next(context);
-        }
-        finally
-        {
-            watch.Stop();
-
-            try
-            {
-                var requestData = new RequestData
-                {
-                    Hostname = GetHostname(context),
-                    IPAddress = GetIPAddress(context),
-                    UserAgent = GetUserAgent(context),
-                    Path = GetPath(context),
-                    Method = context.Request.Method,
-                    ResponseTime = (int)watch.ElapsedMilliseconds,
-                    Status = context.Response.StatusCode,
-                    UserID = GetUserID(context),
-                    CreatedAt = createdAt.ToString("yyyy-MM-dd'T'HH:mm:ss.fffK")
-                };
-
-                LogRequest(requestData);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while logging analytics data");
-            }
-        }
+            Hostname = GetHostname(context),
+            IPAddress = GetIPAddress(context),
+            UserAgent = GetUserAgent(context),
+            Path = GetPath(context),
+            Method = context.Request.Method,
+            ResponseTime = (int)responseTimeMs,
+            Status = context.Response.StatusCode,
+            UserID = GetUserID(context),
+            CreatedAt = createdAt.ToString("yyyy-MM-dd'T'HH:mm:ss.fffK")
+        };
     }
 
     private string GetIPAddress(HttpContext context)
@@ -344,6 +317,38 @@ public class Analytics : IDisposable
     }
 }
 
+public class AnalyticsMiddleware(RequestDelegate next, AnalyticsService analyticsService, ILogger<AnalyticsMiddleware> logger)
+{
+    private readonly RequestDelegate _next = next ?? throw new ArgumentNullException(nameof(next));
+    private readonly AnalyticsService _analyticsService = analyticsService ?? throw new ArgumentNullException(nameof(analyticsService));
+    private readonly ILogger<AnalyticsMiddleware> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        var watch = Stopwatch.StartNew();
+        var createdAt = DateTime.UtcNow;
+
+        try
+        {
+            await _next(context);
+        }
+        finally
+        {
+            watch.Stop();
+
+            try
+            {
+                var requestData = _analyticsService.CreateRequestData(context, watch.ElapsedMilliseconds, createdAt);
+                _analyticsService.LogRequest(requestData);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while logging analytics data");
+            }
+        }
+    }
+}
+
 public static class AnalyticsExtensions
 {
     public static IApplicationBuilder UseAnalytics(this IApplicationBuilder app, string apiKey, Config? config = null)
@@ -351,24 +356,69 @@ public static class AnalyticsExtensions
         if (string.IsNullOrEmpty(apiKey))
             throw new ArgumentException("API key cannot be null or empty", nameof(apiKey));
 
-        return app.UseMiddleware<Analytics>(apiKey, config);
+        // Create the analytics service
+        var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger<AnalyticsService>();
+        var analyticsService = new AnalyticsService(apiKey, config ?? new Config(), logger);
+
+        // Handle disposal during application shutdown
+        var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
+        appLifetime.ApplicationStopping.Register(() =>
+        {
+            try
+            {
+                logger.LogInformation("Analytics service is stopping, flushing remaining data...");
+                analyticsService.FlushAsync().GetAwaiter().GetResult();
+                analyticsService.Dispose();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error occurred while disposing analytics service during shutdown");
+            }
+        });
+
+        return app.Use(async (context, next) =>
+        {
+            var middlewareLogger = loggerFactory.CreateLogger<AnalyticsMiddleware>();
+            var middleware = new AnalyticsMiddleware(
+                async (ctx) => await next(),
+                analyticsService,
+                middlewareLogger
+            );
+            await middleware.InvokeAsync(context);
+        });
     }
 }
 
-public class AnalyticsBackgroundService(IServiceProvider serviceProvider, ILogger<AnalyticsBackgroundService> logger) : BackgroundService
+public class AnalyticsBackgroundService(AnalyticsService analyticsService, ILogger<AnalyticsBackgroundService> logger) : BackgroundService
 {
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
-    private readonly ILogger<AnalyticsBackgroundService> _logger = logger;
+    private readonly AnalyticsService _analyticsService = analyticsService ?? throw new ArgumentNullException(nameof(analyticsService));
+    private readonly ILogger<AnalyticsBackgroundService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
-            await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+        // This service mainly exists to ensure proper cleanup during shutdown
+        try
+        {
+            await Task.Delay(Timeout.Infinite, stoppingToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when cancellation is requested
+        }
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Analytics service is stopping, flushing remaining data...");
+        try
+        {
+            await _analyticsService.FlushAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while flushing analytics data during shutdown");
+        }
         await base.StopAsync(cancellationToken);
     }
 }

@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "csharp", "csharp.csproj", "{17BA090A-A94E-4435-BD35-EA21CF79ABC6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "analytics", "..\analytics\analytics.csproj", "{AC89EB0D-F2F8-4BF3-831A-1A113794AC05}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analytics", "..\analytics\Analytics.csproj", "{AC89EB0D-F2F8-4BF3-831A-1A113794AC05}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -122,7 +122,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 var app = builder.Build();
 
-var config = Config();
+var config = new Config();
 config.GetUserID = (HttpContext context) => {
     if (context.user.Identity.IsAuthenticated)
         return context.user.Identity.Name
@@ -152,16 +152,15 @@ Privacy Levels:
 - `2` - The client IP address is never accessed and location is never inferred.
 
 ```cs
-var config = Config();
-config.PrivacyLevel = 2; // Disable IP storing and location inference
+var config = new Config{ PrivacyLevel = 2 }; // Disable IP storing and location inference
 ```
 
 With any of these privacy levels, there is the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user. In the dashboard, this custom user ID will identify the user in conjunction with the IP address or as an alternative.
 
 ```cs
-var config = Config()
+var config = new Config()
 config.GetIPAddress = (HttpContext context) => {
-    if (context.Request.Headers.TryGetValue("X-Forwarded-For", out var iPAddress))
+    if (context.Request.Headers.TryGetValue("X-Forwarded-For", out var ipAddress))
         return ipAddress.ToString();
     return "";
 };
@@ -199,11 +198,10 @@ API keys and their associated logged request data are scheduled to be deleted af
 
 ### Self-Hosting
 
-If you are self-hosting the server, you can add the url of your server to the middleware like this.
+If you are self-hosting the server, provide the url of your server to the middleware config.
 
 ```cs
-var config = Config();
-config.ServerURL = "";
+var config = new Config{ ServerUrl = "https://your-server.com"};
 app.UseAnalytics("<API-KEY>", config);
 ```
 
