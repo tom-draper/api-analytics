@@ -14,20 +14,20 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v5"
-	"github.com/tom-draper/api-analytics/server/api/lib/env"
-	"github.com/tom-draper/api-analytics/server/api/lib/logging"
+	"github.com/tom-draper/api-analytics/server/api/internal/env"
+	"github.com/tom-draper/api-analytics/server/api/internal/log"
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
 func genAPIKey(c *gin.Context) {
 	apiKey, err := database.CreateUser()
 	if err != nil {
-		logging.Info(fmt.Sprintf("API key generation failed - %s", err.Error()))
+		log.Info(fmt.Sprintf("API key generation failed - %s", err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
 		return
 	}
 
-	logging.Info(fmt.Sprintf("key=%s: API key generation successful", apiKey))
+	log.Info(fmt.Sprintf("key=%s: API key generation successful", apiKey))
 
 	c.JSON(http.StatusOK, apiKey)
 }
@@ -42,7 +42,7 @@ func getUserID(c *gin.Context) {
 	// Get user ID associated with API key
 	userID, err := database.GetUserID(apiKey)
 	if err != nil {
-		logging.Info(fmt.Sprintf("key=%s: User ID fetch failed - %s", apiKey, err.Error()))
+		log.Info(fmt.Sprintf("key=%s: User ID fetch failed - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
@@ -87,19 +87,19 @@ func getRequestsHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.Param("userID")
 		if userID == "" {
-			logging.Info("User ID empty")
+			log.Info("User ID empty")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid targetPage ID."})
 			return
 		}
 
 		var err error
 		pageQuery := c.Query("page")
-		logging.Info(pageQuery)
+		log.Info(pageQuery)
 		targetPage := 1
 		if pageQuery != "" {
 			targetPage, err = strconv.Atoi(pageQuery)
 			if err != nil {
-				logging.Info(fmt.Sprintf("Failed to parse page number '%s' from query", pageQuery))
+				log.Info(fmt.Sprintf("Failed to parse page number '%s' from query", pageQuery))
 			}
 		}
 
@@ -109,11 +109,11 @@ func getRequestsHandler() gin.HandlerFunc {
 		} else {
 			message = fmt.Sprintf("id=%s: Dashboard page %d access", userID, targetPage)
 		}
-		logging.Info(message)
+		log.Info(message)
 
 		connection, err := database.NewConnection()
 		if err != nil {
-			logging.Info(fmt.Sprintf("id=%s: Dashboard access failed - %s", userID, err.Error()))
+			log.Info(fmt.Sprintf("id=%s: Dashboard access failed - %s", userID, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
 			return
 		}
@@ -122,7 +122,7 @@ func getRequestsHandler() gin.HandlerFunc {
 		// Fetch API key corresponding with user ID
 		apiKey, err := database.GetAPIKeyWithConnection(context.Background(), connection, userID)
 		if err != nil {
-			logging.Info(fmt.Sprintf("id=%s: No API key associated with user ID - %s", userID, err.Error()))
+			log.Info(fmt.Sprintf("id=%s: No API key associated with user ID - %s", userID, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
@@ -140,7 +140,7 @@ func getRequestsHandler() gin.HandlerFunc {
 			offset := (currentPage - 1) * pageSize
 			rows, err := connection.Query(context.Background(), query, apiKey, pageSize, offset)
 			if err != nil {
-				logging.Info(fmt.Sprintf("key=%s: Invalid API key - %s", apiKey, err.Error()))
+				log.Info(fmt.Sprintf("key=%s: Invalid API key - %s", apiKey, err.Error()))
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 				return
 			}
@@ -217,7 +217,7 @@ func getRequestsHandler() gin.HandlerFunc {
 		// Convert user agent IDs to names in-place
 		userAgents, err := database.GetUserAgentsWithConnection(context.Background(), connection, userAgentIDs)
 		if err != nil {
-			logging.Info(fmt.Sprintf("key=%s: User agent lookup failed - %s", apiKey, err.Error()))
+			log.Info(fmt.Sprintf("key=%s: User agent lookup failed - %s", apiKey, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User agent lookup failed."})
 			return
 		}
@@ -230,7 +230,7 @@ func getRequestsHandler() gin.HandlerFunc {
 		// Compress requests with gzip
 		gzipOutput, err := compressJSON(body)
 		if err != nil {
-			logging.Info(fmt.Sprintf("key=%s: Compression failed - %s", apiKey, err.Error()))
+			log.Info(fmt.Sprintf("key=%s: Compression failed - %s", apiKey, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Compression failed."})
 			return
 		}
@@ -247,11 +247,11 @@ func getRequestsHandler() gin.HandlerFunc {
 		} else {
 			message = fmt.Sprintf("key=%s: Dashboard page %d access successful [%d]", apiKey, targetPage, len(requests))
 		}
-		logging.Info(message)
+		log.Info(message)
 
 		err = database.UpdateLastAccessedWithConnection(context.Background(), connection, apiKey)
 		if err != nil {
-			logging.Info(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
+			log.Info(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
@@ -264,23 +264,23 @@ func getPaginatedRequestsHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var userID string = c.Param("userID")
 		if userID == "" {
-			logging.Info("User ID empty")
+			log.Info("User ID empty")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
 
 		page, err := strconv.Atoi(c.Param("page"))
 		if err != nil || page == 0 {
-			logging.Info("Invalid page number")
+			log.Info("Invalid page number")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid page number."})
 			return
 		}
 
-		logging.Info(fmt.Sprintf("id=%s: Dashboard page %d access", userID, page))
+		log.Info(fmt.Sprintf("id=%s: Dashboard page %d access", userID, page))
 
 		connection, err := database.NewConnection()
 		if err != nil {
-			logging.Info(fmt.Sprintf("id=%s: Dashboard page %d access failed - %s", userID, page, err.Error()))
+			log.Info(fmt.Sprintf("id=%s: Dashboard page %d access failed - %s", userID, page, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
@@ -289,7 +289,7 @@ func getPaginatedRequestsHandler() gin.HandlerFunc {
 		// Fetch API key corresponding with user ID
 		apiKey, err := database.GetAPIKeyWithConnection(context.Background(), connection, userID)
 		if err != nil {
-			logging.Info(fmt.Sprintf("id=%s: No API key associated with user ID - %s", userID, err.Error()))
+			log.Info(fmt.Sprintf("id=%s: No API key associated with user ID - %s", userID, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
@@ -300,7 +300,7 @@ func getPaginatedRequestsHandler() gin.HandlerFunc {
 		query := "SELECT ip_address, path, hostname, user_agent_id, method, response_time, status, location, user_id, created_at, referrer FROM requests WHERE api_key = $1 ORDER BY created_at LIMIT $2 OFFSET $3;"
 		rows, err := connection.Query(context.Background(), query, apiKey, pageSize, (page-1)*pageSize)
 		if err != nil {
-			logging.Info(fmt.Sprintf("key=%s: Invalid API key - %s", apiKey, err.Error()))
+			log.Info(fmt.Sprintf("key=%s: Invalid API key - %s", apiKey, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
@@ -357,7 +357,7 @@ func getPaginatedRequestsHandler() gin.HandlerFunc {
 		// Convert user agent IDs to names
 		userAgents, err := database.GetUserAgentsWithConnection(context.Background(), connection, userAgentIDs)
 		if err != nil {
-			logging.Info(fmt.Sprintf("key=%s: User agent lookup failed - %s", apiKey, err.Error()))
+			log.Info(fmt.Sprintf("key=%s: User agent lookup failed - %s", apiKey, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User agent lookup failed."})
 			return
 		}
@@ -370,7 +370,7 @@ func getPaginatedRequestsHandler() gin.HandlerFunc {
 
 		gzipOutput, err := compressJSON(body)
 		if err != nil {
-			logging.Info(fmt.Sprintf("key=%s: Compression failed - %s", apiKey, err.Error()))
+			log.Info(fmt.Sprintf("key=%s: Compression failed - %s", apiKey, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusInternalServerError, "message": "Compression failed."})
 			return
 		}
@@ -381,12 +381,12 @@ func getPaginatedRequestsHandler() gin.HandlerFunc {
 		c.Writer.Header().Set("Content-Type", "application/json")
 		c.Data(http.StatusOK, "gzip", gzipOutput)
 
-		logging.Info(fmt.Sprintf("key=%s: Dashboard page %d access successful [%d]", apiKey, page, len(requests)))
+		log.Info(fmt.Sprintf("key=%s: Dashboard page %d access successful [%d]", apiKey, page, len(requests)))
 
 		// Record user dashboard access
 		err = database.UpdateLastAccessedWithConnection(context.Background(), connection, apiKey)
 		if err != nil {
-			logging.Info(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
+			log.Info(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
@@ -478,20 +478,20 @@ func getData(c *gin.Context) {
 		// Check old (deprecated) identifier
 		apiKey = c.GetHeader("API-Key")
 		if apiKey == "" {
-			logging.Info("API key empty")
+			log.Info("API key empty")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 			return
 		}
 	}
 
-	logging.Info(fmt.Sprintf("key=%s: Data access", apiKey))
+	log.Info(fmt.Sprintf("key=%s: Data access", apiKey))
 
 	// Get any queries from url
 	queries := getQueriesFromRequest(c)
 
 	connection, err := database.NewConnection()
 	if err != nil {
-		logging.Info(fmt.Sprintf("key=%s: Data access failed - %s", apiKey, err.Error()))
+		log.Info(fmt.Sprintf("key=%s: Data access failed - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
@@ -501,7 +501,7 @@ func getData(c *gin.Context) {
 	query, arguments := buildDataFetchQuery(apiKey, queries)
 	rows, err := connection.Query(context.Background(), query, arguments...)
 	if err != nil {
-		logging.Info(fmt.Sprintf("key=%s: Queries failed - %s", apiKey, err.Error()))
+		log.Info(fmt.Sprintf("key=%s: Queries failed - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
@@ -522,11 +522,11 @@ func getData(c *gin.Context) {
 			"referrer",
 		}
 		requests := buildRequestDataCompact(rows, cols)
-		logging.Info(fmt.Sprintf("key=%s: Data access successful [%d]", apiKey, len(requests)-1))
+		log.Info(fmt.Sprintf("key=%s: Data access successful [%d]", apiKey, len(requests)-1))
 		c.JSON(http.StatusOK, requests)
 	} else {
 		requests := buildRequestData(rows)
-		logging.Info(fmt.Sprintf("key=%s: Data access successful [%d]", apiKey, len(requests)))
+		log.Info(fmt.Sprintf("key=%s: Data access successful [%d]", apiKey, len(requests)))
 		c.JSON(http.StatusOK, requests)
 	}
 
@@ -534,7 +534,7 @@ func getData(c *gin.Context) {
 
 	err = database.UpdateLastAccessedWithConnection(context.Background(), connection, apiKey)
 	if err != nil {
-		logging.Info(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
+		log.Info(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
@@ -747,7 +747,7 @@ func deleteData(c *gin.Context) {
 
 	err := database.DeleteUserAccount(apiKey)
 	if err != nil {
-		logging.Info(fmt.Sprintf("key=%s: Data deletion failed - %s", apiKey, err.Error()))
+		log.Info(fmt.Sprintf("key=%s: Data deletion failed - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 		return
 	}
@@ -771,7 +771,7 @@ func getUserMonitor(c *gin.Context) {
 
 	connection, err := database.NewConnection()
 	if err != nil {
-		logging.Info(fmt.Sprintf("id=%s: Monitor access failed - %s", userID, err.Error()))
+		log.Info(fmt.Sprintf("id=%s: Monitor access failed - %s", userID, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
@@ -810,22 +810,22 @@ func addUserMonitor(c *gin.Context) {
 	var monitor Monitor
 	err := c.BindJSON(&monitor)
 	if err != nil {
-		logging.Info("Invalid monitor to add")
+		log.Info("Invalid monitor to add")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request body."})
 		return
 	}
 
 	if monitor.UserID == "" {
-		logging.Info("User ID empty")
+		log.Info("User ID empty")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User ID required."})
 		return
 	}
 
-	logging.Info(fmt.Sprintf("id=%s: Add monitor", monitor.UserID))
+	log.Info(fmt.Sprintf("id=%s: Add monitor", monitor.UserID))
 
 	connection, err := database.NewConnection()
 	if err != nil {
-		logging.Info(fmt.Sprintf("id=%s: Monitor creation failed - %s", monitor.UserID, err.Error()))
+		log.Info(fmt.Sprintf("id=%s: Monitor creation failed - %s", monitor.UserID, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return
 	}
@@ -834,7 +834,7 @@ func addUserMonitor(c *gin.Context) {
 	// Get API key from user ID
 	apiKey, err := database.GetAPIKeyWithConnection(context.Background(), connection, monitor.UserID)
 	if err != nil {
-		logging.Info(fmt.Sprintf("id=%s: Invalid monitor user ID - %s", monitor.UserID, err.Error()))
+		log.Info(fmt.Sprintf("id=%s: Invalid monitor user ID - %s", monitor.UserID, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return
 	}
@@ -844,12 +844,12 @@ func addUserMonitor(c *gin.Context) {
 	query := "SELECT count(*) FROM monitor WHERE api_key = $1 AND url = $2;"
 	err = connection.QueryRow(context.Background(), query, apiKey, monitor.URL).Scan(&count)
 	if err != nil {
-		logging.Info(fmt.Sprintf("key=%s: Failed to get monitor count - %s", apiKey, err.Error()))
+		log.Info(fmt.Sprintf("key=%s: Failed to get monitor count - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return
 	}
 	if count == 1 {
-		logging.Info(fmt.Sprintf("key=%s: Monitor already exists", apiKey))
+		log.Info(fmt.Sprintf("key=%s: Monitor already exists", apiKey))
 		c.JSON(http.StatusConflict, gin.H{"status": http.StatusConflict, "message": "Monitor already exists."})
 		return
 	}
@@ -858,13 +858,13 @@ func addUserMonitor(c *gin.Context) {
 	query = "SELECT count(*) FROM monitor WHERE api_key = $1;"
 	err = connection.QueryRow(context.Background(), query, apiKey).Scan(&monitorCount)
 	if err != nil {
-		logging.Info(fmt.Sprintf("key=%s: Failed to get monitor count - %s", apiKey, err.Error()))
+		log.Info(fmt.Sprintf("key=%s: Failed to get monitor count - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return
 	}
 	// Check if existing monitors already at max limit
 	if monitorCount >= 3 {
-		logging.Info(fmt.Sprintf("key=%s: Monitor limit reached [%d]", apiKey, monitorCount))
+		log.Info(fmt.Sprintf("key=%s: Monitor limit reached [%d]", apiKey, monitorCount))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Monitor limit reached."})
 		return
 	}
@@ -873,12 +873,12 @@ func addUserMonitor(c *gin.Context) {
 	query = "INSERT INTO monitor (api_key, url, secure, ping, created_at) VALUES ($1, $2, $3, $4, NOW())"
 	_, err = connection.Exec(context.Background(), query, apiKey, monitor.URL, monitor.Secure, monitor.Ping)
 	if err != nil {
-		logging.Info(fmt.Sprintf("key=%s: Failed to create new monitor - %s", apiKey, err.Error()))
+		log.Info(fmt.Sprintf("key=%s: Failed to create new monitor - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return
 	}
 
-	logging.Info(fmt.Sprintf("key=%s: Monitor '%s' created successfully", apiKey, monitor.URL))
+	log.Info(fmt.Sprintf("key=%s: Monitor '%s' created successfully", apiKey, monitor.URL))
 
 	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "New monitor created successfully."})
 }
@@ -890,22 +890,22 @@ func deleteUserMonitor(c *gin.Context) {
 	}
 	err := c.BindJSON(&body)
 	if err != nil {
-		logging.Info(fmt.Sprintf("Invalid monitor to delete - %s", err.Error()))
+		log.Info(fmt.Sprintf("Invalid monitor to delete - %s", err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request body."})
 		return
 	}
 
 	if body.UserID == "" {
-		logging.Info("User ID empty")
+		log.Info("User ID empty")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User ID required."})
 		return
 	}
 
-	logging.Info(fmt.Sprintf("id=%s: Delete monitor", body.UserID))
+	log.Info(fmt.Sprintf("id=%s: Delete monitor", body.UserID))
 
 	connection, err := database.NewConnection()
 	if err != nil {
-		logging.Info(fmt.Sprintf("id=%s: Monitor deletion failed - %s", body.UserID, err.Error()))
+		log.Info(fmt.Sprintf("id=%s: Monitor deletion failed - %s", body.UserID, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return
 	}
@@ -914,7 +914,7 @@ func deleteUserMonitor(c *gin.Context) {
 	// Get API key from user ID
 	apiKey, err := database.GetAPIKeyWithConnection(context.Background(), connection, body.UserID)
 	if err != nil {
-		logging.Info(fmt.Sprintf("id=%s: Invalid monitor user ID - %s", body.UserID, err.Error()))
+		log.Info(fmt.Sprintf("id=%s: Invalid monitor user ID - %s", body.UserID, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return
 	}
@@ -922,19 +922,19 @@ func deleteUserMonitor(c *gin.Context) {
 	// Delete monitor from database
 	err = database.DeleteURLMonitorWithConnection(context.Background(), connection, apiKey, body.URL)
 	if err != nil {
-		logging.Info(fmt.Sprintf("key=%s: Failed to delete monitor - %s", apiKey, err.Error()))
+		log.Info(fmt.Sprintf("key=%s: Failed to delete monitor - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return
 	}
 	// Delete recorded pings from database for this monitor
 	err = database.DeleteURLPingsWithConnection(context.Background(), connection, apiKey, body.URL)
 	if err != nil {
-		logging.Info(fmt.Sprintf("key=%s: Failed to delete pings - %s", apiKey, err.Error()))
+		log.Info(fmt.Sprintf("key=%s: Failed to delete pings - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid data."})
 		return
 	}
 
-	logging.Info(fmt.Sprintf("key=%s: Monitor '%s' deleted successfully", apiKey, body.URL))
+	log.Info(fmt.Sprintf("key=%s: Monitor '%s' deleted successfully", apiKey, body.URL))
 
 	// Return success response
 	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "Monitor deleted successfully."})
@@ -956,16 +956,16 @@ type MonitorPing struct {
 func getUserPings(c *gin.Context) {
 	var userID string = c.Param("userID")
 	if userID == "" {
-		logging.Info("User ID empty")
+		log.Info("User ID empty")
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
 
-	logging.Info(fmt.Sprintf("id=%s: Monitor access", userID))
+	log.Info(fmt.Sprintf("id=%s: Monitor access", userID))
 
 	connection, err := database.NewConnection()
 	if err != nil {
-		logging.Info(fmt.Sprintf("id=%s: Monitor access failed - %s", userID, err.Error()))
+		log.Info(fmt.Sprintf("id=%s: Monitor access failed - %s", userID, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
@@ -975,7 +975,7 @@ func getUserPings(c *gin.Context) {
 	query := "SELECT url FROM monitor INNER JOIN users ON users.api_key = monitor.api_key WHERE users.user_id = $1;"
 	rows, err := connection.Query(context.Background(), query, userID)
 	if err != nil {
-		logging.Info(fmt.Sprintf("id=%s: Monitor access failed - %s", userID, err.Error()))
+		log.Info(fmt.Sprintf("id=%s: Monitor access failed - %s", userID, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
@@ -993,7 +993,7 @@ func getUserPings(c *gin.Context) {
 	query = "SELECT url, response_time, status, pings.created_at FROM pings INNER JOIN users ON users.api_key = pings.api_key WHERE users.user_id = $1;"
 	rows, err = connection.Query(context.Background(), query, userID)
 	if err != nil {
-		logging.Info(fmt.Sprintf("id=%s: Ping access failed - %s", userID, err.Error()))
+		log.Info(fmt.Sprintf("id=%s: Ping access failed - %s", userID, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
@@ -1013,12 +1013,12 @@ func getUserPings(c *gin.Context) {
 	// Record user pings access
 	err = database.UpdateLastAccessedByUserIDWithConnection(context.Background(), connection, userID)
 	if err != nil {
-		logging.Info(fmt.Sprintf("id=%s: User last access update failed - %s", userID, err.Error()))
+		log.Info(fmt.Sprintf("id=%s: User last access update failed - %s", userID, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 		return
 	}
 
-	logging.Info(fmt.Sprintf("id=%s: Monitor access successful [%d]", userID, len(monitors)))
+	log.Info(fmt.Sprintf("id=%s: Monitor access successful [%d]", userID, len(monitors)))
 
 	c.JSON(http.StatusOK, monitors)
 }
@@ -1026,7 +1026,7 @@ func getUserPings(c *gin.Context) {
 func checkHealth(c *gin.Context) {
 	err := database.CheckConnection()
 	if err != nil {
-		logging.Info(fmt.Sprintf("Health check failed: %v", err))
+		log.Info(fmt.Sprintf("Health check failed: %v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status": "unhealthy",
 			"error":  "Database connection failed",
