@@ -9,5 +9,3 @@ node_modules
 tmp
 
 GeoLite2-Country.mmdb
-
-!cmd/monitor/main.go
