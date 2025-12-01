@@ -26,19 +26,19 @@ type RequestRow struct {
 }
 
 func HourlyRequestsCount(ctx context.Context) (int, error) {
-	return RequestsCount(ctx, usage.hourly)
+	return RequestsCount(ctx, usage.Hourly)
 }
 
 func DailyRequestsCount(ctx context.Context) (int, error) {
-	return RequestsCount(ctx, usage.daily)
+	return RequestsCount(ctx, usage.Daily)
 }
 
 func WeeklyRequestsCount(ctx context.Context) (int, error) {
-	return RequestsCount(ctx, usage.weekly)
+	return RequestsCount(ctx, usage.Weekly)
 }
 
 func MonthlyRequestsCount(ctx context.Context) (int, error) {
-	return RequestsCount(ctx, usage.monthly)
+	return RequestsCount(ctx, usage.Monthly)
 }
 
 func TotalRequestsCount(ctx context.Context) (int, error) {
@@ -67,15 +67,15 @@ func RequestsCount(ctx context.Context, interval string) (int, error) {
 }
 
 func HourlyRequests(ctx context.Context) ([]RequestRow, error) {
-	return Requests(ctx, usage.hourly)
+	return Requests(ctx, usage.Hourly)
 }
 
 func DailyRequests(ctx context.Context) ([]RequestRow, error) {
-	return Requests(ctx, usage.daily)
+	return Requests(ctx, usage.Daily)
 }
 
 func WeeklyRequests(ctx context.Context) ([]RequestRow, error) {
-	return Requests(ctx, usage.weekly)
+	return Requests(ctx, usage.Weekly)
 }
 
 func MonthlyRequests(ctx context.Context) ([]RequestRow, error) {

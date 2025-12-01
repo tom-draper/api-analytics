@@ -1,9 +1,11 @@
 package monitors
 
 import (
+	"context"
+	"log"
 	"testing"
 
-	"github.com/tom-draper/api-analytics/server/tools/usage/requests"
+	"github.com/tom-draper/api-analytics/server/tools/usage/usage"
 )
 
 func TestMonitors(t *testing.T) {

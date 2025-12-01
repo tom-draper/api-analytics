@@ -1,9 +1,9 @@
-# Monitor Service Makefile
+# API Service Makefile
 .PHONY: build run test clean install dev docker-build docker-run help
 
 # Variables
-APP_NAME := "monitor service"
-BINARY_NAME := monitor
+APP_NAME := "API service"
+BINARY_NAME := api
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 BUILD_TIME := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 GIT_COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -25,7 +25,7 @@ LDFLAGS := -ldflags "-X main.Version=$(VERSION) -X main.BuildTime=$(BUILD_TIME) 
 BUILD_FLAGS := -trimpath $(LDFLAGS)
 
 # Directories
-SRC_DIR := ./cmd/monitor
+SRC_DIR := ./cmd/api
 BUILD_DIR := ./bin
 
 # Default target
@@ -124,8 +124,7 @@ clean:
 	$(GOCLEAN)
 	@rm -rf $(BUILD_DIR)
 	@rm -f coverage.out coverage.html
-	@rm -f requests.log requests.log.*
-	@echo "Cleaned build artifacts and logs"
+	@echo "Cleaned build artifacts"
 
 ## install: Install the binary to GOBIN
 install: build
@@ -142,7 +141,7 @@ docker-build:
 ## docker-run: Run Docker container
 docker-run: docker-build
 	@echo "Running Docker container..."
-	@docker run -p 8000:8000 --env-file .env $(APP_NAME):latest
+	@docker run -p 3000:3000 --env-file .env $(APP_NAME):latest
 
 ## docker-compose: Run with docker-compose
 docker-compose:
@@ -170,7 +169,7 @@ setup: deps
 		echo '[build]' >> .air.toml; \
 		echo '  args_bin = []' >> .air.toml; \
 		echo '  bin = "./tmp/main"' >> .air.toml; \
-		echo '  cmd = "go build -o ./tmp/main ./cmd/monitor"' >> .air.toml; \
+		echo '  cmd = "go build -o ./tmp/main ./cmd/api"' >> .air.toml; \
 		echo '  delay = 1000' >> .air.toml; \
 		echo '  exclude_dir = ["assets", "tmp", "vendor", "testdata", "bin"]' >> .air.toml; \
 		echo '  exclude_file = []' >> .air.toml; \
@@ -192,6 +191,11 @@ setup: deps
 	fi
 	@echo "Development environment ready!"
 
+## health: Check application health
+health:
+	@echo "Checking application health..."
+	@curl -f http://localhost:3000/api/health || echo "Application not running or unhealthy"
+
 ## size: Show binary size
 size: build
 	@echo "Binary size:"
@@ -205,5 +209,7 @@ version:
 
 ## help: Show this help message
 help:
-	@echo "Monitor Service"
+	@echo "API Analytics Service - Available commands:"
+	@echo ""
+	@sed -n 's/^##//p' $(MAKEFILE_LIST) | column -t -s ':' | sed -e 's/^/ /'
 	@echo ""

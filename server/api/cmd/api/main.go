@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/tom-draper/api-analytics/server/api/lib/env"
-	"github.com/tom-draper/api-analytics/server/api/lib/logging"
-	"github.com/tom-draper/api-analytics/server/api/lib/routes"
+	"github.com/tom-draper/api-analytics/server/api/internal/env"
+	"github.com/tom-draper/api-analytics/server/api/internal/log"
+	"github.com/tom-draper/api-analytics/server/api/internal/routes"
 	"github.com/tom-draper/api-analytics/server/database"
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
@@ -58,20 +58,20 @@ func setupRouter() *gin.Engine {
 func main() {
 	defer func() {
 		if err := recover(); err != nil {
-			logging.Info(fmt.Sprintf("Application crashed: %v", err))
+			log.Info(fmt.Sprintf("Application crashed: %v", err))
 		}
 	}()
 
-	logging.Init()
-	logging.Info("Starting api...")
+	log.Init()
+	log.Info("Starting api...")
 
 	if err := env.LoadEnv(); err != nil {
-		logging.Info(err.Error())
+		log.Info(err.Error())
 	}
 
 	err := database.LoadConfig()
 	if err != nil {
-		logging.Info("Failed to load database configuration: " + err.Error())
+		log.Info("Failed to load database configuration: " + err.Error())
 		return
 	}
 
@@ -85,20 +85,20 @@ func main() {
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logging.Info(fmt.Sprintf("listen: %s\n", err))
+			log.Info(fmt.Sprintf("listen: %s\n", err))
 		}
 	}()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	logging.Info("Shutting down server...")
+	log.Info("Shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		logging.Info(fmt.Sprintf("Server forced to shutdown: %v", err))
+		log.Info(fmt.Sprintf("Server forced to shutdown: %v", err))
 	}
 
-	logging.Info("Server exiting")
+	log.Info("Server exiting")
 }

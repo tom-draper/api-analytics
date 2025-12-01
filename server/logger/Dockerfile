@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.23-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # Install necessary packages
 RUN apk add --no-cache git ca-certificates tzdata
@@ -26,7 +26,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -o logger ./cmd/logger
 
 # Final stage - minimal runtime image
-FROM alpine:3.18
+FROM alpine:3.19
 
 # Install ca-certificates for HTTPS and create app user
 RUN apk --no-cache add ca-certificates tzdata && \

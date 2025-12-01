@@ -2,7 +2,7 @@
 .PHONY: build run test clean install dev docker-build docker-run help
 
 # Variables
-APP_NAME := logger
+APP_NAME := "logger service"
 BINARY_NAME := logger
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 BUILD_TIME := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -26,9 +26,7 @@ BUILD_FLAGS := -trimpath $(LDFLAGS)
 
 # Directories
 SRC_DIR := ./cmd/logger
-INTERNAL_DIR := ./internal
 BUILD_DIR := ./bin
-DOCKER_DIR := ./docker
 
 # Default target
 all: clean build
