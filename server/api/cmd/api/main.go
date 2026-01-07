@@ -31,7 +31,7 @@ func getRateLimit() uint {
 	return uint(env.GetIntegerEnvVariable("RATE_LIMIT", 100))
 }
 
-func setupRouter() *gin.Engine {
+func setupRouter(db *database.DB) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
 
@@ -50,7 +50,7 @@ func setupRouter() *gin.Engine {
 	})
 	app.Use(ratelimiter)
 
-	routes.RegisterRouter(r)
+	routes.RegisterRouter(r, db)
 
 	return app
 }
@@ -69,13 +69,15 @@ func main() {
 		log.Info(err.Error())
 	}
 
-	err := database.LoadConfig()
+	pgURL := env.GetEnvVariable("POSTGRES_URL", "")
+
+	db, err := database.New(context.Background(), pgURL)
 	if err != nil {
-		log.Info("Failed to load database configuration: " + err.Error())
+		log.Info("Failed to initialize database: " + err.Error())
 		return
 	}
 
-	app := setupRouter()
+	app := setupRouter(db)
 
 	port := env.GetIntegerEnvVariable("PORT", 3000)
 	srv := &http.Server{
