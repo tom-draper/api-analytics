@@ -5,8 +5,17 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/tom-draper/api-analytics/server/api/lib/log"
+	"github.com/joho/godotenv"
+	"github.com/tom-draper/api-analytics/server/api/internal/log"
 )
+
+func LoadEnv() error {
+	err := godotenv.Load()
+	if err != nil {
+		log.Info("Failed to load .env file")
+	}
+	return err
+}
 
 func GetIntegerEnvVariable(name string, defaultValue int) int {
 	valueStr := GetEnvVariable(name, strconv.Itoa(defaultValue))
@@ -23,7 +32,7 @@ func GetEnvVariable(name string, defaultValue string) string {
 	valueStr := os.Getenv(name)
 
 	if valueStr == "" {
-		log.LogToFile(fmt.Sprintf("%s environment variable is blank. Using default value %s=%s.", name, name, defaultValue))
+		log.Info(fmt.Sprintf("%s environment variable is blank. Using default value %s=%s.", name, name, defaultValue))
 		return defaultValue
 	}
 
