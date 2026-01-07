@@ -193,6 +193,8 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20251222101928-a076bea009fb h1:WCVWRonvSNEG2dDRZ1DAQkDkItu2vOEwh9vP/ESeiog=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20251222101928-a076bea009fb/go.mod h1:D28ixzrzJTnMGBMqXlDyOLuUlUKWnuwVoUP0BhMKchs=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20260107162438-8b106fc942c4 h1:82Um+Js6fUP6ZIiUMvxj08Ct1efdOV+SpQBRoE4QfFU=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20260107162438-8b106fc942c4/go.mod h1:2Ww61l4oZZWhSLqxxfixSdbbebsgau+FhD9oDlYzc0c=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
 github.com/ugorji/go/codec v1.3.1 h1:waO7eEiFDwidsBN6agj1vJQ4AG7lh2yqXyOXqhgQuyY=

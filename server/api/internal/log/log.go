@@ -28,7 +28,7 @@ func Init() error {
 		Out:        multi,
 		TimeFormat: "2006-01-02 15:04:05",
 		NoColor:    true,
-		FormatLevel: func(i interface{}) string {
+		FormatLevel: func(i any) string {
 			return "" // Remove level prefix
 		},
 	}).With().Timestamp().Logger()
