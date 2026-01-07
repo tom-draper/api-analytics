@@ -1,12 +1,40 @@
 package database
 
 import (
+	"context"
+	"os"
 	"testing"
 )
 
+var testDB *DB
+
+func TestMain(m *testing.M) {
+	// Setup: Create database connection pool once for all tests
+	dbURL := os.Getenv("POSTGRES_URL")
+	if dbURL == "" {
+		panic("POSTGRES_URL environment variable is not set")
+	}
+
+	var err error
+	testDB, err = New(context.Background(), dbURL)
+	if err != nil {
+		panic("Failed to create database connection: " + err.Error())
+	}
+
+	// Run tests
+	code := m.Run()
+
+	// Teardown: Close database connection
+	testDB.Close()
+
+	os.Exit(code)
+}
+
 func TestCreateUser(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("successful creation", func(t *testing.T) {
-		apiKey, err := CreateUser()
+		apiKey, err := testDB.CreateUser(ctx)
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
 		}
@@ -19,25 +47,27 @@ func TestCreateUser(t *testing.T) {
 			t.Errorf("Expected API key length 36, got %d", len(apiKey))
 		}
 
-		if err := DeleteUser(apiKey); err != nil {
+		if err := testDB.DeleteUser(ctx, apiKey); err != nil {
 			t.Errorf("Failed to clean up test user: %v", err)
 		}
 	})
 }
 
 func TestGetUserID(t *testing.T) {
-	apiKey, err := CreateUser()
+	ctx := context.Background()
+
+	apiKey, err := testDB.CreateUser(ctx)
 	if err != nil {
 		t.Fatalf("Failed to create test user: %v", err)
 	}
 	defer func() {
-		if err := DeleteUser(apiKey); err != nil {
+		if err := testDB.DeleteUser(ctx, apiKey); err != nil {
 			t.Errorf("Failed to clean up test user: %v", err)
 		}
 	}()
 
 	t.Run("successful retrieval", func(t *testing.T) {
-		userID, err := GetUserID(apiKey)
+		userID, err := testDB.GetUserID(ctx, apiKey)
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
 		}
@@ -50,7 +80,7 @@ func TestGetUserID(t *testing.T) {
 	})
 
 	t.Run("non-existent api key", func(t *testing.T) {
-		userID, err := GetUserID("non-existent-key")
+		userID, err := testDB.GetUserID(ctx, "non-existent-key")
 		if err == nil {
 			t.Fatal("Expected error for non-existent API key")
 		}
@@ -60,7 +90,7 @@ func TestGetUserID(t *testing.T) {
 	})
 
 	t.Run("empty api key", func(t *testing.T) {
-		userID, err := GetUserID("")
+		userID, err := testDB.GetUserID(ctx, "")
 		if err == nil {
 			t.Fatal("Expected error for empty API key")
 		}
@@ -71,23 +101,25 @@ func TestGetUserID(t *testing.T) {
 }
 
 func TestGetAPIKey(t *testing.T) {
-	originalAPIKey, err := CreateUser()
+	ctx := context.Background()
+
+	originalAPIKey, err := testDB.CreateUser(ctx)
 	if err != nil {
 		t.Fatalf("Failed to create test user: %v", err)
 	}
 	defer func() {
-		if err := DeleteUser(originalAPIKey); err != nil {
+		if err := testDB.DeleteUser(ctx, originalAPIKey); err != nil {
 			t.Errorf("Failed to clean up test user: %v", err)
 		}
 	}()
 
-	userID, err := GetUserID(originalAPIKey)
+	userID, err := testDB.GetUserID(ctx, originalAPIKey)
 	if err != nil {
 		t.Fatalf("Failed to get user ID: %v", err)
 	}
 
 	t.Run("successful retrieval", func(t *testing.T) {
-		apiKey, err := GetAPIKey(userID)
+		apiKey, err := testDB.GetAPIKey(ctx, userID)
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
 		}
@@ -100,7 +132,7 @@ func TestGetAPIKey(t *testing.T) {
 	})
 
 	t.Run("non-existent user id", func(t *testing.T) {
-		apiKey, err := GetAPIKey("non-existent-user-id")
+		apiKey, err := testDB.GetAPIKey(ctx, "non-existent-user-id")
 		if err == nil {
 			t.Fatal("Expected error for non-existent user ID")
 		}
@@ -110,7 +142,7 @@ func TestGetAPIKey(t *testing.T) {
 	})
 
 	t.Run("empty user id", func(t *testing.T) {
-		apiKey, err := GetAPIKey("")
+		apiKey, err := testDB.GetAPIKey(ctx, "")
 		if err == nil {
 			t.Fatal("Expected error for empty user ID")
 		}
@@ -121,13 +153,15 @@ func TestGetAPIKey(t *testing.T) {
 }
 
 func TestDeleteUser(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("successful deletion", func(t *testing.T) {
-		apiKey, err := CreateUser()
+		apiKey, err := testDB.CreateUser(ctx)
 		if err != nil {
 			t.Fatalf("Failed to create test user: %v", err)
 		}
 
-		userID, err := GetUserID(apiKey)
+		userID, err := testDB.GetUserID(ctx, apiKey)
 		if err != nil {
 			t.Fatalf("Failed to get user ID: %v", err)
 		}
@@ -135,17 +169,17 @@ func TestDeleteUser(t *testing.T) {
 			t.Fatal("Expected non-empty user ID")
 		}
 
-		if err := DeleteUser(apiKey); err != nil {
+		if err := testDB.DeleteUser(ctx, apiKey); err != nil {
 			t.Fatalf("Failed to delete user: %v", err)
 		}
 
-		if _, err := GetUserID(apiKey); err == nil {
+		if _, err := testDB.GetUserID(ctx, apiKey); err == nil {
 			t.Fatal("Expected error when getting deleted user")
 		}
 	})
 
 	t.Run("delete non-existent user", func(t *testing.T) {
-		err := DeleteUser("non-existent-key")
+		err := testDB.DeleteUser(ctx, "non-existent-key")
 		// This should not return an error as DELETE operations are idempotent
 		if err != nil {
 			t.Errorf("Expected no error for deleting non-existent user, got %v", err)
@@ -153,7 +187,7 @@ func TestDeleteUser(t *testing.T) {
 	})
 
 	t.Run("delete with empty api key", func(t *testing.T) {
-		err := DeleteUser("")
+		err := testDB.DeleteUser(ctx, "")
 		if err != nil {
 			t.Errorf("Expected no error for empty API key, got %v", err)
 		}
@@ -161,106 +195,116 @@ func TestDeleteUser(t *testing.T) {
 }
 
 func TestDeleteRequests(t *testing.T) {
-	apiKey, err := CreateUser()
+	ctx := context.Background()
+
+	apiKey, err := testDB.CreateUser(ctx)
 	if err != nil {
 		t.Fatalf("Failed to create test user: %v", err)
 	}
 	defer func() {
-		if err := DeleteUser(apiKey); err != nil {
+		if err := testDB.DeleteUser(ctx, apiKey); err != nil {
 			t.Errorf("Failed to clean up test user: %v", err)
 		}
 	}()
 
 	t.Run("successful deletion", func(t *testing.T) {
-		if err := DeleteRequests(apiKey); err != nil {
+		if err := testDB.DeleteRequests(ctx, apiKey); err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}
 	})
 
 	t.Run("delete with non-existent api key", func(t *testing.T) {
-		if err := DeleteRequests("non-existent-key"); err != nil {
+		if err := testDB.DeleteRequests(ctx, "non-existent-key"); err != nil {
 			t.Errorf("Expected no error for non-existent API key, got %v", err)
 		}
 	})
 
 	t.Run("delete with empty api key", func(t *testing.T) {
-		if err := DeleteRequests(""); err != nil {
+		if err := testDB.DeleteRequests(ctx, ""); err != nil {
 			t.Errorf("Expected no error for empty API key, got %v", err)
 		}
 	})
 }
 
 func TestDeleteMonitors(t *testing.T) {
-	apiKey, err := CreateUser()
+	ctx := context.Background()
+
+	apiKey, err := testDB.CreateUser(ctx)
 	if err != nil {
 		t.Fatalf("Failed to create test user: %v", err)
 	}
 	defer func() {
-		if err := DeleteUser(apiKey); err != nil {
+		if err := testDB.DeleteUser(ctx, apiKey); err != nil {
 			t.Errorf("Failed to clean up test user: %v", err)
 		}
 	}()
 
 	t.Run("successful deletion", func(t *testing.T) {
-		if err := DeleteMonitors(apiKey); err != nil {
+		if err := testDB.DeleteMonitors(ctx, apiKey); err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}
 	})
 
 	t.Run("delete with non-existent api key", func(t *testing.T) {
-		if err := DeleteMonitors("non-existent-key"); err != nil {
+		if err := testDB.DeleteMonitors(ctx, "non-existent-key"); err != nil {
 			t.Errorf("Expected no error for non-existent API key, got %v", err)
 		}
 	})
 
 	t.Run("delete with empty api key", func(t *testing.T) {
-		if err := DeleteMonitors(""); err != nil {
+		if err := testDB.DeleteMonitors(ctx, ""); err != nil {
 			t.Errorf("Expected no error for empty API key, got %v", err)
 		}
 	})
 }
 
 func TestDeletePings(t *testing.T) {
-	apiKey, err := CreateUser()
+	ctx := context.Background()
+
+	apiKey, err := testDB.CreateUser(ctx)
 	if err != nil {
 		t.Fatalf("Failed to create test user: %v", err)
 	}
 	defer func() {
-		if err := DeleteUser(apiKey); err != nil {
+		if err := testDB.DeleteUser(ctx, apiKey); err != nil {
 			t.Errorf("Failed to clean up test user: %v", err)
 		}
 	}()
 
 	t.Run("successful deletion", func(t *testing.T) {
-		if err := DeletePings(apiKey); err != nil {
+		if err := testDB.DeletePings(ctx, apiKey); err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}
 	})
 
 	t.Run("delete with non-existent api key", func(t *testing.T) {
-		if err := DeletePings("non-existent-key"); err != nil {
+		if err := testDB.DeletePings(ctx, "non-existent-key"); err != nil {
 			t.Errorf("Expected no error for non-existent API key, got %v", err)
 		}
 	})
 
 	t.Run("delete with empty api key", func(t *testing.T) {
-		if err := DeletePings(""); err != nil {
+		if err := testDB.DeletePings(ctx, ""); err != nil {
 			t.Errorf("Expected no error for empty API key, got %v", err)
 		}
 	})
 }
 
 func TestCheckConnection(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("successful connection check", func(t *testing.T) {
-		if err := CheckConnection(); err != nil {
+		if err := testDB.CheckConnection(ctx); err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}
 	})
 }
 
 func TestUserWorkflow(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("complete user lifecycle", func(t *testing.T) {
-		apiKey, err := CreateUser()
+		apiKey, err := testDB.CreateUser(ctx)
 		if err != nil {
 			t.Fatalf("Failed to create user: %v", err)
 		}
@@ -268,7 +312,7 @@ func TestUserWorkflow(t *testing.T) {
 			t.Fatal("Expected non-empty API key")
 		}
 
-		userID, err := GetUserID(apiKey)
+		userID, err := testDB.GetUserID(ctx, apiKey)
 		if err != nil {
 			t.Fatalf("Failed to get user ID: %v", err)
 		}
@@ -276,7 +320,7 @@ func TestUserWorkflow(t *testing.T) {
 			t.Fatal("Expected non-empty user ID")
 		}
 
-		retrievedAPIKey, err := GetAPIKey(userID)
+		retrievedAPIKey, err := testDB.GetAPIKey(ctx, userID)
 		if err != nil {
 			t.Fatalf("Failed to get API key: %v", err)
 		}
@@ -285,24 +329,64 @@ func TestUserWorkflow(t *testing.T) {
 		}
 
 		// Delete all associated data
-		if err := DeleteRequests(apiKey); err != nil {
+		if err := testDB.DeleteRequests(ctx, apiKey); err != nil {
 			t.Errorf("Failed to delete requests: %v", err)
 		}
 
-		if err := DeleteMonitors(apiKey); err != nil {
+		if err := testDB.DeleteMonitors(ctx, apiKey); err != nil {
 			t.Errorf("Failed to delete monitors: %v", err)
 		}
 
-		if err := DeletePings(apiKey); err != nil {
+		if err := testDB.DeletePings(ctx, apiKey); err != nil {
 			t.Errorf("Failed to delete pings: %v", err)
 		}
 
-		if err := DeleteUser(apiKey); err != nil {
+		if err := testDB.DeleteUser(ctx, apiKey); err != nil {
 			t.Errorf("Failed to delete user: %v", err)
 		}
 
 		// Verify user is gone
-		if _, err := GetUserID(apiKey); err == nil {
+		if _, err := testDB.GetUserID(ctx, apiKey); err == nil {
+			t.Fatal("Expected error when getting deleted user")
+		}
+	})
+}
+
+func TestDeleteAllData(t *testing.T) {
+	ctx := context.Background()
+
+	apiKey, err := testDB.CreateUser(ctx)
+	if err != nil {
+		t.Fatalf("Failed to create test user: %v", err)
+	}
+	defer func() {
+		if err := testDB.DeleteUser(ctx, apiKey); err != nil {
+			t.Errorf("Failed to clean up test user: %v", err)
+		}
+	}()
+
+	t.Run("successful deletion of all data", func(t *testing.T) {
+		if err := testDB.DeleteAllData(ctx, apiKey); err != nil {
+			t.Errorf("Expected no error, got %v", err)
+		}
+	})
+}
+
+func TestDeleteUserAccount(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("successful deletion of user account", func(t *testing.T) {
+		apiKey, err := testDB.CreateUser(ctx)
+		if err != nil {
+			t.Fatalf("Failed to create test user: %v", err)
+		}
+
+		if err := testDB.DeleteUserAccount(ctx, apiKey); err != nil {
+			t.Errorf("Expected no error, got %v", err)
+		}
+
+		// Verify user is gone
+		if _, err := testDB.GetUserID(ctx, apiKey); err == nil {
 			t.Fatal("Expected error when getting deleted user")
 		}
 	})
@@ -331,11 +415,13 @@ func isValidUUID(uuid string) bool {
 }
 
 func TestUUIDValidation(t *testing.T) {
-	apiKey, err := CreateUser()
+	ctx := context.Background()
+
+	apiKey, err := testDB.CreateUser(ctx)
 	if err != nil {
 		t.Fatalf("Failed to create test user: %v", err)
 	}
-	defer DeleteUser(apiKey)
+	defer testDB.DeleteUser(ctx, apiKey)
 
 	if !isValidUUID(apiKey) {
 		t.Errorf("Generated API key %s is not a valid UUID", apiKey)
@@ -358,11 +444,12 @@ func TestUUIDValidation(t *testing.T) {
 }
 
 func BenchmarkCreateUser(b *testing.B) {
+	ctx := context.Background()
 	var apiKeys []string
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		apiKey, err := CreateUser()
+		apiKey, err := testDB.CreateUser(ctx)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -371,20 +458,22 @@ func BenchmarkCreateUser(b *testing.B) {
 
 	b.StopTimer()
 	for _, apiKey := range apiKeys {
-		DeleteUser(apiKey)
+		testDB.DeleteUser(ctx, apiKey)
 	}
 }
 
 func BenchmarkGetUserID(b *testing.B) {
-	apiKey, err := CreateUser()
+	ctx := context.Background()
+
+	apiKey, err := testDB.CreateUser(ctx)
 	if err != nil {
 		b.Fatal(err)
 	}
-	defer DeleteUser(apiKey)
+	defer testDB.DeleteUser(ctx, apiKey)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, err := GetUserID(apiKey)
+		_, err := testDB.GetUserID(ctx, apiKey)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -392,20 +481,22 @@ func BenchmarkGetUserID(b *testing.B) {
 }
 
 func BenchmarkGetAPIKey(b *testing.B) {
-	apiKey, err := CreateUser()
+	ctx := context.Background()
+
+	apiKey, err := testDB.CreateUser(ctx)
 	if err != nil {
 		b.Fatal(err)
 	}
-	defer DeleteUser(apiKey)
+	defer testDB.DeleteUser(ctx, apiKey)
 
-	userID, err := GetUserID(apiKey)
+	userID, err := testDB.GetUserID(ctx, apiKey)
 	if err != nil {
 		b.Fatal(err)
 	}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, err := GetAPIKey(userID)
+		_, err := testDB.GetAPIKey(ctx, userID)
 		if err != nil {
 			b.Fatal(err)
 		}

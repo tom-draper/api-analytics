@@ -44,11 +44,11 @@ func setupRouter() *gin.Engine {
 		Rate:  time.Second,
 		Limit: getRateLimit(),
 	})
-	ratellimiter := ratelimit.RateLimiter(store, &ratelimit.Options{
+	ratelimiter := ratelimit.RateLimiter(store, &ratelimit.Options{
 		ErrorHandler: errorHandler,
 		KeyFunc:      rateLimitKey,
 	})
-	app.Use(ratellimiter)
+	app.Use(ratelimiter)
 
 	routes.RegisterRouter(r)
 
