@@ -1,0 +1,43 @@
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+# comment this line to disable access log
+accessLog: {}
+
+log:
+  level: DEBUG  # ERROR, DEBUG, PANIC, FATAL, ERROR, WARN, INFO
+
+api:
+ dashboard: false # if you don't need the dashboard disable it
+
+providers:
+  docker:
+    exposedByDefault: false
+
+entryPoints:
+  web:
+    address: ':80'
+    http:
+      redirections:
+        entryPoint:
+          to: https
+          scheme: https      
+  https:
+    address: ':443'
+    # Fix large file upload timeout for example. 
+    # Timouts have to be managed by each service.
+    transport:
+      respondingTimeouts:
+        readTimeout: "0s"
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      # IMPORTANT: uncomment this line to get TEST ready certificates. Then, clear acme.json file.
+      #caServer: https://acme-staging-v02.api.letsencrypt.org/directory 
+      email: youremail@yourdomain.com
+      storage: /letsencrypt/acme.json # chmod 600 this file on the host system
+      httpchallenge:
+          entrypoint: web
+      tlsChallenge: {}

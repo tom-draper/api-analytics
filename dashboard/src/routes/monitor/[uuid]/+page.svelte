@@ -110,16 +110,22 @@
 		statusTitle = getStatusTitle(status);
 	}
 
+	function isDemo() {
+		return $page.params.uuid === 'demo';
+	}
+
 	onMount(async () => {
 		data = await fetchData();
 
-		console.log(data);
-		data['https://persona-api.vercel.app/v1'] = data['https://www.google.com']
-		delete data['https://www.google.com']
-
-		for (let i = 2053; i < 2058; i++) {
-			data['https://persona-api.vercel.app/v1'][i].status = 500
-			data['https://persona-api.vercel.app/v1'][i].response_time = 0
+		if(isDemo() ){
+			console.log(data);
+			data['https://persona-api.vercel.app/v1'] = data['https://www.google.com']
+			delete data['https://www.google.com']
+	
+			for (let i = 2053; i < 2058; i++) {
+				data['https://persona-api.vercel.app/v1'][i].status = 500
+				data['https://persona-api.vercel.app/v1'][i].response_time = 0
+			}
 		}
 
 		const refreshData = async () => {

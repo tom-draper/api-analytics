@@ -236,3 +236,36 @@ Whilst not recommeneded, it's possible to self-host the frontend dashboard by se
 ## Contributions
 
 Feel free to customise this project to your preference. Any feedback or improvements that can still generalise to most deployment environments is much appreciated.
+
+
+## Alternative with Traefik
+
+### Development environment example
+
+```bash
+cd api-analytics/server/self-hosting
+ln -s .env.dev .env
+docker compose -f docker-compose.traefik-dev-example.yml up -d
+```
+
+* Traefik's dashboard page is served at http://localhost:8080
+* Dev Dashbaord is served at http://localhost:5173
+* Built Dashbaord is served at http://localhost/build
+* API is served at http://localhost/api (GET). `curl -X GET http://localhost/api/health`
+* Logger is served at http://localhost/api (POST) `curl -X POST http://localhost/api/requests`
+
+
+### Production environment example
+
+```bash
+cd api-analytics/server/self-hosting
+ln -s .env.prod .env
+# IMPORTANT : set <DOMAIN_NAME> variable with your own domain into .env.prod
+#             docker-compose.traefik-prod-example.yml have to be served onto <DOMAIN_NAME> server
+docker compose -f docker-compose.traefik-prod-example.yml up -d
+```
+
+* https certificates are auto generated through letsencrypt ACME 👍️
+* Dashbaord is served at https://example.com/api-analytics
+* API is served at https://example.com/analytics-backend/api (GET). `curl -X GET https://example.com/analytics-backend/api/health`
+* Logger is served at https://example.com/analytics-backend/api (POST) `curl -X POST https://example.com/analytics-backend/api/requests`

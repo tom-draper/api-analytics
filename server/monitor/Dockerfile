@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.23-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # Install necessary packages
 RUN apk add --no-cache git ca-certificates tzdata
@@ -23,10 +23,10 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags='-w -s -extldflags "-static"' \
     -a -installsuffix cgo \
-    -o logger ./cmd/logger
+    -o monitor ./cmd/monitor
 
 # Final stage - minimal runtime image
-FROM alpine:3.18
+FROM alpine:3.19
 
 # Install ca-certificates for HTTPS and create app user
 RUN apk --no-cache add ca-certificates tzdata && \
@@ -37,9 +37,6 @@ WORKDIR /app
 
 # Copy the binary from builder
 COPY --from=builder /build/logger /app/logger
-
-# Copy GeoIP database if it exists (optional)
-COPY GeoLite2-Country.mmdb /app/GeoLite2-Country.mmdb
 
 # Create logs directory and set permissions
 RUN mkdir -p /app/logs && \
@@ -60,4 +57,4 @@ ENV GIN_MODE=release
 ENV LOG_LEVEL=info
 
 # Run the application
-CMD ["./logger"]
+CMD ["./monitor"]

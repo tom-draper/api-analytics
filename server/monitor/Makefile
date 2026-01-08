@@ -1,8 +1,8 @@
-# Logger Service Makefile
+# Monitor Service Makefile
 .PHONY: build run test clean install dev docker-build docker-run help
 
 # Variables
-APP_NAME := monitor
+APP_NAME := "monitor service"
 BINARY_NAME := monitor
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 BUILD_TIME := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -26,9 +26,7 @@ BUILD_FLAGS := -trimpath $(LDFLAGS)
 
 # Directories
 SRC_DIR := ./cmd/monitor
-INTERNAL_DIR := ./internal
 BUILD_DIR := ./bin
-DOCKER_DIR := ./docker
 
 # Default target
 all: clean build

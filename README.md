@@ -17,11 +17,11 @@ Currently compatible with:
 
 ### 1. Generate an API key
 
-Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It will be required when accessing your API analytics dashboard and logged data.
+Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It will be required when accessing your API Analytics dashboard and logged data.
 
 ### 2. Add middleware to your API
 
-Add the lightweight middleware to your API. Almost all data processing is handled by the server so there is minimal impact on the performance of your API.
+Add the lightweight middleware to your API. Since most data processing is handled by the API Analytics server, it has minimal impact on your API's performance.
 
 #### FastAPI
 
@@ -78,7 +78,7 @@ if __name__ == "__main__":
 pip install api-analytics[django]
 ```
 
-Assign your API key to `ANALYTICS_API_KEY` in `settings.py` and add the Analytics middleware to the top of your middleware stack.
+Assign your API key to `ANALYTICS_API_KEY` in `settings.py` and add the `Analytics` middleware to the top of your middleware stack.
 
 ```py
 ANALYTICS_API_KEY = <API-KEY>
@@ -565,7 +565,7 @@ Your API will now log and store incoming request data on all routes. Logged data
 1. Through visualizations and statistics on the dashboard
 2. Accessed directly via the data API
 
-You can use the same API key across multiple APIs, but all requests will appear in the same dashboard. It's recommended to generate a new API key for each of your API servers.
+The same API key can be used across multiple APIs, but all requests will appear in the same dashboard. It's recommended to generate a new API key for each of your API servers.
 
 #### Dashboard
 
@@ -634,7 +634,7 @@ curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 
 By default, API Analytics logs and stores the client IP address of all incoming requests made to your API and infers a location (country) from each IP address if possible. The IP address is used as a form of client identification in the dashboard to estimate the number of users accessing your service.
 
-This behaviour can be controlled through a privacy level defined in the configuration of the API middleware. There are three privacy levels to choose from 0 (default) to a maximum of 2. A privacy level of 1 will disable IP address storing, and a value of 2 will also disable location inference.
+This behaviour can be controlled through a privacy level defined in the configuration of the API middleware. There are three privacy levels from 0 (default) to a maximum of 2. A privacy level of 1 will disable storage of IP addresses, and a value of 2 will also disable location inference.
 
 Privacy Levels:
 
@@ -700,7 +700,7 @@ Active endpoint monitoring can be set up by heading to [apianalytics.dev/monitor
 
 ## Limitations
 
-In order to keep the service free, up to 1.5 million requests can be stored against an API key. This is enforced as a rolling limit; old requests will be replaced by new requests. If your API would rapidly exceed this limit, we recommend you try other solutions or check out [self-hosting](./server/self-hosting/README.md).
+In order to keep the service free, up to 1 million requests can be stored against an API key. This is enforced as a rolling limit; old requests will be replaced by new requests. If your API would rapidly exceed this limit, we recommend you try other solutions or check out [self-hosting](./server/self-hosting/README.md).
 
 ## Self-Hosting
 
@@ -720,7 +720,7 @@ Contributions, issues and feature requests are welcome.
 
 ---
 
-If you find value in my work consider supporting me.
+If you find value in my work, consider supporting me.
 
 Buy Me a Coffee: https://www.buymeacoffee.com/tomdraper<br>
 PayPal: https://www.paypal.com/paypalme/tomdraper

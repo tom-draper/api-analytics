@@ -1,12 +1,10 @@
-node_modules
+bin
 
 .env
 .env.*
 
-.vercel
-
 tmp
 
-GeoLite2-Country.mmdb
+*.log
 
-!cmd/logger/main.go
+GeoLite2-Country.mmdb

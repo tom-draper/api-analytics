@@ -1,0 +1,57 @@
+{
+    "name": "api-analytics/laravel",
+    "description": "API Analytics middleware for Laravel applications.",
+    "keywords": ["analytics", "api", "monitoring", "laravel", "middleware"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tom Draper",
+            "email": "tomjdraper1@gmail.com"
+        }
+    ],
+    "homepage": "https://github.com/tom-draper/api-analytics",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../core"
+        }
+    ],
+    "require": {
+        "php": "^8.0",
+        "api-analytics/core": "^1.0 || dev-main",
+        "illuminate/contracts": "^9.0 || ^10.0 || ^11.0",
+        "illuminate/http": "^9.0 || ^10.0 || ^11.0",
+        "illuminate/support": "^9.0 || ^10.0 || ^11.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0 || ^10.0 || ^11.0",
+        "orchestra/testbench": "^7.0 || ^8.0 || ^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "ApiAnalytics\\Laravel\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ApiAnalytics\\Laravel\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "ApiAnalytics\\Laravel\\AnalyticsServiceProvider"
+            ],
+            "aliases": {
+                "Analytics": "ApiAnalytics\\Laravel\\Facade"
+            }
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable"
+}

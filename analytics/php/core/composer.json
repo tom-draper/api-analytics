@@ -1,0 +1,41 @@
+{
+    "name": "api-analytics/core",
+    "version": "1.0.0",
+    "description": "Core library for API Analytics PHP clients.",
+    "keywords": ["analytics", "api", "monitoring", "core"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tom Draper",
+            "email": "tomjdraper1@gmail.com"
+        }
+    ],
+    "homepage": "https://github.com/tom-draper/api-analytics",
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0 || ^10.0 || ^11.0"
+    },
+    "suggest": {
+        "ext-curl": "For better HTTP performance"
+    },
+    "autoload": {
+        "psr-4": {
+            "ApiAnalytics\\Core\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ApiAnalytics\\Core\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable"
+}
