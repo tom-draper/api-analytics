@@ -36,19 +36,13 @@ func TotalUsersCount(ctx context.Context) (int, error) {
 }
 
 func UsersCount(ctx context.Context, interval string) (int, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return 0, err
-	}
-	defer conn.Close(ctx)
-
 	var count int
 	query := "SELECT COUNT(*) FROM users"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
 
-	err = conn.QueryRow(ctx, query).Scan(&count)
+	err := db.Pool.QueryRow(ctx, query).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -77,18 +71,12 @@ func TotalUsers(ctx context.Context) ([]UserRow, error) {
 }
 
 func Users(ctx context.Context, interval string) ([]UserRow, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close(ctx)
-
 	query := "SELECT api_key, user_id, created_at FROM users"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
 
-	rows, err := conn.Query(ctx, query)
+	rows, err := db.Pool.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -133,12 +121,6 @@ func DisplayUsers(users []User) {
 }
 
 func TopUsers(ctx context.Context, n int) ([]User, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close(ctx)
-
 	query := `
 		SELECT requests.api_key, users.created_at, COUNT(*) AS total_requests,
 		       COALESCE(SUM(CASE WHEN DATE(created_at) = CURRENT_DATE THEN 1 ELSE 0 END), 0) AS daily_requests,
@@ -148,7 +130,7 @@ func TopUsers(ctx context.Context, n int) ([]User, error) {
 		GROUP BY requests.api_key, users.created_at
 		ORDER BY total_requests DESC
 		LIMIT $1;`
-	rows, err := conn.Query(ctx, query, n)
+	rows, err := db.Pool.Query(ctx, query, n)
 	if err != nil {
 		return nil, err
 	}
@@ -193,13 +175,13 @@ func DisplayUserTimes(users []UserTime) {
 	}
 }
 
-func UnusedUsers(ctx context.Context) ([]UserTime, error) {
-	usersRequests, err := UnusedUsersRequests(ctx)
+func UnusedUsers(ctx context.Context, db *database.DB) ([]UserTime, error) {
+	usersRequests, err := UnusedUsersRequests(ctx, db)
 	if err != nil {
 		return nil, err
 	}
 
-	usersMonitors, err := UnusedUsersMonitors(ctx)
+	usersMonitors, err := UnusedUsersMonitors(ctx, db)
 	if err != nil {
 		return nil, err
 	}
@@ -218,15 +200,9 @@ func UnusedUsers(ctx context.Context) ([]UserTime, error) {
 	return users, nil
 }
 
-func UnusedUsersRequests(ctx context.Context) ([]UserTime, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close(ctx)
-
+func UnusedUsersRequests(ctx context.Context, db *database.DB) ([]UserTime, error) {
 	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM users u WHERE NOT EXISTS (SELECT FROM requests WHERE api_key = u.api_key) ORDER BY created_at;"
-	rows, err := conn.Query(ctx, query)
+	rows, err := db.Pool.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -244,15 +220,9 @@ func UnusedUsersRequests(ctx context.Context) ([]UserTime, error) {
 	return users, nil
 }
 
-func UnusedUsersMonitors(ctx context.Context) ([]UserTime, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close(ctx)
-
+func UnusedUsersMonitors(ctx context.Context, db *database.DB) ([]UserTime, error) {
 	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM users u WHERE NOT EXISTS (SELECT FROM monitors WHERE api_key = u.api_key) ORDER BY created_at;"
-	rows, err := conn.Query(ctx, query)
+	rows, err := db.Pool.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -270,15 +240,9 @@ func UnusedUsersMonitors(ctx context.Context) ([]UserTime, error) {
 	return users, nil
 }
 
-func SinceLastRequestUsers(ctx context.Context) ([]UserTime, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close(ctx)
-
+func SinceLastRequestUsers(ctx context.Context, db *database.DB) ([]UserTime, error) {
 	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM (SELECT DISTINCT ON (api_key) api_key, created_at FROM requests ORDER BY api_key, created_at DESC) AS derived_table ORDER BY created_at;"
-	rows, err := conn.Query(ctx, query)
+	rows, err := db.Pool.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}

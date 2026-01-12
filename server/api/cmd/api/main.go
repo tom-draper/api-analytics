@@ -19,42 +19,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func rateLimitKey(c *gin.Context) string {
-	return c.ClientIP()
-}
-
-func errorHandler(c *gin.Context, info ratelimit.Info) {
-	c.String(http.StatusTooManyRequests, "Too many requests. Try again in "+time.Until(info.ResetTime).String())
-}
-
-func getRateLimit() uint {
-	return uint(env.GetIntegerEnvVariable("RATE_LIMIT", 100))
-}
-
-func setupRouter(db *database.DB) *gin.Engine {
-	gin.SetMode(gin.ReleaseMode)
-	app := gin.New()
-
-	r := app.Group("/api")
-
-	r.Use(cors.Default())
-
-	// Limit a single IP's request logs to 100 per second
-	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
-		Rate:  time.Second,
-		Limit: getRateLimit(),
-	})
-	ratelimiter := ratelimit.RateLimiter(store, &ratelimit.Options{
-		ErrorHandler: errorHandler,
-		KeyFunc:      rateLimitKey,
-	})
-	app.Use(ratelimiter)
-
-	routes.RegisterRouter(r, db)
-
-	return app
-}
-
 func main() {
 	defer func() {
 		if err := recover(); err != nil {
@@ -76,6 +40,7 @@ func main() {
 		log.Info("Failed to initialize database: " + err.Error())
 		return
 	}
+	defer db.Close()
 
 	app := setupRouter(db)
 
@@ -103,4 +68,40 @@ func main() {
 	}
 
 	log.Info("Server exiting")
+}
+
+func setupRouter(db *database.DB) *gin.Engine {
+	gin.SetMode(gin.ReleaseMode)
+	app := gin.New()
+
+	r := app.Group("/api")
+
+	r.Use(cors.Default())
+
+	// Limit a single IP's request logs to 100 per second
+	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
+		Rate:  time.Second,
+		Limit: getRateLimit(),
+	})
+	ratelimiter := ratelimit.RateLimiter(store, &ratelimit.Options{
+		ErrorHandler: errorHandler,
+		KeyFunc:      rateLimitKey,
+	})
+	app.Use(ratelimiter)
+
+	routes.RegisterRouter(r, db)
+
+	return app
+}
+
+func getRateLimit() uint {
+	return uint(env.GetIntegerEnvVariable("RATE_LIMIT", 100))
+}
+
+func rateLimitKey(c *gin.Context) string {
+	return c.ClientIP()
+}
+
+func errorHandler(c *gin.Context, info ratelimit.Info) {
+	c.String(http.StatusTooManyRequests, "Too many requests. Try again in "+time.Until(info.ResetTime).String())
 }
