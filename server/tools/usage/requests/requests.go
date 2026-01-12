@@ -46,11 +46,6 @@ func TotalRequestsCount(ctx context.Context) (int, error) {
 }
 
 func RequestsCount(ctx context.Context, interval string) (int, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return 0, err
-	}
-	defer conn.Close(ctx)
 
 	var count int
 	query := "SELECT COUNT(*) FROM requests"
@@ -87,11 +82,6 @@ func TotalRequests(ctx context.Context) ([]RequestRow, error) {
 }
 
 func Requests(ctx context.Context, interval string) ([]RequestRow, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close(ctx)
 
 	query := "SELECT request_id, api_key, path, hostname, ip_address, location, user_agent_id, method, status, response_time, framework, created_at FROM requests"
 	if interval != "" {
@@ -141,11 +131,6 @@ func TotalUserRequests(ctx context.Context) ([]usage.UserCount, error) {
 }
 
 func UserRequests(ctx context.Context, interval string) ([]usage.UserCount, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close(ctx)
 
 	query := "SELECT api_key, COUNT(*) as count FROM requests"
 	if interval != "" {
@@ -174,15 +159,10 @@ func UserRequests(ctx context.Context, interval string) ([]usage.UserCount, erro
 	return requests, nil
 }
 
-func UserRequestsOverLimit(ctx context.Context, limit int) ([]usage.UserCount, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close(ctx)
+func UserRequestsOverLimit(ctx context.Context, db *database.DB, limit int) ([]usage.UserCount, error) {
 
 	query := "SELECT api_key, COUNT(*) as count FROM requests GROUP BY api_key HAVING COUNT(*) > $1 ORDER BY count;"
-	rows, err := conn.Query(ctx, query, limit)
+	rows, err := db.Pool.Query(ctx, query, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -224,11 +204,6 @@ func (r RequestsColumnSizes) Display() {
 }
 
 func RequestsColumnSize(ctx context.Context) (RequestsColumnSizes, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return RequestsColumnSizes{}, err
-	}
-	defer conn.Close(ctx)
 
 	var size RequestsColumnSizes
 	query := `
@@ -261,11 +236,6 @@ type ColumnValueCount[T any] struct {
 }
 
 func ColumnValuesCount[T any](ctx context.Context, column string) ([]ColumnValueCount[T], error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close(ctx)
 
 	query := fmt.Sprintf("SELECT %s, COUNT(*) AS count FROM requests GROUP BY %s ORDER BY count DESC;", column, column)
 	rows, err := conn.Query(ctx, query)
@@ -306,11 +276,6 @@ func TopLocations(ctx context.Context) ([]ColumnValueCount[string], error) {
 }
 
 func AvgResponseTime(ctx context.Context) (float64, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return 0.0, err
-	}
-	defer conn.Close(ctx)
 
 	var avg float64
 	query := "SELECT AVG(response_time) FROM requests;"

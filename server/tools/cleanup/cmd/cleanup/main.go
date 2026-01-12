@@ -5,8 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/tom-draper/api-analytics/server/database"
 	"github.com/tom-draper/api-analytics/server/tools/cleanup/internal/cleanup"
 )
@@ -27,24 +29,37 @@ func main() {
 		return
 	}
 
-	conn, err := database.NewConnection()
+	// Load environment variables
+	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Println("Warning: could not load .env file")
 	}
-	defer conn.Close(context.Background())
+
+	// Initialize database connection pool
+	dbURL := os.Getenv("POSTGRES_URL")
+	if dbURL == "" {
+		log.Fatal("POSTGRES_URL is not set in the environment")
+	}
+
+	db, err := database.New(context.Background(), dbURL)
+	if err != nil {
+		log.Fatalf("Failed to create database connection pool: %v", err)
+	}
+	defer db.Close()
+	log.Println("Database connection pool initialized")
 
 	if *targetUserPtr != "" {
-		cleanup.DeleteUser(conn, *targetUserPtr)
+		cleanup.DeleteUser(db, *targetUserPtr)
 		return
 	}
 
 	if *usersPtr {
-		if err := cleanup.DeleteExpiredUsers(conn, *userExpiryPtr); err != nil {
+		if err := cleanup.DeleteExpiredUsers(db, *userExpiryPtr); err != nil {
 			log.Printf("Error deleting expired users: %v", err)
 		}
 	}
 
-	if err := cleanup.DeleteExpiredRequests(conn, *requestsLimitPtr); err != nil {
+	if err := cleanup.DeleteExpiredRequests(db, *requestsLimitPtr); err != nil {
 		log.Printf("Error deleting expired requests: %v", err)
 	}
 }

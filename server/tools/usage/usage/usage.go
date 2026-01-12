@@ -33,16 +33,10 @@ func DisplayUserCounts(counts []UserCount) {
 	}
 }
 
-func TableSize(ctx context.Context, table string) (string, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return "", err
-	}
-	defer conn.Close(ctx)
-
+func TableSize(ctx context.Context, db *database.DB, table string) (string, error) {
 	var size string
 	query := fmt.Sprintf("SELECT pg_size_pretty(pg_total_relation_size('%s'));", table)
-	err = conn.QueryRow(ctx, query).Scan(&size)
+	err := db.Pool.QueryRow(ctx, query).Scan(&size)
 	if err != nil {
 		return "", err
 	}
@@ -50,13 +44,7 @@ func TableSize(ctx context.Context, table string) (string, error) {
 	return size, nil
 }
 
-func TableColumnSize(ctx context.Context, table, column string) (string, string, float64, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return "", "", 0, err
-	}
-	defer conn.Close(ctx)
-
+func TableColumnSize(ctx context.Context, db *database.DB, table, column string) (string, string, float64, error) {
 	var columnSizeInfo struct {
 		TotalSize   string
 		AverageSize string
@@ -69,7 +57,7 @@ func TableColumnSize(ctx context.Context, table, column string) (string, string,
 		       sum(pg_column_size(%s)) * 100.0 / pg_total_relation_size('%s') AS percentage
 		FROM %s;`, column, column, column, table, table)
 
-	err = conn.QueryRow(ctx, query).Scan(&columnSizeInfo.TotalSize, &columnSizeInfo.AverageSize, &columnSizeInfo.Percentage)
+	err := db.Pool.QueryRow(ctx, query).Scan(&columnSizeInfo.TotalSize, &columnSizeInfo.AverageSize, &columnSizeInfo.Percentage)
 	if err != nil {
 		return "", "", 0, err
 	}
@@ -77,16 +65,10 @@ func TableColumnSize(ctx context.Context, table, column string) (string, string,
 	return columnSizeInfo.TotalSize, columnSizeInfo.AverageSize, columnSizeInfo.Percentage, nil
 }
 
-func DatabaseConnections(ctx context.Context) (int, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return 0, err
-	}
-	defer conn.Close(ctx)
-
+func DatabaseConnections(ctx context.Context, db *database.DB) (int, error) {
 	var connections int
 	query := "SELECT count(*) FROM pg_stat_activity;"
-	err = conn.QueryRow(ctx, query).Scan(&connections)
+	err := db.Pool.QueryRow(ctx, query).Scan(&connections)
 	if err != nil {
 		return 0, err
 	}
