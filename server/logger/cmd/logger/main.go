@@ -7,21 +7,19 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"os"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/tom-draper/api-analytics/server/database"
+	"github.com/tom-draper/api-analytics/server/logger/internal/config"
 	"github.com/tom-draper/api-analytics/server/logger/internal/log"
 	"github.com/tom-draper/api-analytics/server/logger/internal/ratelimit"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
-	"github.com/joho/godotenv"
 	"github.com/oschwald/geoip2-golang"
 )
 
@@ -101,20 +99,15 @@ func main() {
 
 	log.LogToFile("Starting logger...")
 
-	// Load environment variables
-	err := godotenv.Load(".env")
+	// Load and validate configuration
+	cfg, err := config.LoadAndValidate()
 	if err != nil {
-		log.LogToFile("Warning: could not load .env file")
-	}
-
-	// Initialize database connection pool
-	dbURL := os.Getenv("POSTGRES_URL")
-	if dbURL == "" {
-		log.LogToFile("POSTGRES_URL is not set in the environment")
+		log.LogToFile(fmt.Sprintf("Configuration error: %v", err))
 		return
 	}
 
-	db, err := database.New(context.Background(), dbURL)
+	// Initialize database connection pool
+	db, err := database.New(context.Background(), cfg.PostgresURL)
 	if err != nil {
 		log.LogToFile(fmt.Sprintf("Failed to create database connection pool: %v", err))
 		return
@@ -152,7 +145,7 @@ func main() {
 	router.Use(cors.Default())
 
 	// Pass dependencies to handler factories
-	handler := logRequestHandler(db, geoIPDB, cache)
+	handler := logRequestHandler(db, geoIPDB, cache, cfg.MaxInsert)
 	router.POST("/api/log-request", handler)
 	router.POST("/api/requests", handler) // Preferred
 	router.GET("/api/health", checkHealth(db))
@@ -182,9 +175,8 @@ func checkHealth(db *database.DB) gin.HandlerFunc {
 	}
 }
 
-func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache) gin.HandlerFunc {
+func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, maxInsert int) gin.HandlerFunc {
 	var rateLimiter = ratelimit.NewRateLimiter()
-	var maxInsert = getMaxInsert()
 
 	var methodID = map[string]int16{
 		"GET": 0, "POST": 1, "PUT": 2, "PATCH": 3, "DELETE": 4,
@@ -585,28 +577,4 @@ func getUserHash(ipAddress string, userAgent string) string {
 	hasher.Write([]byte(combined))
 	hashBytes := hasher.Sum(nil)
 	return hex.EncodeToString(hashBytes)[:32]
-}
-
-func getMaxInsert() int {
-	const defaultValue int = 2000
-
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("Failed to load .env file. Using default value MAX_INSERT=%d.", defaultValue))
-		return defaultValue
-	}
-
-	value := os.Getenv("MAX_INSERT")
-	if value == "" {
-		log.LogToFile(fmt.Sprintf("MAX_INSERT environment variable is blank. Using default value MAX_INSERT=%d.", defaultValue))
-		return defaultValue
-	}
-
-	maxInsert, err := strconv.Atoi(value)
-	if err != nil {
-		log.LogToFile(fmt.Sprintf("MAX_INSERT environment variable is not an integer. Using default value MAX_INSERT=%d.", defaultValue))
-		return defaultValue
-	}
-
-	return maxInsert
 }
