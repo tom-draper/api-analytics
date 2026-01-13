@@ -20,13 +20,18 @@ import (
 )
 
 func main() {
+	// Initialise logger first
+	if err := log.Init(); err != nil {
+		panic(fmt.Sprintf("Failed to initialize logger: %v", err))
+	}
+	defer log.Close()
+
 	defer func() {
 		if err := recover(); err != nil {
 			log.Info(fmt.Sprintf("Application crashed: %v", err))
 		}
 	}()
 
-	log.Init()
 	log.Info("Starting api...")
 
 	if err := env.LoadEnv(); err != nil {

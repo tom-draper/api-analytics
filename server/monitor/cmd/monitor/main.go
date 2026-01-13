@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/joho/godotenv"
 	"github.com/tom-draper/api-analytics/server/database"
+	"monitor/internal/config"
 )
 
 type MonitorRow struct {
@@ -32,20 +32,15 @@ type PingsRow struct {
 }
 
 func main() {
-	// Load environment variables
-	err := godotenv.Load(".env")
+	// Load and validate configuration
+	cfg, err := config.LoadAndValidate()
 	if err != nil {
-		fmt.Println("Warning: could not load .env file")
-	}
-
-	// Initialize database connection pool
-	dbURL := os.Getenv("POSTGRES_URL")
-	if dbURL == "" {
-		fmt.Fprintf(os.Stderr, "Error: POSTGRES_URL is not set in the environment\n")
+		fmt.Fprintf(os.Stderr, "Configuration error: %v\n", err)
 		os.Exit(1)
 	}
 
-	db, err := database.New(context.Background(), dbURL)
+	// Initialize database connection pool
+	db, err := database.New(context.Background(), cfg.PostgresURL)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: Failed to create database connection pool: %v\n", err)
 		os.Exit(1)

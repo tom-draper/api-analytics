@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
-      - "8080:8080" # Dashboard (Traefik dashboard asscess for development)
+      - "8080:8080" # Dashboard (Traefik dashboard access for development)
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/traefik.dev.toml:/etc/traefik/traefik.toml
