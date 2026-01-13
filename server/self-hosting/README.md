@@ -2,6 +2,68 @@
 
 API Analytics can be easily self-hosted, allowing for full control over your logged request data.
 
+## Architecture Overview
+
+```mermaid
+graph TD
+    %% --- Nodes ---
+    %% Start Node (Hidden/Small circle to simulate 'just an arrow')
+    Start(( ))
+
+    subgraph "API Analytics"
+        %% Gateway Layer
+        nginx[<b>Nginx</b><br/>Reverse Proxy<br/>:80, :443]
+        certbot[<b>Certbot</b><br/>SSL Certificates<br/>Let's Encrypt]
+
+        %% Application Layer
+        subgraph "Application Services"
+            api[<b>API</b><br/>API key gen & data<br/>:3000]
+            logger[<b>Logger</b><br/>Request logging<br/>:8000]
+            monitor[<b>Monitor</b><br/>URL monitoring<br/>Every 30m]
+        end
+
+        %% Database Layer
+        db[(<b>PostgreSQL</b><br/>Database<br/>:5432)]
+    end
+
+    %% --- Edges ---
+    Start -->|HTTPS| nginx
+    
+    nginx -->|GET /api/data<br>GET /api/generate| api
+    nginx -->|POST /api/requests| logger
+    
+    certbot -.->|Mounts certs| nginx
+
+    api <-->|Read/write| db
+    logger -->|Write logs| db
+    monitor -->|Read/write status| db
+
+    %% --- Styling ---
+    classDef default fill:#ffffff,stroke:#333,stroke-width:1px,rx:5,ry:5;
+    classDef cluster fill:#f8f9fa,stroke:#cbd5e0,stroke-width:2px,rx:10,ry:10;
+    
+    %% Specific Colors
+    class Start inputNode;
+    class nginx,certbot gateway;
+    class api,logger,monitor app;
+    class db database;
+
+    %% Class Definitions
+    classDef inputNode fill:#000,stroke:#000,width:15px,height:15px;
+    classDef gateway fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
+    classDef app fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
+    classDef database fill:#e0f2f1,stroke:#00695c,stroke-width:2px;
+```
+
+**Service Responsibilities:**
+
+- **nginx**: Entry point for all external traffic, handles SSL/TLS termination, routes requests to appropriate backend services
+- **certbot**: Automatically generates and renews SSL certificates from Let's Encrypt
+- **db**: PostgreSQL database storing API keys, request logs, and monitoring data
+- **api**: Handles API key generation, data retrieval for dashboards, and user queries
+- **logger**: Receives request logs from middleware, enriches with geolocation data (optional), stores in database
+- **monitor**: Periodically checks user-registered URLs and records uptime/response times
+
 Requirements:
 
 - a publically addressable environment that can run Docker Compose, such as a VPS; and
