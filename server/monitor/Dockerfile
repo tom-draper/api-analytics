@@ -7,25 +7,22 @@ RUN apk add --no-cache git ca-certificates tzdata
 # Create non-root user
 RUN adduser -D -s /bin/sh -u 1001 appuser
 
-# Set working directory
-WORKDIR /build
+# Copy go.mod and go.sum only
+COPY monitor/go.mod monitor/go.sum ./monitor/
 
-# Copy database module (required dependency)
-COPY database/ ./database/
-
-# Copy monitor module
-COPY monitor/ ./monitor/
-
-# Set working directory to monitor
 WORKDIR /build/monitor
+RUN go mod download && go mod verify
+
+# Now copy the rest of the source
+COPY database/ /build/database/
+COPY monitor/ /build/monitor/
 
 # Download dependencies (this layer will be cached if go.mod/go.sum don't change)
 RUN go mod download && go mod verify
 
 # Build the application with optimizations
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-    -ldflags='-w -s -extldflags "-static"' \
-    -a -installsuffix cgo \
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -trimpath -ldflags="-s -w" \
     -o monitor ./cmd/monitor
 
 # Final stage - minimal runtime image
