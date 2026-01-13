@@ -100,7 +100,7 @@ func setupRouter(db *database.DB) *gin.Engine {
 }
 
 func getRateLimit() uint {
-	return uint(env.GetIntegerEnvVariable("RATE_LIMIT", 100))
+	return uint(env.GetIntegerEnvVariable("API_RATE_LIMIT", 100))
 }
 
 func rateLimitKey(c *gin.Context) string {

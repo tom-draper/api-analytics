@@ -38,6 +38,10 @@ services:
     container_name: db
     restart: always
     user: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
@@ -52,8 +56,8 @@ services:
   api:
     container_name: api
     build:
-      context: ../api
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: api/Dockerfile
     ports:
       - "3000:3000"
     depends_on:
@@ -61,6 +65,9 @@ services:
         condition: service_healthy
     environment:
       POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      API_RATE_LIMIT: ${API_RATE_LIMIT:-100}
+      API_MAX_LOAD: ${API_MAX_LOAD:-1000000}
+      API_PAGE_SIZE: ${API_PAGE_SIZE:-250000}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 10s
@@ -70,8 +77,8 @@ services:
   logger:
     container_name: logger
     build:
-      context: ../logger
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: logger/Dockerfile
     ports:
       - "8000:8000"
     depends_on:
@@ -79,6 +86,8 @@ services:
         condition: service_healthy
     environment:
       POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      LOGGER_RATE_LIMIT: ${LOGGER_RATE_LIMIT:-10}
+      LOGGER_MAX_INSERT: ${LOGGER_MAX_INSERT:-2000}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
       interval: 10s
@@ -88,14 +97,14 @@ services:
   monitor:
     container_name: monitor
     build:
-      context: ../monitor
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: monitor/Dockerfile
     depends_on:
       db:
         condition: service_healthy
     environment:
       POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-    command: /bin/bash -c "printenv > /etc/environment && tail -f /dev/null"
+    # command: /bin/sh -c "printenv > /etc/environment && tail -f /dev/null"
 
 volumes:
   db-data:

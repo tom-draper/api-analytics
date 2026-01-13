@@ -33,9 +33,14 @@ cd api-analytics/server/self-hosting
 
 Create a new `.env` file, using the provided `.env.example` as a template.
 
-Enter:
-- your `DOMAIN_NAME` e.g. example.com
-- a `POSTGRES_PASSWORD` for the database
+**IMPORTANT:** All required environment variables must be set correctly:
+
+- `DOMAIN_NAME`: Your domain (e.g., example.com) - **REQUIRED, must not be blank**
+- `POSTGRES_DB`: Database name (default: analytics) - **REQUIRED**
+- `POSTGRES_USERNAME`: Database user (default: postgres) - **REQUIRED**
+- `POSTGRES_PASSWORD`: Database password - **REQUIRED, must not be blank**
+
+**Warning:** Leaving any required environment variables blank will cause database initialization to fail with an invalid connection string.
 
 #### 3. Obtain an SSL certificate using Certbot
 
@@ -182,9 +187,16 @@ git pull origin main
 docker compose up -d
 ```
 
-##### Locations
+##### IP Geolocation (Optional)
 
-Optional IP-to-location mappings are provided by the GeoLite2 Country database maintained by MaxMind. Create a free account at `https://www.maxmind.com/en/home`, and download and copy the `GeoLite2-Country.mmdb` file into the `server/logger` folder.
+IP-to-location mappings are optional and provided by the GeoLite2 Country database maintained by MaxMind.
+
+**To enable IP geolocation:**
+1. Create a free account at `https://www.maxmind.com/en/home`
+2. Download the `GeoLite2-Country.mmdb` file
+3. Copy it to the `server/logger` folder before building
+
+If you skip this step, the services will build and run successfully without any errors but IP location data will not be available in your analytics. The logger service will automatically detect whether the GeoLite2 database is present and adjust accordingly.
 
 ### Usage
 
@@ -233,11 +245,6 @@ Once up and running, self-hosted backend can be fully utilised and managed throu
 
 Whilst not recommeneded, it's possible to self-host the frontend dashboard by setting the URL of your backend service as a `SERVER_URL` environment variable, or manually changing the `SERVER_URL` held in `src/lib/consts.ts`. The frontend can then be deployed using your preferred hosting provider.
 
-## Contributions
-
-Feel free to customise this project to your preference. Any feedback or improvements that can still generalise to most deployment environments is much appreciated.
-
-
 ## Alternative with Traefik
 
 ### Development environment example
@@ -269,3 +276,8 @@ docker compose -f docker-compose.traefik-prod-example.yml up -d
 * Dashbaord is served at https://example.com/api-analytics
 * API is served at https://example.com/analytics-backend/api (GET). `curl -X GET https://example.com/analytics-backend/api/health`
 * Logger is served at https://example.com/analytics-backend/api (POST) `curl -X POST https://example.com/analytics-backend/api/requests`
+
+## Contributions
+
+Feel free to customise this project to your preference. Any feedback or improvements that can still generalise to most deployment environments is much appreciated.
+

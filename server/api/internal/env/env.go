@@ -26,9 +26,9 @@ func LoadAndValidate() (*Config, error) {
 	cfg := &Config{
 		PostgresURL: os.Getenv("POSTGRES_URL"),
 		Port:        getIntWithDefault("PORT", 3000),
-		RateLimit:   uint(getIntWithDefault("RATE_LIMIT", 100)),
-		MaxLoad:     getIntWithDefault("MAX_LOAD", 1_000_000),
-		PageSize:    getIntWithDefault("PAGE_SIZE", 250_000),
+		RateLimit:   uint(getIntWithDefault("API_RATE_LIMIT", 100)),
+		MaxLoad:     getIntWithFallback("API_MAX_LOAD", "MAX_LOAD", 1_000_000),
+		PageSize:    getIntWithFallback("API_PAGE_SIZE", "PAGE_SIZE", 250_000),
 	}
 
 	// Validate required fields
@@ -42,15 +42,15 @@ func LoadAndValidate() (*Config, error) {
 	}
 
 	if cfg.RateLimit < 1 || cfg.RateLimit > 10000 {
-		return nil, fmt.Errorf("RATE_LIMIT must be between 1 and 10000, got %d", cfg.RateLimit)
+		return nil, fmt.Errorf("API_RATE_LIMIT must be between 1 and 10000, got %d", cfg.RateLimit)
 	}
 
 	if cfg.PageSize < 1000 || cfg.PageSize > 1_000_000 {
-		return nil, fmt.Errorf("PAGE_SIZE must be between 1000 and 1000000, got %d", cfg.PageSize)
+		return nil, fmt.Errorf("API_PAGE_SIZE must be between 1000 and 1000000, got %d", cfg.PageSize)
 	}
 
 	if cfg.MaxLoad < cfg.PageSize {
-		return nil, fmt.Errorf("MAX_LOAD (%d) must be >= PAGE_SIZE (%d)", cfg.MaxLoad, cfg.PageSize)
+		return nil, fmt.Errorf("API_MAX_LOAD (%d) must be >= API_PAGE_SIZE (%d)", cfg.MaxLoad, cfg.PageSize)
 	}
 
 	log.Info(fmt.Sprintf("Configuration loaded: Port=%d, RateLimit=%d, PageSize=%d, MaxLoad=%d",
@@ -62,7 +62,7 @@ func LoadAndValidate() (*Config, error) {
 func LoadEnv() error {
 	err := godotenv.Load()
 	if err != nil {
-		log.Info("Failed to load .env file")
+		log.Info("Warning: could not load .env file")
 	}
 	return err
 }
@@ -103,4 +103,30 @@ func getIntWithDefault(name string, defaultValue int) int {
 	}
 
 	return value
+}
+
+// getIntWithFallback tries the primary name first, then falls back to legacy name for backwards compatibility
+func getIntWithFallback(primaryName, fallbackName string, defaultValue int) int {
+	// Try primary name first
+	valueStr := os.Getenv(primaryName)
+	if valueStr != "" {
+		value, err := strconv.Atoi(valueStr)
+		if err == nil {
+			return value
+		}
+		log.Info(fmt.Sprintf("Invalid integer for %s, trying fallback", primaryName))
+	}
+
+	// Try fallback name for backwards compatibility
+	valueStr = os.Getenv(fallbackName)
+	if valueStr != "" {
+		value, err := strconv.Atoi(valueStr)
+		if err == nil {
+			return value
+		}
+		log.Info(fmt.Sprintf("Invalid integer for %s, using default", fallbackName))
+	}
+
+	// Use default
+	return defaultValue
 }

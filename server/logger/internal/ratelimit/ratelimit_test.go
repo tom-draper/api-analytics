@@ -5,7 +5,8 @@ import (
 )
 
 func TestRateLimit(t *testing.T) {
-	ratelimiter := RateLimiter{}
+	// Create a rate limiter with 10 accesses per minute
+	ratelimiter := NewRateLimiter(10)
 
 	expecteds := []bool{false, false, false, false, false, false, false, false, false, false, true, true, true, true, true}
 

@@ -118,7 +118,7 @@ func main() {
 	// Initialize GeoIP database once
 	geoIPDB, err := geoip2.Open("GeoLite2-Country.mmdb")
 	if err != nil {
-		log.LogToFile(fmt.Sprintf("Failed to open GeoIP database: %v", err))
+		log.LogToFile(fmt.Sprintf("Failed to open GeoLite2-Country.mmdb database: %v", err))
 	}
 	defer func() {
 		if geoIPDB != nil {
@@ -145,7 +145,7 @@ func main() {
 	router.Use(cors.Default())
 
 	// Pass dependencies to handler factories
-	handler := logRequestHandler(db, geoIPDB, cache, cfg.MaxInsert)
+	handler := logRequestHandler(db, geoIPDB, cache, cfg.RateLimit, cfg.MaxInsert)
 	router.POST("/api/log-request", handler)
 	router.POST("/api/requests", handler) // Preferred
 	router.GET("/api/health", checkHealth(db))
@@ -175,8 +175,8 @@ func checkHealth(db *database.DB) gin.HandlerFunc {
 	}
 }
 
-func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, maxInsert int) gin.HandlerFunc {
-	var rateLimiter = ratelimit.NewRateLimiter()
+func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, rateLimit int, maxInsert int) gin.HandlerFunc {
+	var rateLimiter = ratelimit.NewRateLimiter(rateLimit)
 
 	var methodID = map[string]int16{
 		"GET": 0, "POST": 1, "PUT": 2, "PATCH": 3, "DELETE": 4,
@@ -200,8 +200,18 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ma
 			return
 		}
 
+		// Clean up API key (users sometimes provide it in quotes)
+		payload.APIKey = strings.TrimSpace(strings.ReplaceAll(payload.APIKey, "\"", ""))
+
 		if payload.APIKey == "" {
 			msg := "API key required."
+			log.LogErrorToFile(c.ClientIP(), "", msg)
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
+			return
+		}
+
+		if !database.ValidAPIKey(payload.APIKey) {
+			msg := "Invalid API key format. Expected UUID format."
 			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
@@ -229,8 +239,6 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ma
 			return
 		}
 
-		payload.APIKey = strings.ReplaceAll(payload.APIKey, "\"", "")
-
 		// Process and validate requests
 		var validRequests []ProcessedRequest
 		var userAgents []string
@@ -248,13 +256,6 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ma
 			}
 
 			// Validate and truncate fields
-			if len(request.Referrer) > 255 {
-				request.Referrer = request.Referrer[:255]
-			}
-			if !database.ValidString(request.Referrer) {
-				continue
-			}
-
 			if len(request.UserAgent) > 255 {
 				request.UserAgent = request.UserAgent[:255]
 			}
@@ -280,6 +281,13 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ma
 				request.Path = request.Path[:255]
 			}
 			if !database.ValidPath(request.Path) {
+				continue
+			}
+
+			if len(request.Referrer) > 255 {
+				request.Referrer = request.Referrer[:255]
+			}
+			if request.Referrer != "" && !database.ValidString(request.Referrer) {
 				continue
 			}
 
@@ -556,10 +564,7 @@ func evictLRUEntries(cache *Cache) {
 		})
 
 		// Remove oldest 25% of entries
-		removeCount := len(entries) / 4
-		if removeCount < 1 {
-			removeCount = 1
-		}
+		removeCount := max(len(entries)/4, 1)
 
 		for i := 0; i < removeCount && i < len(entries); i++ {
 			delete(cache.geoIPMap, entries[i].ip)
