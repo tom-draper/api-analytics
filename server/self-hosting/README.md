@@ -2,7 +2,7 @@
 
 API Analytics can be easily self-hosted, allowing for full control over your logged request data.
 
-## Architecture Overview
+## Overview
 
 ```mermaid
 graph TD
@@ -54,15 +54,6 @@ graph TD
     classDef app fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
     classDef database fill:#e0f2f1,stroke:#00695c,stroke-width:2px;
 ```
-
-**Service Responsibilities:**
-
-- **nginx**: Entry point for all external traffic, handles SSL/TLS termination, routes requests to appropriate backend services
-- **certbot**: Automatically generates and renews SSL certificates from Let's Encrypt
-- **db**: PostgreSQL database storing API keys, request logs, and monitoring data
-- **api**: Handles API key generation, data retrieval for dashboards, and user queries
-- **logger**: Receives request logs from middleware, enriches with geolocation data (optional), stores in database
-- **monitor**: Periodically checks user-registered URLs and records uptime/response times
 
 Requirements:
 
