@@ -10,14 +10,17 @@ RUN adduser -D -s /bin/sh -u 1001 appuser
 # Set working directory
 WORKDIR /build
 
-# Copy go mod files first for better Docker layer caching
-COPY go.mod go.sum ./
+# Copy database module (required dependency)
+COPY database/ ./database/
+
+# Copy api module
+COPY api/ ./api/
+
+# Set working directory to api
+WORKDIR /build/api
 
 # Download dependencies (this layer will be cached if go.mod/go.sum don't change)
 RUN go mod download && go mod verify
-
-# Copy source code
-COPY . .
 
 # Build the application with optimizations
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
@@ -36,7 +39,7 @@ RUN apk --no-cache add ca-certificates tzdata && \
 WORKDIR /app
 
 # Copy the binary from builder
-COPY --from=builder /build/api /app/api
+COPY --from=builder /build/api/api /app/api
 
 # Create logs directory and set permissions
 RUN mkdir -p /app/logs && \

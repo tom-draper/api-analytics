@@ -21,6 +21,8 @@ var (
 	}
 
 	locationRegex = regexp.MustCompile(`^[A-Z]{2}$`)
+	// UUID v4 format: 8-4-4-4-12 hex characters
+	uuidRegex = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
 )
 
 func ValidDate(date time.Time) bool {
@@ -154,6 +156,24 @@ func ValidIPAddress(ipAddress string) bool {
 
 	ip := net.ParseIP(ipAddress)
 	return ip != nil
+}
+
+// ValidAPIKey validates that a string is a valid UUID (used for API keys and user IDs)
+func ValidAPIKey(apiKey string) bool {
+	if apiKey == "" {
+		return false
+	}
+
+	// Must be exactly 36 characters (UUID format with hyphens)
+	if len(apiKey) != 36 {
+		return false
+	}
+
+	// Convert to lowercase for validation
+	apiKey = strings.ToLower(apiKey)
+
+	// Match UUID v4 format
+	return uuidRegex.MatchString(apiKey)
 }
 
 func ValidateInput(data map[string]interface{}) map[string]bool {

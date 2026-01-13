@@ -6,14 +6,14 @@ import (
 )
 
 type RateLimiter struct {
-	mu    sync.RWMutex
-	users map[string]*userRate
+	mu                sync.RWMutex
+	users             map[string]*userRate
+	accessesPerMinute int
 }
 
 const (
-	accessesPerMinute int           = 10
-	cleanupInterval   time.Duration = 5 * time.Minute
-	maxUsers          int           = 10000 // Prevent memory leaks
+	cleanupInterval time.Duration = 5 * time.Minute
+	maxUsers        int           = 10000 // Prevent memory leaks
 )
 
 type userRate struct {
@@ -23,14 +23,15 @@ type userRate struct {
 }
 
 // NewRateLimiter creates a new rate limiter with cleanup
-func NewRateLimiter() *RateLimiter {
+func NewRateLimiter(accessesPerMinute int) *RateLimiter {
 	rl := &RateLimiter{
-		users: make(map[string]*userRate),
+		users:             make(map[string]*userRate),
+		accessesPerMinute: accessesPerMinute,
 	}
-	
+
 	// Start cleanup goroutine
 	go rl.cleanup()
-	
+
 	return rl
 }
 
@@ -74,12 +75,13 @@ func (r *RateLimiter) RateLimited(apiKey string) bool {
 	// Fast path: check if user exists with read lock
 	r.mu.RLock()
 	user, exists := r.users[apiKey]
+	limit := r.accessesPerMinute
 	r.mu.RUnlock()
-	
+
 	if exists {
-		return user.isRateLimited()
+		return user.isRateLimited(limit)
 	}
-	
+
 	// Slow path: create new user with write lock
 	r.mu.Lock()
 	// Double-check in case another goroutine added it
@@ -88,9 +90,10 @@ func (r *RateLimiter) RateLimited(apiKey string) bool {
 		user = newUserRate()
 		r.users[apiKey] = user
 	}
+	limit = r.accessesPerMinute
 	r.mu.Unlock()
-	
-	return user.isRateLimited()
+
+	return user.isRateLimited(limit)
 }
 
 // newUserRate creates a new user rate tracker
@@ -103,17 +106,17 @@ func newUserRate() *userRate {
 }
 
 // isRateLimited checks if this user is rate limited
-func (u *userRate) isRateLimited() bool {
+func (u *userRate) isRateLimited(accessesPerMinute int) bool {
 	u.mu.Lock()
 	defer u.mu.Unlock()
-	
+
 	now := time.Now()
 	u.lastAccess = now
-	
+
 	// Remove timestamps older than 1 minute
 	cutoff := now.Add(-time.Minute)
 	validCount := 0
-	
+
 	// Count and keep only valid timestamps
 	for _, ts := range u.timestamps {
 		if ts.After(cutoff) {
@@ -122,12 +125,12 @@ func (u *userRate) isRateLimited() bool {
 		}
 	}
 	u.timestamps = u.timestamps[:validCount]
-	
+
 	// Check if rate limited
 	if len(u.timestamps) >= accessesPerMinute {
 		return true
 	}
-	
+
 	// Add current timestamp
 	u.timestamps = append(u.timestamps, now)
 	return false
