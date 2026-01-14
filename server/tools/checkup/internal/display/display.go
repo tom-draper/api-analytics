@@ -4,13 +4,18 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
-	monitor "github.com/tom-draper/api-analytics/server/tools/monitor/lib"
-	"github.com/tom-draper/api-analytics/server/tools/usage"
+	"github.com/tom-draper/api-analytics/server/database"
+	monitor "github.com/tom-draper/api-analytics/server/tools/monitor/pkg"
+	"github.com/tom-draper/api-analytics/server/tools/usage/monitors"
+	"github.com/tom-draper/api-analytics/server/tools/usage/requests"
+	"github.com/tom-draper/api-analytics/server/tools/usage/usage"
+	"github.com/tom-draper/api-analytics/server/tools/usage/users"
 	"golang.org/x/text/message"
-	"time"
 )
 
 func printBanner(text string) {
@@ -25,14 +30,36 @@ func HandleError(err error) error {
 }
 
 func DisplayCheckup(ctx context.Context, p *message.Printer) {
+	db := initDatabase(ctx)
+	if db == nil {
+		return
+	}
+	defer db.Close()
+
 	DisplayServicesTest()
-	DisplayAPITest()
+	DisplayAPITest(db)
 	DisplayLoggerTest()
-	DisplayDatabaseStats(ctx, p)
-	DisplayLastHour(ctx, p)
-	DisplayLast24Hours(ctx, p)
-	DisplayLastWeek(ctx, p)
-	DisplayTotal(ctx, p)
+	DisplayDatabaseStats(ctx, p, db)
+	DisplayLastHour(ctx, p, db)
+	DisplayLast24Hours(ctx, p, db)
+	DisplayLastWeek(ctx, p, db)
+	DisplayTotal(ctx, p, db)
+}
+
+func initDatabase(ctx context.Context) *database.DB {
+	dbURL := os.Getenv("POSTGRES_URL")
+	if dbURL == "" {
+		log.Println("POSTGRES_URL environment variable not set")
+		return nil
+	}
+
+	db, err := database.New(ctx, dbURL)
+	if err != nil {
+		log.Printf("Failed to connect to database: %v\n", err)
+		return nil
+	}
+
+	return db
 }
 
 func DisplayServicesTest() {
@@ -53,17 +80,26 @@ func testService(service string) {
 	}
 }
 
-func DisplayAPITest() {
+func DisplayAPITest(db *database.DB) {
 	printBanner("API")
+	apiBaseURL := os.Getenv("API_BASE_URL")
+	monitorAPIKey := os.Getenv("MONITOR_API_KEY")
+	monitorUserID := os.Getenv("MONITOR_USER_ID")
+
+	if apiBaseURL == "" || monitorAPIKey == "" || monitorUserID == "" {
+		log.Println("API test environment variables not set")
+		return
+	}
+
 	endpoints := []struct {
 		endpoint string
 		testFunc func() error
 	}{
-		{"/generate-api-key", monitor.TryNewUser},
-		{"/requests/<user-id>", monitor.TryFetchDashboardData},
-		{"/data", monitor.TryFetchData},
-		{"/user-id/<api-key>", monitor.TryFetchUserID},
-		{"/monitor/pings/<user-id>", monitor.TryFetchMonitorPings},
+		{"/generate-api-key", func() error { return monitor.TryNewUserWithParams(apiBaseURL, monitorAPIKey, monitorUserID, db) }},
+		{"/requests/<user-id>", func() error { return monitor.TryFetchDashboardDataWithParams(apiBaseURL, monitorAPIKey, monitorUserID) }},
+		{"/data", func() error { return monitor.TryFetchDataWithParams(apiBaseURL, monitorAPIKey, monitorUserID) }},
+		{"/user-id/<api-key>", func() error { return monitor.TryFetchUserIDWithParams(apiBaseURL, monitorAPIKey, monitorUserID) }},
+		{"/monitor/pings/<user-id>", func() error { return monitor.TryFetchMonitorPingsWithParams(apiBaseURL, monitorAPIKey, monitorUserID) }},
 	}
 	for _, ep := range endpoints {
 		testAPIEndpoint(ep.endpoint, ep.testFunc)
@@ -85,8 +121,21 @@ func testAPIEndpoint(endpoint string, testEndpoint func() error) {
 
 func DisplayLoggerTest() {
 	printBanner("Logger")
-	testLoggerEndpoint("/log-request", monitor.TryLogRequests, true)
-	testLoggerEndpoint("/requests", monitor.TryLogRequests, false)
+	apiBaseURL := os.Getenv("API_BASE_URL")
+	monitorAPIKey := os.Getenv("MONITOR_API_KEY")
+	monitorUserID := os.Getenv("MONITOR_USER_ID")
+
+	if apiBaseURL == "" || monitorAPIKey == "" || monitorUserID == "" {
+		log.Println("Logger test environment variables not set")
+		return
+	}
+
+	testLoggerEndpoint("/log-request", func(legacy bool) error {
+		return monitor.TryLogRequestsWithParams(apiBaseURL, monitorAPIKey, monitorUserID, legacy)
+	}, true)
+	testLoggerEndpoint("/requests", func(legacy bool) error {
+		return monitor.TryLogRequestsWithParams(apiBaseURL, monitorAPIKey, monitorUserID, legacy)
+	}, false)
 }
 
 func testLoggerEndpoint(endpoint string, testEndpoint func(legacy bool) error, legacy bool) {
@@ -97,135 +146,173 @@ func testLoggerEndpoint(endpoint string, testEndpoint func(legacy bool) error, l
 		color.New(color.FgRed).Printf("offline\n")
 		fmt.Printf("\n%s\n", err.Error())
 	} else {
-		color.New(color.FgGreen).Printf("online\n")	
+		color.New(color.FgGreen).Printf("online\n")
 		fmt.Printf(" %s\n", time.Since(start))
 	}
 }
 
-func DisplayDatabaseStats(ctx context.Context, p *message.Printer) {
+func DisplayDatabaseStats(ctx context.Context, p *message.Printer, db *database.DB) {
 	printBanner("Database")
 
-	connections, err := usage.DatabaseConnections(ctx)
-	if HandleError(err) != nil { return }
+	connections, err := usage.DatabaseConnections(ctx, db)
+	if HandleError(err) != nil {
+		return
+	}
 	p.Println("Active database connections:", connections)
 
-	size, err := usage.TableSize(ctx, "requests")
-	if HandleError(err) != nil { return }
+	size, err := usage.TableSize(ctx, db, "requests")
+	if HandleError(err) != nil {
+		return
+	}
 	p.Println("Database size:", size)
 }
 
 type timePeriodStat struct {
 	label string
-	count func(context.Context) (int, error)
+	count func(context.Context, *database.DB) (int, error)
 }
 
-func displayTimePeriodStats(ctx context.Context, p *message.Printer, bannerText string, stats []timePeriodStat) {
+func displayTimePeriodStats(ctx context.Context, p *message.Printer, db *database.DB, bannerText string, stats []timePeriodStat) {
 	printBanner(bannerText)
 	for _, stat := range stats {
-		count, err := stat.count(ctx)
-		if HandleError(err) != nil { return }
+		count, err := stat.count(ctx, db)
+		if HandleError(err) != nil {
+			return
+		}
 		p.Println(stat.label+":", count)
 	}
 }
 
-func DisplayLastHour(ctx context.Context, p *message.Printer) {
+func DisplayLastHour(ctx context.Context, p *message.Printer, db *database.DB) {
 	hourlyStats := []timePeriodStat{
-		{"Users", usage.HourlyUsersCount},
-		{"Requests", usage.HourlyRequestsCount},
-		{"Monitors", usage.HourlyMonitorsCount},
+		{"Users", users.HourlyUsersCount},
+		{"Requests", requests.HourlyRequestsCount},
+		{"Monitors", monitors.HourlyMonitorsCount},
 	}
-	displayTimePeriodStats(ctx, p, "Last Hour", hourlyStats)
+	displayTimePeriodStats(ctx, p, db, "Last Hour", hourlyStats)
 }
 
-func DisplayLast24Hours(ctx context.Context, p *message.Printer) {
+func DisplayLast24Hours(ctx context.Context, p *message.Printer, db *database.DB) {
 	dailyStats := []timePeriodStat{
-		{"Users", usage.DailyUsersCount},
-		{"Requests", usage.DailyRequestsCount},
-		{"Monitors", usage.DailyMonitorsCount},
+		{"Users", users.DailyUsersCount},
+		{"Requests", requests.DailyRequestsCount},
+		{"Monitors", monitors.DailyMonitorsCount},
 	}
-	displayTimePeriodStats(ctx, p, "Last 24 Hours", dailyStats)
+	displayTimePeriodStats(ctx, p, db, "Last 24 Hours", dailyStats)
 }
 
-func DisplayLastWeek(ctx context.Context, p *message.Printer) {
+func DisplayLastWeek(ctx context.Context, p *message.Printer, db *database.DB) {
 	weeklyStats := []timePeriodStat{
-		{"Users", usage.WeeklyUsersCount},
-		{"Requests", usage.WeeklyRequestsCount},
-		{"Monitors", usage.WeeklyMonitorsCount},
+		{"Users", users.WeeklyUsersCount},
+		{"Requests", requests.WeeklyRequestsCount},
+		{"Monitors", monitors.WeeklyMonitorsCount},
 	}
-	displayTimePeriodStats(ctx, p, "Last Week", weeklyStats)
+	displayTimePeriodStats(ctx, p, db, "Last Week", weeklyStats)
 }
 
 func DisplayDatabaseCheckup(ctx context.Context, p *message.Printer) {
-	DisplayDatabaseStats(ctx, p)
-	totalRequests, err := usage.RequestsCount(ctx, "")
-	if HandleError(err) != nil { return }
+	db := initDatabase(ctx)
+	if db == nil {
+		return
+	}
+	defer db.Close()
+
+	DisplayDatabaseStats(ctx, p, db)
+	totalRequests, err := requests.RequestsCount(ctx, db, "")
+	if HandleError(err) != nil {
+		return
+	}
 	p.Println("Requests:", totalRequests)
-	DisplayDatabaseTableStats(ctx)
+	DisplayDatabaseTableStats(ctx, db)
 }
 
-func DisplayDatabaseTableStats(ctx context.Context) {
+func DisplayDatabaseTableStats(ctx context.Context, db *database.DB) {
 	printBanner("Requests Fields")
-	columnSize, err := usage.RequestsColumnSize(ctx)
-	if HandleError(err) != nil { return }
+	columnSize, err := requests.RequestsColumnSize(ctx, db)
+	if HandleError(err) != nil {
+		return
+	}
 	columnSize.Display()
 }
 
 func DisplayUsersCheckup(ctx context.Context, p *message.Printer) {
-	DisplayTopUsers(ctx, p)
-	DisplayUnusedUsers(ctx, p)
-	DisplayUsersSinceLastRequest(ctx, p)
+	db := initDatabase(ctx)
+	if db == nil {
+		return
+	}
+	defer db.Close()
+
+	DisplayTopUsers(ctx, p, db)
+	DisplayUnusedUsers(ctx, p, db)
+	DisplayUsersSinceLastRequest(ctx, p, db)
 }
 
-func DisplayTotal(ctx context.Context, p *message.Printer) {
+func DisplayTotal(ctx context.Context, p *message.Printer, db *database.DB) {
 	printBanner("Total")
 
 	totalStats := []struct {
 		label string
-		count func(context.Context, string) (int, error)
+		count func(context.Context, *database.DB, string) (int, error)
 	}{
-		{"Users", usage.UsersCount},
-		{"Requests", usage.RequestsCount},
-		{"Monitors", usage.MonitorsCount},
+		{"Users", users.UsersCount},
+		{"Requests", requests.RequestsCount},
+		{"Monitors", monitors.MonitorsCount},
 	}
 
 	for _, stat := range totalStats {
-		count, err := stat.count(ctx, "")
-		if HandleError(err) != nil { return }
+		count, err := stat.count(ctx, db, "")
+		if HandleError(err) != nil {
+			return
+		}
 		p.Println(stat.label+":", count)
 	}
 }
 
-func DisplayTopUsers(ctx context.Context, p *message.Printer) {
+func DisplayTopUsers(ctx context.Context, p *message.Printer, db *database.DB) {
 	printBanner("Top Users")
-	topUsers, err := usage.TopUsers(ctx, 10)
-	if HandleError(err) != nil { return }
-	usage.DisplayUsers(topUsers)
+	topUsers, err := users.TopUsers(ctx, db, 10)
+	if HandleError(err) != nil {
+		return
+	}
+	users.DisplayUsers(topUsers)
 }
 
-func DisplayUnusedUsers(ctx context.Context, p *message.Printer) {
+func DisplayUnusedUsers(ctx context.Context, p *message.Printer, db *database.DB) {
 	printBanner("Unused Users")
-	unusedUsers, err := usage.UnusedUsers(ctx)
-	if HandleError(err) != nil { return }
-	usage.DisplayUserTimes(unusedUsers)
+	unusedUsers, err := users.UnusedUsers(ctx, db)
+	if HandleError(err) != nil {
+		return
+	}
+	users.DisplayUserTimes(unusedUsers)
 }
 
-func DisplayUsersSinceLastRequest(ctx context.Context, p *message.Printer) {
+func DisplayUsersSinceLastRequest(ctx context.Context, p *message.Printer, db *database.DB) {
 	printBanner("Users Since Last Request")
-	sinceLastRequestUsers, err := usage.SinceLastRequestUsers(ctx)
-	if HandleError(err) != nil { return }
-	usage.DisplayUserTimes(sinceLastRequestUsers)
+	sinceLastRequestUsers, err := users.SinceLastRequestUsers(ctx, db)
+	if HandleError(err) != nil {
+		return
+	}
+	users.DisplayUserTimes(sinceLastRequestUsers)
 }
 
 func DisplayMonitorsCheckup(ctx context.Context, p *message.Printer) {
-	DisplayMonitors(ctx, p)
+	db := initDatabase(ctx)
+	if db == nil {
+		return
+	}
+	defer db.Close()
+
+	DisplayMonitors(ctx, p, db)
 }
 
-func DisplayMonitors(ctx context.Context, p *message.Printer) {
+func DisplayMonitors(ctx context.Context, p *message.Printer, db *database.DB) {
 	printBanner("Monitors")
-	monitors, err := usage.TotalMonitors(ctx)
-	if HandleError(err) != nil { return }
+	monitorsList, err := monitors.TotalMonitors(ctx, db)
+	if HandleError(err) != nil {
+		return
+	}
 
-	for i, monitor := range monitors {
+	for i, monitor := range monitorsList {
 		fmt.Printf("[%d] %s %s %s\n", i, monitor.APIKey, monitor.CreatedAt.Format("2006-01-02 15:04:05"), monitor.URL)
 	}
 }

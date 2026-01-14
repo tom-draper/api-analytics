@@ -27,7 +27,7 @@ BUILD_DIR := ./bin
 all: clean build
 
 ## build: Build the checkup binary
-build: deps
+build:
 	@echo "Building $(APP_NAME)..."
 	@mkdir -p $(BUILD_DIR)
 	$(GOBUILD) $(BUILD_FLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) $(SRC_DIR)

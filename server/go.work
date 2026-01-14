@@ -8,6 +8,7 @@ use (
 	./monitor
 	./tools/checkup
 	./tools/cleanup
+	./tools/config
 	./tools/monitor
 	./tools/usage
 )
