@@ -12,7 +12,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/tom-draper/api-analytics/server/database"
-	"monitor/internal/config"
+	"github.com/tom-draper/api-analytics/server/monitor/internal/config"
 )
 
 type MonitorRow struct {
@@ -32,15 +32,19 @@ type PingsRow struct {
 }
 
 func main() {
+	// Create context for graceful shutdown
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Load and validate configuration
-	cfg, err := config.LoadAndValidate()
+	cfg, err := config.Load()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Configuration error: %v\n", err)
 		os.Exit(1)
 	}
 
 	// Initialize database connection pool
-	db, err := database.New(context.Background(), cfg.PostgresURL)
+	db, err := database.New(ctx, cfg.PostgresURL)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: Failed to create database connection pool: %v\n", err)
 		os.Exit(1)
@@ -48,7 +52,7 @@ func main() {
 	defer db.Close()
 	fmt.Println("Database connection pool initialized")
 
-	monitored, err := getMonitoredURLs(db)
+	monitored, err := getMonitoredURLs(ctx, db)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: Failed to fetch monitored URLs: %v\n", err)
 		os.Exit(1)
@@ -65,14 +69,14 @@ func main() {
 	pings := pingMonitored(monitored)
 	fmt.Printf("Completed %d pings\n", len(pings))
 
-	err = uploadPings(db, pings)
+	err = uploadPings(ctx, db, pings)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: Failed to upload pings: %v\n", err)
 		os.Exit(1)
 	}
 	fmt.Printf("Successfully uploaded %d pings\n", len(pings))
 
-	err = deleteExpiredPings(db)
+	err = deleteExpiredPings(ctx, db)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: Failed to delete expired pings: %v\n", err)
 		os.Exit(1)
@@ -80,9 +84,9 @@ func main() {
 	fmt.Println("Successfully cleaned up expired pings")
 }
 
-func getMonitoredURLs(db *database.DB) ([]MonitorRow, error) {
+func getMonitoredURLs(ctx context.Context, db *database.DB) ([]MonitorRow, error) {
 	query := "SELECT * FROM monitor;"
-	rows, err := db.Pool.Query(context.Background(), query)
+	rows, err := db.Pool.Query(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query monitored URLs: %w", err)
 	}
@@ -105,7 +109,7 @@ func getMonitoredURLs(db *database.DB) ([]MonitorRow, error) {
 	return monitors, nil
 }
 
-func uploadPings(db *database.DB, pings []PingsRow) error {
+func uploadPings(ctx context.Context, db *database.DB, pings []PingsRow) error {
 	// Return early if there are no pings to insert
 	if len(pings) == 0 {
 		return nil
@@ -113,7 +117,7 @@ func uploadPings(db *database.DB, pings []PingsRow) error {
 
 	// Use COPY protocol for efficient bulk insert
 	_, err := db.Pool.CopyFrom(
-		context.Background(),
+		ctx,
 		pgx.Identifier{"pings"},
 		[]string{"api_key", "url", "response_time", "status", "created_at"},
 		pgx.CopyFromSlice(len(pings), func(i int) ([]any, error) {
@@ -135,7 +139,7 @@ func uploadPings(db *database.DB, pings []PingsRow) error {
 	return nil
 }
 
-func deleteExpiredPings(db *database.DB) error {
+func deleteExpiredPings(ctx context.Context, db *database.DB) error {
 	// Calculate the timestamp 60 days ago
 	expiryTime := time.Now().Add(-60 * 24 * time.Hour).UTC()
 
@@ -143,7 +147,7 @@ func deleteExpiredPings(db *database.DB) error {
 	query := "DELETE FROM pings WHERE created_at < $1;"
 
 	// Execute the query with the expiry time as the parameter
-	_, err := db.Pool.Exec(context.Background(), query, expiryTime)
+	_, err := db.Pool.Exec(ctx, query, expiryTime)
 	if err != nil {
 		return fmt.Errorf("failed to delete expired pings: %v", err)
 	}

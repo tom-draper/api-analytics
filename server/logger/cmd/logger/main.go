@@ -100,7 +100,7 @@ func main() {
 	log.LogToFile("Starting logger...")
 
 	// Load and validate configuration
-	cfg, err := config.LoadAndValidate()
+	cfg, err := config.Load()
 	if err != nil {
 		log.LogToFile(fmt.Sprintf("Configuration error: %v", err))
 		return

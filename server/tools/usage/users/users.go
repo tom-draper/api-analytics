@@ -15,27 +15,27 @@ type UserRow struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func HourlyUsersCount(ctx context.Context) (int, error) {
-	return UsersCount(ctx, "1 hour")
+func HourlyUsersCount(ctx context.Context, db *database.DB) (int, error) {
+	return UsersCount(ctx, db, "1 hour")
 }
 
-func DailyUsersCount(ctx context.Context) (int, error) {
-	return UsersCount(ctx, "24 hours")
+func DailyUsersCount(ctx context.Context, db *database.DB) (int, error) {
+	return UsersCount(ctx, db, "24 hours")
 }
 
-func WeeklyUsersCount(ctx context.Context) (int, error) {
-	return UsersCount(ctx, "7 days")
+func WeeklyUsersCount(ctx context.Context, db *database.DB) (int, error) {
+	return UsersCount(ctx, db, "7 days")
 }
 
-func MonthlyUsersCount(ctx context.Context) (int, error) {
-	return UsersCount(ctx, "30 days")
+func MonthlyUsersCount(ctx context.Context, db *database.DB) (int, error) {
+	return UsersCount(ctx, db, "30 days")
 }
 
-func TotalUsersCount(ctx context.Context) (int, error) {
-	return UsersCount(ctx, "")
+func TotalUsersCount(ctx context.Context, db *database.DB) (int, error) {
+	return UsersCount(ctx, db, "")
 }
 
-func UsersCount(ctx context.Context, interval string) (int, error) {
+func UsersCount(ctx context.Context, db *database.DB, interval string) (int, error) {
 	var count int
 	query := "SELECT COUNT(*) FROM users"
 	if interval != "" {
@@ -50,27 +50,27 @@ func UsersCount(ctx context.Context, interval string) (int, error) {
 	return count, nil
 }
 
-func HourlyUsers(ctx context.Context) ([]UserRow, error) {
-	return Users(ctx, "1 hour")
+func HourlyUsers(ctx context.Context, db *database.DB) ([]UserRow, error) {
+	return Users(ctx, db, "1 hour")
 }
 
-func DailyUsers(ctx context.Context) ([]UserRow, error) {
-	return Users(ctx, "24 hours")
+func DailyUsers(ctx context.Context, db *database.DB) ([]UserRow, error) {
+	return Users(ctx, db, "24 hours")
 }
 
-func WeeklyUsers(ctx context.Context) ([]UserRow, error) {
-	return Users(ctx, "7 days")
+func WeeklyUsers(ctx context.Context, db *database.DB) ([]UserRow, error) {
+	return Users(ctx, db, "7 days")
 }
 
-func MonthlyUsers(ctx context.Context) ([]UserRow, error) {
-	return Users(ctx, "30 days")
+func MonthlyUsers(ctx context.Context, db *database.DB) ([]UserRow, error) {
+	return Users(ctx, db, "30 days")
 }
 
-func TotalUsers(ctx context.Context) ([]UserRow, error) {
-	return Users(ctx, "")
+func TotalUsers(ctx context.Context, db *database.DB) ([]UserRow, error) {
+	return Users(ctx, db, "")
 }
 
-func Users(ctx context.Context, interval string) ([]UserRow, error) {
+func Users(ctx context.Context, db *database.DB, interval string) ([]UserRow, error) {
 	query := "SELECT api_key, user_id, created_at FROM users"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
@@ -120,7 +120,7 @@ func DisplayUsers(users []User) {
 	}
 }
 
-func TopUsers(ctx context.Context, n int) ([]User, error) {
+func TopUsers(ctx context.Context, db *database.DB, n int) ([]User, error) {
 	query := `
 		SELECT requests.api_key, users.created_at, COUNT(*) AS total_requests,
 		       COALESCE(SUM(CASE WHEN DATE(created_at) = CURRENT_DATE THEN 1 ELSE 0 END), 0) AS daily_requests,

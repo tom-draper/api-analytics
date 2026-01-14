@@ -12,8 +12,8 @@ type Config struct {
 	PostgresURL string
 }
 
-// LoadAndValidate loads environment variables and validates them
-func LoadAndValidate() (*Config, error) {
+// Load loads environment variables and validates them
+func Load() (*Config, error) {
 	// Load .env file (non-fatal if missing)
 	if err := godotenv.Load(".env"); err != nil {
 		fmt.Println("Warning: could not load .env file")
