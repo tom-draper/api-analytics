@@ -66,13 +66,37 @@ Continuous monitoring service that checks system health and sends email alerts.
 ## Shared Libraries
 
 ### usage
-Shared library providing database query functions for usage statistics.
+Shared library providing a clean Client API for database query functions.
 
-**Packages**:
-- `usage/usage` - Core utilities and types
-- `usage/users` - User-related queries
-- `usage/requests` - Request-related queries
-- `usage/monitors` - Monitor-related queries
+**Features**:
+- Flattened single-package design (no nested subpackages)
+- Client wrapper for clean API
+- All query methods on `Client` struct
+- Type-safe with generics support
+
+**Usage**:
+```go
+import "github.com/tom-draper/api-analytics/server/tools/usage"
+
+// Create client from existing DB
+client := usage.NewClient(db)
+
+// Or create from environment
+client, err := usage.NewClientFromEnv(ctx)
+defer client.Close()
+
+// Query methods
+users, err := client.DailyUsers(ctx)
+requests, err := client.HourlyRequestsCount(ctx)
+monitors, err := client.TotalMonitors(ctx)
+size, err := client.TableSize(ctx, "requests")
+```
+
+**Available Methods**:
+- User queries: `HourlyUsers`, `DailyUsers`, `TopUsers`, `UnusedUsers`, etc.
+- Request queries: `HourlyRequests`, `DailyRequestsCount`, `UserRequestsOverLimit`, etc.
+- Monitor queries: `HourlyMonitors`, `DailyMonitorsCount`, `TotalMonitors`, etc.
+- Database utilities: `TableSize`, `DatabaseConnections`, `RequestsColumnSize`, etc.
 
 ### config
 Shared configuration package for environment variable management.
@@ -144,12 +168,14 @@ tools/
 │   ├── internal/     # Monitor logic
 │   ├── pkg/          # Public API (used by checkup)
 │   └── bin/monitor   # Built binary
-├── usage/            # Shared library (single module)
+├── usage/            # Shared library (single package)
 │   ├── go.mod        # Module definition
-│   ├── usage/        # Core utilities package
-│   ├── users/        # User queries package
-│   ├── requests/     # Request queries package
-│   └── monitors/     # Monitor queries package
+│   ├── client.go     # Client wrapper
+│   ├── types.go      # Common types
+│   ├── users.go      # User queries
+│   ├── requests.go   # Request queries
+│   ├── monitors.go   # Monitor queries
+│   └── database.go   # Database utilities
 └── config/           # Shared configuration
     └── go.mod        # Module definition
 ```

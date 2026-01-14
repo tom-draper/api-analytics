@@ -8,10 +8,7 @@ import (
 	"github.com/tom-draper/api-analytics/server/database"
 	"github.com/tom-draper/api-analytics/server/email"
 	"github.com/tom-draper/api-analytics/server/tools/checkup/internal/display"
-	"github.com/tom-draper/api-analytics/server/tools/usage/monitors"
-	"github.com/tom-draper/api-analytics/server/tools/usage/requests"
-	"github.com/tom-draper/api-analytics/server/tools/usage/usage"
-	"github.com/tom-draper/api-analytics/server/tools/usage/users"
+	"github.com/tom-draper/api-analytics/server/tools/usage"
 )
 
 func EmailCheckup(ctx context.Context) {
@@ -28,27 +25,29 @@ func EmailCheckup(ctx context.Context) {
 	}
 	defer db.Close()
 
-	usersList, err := users.DailyUsers(ctx, db)
+	usageClient := usage.NewClient(db)
+
+	usersList, err := usageClient.DailyUsers(ctx)
 	if display.HandleError(err) != nil {
 		return
 	}
 
-	requestsList, err := requests.DailyUserRequests(ctx, db)
+	requestsList, err := usageClient.DailyUserRequests(ctx)
 	if display.HandleError(err) != nil {
 		return
 	}
 
-	monitorsList, err := monitors.DailyUserMonitors(ctx, db)
+	monitorsList, err := usageClient.DailyUserMonitors(ctx)
 	if display.HandleError(err) != nil {
 		return
 	}
 
-	size, err := usage.TableSize(ctx, db, "requests")
+	size, err := usageClient.TableSize(ctx, "requests")
 	if display.HandleError(err) != nil {
 		return
 	}
 
-	connections, err := usage.DatabaseConnections(ctx, db)
+	connections, err := usageClient.DatabaseConnections(ctx)
 	if display.HandleError(err) != nil {
 		return
 	}

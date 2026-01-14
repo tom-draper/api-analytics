@@ -8,8 +8,7 @@ import (
 	"time"
 
 	"github.com/tom-draper/api-analytics/server/database"
-	"github.com/tom-draper/api-analytics/server/tools/usage/requests"
-	"github.com/tom-draper/api-analytics/server/tools/usage/users"
+	"github.com/tom-draper/api-analytics/server/tools/usage"
 )
 
 func DeleteOldestRequests(db *database.DB, apiKey string, count int) error {
@@ -20,7 +19,9 @@ func DeleteOldestRequests(db *database.DB, apiKey string, count int) error {
 }
 
 func DeleteExpiredRequests(db *database.DB, requestsLimit int) error {
-	usersList, err := requests.UserRequestsOverLimit(context.Background(), db, requestsLimit)
+	client := usage.NewClient(db)
+
+	usersList, err := client.UserRequestsOverLimit(context.Background(), requestsLimit)
 	if err != nil {
 		return fmt.Errorf("failed to fetch users over limit: %w", err)
 	}
@@ -48,7 +49,9 @@ func DeleteExpiredUsers(db *database.DB, userExpiry time.Duration) error {
 }
 
 func deleteExpiredUnusedUsers(db *database.DB, userExpiry time.Duration) error {
-	usersList, err := users.UnusedUsers(context.Background(), db)
+	client := usage.NewClient(db)
+
+	usersList, err := client.UnusedUsers(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to fetch unused users: %w", err)
 	}
@@ -63,7 +66,9 @@ func deleteExpiredUnusedUsers(db *database.DB, userExpiry time.Duration) error {
 }
 
 func deleteExpiredRetiredUsers(db *database.DB, userExpiry time.Duration) error {
-	usersList, err := users.SinceLastRequestUsers(context.Background(), db)
+	client := usage.NewClient(db)
+
+	usersList, err := client.SinceLastRequestUsers(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to fetch retired users: %w", err)
 	}
