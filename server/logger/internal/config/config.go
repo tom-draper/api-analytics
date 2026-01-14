@@ -16,8 +16,8 @@ type Config struct {
 	MaxInsert   int
 }
 
-// LoadAndValidate loads environment variables and validates them
-func LoadAndValidate() (*Config, error) {
+// Load loads environment variables and validates them
+func Load() (*Config, error) {
 	// Load .env file (non-fatal if missing)
 	if err := godotenv.Load(".env"); err != nil {
 		log.LogToFile("Warning: could not load .env file")

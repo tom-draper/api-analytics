@@ -1,0 +1,13 @@
+go 1.25
+
+use (
+	./api
+	./database
+	./email
+	./logger
+	./monitor
+	./tools/checkup
+	./tools/cleanup
+	./tools/monitor
+	./tools/usage
+)

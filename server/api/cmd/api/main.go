@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/tom-draper/api-analytics/server/api/internal/env"
+	"github.com/tom-draper/api-analytics/server/api/internal/config"
 	"github.com/tom-draper/api-analytics/server/api/internal/log"
 	"github.com/tom-draper/api-analytics/server/api/internal/routes"
 	"github.com/tom-draper/api-analytics/server/database"
@@ -34,22 +34,23 @@ func main() {
 
 	log.Info("Starting api...")
 
-	if err := env.LoadEnv(); err != nil {
-		log.Info(err.Error())
+	// Load and validate configuration
+	cfg, err := config.Load()
+	if err != nil {
+		log.Info(fmt.Sprintf("Configuration error: %v", err))
+		return
 	}
 
-	pgURL := env.GetEnvVariable("POSTGRES_URL", "")
-
-	db, err := database.New(context.Background(), pgURL)
+	db, err := database.New(context.Background(), cfg.PostgresURL)
 	if err != nil {
 		log.Info("Failed to initialize database: " + err.Error())
 		return
 	}
 	defer db.Close()
 
-	app := setupRouter(db)
+	app := setupRouter(db, cfg)
 
-	port := env.GetIntegerEnvVariable("PORT", 3000)
+	port := cfg.Port
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
 		Handler: app,
@@ -75,7 +76,7 @@ func main() {
 	log.Info("Server exiting")
 }
 
-func setupRouter(db *database.DB) *gin.Engine {
+func setupRouter(db *database.DB, cfg *config.Config) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
 
@@ -83,10 +84,10 @@ func setupRouter(db *database.DB) *gin.Engine {
 
 	r.Use(cors.Default())
 
-	// Limit a single IP's request logs to 100 per second
+	// Limit a single IP's request logs per second
 	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
 		Rate:  time.Second,
-		Limit: getRateLimit(),
+		Limit: cfg.RateLimit,
 	})
 	ratelimiter := ratelimit.RateLimiter(store, &ratelimit.Options{
 		ErrorHandler: errorHandler,
@@ -94,13 +95,9 @@ func setupRouter(db *database.DB) *gin.Engine {
 	})
 	app.Use(ratelimiter)
 
-	routes.RegisterRouter(r, db)
+	routes.RegisterRouter(r, db, cfg)
 
 	return app
-}
-
-func getRateLimit() uint {
-	return uint(env.GetIntegerEnvVariable("API_RATE_LIMIT", 100))
 }
 
 func rateLimitKey(c *gin.Context) string {

@@ -8,15 +8,9 @@ require (
 	github.com/fatih/color v1.18.0
 	github.com/tom-draper/api-analytics/server/email v0.0.0-20251125173416-63025bb33f9f
 	github.com/tom-draper/api-analytics/server/tools/monitor v0.0.0-20251125173416-63025bb33f9f
-	github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20251125173416-63025bb33f9f
-	golang.org/x/text v0.31.0
+	github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20251222101928-a076bea009fb
+	golang.org/x/text v0.33.0
 )
-
-replace github.com/tom-draper/api-analytics/server/tools/checkup/cmd/checkup/options => ./cmd/checkup/options
-
-replace github.com/tom-draper/api-analytics/server/tools/checkup/internal/check => ./internal/check
-
-replace github.com/tom-draper/api-analytics/server/tools/checkup/internal/display => ./internal/display
 
 require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
@@ -27,5 +21,5 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/tom-draper/api-analytics/server/database v0.0.0-20251125173416-63025bb33f9f // indirect
 	golang.org/x/crypto v0.45.0 // indirect
-	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/sys v0.40.0 // indirect
 )

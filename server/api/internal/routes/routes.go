@@ -14,7 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v5"
-	"github.com/tom-draper/api-analytics/server/api/internal/env"
+	"github.com/tom-draper/api-analytics/server/api/internal/config"
 	"github.com/tom-draper/api-analytics/server/api/internal/log"
 	"github.com/tom-draper/api-analytics/server/database"
 )
@@ -82,14 +82,6 @@ type DashboardRequestRow struct {
 	// UserHash     *string     `json:"user_hash"` // Nullable
 	UserID    *string   `json:"user_id"` // Nullable, custom user identifier field specific to each API service
 	CreatedAt time.Time `json:"created_at"`
-}
-
-func getMaxLoad() int {
-	return env.GetIntegerEnvVariable("MAX_LOAD", 1_000_000)
-}
-
-func getPageSize() int {
-	return env.GetIntegerEnvVariable("PAGE_SIZE", 250_000)
 }
 
 // fetchAndFormatRequestsPage fetches a single page of requests and returns formatted data
@@ -194,10 +186,7 @@ func sendDashboardResponse(c *gin.Context, db *database.DB, ctx context.Context,
 	return nil
 }
 
-func getRequestsHandler(db *database.DB) gin.HandlerFunc {
-	var pageSize int = getPageSize()
-	var maxLoad int = getMaxLoad()
-
+func getRequestsHandler(db *database.DB, cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.Param("userID")
 		if userID == "" {
@@ -238,9 +227,9 @@ func getRequestsHandler(db *database.DB) gin.HandlerFunc {
 			currentPage = targetPage
 		}
 
-		// Fetch pages until maxLoad or single page completed
+		// Fetch pages until cfg.MaxLoad or single page completed
 		for {
-			pageRequests, pageUserAgentIDs, count, skipped, err := fetchAndFormatRequestsPage(ctx, db, apiKey, currentPage, pageSize)
+			pageRequests, pageUserAgentIDs, count, skipped, err := fetchAndFormatRequestsPage(ctx, db, apiKey, currentPage, cfg.PageSize)
 			if err != nil {
 				log.Info(fmt.Sprintf("key=%s: Failed to fetch requests - %s", apiKey, err.Error()))
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Failed to fetch requests."})
@@ -255,12 +244,12 @@ func getRequestsHandler(db *database.DB) gin.HandlerFunc {
 
 			currentPage++
 
-			// Break conditions: specific page requested, page not full, or hit maxLoad
-			if targetPage != 0 || count+skipped < pageSize || len(allRequests) >= maxLoad {
+			// Break conditions: specific page requested, page not full, or hit cfg.MaxLoad
+			if targetPage != 0 || count+skipped < cfg.PageSize || len(allRequests) >= cfg.MaxLoad {
 				break
 			}
-			if len(allRequests) >= maxLoad {
-				allRequests = allRequests[:maxLoad]
+			if len(allRequests) >= cfg.MaxLoad {
+				allRequests = allRequests[:cfg.MaxLoad]
 				break
 			}
 		}
@@ -279,9 +268,7 @@ func getRequestsHandler(db *database.DB) gin.HandlerFunc {
 	}
 }
 
-func getPaginatedRequestsHandler(db *database.DB) gin.HandlerFunc {
-	var pageSize int = getPageSize()
-
+func getPaginatedRequestsHandler(db *database.DB, cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.Param("userID")
 		if userID == "" {
@@ -309,7 +296,7 @@ func getPaginatedRequestsHandler(db *database.DB) gin.HandlerFunc {
 		}
 
 		// Fetch single page of requests
-		requests, userAgentIDs, _, _, err := fetchAndFormatRequestsPage(ctx, db, apiKey, page, pageSize)
+		requests, userAgentIDs, _, _, err := fetchAndFormatRequestsPage(ctx, db, apiKey, page, cfg.PageSize)
 		if err != nil {
 			log.Info(fmt.Sprintf("key=%s: Failed to fetch requests - %s", apiKey, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Failed to fetch requests."})
@@ -985,12 +972,12 @@ func checkHealth(db *database.DB) gin.HandlerFunc {
 	}
 }
 
-func RegisterRouter(r *gin.RouterGroup, db *database.DB) {
+func RegisterRouter(r *gin.RouterGroup, db *database.DB, cfg *config.Config) {
 	r.GET("/generate", genAPIKey(db))
 	r.GET("/generate-api-key", genAPIKey(db))
 	r.GET("/user-id/:apiKey", getUserID(db))
-	r.GET("/requests/:userID", getRequestsHandler(db))
-	r.GET("/requests/:userID/:page", getPaginatedRequestsHandler(db))
+	r.GET("/requests/:userID", getRequestsHandler(db, cfg))
+	r.GET("/requests/:userID/:page", getPaginatedRequestsHandler(db, cfg))
 	r.GET("/delete/:apiKey", deleteData(db))
 	r.GET("/monitor/:userID", getUserMonitor(db))
 	r.GET("/monitor/pings/:userID", getUserPings(db))
