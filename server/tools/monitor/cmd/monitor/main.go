@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/tom-draper/api-analytics/server/database"
 	"github.com/tom-draper/api-analytics/server/email"
 	"github.com/tom-draper/api-analytics/server/tools/monitor/internal/monitor"
 )
@@ -71,13 +73,27 @@ func main() {
 		log.Fatalf("MONITOR_USER_ID environment variable not set")
 	}
 
+	// Initialize database connection for cleanup test
+	dbURL := os.Getenv("POSTGRES_URL")
+	db, err := database.New(context.Background(), dbURL)
+	if err != nil {
+		log.Printf("Warning: could not connect to database: %v", err)
+		db = nil
+	}
+	defer func() {
+		if db != nil {
+			db.Close()
+		}
+	}()
+
 	serviceStatus := monitor.ServiceStatus{
-		API:    !monitor.ServiceDown("api"),
-		Logger: !monitor.ServiceDown("logger"),
-		Nginx:  !monitor.ServiceDown("nginx"), PostgresSQL: !monitor.ServiceDown("postgreql"),
+		API:         !monitor.ServiceDown("api"),
+		Logger:      !monitor.ServiceDown("logger"),
+		Nginx:       !monitor.ServiceDown("nginx"),
+		PostgresSQL: !monitor.ServiceDown("postgreql"),
 	}
 	apiTestStatus := monitor.APITestStatus{
-		NewUser:            monitor.TryNewUser(apiBaseURL, monitorAPIKey, monitorUserID),
+		NewUser:            monitor.TryNewUser(apiBaseURL, monitorAPIKey, monitorUserID, db),
 		FetchDashboardData: monitor.TryFetchDashboardData(apiBaseURL, monitorAPIKey, monitorUserID),
 		FetchData:          monitor.TryFetchData(apiBaseURL, monitorAPIKey, monitorUserID),
 		FetchUserID:        monitor.TryFetchUserID(apiBaseURL, monitorAPIKey, monitorUserID),

@@ -9,6 +9,8 @@ github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 h1:iCEnooe7Ulw
 github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761/go.mod h1:5TJZWKEWniPve33vlWYSoGYefn3gLQRzjfDlhSJ9ZKM=
 github.com/jackc/pgx/v5 v5.7.6 h1:rWQc5FwZSPX58r1OQmkuaNicxdmExaEz5A2DO2hUuTk=
 github.com/jackc/pgx/v5 v5.7.6/go.mod h1:aruU7o91Tc2q2cFp5h4uP3f6ztExVpyVv88Xl/8Vl8M=
+github.com/jackc/pgx/v5 v5.8.0 h1:TYPDoleBBme0xGSAX3/+NujXXtpZn9HBONkQC7IEZSo=
+github.com/jackc/pgx/v5 v5.8.0/go.mod h1:QVeDInX2m9VyzvNeiCJVjCkNFqzsNb43204HshNSZKw=
 github.com/jackc/puddle/v2 v2.2.2 h1:PR8nw+E/1w0GLuRFSmiioY6UooMp6KJv0/61nB7icHo=
 github.com/jackc/puddle/v2 v2.2.2/go.mod h1:vriiEXHvEE654aYKXXjOvZM39qJ0q+azkZFrfEOc3H4=
 github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
@@ -26,8 +28,12 @@ github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKs
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20251125173416-63025bb33f9f h1:GCSqnwxprVFyrDqpDL+bG//NnkVxWNBYURmYKDKocok=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20251125173416-63025bb33f9f/go.mod h1:D28ixzrzJTnMGBMqXlDyOLuUlUKWnuwVoUP0BhMKchs=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20251222101928-a076bea009fb h1:WCVWRonvSNEG2dDRZ1DAQkDkItu2vOEwh9vP/ESeiog=
+github.com/tom-draper/api-analytics/server/database v0.0.0-20251222101928-a076bea009fb/go.mod h1:D28ixzrzJTnMGBMqXlDyOLuUlUKWnuwVoUP0BhMKchs=
 github.com/tom-draper/api-analytics/server/email v0.0.0-20251125173416-63025bb33f9f h1:1BgmQNmO08H5TNsoRVYMpuwPTITrDg1i1GsV2F5r84I=
 github.com/tom-draper/api-analytics/server/email v0.0.0-20251125173416-63025bb33f9f/go.mod h1:OVOiclokr+iG+hkzATj1uEwuvvK0DggdVz5sYMYix2U=
+github.com/tom-draper/api-analytics/server/email v0.0.0-20251222101928-a076bea009fb h1:TyximX1YSSBzGzr28EBiuOAto5BtqiQqHYgJbypGJ88=
+github.com/tom-draper/api-analytics/server/email v0.0.0-20251222101928-a076bea009fb/go.mod h1:OVOiclokr+iG+hkzATj1uEwuvvK0DggdVz5sYMYix2U=
 github.com/tom-draper/api-analytics/server/tools/monitor v0.0.0-20251125173416-63025bb33f9f h1:DqV1zmJjSzb7soxsJbCLnmD8JYyustYq9XLvZecgGWY=
 github.com/tom-draper/api-analytics/server/tools/monitor v0.0.0-20251125173416-63025bb33f9f/go.mod h1:hHpktgpgkqqc4njSu6kivKTAPA6AEG2EwyISGdVoALU=
 github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20251125173416-63025bb33f9f h1:j/8a3MOMzMP9W1wT2zRDhxezSlCcWDwYVO7DFWxjcos=
@@ -36,6 +42,8 @@ github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20251222101928-a07
 github.com/tom-draper/api-analytics/server/tools/usage v0.0.0-20251222101928-a076bea009fb/go.mod h1:MZ04VramZL/nwhuGQ0E57GeDbf942ZFhM3QHy2YWfJY=
 golang.org/x/crypto v0.45.0 h1:jMBrvKuj23MTlT0bQEOBcAE0mjg8mK9RXFhRH6nyF3Q=
 golang.org/x/crypto v0.45.0/go.mod h1:XTGrrkGJve7CYK7J8PEww4aY7gM3qMCElcJQ8n8JdX4=
+golang.org/x/crypto v0.47.0 h1:V6e3FRj+n4dbpw86FJ8Fv7XVOql7TEwpHapKoMJ/GO8=
+golang.org/x/crypto v0.47.0/go.mod h1:ff3Y9VzzKbwSSEzWqJsJVBnWmRwRSHt/6Op5n9bQc4A=
 golang.org/x/sync v0.19.0 h1:vV+1eWNmZ5geRlYjzm2adRgW2/mcpevXNg50YZtPCE4=
 golang.org/x/sync v0.19.0/go.mod h1:9KTHXmSnoGruLpwFjVSX0lNNA75CykiMECbovNTZqGI=
 golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=

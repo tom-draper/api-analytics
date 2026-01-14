@@ -20,12 +20,6 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20251125173416-63025bb33f9f h1:GCSqnwxprVFyrDqpDL+bG//NnkVxWNBYURmYKDKocok=
 github.com/tom-draper/api-analytics/server/database v0.0.0-20251125173416-63025bb33f9f/go.mod h1:D28ixzrzJTnMGBMqXlDyOLuUlUKWnuwVoUP0BhMKchs=
-github.com/tom-draper/api-analytics/server/database v0.0.0-20251222101928-a076bea009fb h1:WCVWRonvSNEG2dDRZ1DAQkDkItu2vOEwh9vP/ESeiog=
-github.com/tom-draper/api-analytics/server/database v0.0.0-20251222101928-a076bea009fb/go.mod h1:D28ixzrzJTnMGBMqXlDyOLuUlUKWnuwVoUP0BhMKchs=
-github.com/tom-draper/api-analytics/server/email v0.0.0-20251125173416-63025bb33f9f h1:1BgmQNmO08H5TNsoRVYMpuwPTITrDg1i1GsV2F5r84I=
-github.com/tom-draper/api-analytics/server/email v0.0.0-20251125173416-63025bb33f9f/go.mod h1:OVOiclokr+iG+hkzATj1uEwuvvK0DggdVz5sYMYix2U=
-github.com/tom-draper/api-analytics/server/email v0.0.0-20251222101928-a076bea009fb h1:TyximX1YSSBzGzr28EBiuOAto5BtqiQqHYgJbypGJ88=
-github.com/tom-draper/api-analytics/server/email v0.0.0-20251222101928-a076bea009fb/go.mod h1:OVOiclokr+iG+hkzATj1uEwuvvK0DggdVz5sYMYix2U=
 golang.org/x/sync v0.19.0 h1:vV+1eWNmZ5geRlYjzm2adRgW2/mcpevXNg50YZtPCE4=
 golang.org/x/sync v0.19.0/go.mod h1:9KTHXmSnoGruLpwFjVSX0lNNA75CykiMECbovNTZqGI=
 golang.org/x/text v0.33.0 h1:B3njUFyqtHDUI5jMn1YIr5B0IE2U0qck04r6d4KPAxE=

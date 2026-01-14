@@ -1,11 +1,10 @@
-module github.com/tom-draper/api-analytics/server/tools/monitor
+module github.com/tom-draper/api-analytics/server/tools/config
 
 go 1.25
 
 require (
 	github.com/joho/godotenv v1.5.1
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20251222101928-a076bea009fb
-	github.com/tom-draper/api-analytics/server/email v0.0.0-20251222101928-a076bea009fb
+	github.com/tom-draper/api-analytics/server/database v0.0.0-20251125173416-63025bb33f9f
 )
 
 require (

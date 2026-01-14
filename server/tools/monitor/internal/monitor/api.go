@@ -2,6 +2,7 @@ package monitor
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -44,7 +45,7 @@ func makeGetRequest(url string, apiKey string) ([]byte, error) {
 	return body, nil
 }
 
-func TryNewUser(apiBaseURL string, monitorAPIKey string, monitorUserID string) error {
+func TryNewUser(apiBaseURL string, monitorAPIKey string, monitorUserID string, db *database.DB) error {
 	body, err := makeGetRequest(apiBaseURL+"generate-api-key", "")
 	if err != nil {
 		return err
@@ -55,7 +56,8 @@ func TryNewUser(apiBaseURL string, monitorAPIKey string, monitorUserID string) e
 		return fmt.Errorf("uuid value returned is invalid")
 	}
 
-	err = database.DeleteUser(apiKey)
+	ctx := context.Background()
+	err = db.DeleteUser(ctx, apiKey)
 	if err != nil {
 		return err
 	}
