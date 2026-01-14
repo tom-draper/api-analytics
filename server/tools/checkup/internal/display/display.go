@@ -11,10 +11,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/tom-draper/api-analytics/server/database"
 	monitor "github.com/tom-draper/api-analytics/server/tools/monitor/pkg"
-	"github.com/tom-draper/api-analytics/server/tools/usage/monitors"
-	"github.com/tom-draper/api-analytics/server/tools/usage/requests"
-	"github.com/tom-draper/api-analytics/server/tools/usage/usage"
-	"github.com/tom-draper/api-analytics/server/tools/usage/users"
+	"github.com/tom-draper/api-analytics/server/tools/usage"
 	"golang.org/x/text/message"
 )
 
@@ -36,14 +33,16 @@ func DisplayCheckup(ctx context.Context, p *message.Printer) {
 	}
 	defer db.Close()
 
+	client := usage.NewClient(db)
+
 	DisplayServicesTest()
 	DisplayAPITest(db)
 	DisplayLoggerTest()
-	DisplayDatabaseStats(ctx, p, db)
-	DisplayLastHour(ctx, p, db)
-	DisplayLast24Hours(ctx, p, db)
-	DisplayLastWeek(ctx, p, db)
-	DisplayTotal(ctx, p, db)
+	DisplayDatabaseStats(ctx, p, client)
+	DisplayLastHour(ctx, p, client)
+	DisplayLast24Hours(ctx, p, client)
+	DisplayLastWeek(ctx, p, client)
+	DisplayTotal(ctx, p, client)
 }
 
 func initDatabase(ctx context.Context) *database.DB {
@@ -151,16 +150,16 @@ func testLoggerEndpoint(endpoint string, testEndpoint func(legacy bool) error, l
 	}
 }
 
-func DisplayDatabaseStats(ctx context.Context, p *message.Printer, db *database.DB) {
+func DisplayDatabaseStats(ctx context.Context, p *message.Printer, client *usage.Client) {
 	printBanner("Database")
 
-	connections, err := usage.DatabaseConnections(ctx, db)
+	connections, err := client.DatabaseConnections(ctx)
 	if HandleError(err) != nil {
 		return
 	}
 	p.Println("Active database connections:", connections)
 
-	size, err := usage.TableSize(ctx, db, "requests")
+	size, err := client.TableSize(ctx, "requests")
 	if HandleError(err) != nil {
 		return
 	}
@@ -169,13 +168,13 @@ func DisplayDatabaseStats(ctx context.Context, p *message.Printer, db *database.
 
 type timePeriodStat struct {
 	label string
-	count func(context.Context, *database.DB) (int, error)
+	count func(context.Context, *usage.Client) (int, error)
 }
 
-func displayTimePeriodStats(ctx context.Context, p *message.Printer, db *database.DB, bannerText string, stats []timePeriodStat) {
+func displayTimePeriodStats(ctx context.Context, p *message.Printer, client *usage.Client, bannerText string, stats []timePeriodStat) {
 	printBanner(bannerText)
 	for _, stat := range stats {
-		count, err := stat.count(ctx, db)
+		count, err := stat.count(ctx, client)
 		if HandleError(err) != nil {
 			return
 		}
@@ -183,31 +182,31 @@ func displayTimePeriodStats(ctx context.Context, p *message.Printer, db *databas
 	}
 }
 
-func DisplayLastHour(ctx context.Context, p *message.Printer, db *database.DB) {
+func DisplayLastHour(ctx context.Context, p *message.Printer, client *usage.Client) {
 	hourlyStats := []timePeriodStat{
-		{"Users", users.HourlyUsersCount},
-		{"Requests", requests.HourlyRequestsCount},
-		{"Monitors", monitors.HourlyMonitorsCount},
+		{"Users", func(ctx context.Context, c *usage.Client) (int, error) { return c.HourlyUsersCount(ctx) }},
+		{"Requests", func(ctx context.Context, c *usage.Client) (int, error) { return c.HourlyRequestsCount(ctx) }},
+		{"Monitors", func(ctx context.Context, c *usage.Client) (int, error) { return c.HourlyMonitorsCount(ctx) }},
 	}
-	displayTimePeriodStats(ctx, p, db, "Last Hour", hourlyStats)
+	displayTimePeriodStats(ctx, p, client, "Last Hour", hourlyStats)
 }
 
-func DisplayLast24Hours(ctx context.Context, p *message.Printer, db *database.DB) {
+func DisplayLast24Hours(ctx context.Context, p *message.Printer, client *usage.Client) {
 	dailyStats := []timePeriodStat{
-		{"Users", users.DailyUsersCount},
-		{"Requests", requests.DailyRequestsCount},
-		{"Monitors", monitors.DailyMonitorsCount},
+		{"Users", func(ctx context.Context, c *usage.Client) (int, error) { return c.DailyUsersCount(ctx) }},
+		{"Requests", func(ctx context.Context, c *usage.Client) (int, error) { return c.DailyRequestsCount(ctx) }},
+		{"Monitors", func(ctx context.Context, c *usage.Client) (int, error) { return c.DailyMonitorsCount(ctx) }},
 	}
-	displayTimePeriodStats(ctx, p, db, "Last 24 Hours", dailyStats)
+	displayTimePeriodStats(ctx, p, client, "Last 24 Hours", dailyStats)
 }
 
-func DisplayLastWeek(ctx context.Context, p *message.Printer, db *database.DB) {
+func DisplayLastWeek(ctx context.Context, p *message.Printer, client *usage.Client) {
 	weeklyStats := []timePeriodStat{
-		{"Users", users.WeeklyUsersCount},
-		{"Requests", requests.WeeklyRequestsCount},
-		{"Monitors", monitors.WeeklyMonitorsCount},
+		{"Users", func(ctx context.Context, c *usage.Client) (int, error) { return c.WeeklyUsersCount(ctx) }},
+		{"Requests", func(ctx context.Context, c *usage.Client) (int, error) { return c.WeeklyRequestsCount(ctx) }},
+		{"Monitors", func(ctx context.Context, c *usage.Client) (int, error) { return c.WeeklyMonitorsCount(ctx) }},
 	}
-	displayTimePeriodStats(ctx, p, db, "Last Week", weeklyStats)
+	displayTimePeriodStats(ctx, p, client, "Last Week", weeklyStats)
 }
 
 func DisplayDatabaseCheckup(ctx context.Context, p *message.Printer) {
@@ -217,18 +216,20 @@ func DisplayDatabaseCheckup(ctx context.Context, p *message.Printer) {
 	}
 	defer db.Close()
 
-	DisplayDatabaseStats(ctx, p, db)
-	totalRequests, err := requests.RequestsCount(ctx, db, "")
+	client := usage.NewClient(db)
+
+	DisplayDatabaseStats(ctx, p, client)
+	totalRequests, err := client.RequestsCount(ctx, "")
 	if HandleError(err) != nil {
 		return
 	}
 	p.Println("Requests:", totalRequests)
-	DisplayDatabaseTableStats(ctx, db)
+	DisplayDatabaseTableStats(ctx, client)
 }
 
-func DisplayDatabaseTableStats(ctx context.Context, db *database.DB) {
+func DisplayDatabaseTableStats(ctx context.Context, client *usage.Client) {
 	printBanner("Requests Fields")
-	columnSize, err := requests.RequestsColumnSize(ctx, db)
+	columnSize, err := client.RequestsColumnSize(ctx)
 	if HandleError(err) != nil {
 		return
 	}
@@ -242,25 +243,27 @@ func DisplayUsersCheckup(ctx context.Context, p *message.Printer) {
 	}
 	defer db.Close()
 
-	DisplayTopUsers(ctx, p, db)
-	DisplayUnusedUsers(ctx, p, db)
-	DisplayUsersSinceLastRequest(ctx, p, db)
+	client := usage.NewClient(db)
+
+	DisplayTopUsers(ctx, p, client)
+	DisplayUnusedUsers(ctx, p, client)
+	DisplayUsersSinceLastRequest(ctx, p, client)
 }
 
-func DisplayTotal(ctx context.Context, p *message.Printer, db *database.DB) {
+func DisplayTotal(ctx context.Context, p *message.Printer, client *usage.Client) {
 	printBanner("Total")
 
 	totalStats := []struct {
 		label string
-		count func(context.Context, *database.DB, string) (int, error)
+		count func(context.Context, *usage.Client, string) (int, error)
 	}{
-		{"Users", users.UsersCount},
-		{"Requests", requests.RequestsCount},
-		{"Monitors", monitors.MonitorsCount},
+		{"Users", func(ctx context.Context, c *usage.Client, _ string) (int, error) { return c.UsersCount(ctx, "") }},
+		{"Requests", func(ctx context.Context, c *usage.Client, _ string) (int, error) { return c.RequestsCount(ctx, "") }},
+		{"Monitors", func(ctx context.Context, c *usage.Client, _ string) (int, error) { return c.MonitorsCount(ctx, "") }},
 	}
 
 	for _, stat := range totalStats {
-		count, err := stat.count(ctx, db, "")
+		count, err := stat.count(ctx, client, "")
 		if HandleError(err) != nil {
 			return
 		}
@@ -268,31 +271,31 @@ func DisplayTotal(ctx context.Context, p *message.Printer, db *database.DB) {
 	}
 }
 
-func DisplayTopUsers(ctx context.Context, p *message.Printer, db *database.DB) {
+func DisplayTopUsers(ctx context.Context, p *message.Printer, client *usage.Client) {
 	printBanner("Top Users")
-	topUsers, err := users.TopUsers(ctx, db, 10)
+	topUsers, err := client.TopUsers(ctx, 10)
 	if HandleError(err) != nil {
 		return
 	}
-	users.DisplayUsers(topUsers)
+	usage.DisplayUsers(topUsers)
 }
 
-func DisplayUnusedUsers(ctx context.Context, p *message.Printer, db *database.DB) {
+func DisplayUnusedUsers(ctx context.Context, p *message.Printer, client *usage.Client) {
 	printBanner("Unused Users")
-	unusedUsers, err := users.UnusedUsers(ctx, db)
+	unusedUsers, err := client.UnusedUsers(ctx)
 	if HandleError(err) != nil {
 		return
 	}
-	users.DisplayUserTimes(unusedUsers)
+	usage.DisplayUserTimes(unusedUsers)
 }
 
-func DisplayUsersSinceLastRequest(ctx context.Context, p *message.Printer, db *database.DB) {
+func DisplayUsersSinceLastRequest(ctx context.Context, p *message.Printer, client *usage.Client) {
 	printBanner("Users Since Last Request")
-	sinceLastRequestUsers, err := users.SinceLastRequestUsers(ctx, db)
+	sinceLastRequestUsers, err := client.SinceLastRequestUsers(ctx)
 	if HandleError(err) != nil {
 		return
 	}
-	users.DisplayUserTimes(sinceLastRequestUsers)
+	usage.DisplayUserTimes(sinceLastRequestUsers)
 }
 
 func DisplayMonitorsCheckup(ctx context.Context, p *message.Printer) {
@@ -302,12 +305,14 @@ func DisplayMonitorsCheckup(ctx context.Context, p *message.Printer) {
 	}
 	defer db.Close()
 
-	DisplayMonitors(ctx, p, db)
+	client := usage.NewClient(db)
+
+	DisplayMonitors(ctx, p, client)
 }
 
-func DisplayMonitors(ctx context.Context, p *message.Printer, db *database.DB) {
+func DisplayMonitors(ctx context.Context, p *message.Printer, client *usage.Client) {
 	printBanner("Monitors")
-	monitorsList, err := monitors.TotalMonitors(ctx, db)
+	monitorsList, err := client.TotalMonitors(ctx)
 	if HandleError(err) != nil {
 		return
 	}
