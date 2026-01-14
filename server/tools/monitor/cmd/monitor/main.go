@@ -4,13 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"strings"
 	"time"
 
-	"github.com/joho/godotenv"
-	"github.com/tom-draper/api-analytics/server/database"
 	"github.com/tom-draper/api-analytics/server/email"
+	"github.com/tom-draper/api-analytics/server/tools/config"
 	"github.com/tom-draper/api-analytics/server/tools/monitor/internal/monitor"
 )
 
@@ -54,28 +52,16 @@ func buildEmailBody(serviceStatus monitor.ServiceStatus, apiTestStatus monitor.A
 }
 
 func main() {
-	// Load .env file
-	err := godotenv.Load(".env")
+	ctx := context.Background()
+
+	// Load configuration
+	cfg, err := config.LoadWithRequired("API_BASE_URL", "MONITOR_API_KEY", "MONITOR_USER_ID", "POSTGRES_URL", "EMAIL_ADDRESS")
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Fatalf("Configuration error: %v", err)
 	}
 
-	apiBaseURL := os.Getenv("API_BASE_URL")
-	if apiBaseURL == "" {
-		log.Fatalf("API_BASE_URL environment variable not set")
-	}
-	monitorAPIKey := os.Getenv("MONITOR_API_KEY")
-	if monitorAPIKey == "" {
-		log.Fatalf("MONITOR_API_KEY environment variable not set")
-	}
-	monitorUserID := os.Getenv("MONITOR_USER_ID")
-	if monitorUserID == "" {
-		log.Fatalf("MONITOR_USER_ID environment variable not set")
-	}
-
-	// Initialize database connection for cleanup test
-	dbURL := os.Getenv("POSTGRES_URL")
-	db, err := database.New(context.Background(), dbURL)
+	// Initialize database connection
+	db, err := cfg.NewDatabase(ctx)
 	if err != nil {
 		log.Printf("Warning: could not connect to database: %v", err)
 		db = nil
@@ -86,31 +72,30 @@ func main() {
 		}
 	}()
 
-	serviceStatus := monitor.ServiceStatus{
-		API:         !monitor.ServiceDown("api"),
-		Logger:      !monitor.ServiceDown("logger"),
-		Nginx:       !monitor.ServiceDown("nginx"),
-		PostgresSQL: !monitor.ServiceDown("postgreql"),
+	// Create monitor client
+	monitorClient, err := monitor.NewClientFromConfig(cfg, db)
+	if err != nil {
+		log.Fatalf("Failed to create monitor client: %v", err)
 	}
-	apiTestStatus := monitor.APITestStatus{
-		NewUser:            monitor.TryNewUser(apiBaseURL, monitorAPIKey, monitorUserID, db),
-		FetchDashboardData: monitor.TryFetchDashboardData(apiBaseURL, monitorAPIKey, monitorUserID),
-		FetchData:          monitor.TryFetchData(apiBaseURL, monitorAPIKey, monitorUserID),
-		FetchUserID:        monitor.TryFetchUserID(apiBaseURL, monitorAPIKey, monitorUserID),
-		FetchMonitorPings:  monitor.TryFetchMonitorPings(apiBaseURL, monitorAPIKey, monitorUserID),
-		LogRequests:        monitor.TryLogRequests(apiBaseURL, monitorAPIKey, monitorUserID, false),
-	}
+
+	// Run checks
+	serviceStatus := monitorClient.RunServiceChecks()
+	apiTestStatus := monitorClient.RunAPITests()
+
+	// Send email alert if any failures detected
 	if serviceStatus.ServiceDown() || apiTestStatus.TestFailed() {
-		client, err := email.NewClientFromEnv()
+		emailClient, err := email.NewClientFromEnv()
 		if err != nil {
 			log.Fatalf("Error creating email client: %v", err)
 		}
-		address := os.Getenv("EMAIL_ADDRESS")
-		if address == "" {
-			log.Fatalf("EMAIL_ADDRESS environment variable not set")
-		}
+
 		body := buildEmailBody(serviceStatus, apiTestStatus)
-		err = client.Send(email.Message{To: []string{address}, From: "", Subject: "API Analytics", Body: body})
+		err = emailClient.Send(email.Message{
+			To:      []string{cfg.EmailAddress},
+			From:    "",
+			Subject: "API Analytics",
+			Body:    body,
+		})
 		if err != nil {
 			log.Fatalf("Error sending email: %v", err)
 		}
