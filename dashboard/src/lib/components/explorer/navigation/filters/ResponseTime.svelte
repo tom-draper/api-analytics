@@ -6,8 +6,8 @@
 	let { filter = $bindable(), data = $bindable() }: { filter: Filter; data: DashboardData } = $props();
 
 	let values = $state<[number, number]>([0, 0]);
-	let minResponseTime = $state(0);
-	let maxResponseTime = $state(0);
+	let minResponseTime = $state<number | null>(null);
+	let maxResponseTime = $state<number | null>(null);
 
 	function responseTimeRange(data: DashboardData) {
 		let min = Infinity;
@@ -26,7 +26,7 @@
 	}
 
 	$effect(() => {
-		if (data) {
+		if (data && filter) {
 			const range = responseTimeRange(data)
 			minResponseTime = range.min;
 			maxResponseTime = range.max;

@@ -7,11 +7,11 @@
 	let { filter = $bindable(), data = $bindable() }: { filter: Filter; data: DashboardData } = $props();
 
 	let values = $state<[number, number]>([0, 0]);
-	let minDate = $state<Date>(new Date());
-	let maxDate = $state<Date>(new Date());
+	let minDate = $state<Date | null>(null);
+	let maxDate = $state<Date | null>(null);
 
 	$effect(() => {
-		if (data) {
+		if (data && filter) {
 			minDate = data.requests[0][ColumnIndex.CreatedAt];
 			maxDate = data.requests[data.requests.length - 1][ColumnIndex.CreatedAt];
 

@@ -47,13 +47,15 @@
 	let { settings = $bindable(), showSettings = $bindable(false), hostnames = $bindable([]) }: { settings: DashboardSettings; showSettings: boolean; hostnames: string[] } = $props();
 	let donateMessage = $state('');
 	let dropdownOpen = $state(false);
+	let selectedHostname = $state<string | null>(settings.hostname ?? null);
 
 	onMount(() => {
 		donateMessage = donateMessages[Math.floor(Math.random() * donateMessages.length)];
 	});
 
 	$effect(() => {
-		setHostnameParam(settings.hostname ?? null);
+		settings.hostname = selectedHostname;
+		setHostnameParam(selectedHostname ?? null);
 	});
 </script>
 
@@ -94,7 +96,7 @@
 	<div class="dropdown-container mr-[10px]" class:no-display={hostnames.length <= 1}>
 		<Dropdown
 			options={hostnames.slice(0, 25)}
-			bind:selected={settings.hostname}
+			bind:selected={selectedHostname}
 			bind:open={dropdownOpen}
 			defaultOption={'All hostnames'}
 		/>

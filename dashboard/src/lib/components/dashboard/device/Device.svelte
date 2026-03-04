@@ -55,13 +55,13 @@
 
 	{#if activeBtn === 'os' && OperatingSystem}
 		<div>
-			<svelte:component this={OperatingSystem} {data} {userAgents} />
+			<OperatingSystem {data} {userAgents} />
 		</div>
 	{/if}
 
 	{#if activeBtn === 'device' && DeviceType}
 		<div>
-			<svelte:component this={DeviceType} {data} {userAgents} />
+			<DeviceType {data} {userAgents} />
 		</div>
 	{/if}
 </div>

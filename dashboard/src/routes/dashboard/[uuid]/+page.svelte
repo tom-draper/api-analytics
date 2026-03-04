@@ -320,30 +320,31 @@
 		return settings;
 	}
 
-	let data: DashboardData;
-	let settings: DashboardSettings = getSettings();
-	let showSettings: boolean = false;
-	let hostnames: string[];
-	const notification: NotificationState = {
+	let data = $state<DashboardData | undefined>(undefined);
+	let settings = $state(getSettings());
+	let showSettings = $state(false);
+	let hostnames = $state<string[]>([]);
+	let notification = $state<NotificationState>({
 		message: '',
 		style: 'error',
 		show: false
-	};
-	let periodData: {
-		current: RequestsData;
-		previous: RequestsData;
-	};
-	let loading: boolean = true;
-	let fetchStatus: { failed: boolean; status: number; message: string };
+	});
+	let periodData = $state<{ current: RequestsData; previous: RequestsData } | undefined>(undefined);
+	let loading = $state(true);
+	let fetchStatus = $state<{ failed: boolean; status: number; message: string } | undefined>(undefined);
 
-	// If data or settings are changed, recalcualte data
-	$: if (data) {
-		periodData = getPeriodData(data.requests, settings);
-	}
+	// If data or settings are changed, recalculate data
+	$effect(() => {
+		if (data) {
+			periodData = getPeriodData(data.requests, settings);
+		}
+	});
 
-	$: if (data) {
-		hostnames = getHostnames(data.requests);
-	}
+	$effect(() => {
+		if (data) {
+			hostnames = getHostnames(data.requests);
+		}
+	});
 
 	onMount(async () => {
 		const storeData = get(dataStore);

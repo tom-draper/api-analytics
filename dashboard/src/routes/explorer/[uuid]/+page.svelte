@@ -154,13 +154,15 @@
 		filter = defaultFilter(data.requests);
 	}
 
-	let data: DashboardData;
-	let filteredRequests: RequestsData;
-	let filter: Filter;
+	let data = $state<DashboardData | undefined>(undefined);
+	let filteredRequests = $state<RequestsData>([]);
+	let filter = $state<Filter | undefined>(undefined);
 
-	$: if (data && filter) {
-		filteredRequests = applyFilter(data.requests, filter);
-	}
+	$effect(() => {
+		if (data && filter) {
+			filteredRequests = applyFilter(data.requests, filter);
+		}
+	});
 
 	onMount(async () => {
 		dataStore.subscribe((value) => {

@@ -33,6 +33,11 @@
 	}
 
 	let { show = $bindable(false), settings = $bindable(), exportCSV }: { show: boolean; settings: DashboardSettings; exportCSV: () => void } = $props();
+	let hiddenEndpoints = $state<Set<string>>(settings.hiddenEndpoints);
+
+	$effect(() => {
+		settings.hiddenEndpoints = hiddenEndpoints;
+	});
 </script>
 
 <div class="background" class:hidden={!show} onclick={hideSettings}>
@@ -81,7 +86,7 @@
 		</div>
 		<div class="setting-title">Hidden endpoints:</div>
 		<div class="setting mb-4">
-			<List bind:items={settings.hiddenEndpoints} placeholder={'/api/v1/example'} />
+			<List bind:items={hiddenEndpoints} placeholder={'/api/v1/example'} />
 		</div>
 		<div class="export-csv">
 			<button class="export-csv-btn" onclick={exportCSV} title="Export data to CSV"
