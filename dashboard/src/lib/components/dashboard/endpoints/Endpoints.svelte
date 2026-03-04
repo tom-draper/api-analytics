@@ -81,9 +81,9 @@
 </script>
 
 <div class="card">
-	<div class="card-title flex">
+	<div class="card-title header">
 		Endpoints
-		<div class="ml-auto">
+		<div class="filter">
 			<EndpointFilter {activeFilter} filterChange={handleFilterChange} />
 		</div>
 	</div>
@@ -111,6 +111,25 @@
 <style>
 	.card {
 		min-height: 361px;
+	}
+
+	.header {
+		display: flex;
+	}
+
+	.filter {
+		margin-left: auto;
+	}
+
+	@media screen and (max-width: 470px) {
+		.header {
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		.filter {
+			margin-left: 0;
+		}
 	}
 
 	@media screen and (max-width: 1030px) {
