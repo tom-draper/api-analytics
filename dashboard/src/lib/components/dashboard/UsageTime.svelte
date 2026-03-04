@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { ColumnIndex } from '$lib/consts';
-
 	function getPlotLayout() {
 		return {
 			font: { size: 12 },
@@ -16,37 +14,16 @@
 		};
 	}
 
-	function bars(data: RequestsData) {
-		const responseTimes = Array(24).fill(0);
-
-		for (let i = 0; i < data.length; i++) {
-			const date = data[i][ColumnIndex.CreatedAt];
-			const time = date.getHours();
-			responseTimes[time]++;
-		}
-
-		const requestFreqArr = Array.from({ length: 24 }, (_, i) => ({
-			hour: i,
-			responseTime: responseTimes[i]
-		})).sort((a, b) => {
-			return a.hour - b.hour;
-		});
-
-		let dates = new Array(requestFreqArr.length);
-		let requests = new Array(requestFreqArr.length);
-		for (let i = 0; i < requestFreqArr.length; i++) {
-			dates[i] = requestFreqArr[i].hour.toString() + ':00';
-			requests[i] = requestFreqArr[i].responseTime;
-		}
-
+	function bars(hourlyBuckets: number[]) {
 		// Shift to 12 onwards to make barpolar like clock face
-		dates = dates.slice(12).concat(...dates.slice(0, 12));
-		requests = requests.slice(12).concat(...requests.slice(0, 12));
+		const dates = Array.from({ length: 24 }, (_, i) => i.toString() + ':00');
+		const shiftedDates = dates.slice(12).concat(...dates.slice(0, 12));
+		const shiftedBuckets = hourlyBuckets.slice(12).concat(...hourlyBuckets.slice(0, 12));
 
 		return [
 			{
-				r: requests,
-				theta: dates,
+				r: shiftedBuckets,
+				theta: shiftedDates,
 				marker: { color: '#3fcf8e' },
 				type: 'barpolar',
 				hovertemplate: `<b>%{r}</b> requests at <b>%{theta}</b><extra></extra>`
@@ -54,40 +31,22 @@
 		];
 	}
 
-	function getPlotData(data: RequestsData) {
-		return {
-			data: bars(data),
-			layout: getPlotLayout(),
-			config: {
-				responsive: true,
-				showSendToCloud: false,
-				displayModeBar: false
-			}
-		};
-	}
-
-	function generatePlot(data: RequestsData) {
+	function generatePlot(hourlyBuckets: number[]) {
+		const b = bars(hourlyBuckets);
+		const layout = getPlotLayout();
+		const config = { responsive: true, showSendToCloud: false, displayModeBar: false };
 		if (plotDiv.data) {
-			refreshPlot(data);
+			Plotly.react(plotDiv, b, layout);
 		} else {
-			newPlot(data);
+			Plotly.newPlot(plotDiv, b, layout, config);
 		}
 	}
 
-	async function newPlot(data: RequestsData) {
-		const plotData = getPlotData(data);
-		Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
-	}
-
-	function refreshPlot(data: RequestsData) {
-		Plotly.react(plotDiv, bars(data), getPlotLayout());
-	}
-
-	let { data }: { data: RequestsData } = $props();
+	let { hourlyBuckets }: { hourlyBuckets: number[] } = $props();
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
 	$effect(() => {
-		if (plotDiv && data) generatePlot(data);
+		if (plotDiv && hourlyBuckets) generatePlot(hourlyBuckets);
 	});
 </script>
 

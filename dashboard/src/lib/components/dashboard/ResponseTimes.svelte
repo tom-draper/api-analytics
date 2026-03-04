@@ -1,32 +1,4 @@
 <script lang="ts">
-	import { ColumnIndex } from '$lib/consts';
-
-	/* Parameter `arr` assumed sorted. */
-	function quantile(arr: number[], q: number) {
-		const pos = (arr.length - 1) * q;
-		const base = Math.floor(pos);
-		const rest = pos - base;
-		if (arr[base + 1] !== undefined) {
-			return arr[base] + rest * (arr[base + 1] - arr[base]);
-		} else if (arr[base] !== undefined) {
-			return arr[base];
-		}
-		return 0;
-	}
-
-	function calcualteMetrics(data: RequestsData) {
-		const responseTimes: number[] = new Array(data.length);
-		for (let i = 0; i < data.length; i++) {
-			responseTimes[i] = data[i][ColumnIndex.ResponseTime];
-		}
-		responseTimes.sort((a, b) => a - b);
-		return {
-			LQ: quantile(responseTimes, 0.25),
-			median: quantile(responseTimes, 0.5),
-			UQ: quantile(responseTimes, 0.75)
-		};
-	}
-
 	function getPlotLayout(range: [number, number]) {
 		return {
 			title: false,
@@ -52,36 +24,11 @@
 		};
 	}
 
-	function bars(data: RequestsData) {
-		const responseTimesFreq: ValueCount = {};
-		for (let i = 0; i < data.length; i++) {
-			const responseTime =
-				Math.round(data[i][ColumnIndex.ResponseTime]) || 0;
-			if (responseTime in responseTimesFreq) {
-				responseTimesFreq[responseTime]++;
-			} else {
-				responseTimesFreq[responseTime] = 1;
-			}
-		}
-
-		const responseTimes: number[] = [];
-		const counts: number[] = [];
-		const times = Object.keys(responseTimesFreq).map(Number);
-		if (times.length > 0) {
-			const minResponseTime = Math.min(...times);
-			const maxResponseTime = Math.max(...times);
-
-			// Split into two lists
-			for (let i = 0; i < maxResponseTime - minResponseTime + 1; i++) {
-				responseTimes.push(minResponseTime + i);
-				counts.push(responseTimesFreq[minResponseTime + i] || 0);
-			}
-		}
-
+	function bars(freqTimes: number[], freqCounts: number[]) {
 		return [
 			{
-				x: responseTimes,
-				y: counts,
+				x: freqTimes,
+				y: freqCounts,
 				type: 'bar',
 				marker: { color: '#505050' },
 				hovertemplate: `<b>%{y} requests</b><br>%{x:.1f}ms</b> elapsed<extra></extra>`,
@@ -90,53 +37,29 @@
 		];
 	}
 
-	function getPlotData(data: RequestsData) {
-		const b = bars(data);
-		return {
-			data: b,
-			layout: getPlotLayout([b[0].x[0], b[0].x[b[0].x.length - 1]]),
-			config: {
-				responsive: true,
-				showSendToCloud: false,
-				displayModeBar: false,
-			},
-		};
-	}
-
-	function generatePlot(data: RequestsData) {
+	function generatePlot(freqTimes: number[], freqCounts: number[]) {
+		const range: [number, number] = [freqTimes[0] ?? 0, freqTimes[freqTimes.length - 1] ?? 0];
+		const b = bars(freqTimes, freqCounts);
 		if (plotDiv.data) {
-			refreshPlot(data);
+			Plotly.react(plotDiv, b, getPlotLayout(range));
 		} else {
-			newPlot(data);
+			Plotly.newPlot(plotDiv, b, getPlotLayout(range), { responsive: true, showSendToCloud: false, displayModeBar: false });
 		}
 	}
 
-	async function newPlot(data: RequestsData) {
-		const plotData = getPlotData(data);
-		Plotly.newPlot(
-			plotDiv,
-			plotData.data,
-			plotData.layout,
-			plotData.config,
-		);
-	}
+	let { sortedTimes, freqTimes, freqCounts, LQ, median, UQ }: {
+		sortedTimes: number[];
+		freqTimes: number[];
+		freqCounts: number[];
+		LQ: number;
+		median: number;
+		UQ: number;
+	} = $props();
 
-	function refreshPlot(data: RequestsData) {
-		const b = bars(data);
-		Plotly.react(
-			plotDiv,
-			bars(data),
-			getPlotLayout([b[0].x[0], b[0].x[b[0].x.length - 1]]),
-		)
-	}
-
-	let { data }: { data: RequestsData } = $props();
-
-	const metrics = $derived(data ? calcualteMetrics(data) : undefined);
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
 	$effect(() => {
-		if (plotDiv && data) generatePlot(data);
+		if (plotDiv && freqTimes.length > 0) generatePlot(freqTimes, freqCounts);
 	});
 </script>
 
@@ -144,11 +67,11 @@
 	<div class="card-title">
 		Response times <span class="milliseconds">(ms)</span>
 	</div>
-	{#if metrics !== undefined}
+	{#if sortedTimes.length > 0}
 		<div class="values">
-			<div class="value lower-quartile">{metrics.LQ.toFixed(1)}</div>
-			<div class="value median">{metrics.median.toFixed(1)}</div>
-			<div class="value upper-quartile">{metrics.UQ.toFixed(1)}</div>
+			<div class="value lower-quartile">{LQ.toFixed(1)}</div>
+			<div class="value median">{median.toFixed(1)}</div>
+			<div class="value upper-quartile">{UQ.toFixed(1)}</div>
 		</div>
 	{/if}
 	<div class="labels">

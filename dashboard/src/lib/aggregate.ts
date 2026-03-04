@@ -1,0 +1,404 @@
+import { ColumnIndex, methodMap } from '$lib/consts';
+import { periodToDays, type Period } from '$lib/period';
+import { statusSuccessful } from '$lib/status';
+import type { DashboardSettings } from '$lib/settings';
+
+export type ActivityBucket = {
+	date: number;
+	requestCount: number;
+	userCount: number;
+	avgResponseTime: number;
+	successRate: number;
+};
+
+export type LocationBar = {
+	location: string;
+	frequency: number;
+	height: number;
+};
+
+export type TopUserData = {
+	ipAddress: string;
+	customUserID: string;
+	lastRequested: Date;
+	requests: number;
+	locations: { [loc: string]: number };
+};
+
+export type AggregatedData = {
+	period: Period;
+	requestBuckets: number[];
+	requestCount: number;
+	prevRequestCount: number;
+	firstRequestDate: Date | null;
+	lastRequestDate: Date | null;
+
+	userBuckets: number[];
+	userCount: number;
+	prevUserCount: number;
+
+	successRate: number | null;
+	successBuckets: number[];
+
+	activityBuckets: ActivityBucket[];
+
+	sortedResponseTimes: number[];
+	rtFreqTimes: number[];
+	rtFreqCounts: number[];
+	rtLQ: number;
+	rtMedian: number;
+	rtUQ: number;
+
+	versionCount: { [v: string]: number };
+	versionHasMultiple: boolean;
+
+	hourlyBuckets: number[];
+
+	locationBars: LocationBar[];
+
+	endpointFreq: { [key: string]: { path: string; status: number; count: number } };
+
+	topUsers: TopUserData[] | null;
+	topUserIDActive: boolean;
+	topLocationsActive: boolean;
+
+	uaIdCount: { [id: number]: number };
+};
+
+const TOP_USERS_LIMIT = 1000;
+
+function quantile(sortedArr: number[], q: number): number {
+	if (sortedArr.length === 0) return 0;
+	const pos = (sortedArr.length - 1) * q;
+	const base = Math.floor(pos);
+	const rest = pos - base;
+	if (sortedArr[base + 1] !== undefined) {
+		return sortedArr[base] + rest * (sortedArr[base + 1] - sortedArr[base]);
+	} else if (sortedArr[base] !== undefined) {
+		return sortedArr[base];
+	}
+	return 0;
+}
+
+function modifyDateForPeriod(date: Date, days: number | null): void {
+	if (days === 1) {
+		date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
+	} else if (days === 7) {
+		date.setMinutes(0, 0, 0);
+	} else {
+		date.setHours(0, 0, 0, 0);
+	}
+}
+
+type ActivityEntry = { requestCount: number; users: Set<string>; totalRT: number; successCount: number };
+
+function initActivityMap(days: number | null): Map<number, ActivityEntry> {
+	const map = new Map<number, ActivityEntry>();
+	if (days === null) return map;
+	const newEntry = (): ActivityEntry => ({ requestCount: 0, users: new Set(), totalRT: 0, successCount: 0 });
+
+	if (days === 1) {
+		for (let i = 0; i < 288; i++) {
+			const date = new Date();
+			date.setSeconds(0, 0);
+			date.setMinutes(Math.floor(date.getMinutes() / 5) * 5 - i * 5);
+			map.set(date.getTime(), newEntry());
+		}
+	} else if (days === 7) {
+		for (let i = 0; i < 168; i++) {
+			const date = new Date();
+			date.setSeconds(0, 0);
+			date.setMinutes(0);
+			date.setHours(date.getHours() - i);
+			map.set(date.getTime(), newEntry());
+		}
+	} else {
+		for (let i = 0; i < days; i++) {
+			const date = new Date();
+			date.setHours(0, 0, 0, 0);
+			date.setDate(date.getDate() - i);
+			map.set(date.getTime(), newEntry());
+		}
+	}
+	return map;
+}
+
+function countPrevUsers(previous: RequestsData): number {
+	const users = new Set<string>();
+	for (let i = 0; i < previous.length; i++) {
+		const row = previous[i];
+		const uid = row[ColumnIndex.IPAddress] ?? row[ColumnIndex.UserID]?.toString() ?? '';
+		if (uid) users.add(uid);
+	}
+	return users.size;
+}
+
+function emptyResult(previous: RequestsData, settings: DashboardSettings): AggregatedData {
+	return {
+		period: settings.period,
+		requestBuckets: [0, 0, 0, 0, 0],
+		requestCount: 0,
+		prevRequestCount: previous.length,
+		firstRequestDate: null,
+		lastRequestDate: null,
+		userBuckets: [0, 0, 0, 0, 0],
+		userCount: 0,
+		prevUserCount: countPrevUsers(previous),
+		successRate: null,
+		successBuckets: [0, 0, 0, 0, 0],
+		activityBuckets: [],
+		sortedResponseTimes: [],
+		rtFreqTimes: [],
+		rtFreqCounts: [],
+		rtLQ: 0,
+		rtMedian: 0,
+		rtUQ: 0,
+		versionCount: {},
+		versionHasMultiple: false,
+		hourlyBuckets: new Array(24).fill(0),
+		locationBars: [],
+		endpointFreq: {},
+		topUsers: null,
+		topUserIDActive: false,
+		topLocationsActive: false,
+		uaIdCount: {},
+	};
+}
+
+export function aggregate(
+	current: RequestsData,
+	previous: RequestsData,
+	settings: DashboardSettings
+): AggregatedData {
+	const n = current.length;
+	if (n === 0) return emptyResult(previous, settings);
+
+	const days = periodToDays(settings.period);
+	const startMs = (current[0][ColumnIndex.CreatedAt] as Date).getTime();
+	const endMs = (current[n - 1][ColumnIndex.CreatedAt] as Date).getTime();
+	const range = endMs - startMs;
+	const bucketInterval = range > 0 ? range / 5 : 1;
+
+	const requestBuckets = [0, 0, 0, 0, 0];
+	const userSets: Set<string>[] = [new Set(), new Set(), new Set(), new Set(), new Set()];
+	const successBuckets = [0, 0, 0, 0, 0];
+	let successCount = 0;
+
+	const activityMap = initActivityMap(days);
+
+	const responseTimes = new Array<number>(n);
+	const rtFreq: { [rt: number]: number } = {};
+
+	const versionCount: { [v: string]: number } = {};
+	let versionTypes = 0;
+
+	const hourlyBuckets = new Array(24).fill(0);
+	const locationCount: { [loc: string]: number } = {};
+	const endpointFreq: { [key: string]: { path: string; status: number; count: number } } = {};
+
+	type UserEntry = {
+		ipAddress: string;
+		customUserID: string;
+		lastRequested: Date;
+		requests: number;
+		locations: { [loc: string]: number };
+	};
+	const users: { [userID: string]: UserEntry } = {};
+	const uaIdCount: { [id: number]: number } = {};
+
+	for (let i = 0; i < n; i++) {
+		const row = current[i];
+		const createdAt = row[ColumnIndex.CreatedAt] as Date;
+		const dateMs = createdAt.getTime();
+		const status = row[ColumnIndex.Status];
+		const path = row[ColumnIndex.Path];
+		const location = row[ColumnIndex.Location];
+		const ipAddress = row[ColumnIndex.IPAddress];
+		const customUserID = row[ColumnIndex.UserID];
+		const responseTime = row[ColumnIndex.ResponseTime];
+		const uaId = row[ColumnIndex.UserAgent];
+		const method = row[ColumnIndex.Method];
+		const userID = ipAddress ?? customUserID?.toString() ?? '';
+		const isSuccessful = statusSuccessful(status);
+
+		// 1. Request buckets (time-based)
+		const bucketIdx = Math.min(Math.floor((dateMs - startMs) / bucketInterval), 4);
+		requestBuckets[bucketIdx]++;
+
+		// 2. User buckets (unique users per time bucket)
+		if (userID) userSets[bucketIdx].add(userID);
+
+		// 3. Success buckets (position-based) + total success rate
+		const posIdx = Math.min(Math.floor(i / (n / 5)), 4);
+		if (isSuccessful) {
+			successBuckets[posIdx]++;
+			successCount++;
+		}
+
+		// 4. Activity buckets (period-aware time buckets)
+		const actDate = new Date(dateMs);
+		modifyDateForPeriod(actDate, days);
+		const actTime = actDate.getTime();
+		let actEntry = activityMap.get(actTime);
+		if (!actEntry) {
+			actEntry = { requestCount: 0, users: new Set(), totalRT: 0, successCount: 0 };
+			activityMap.set(actTime, actEntry);
+		}
+		actEntry.requestCount++;
+		if (ipAddress) actEntry.users.add(ipAddress);
+		actEntry.totalRT += responseTime;
+		if (isSuccessful) actEntry.successCount++;
+
+		// 5. Response times
+		responseTimes[i] = responseTime;
+		const rtRounded = Math.round(responseTime) || 0;
+		rtFreq[rtRounded] = (rtFreq[rtRounded] ?? 0) + 1;
+
+		// 6. Version (regex on path)
+		const vMatch = path.match(/[^a-z0-9](v\d)[^a-z0-9]/i);
+		if (vMatch) {
+			const v = vMatch[1];
+			if (!(v in versionCount)) versionTypes++;
+			versionCount[v] = (versionCount[v] ?? 0) + 1;
+		}
+
+		// 7. Usage time (24-hour clock buckets)
+		hourlyBuckets[createdAt.getHours()]++;
+
+		// 8. Location
+		if (location) {
+			locationCount[location] = (locationCount[location] ?? 0) + 1;
+		}
+
+		// 9. Endpoints
+		const ePath = settings.ignoreParams ? path.split('?')[0] : path;
+		const eKey = `${ePath}${status}`;
+		let ep = endpointFreq[eKey];
+		if (!ep) {
+			ep = { path: `${methodMap[method]}  ${ePath}`, status, count: 0 };
+			endpointFreq[eKey] = ep;
+		}
+		ep.count++;
+
+		// 10. Top users
+		if (userID) {
+			let user = users[userID];
+			if (user) {
+				user.requests++;
+				if (location) user.locations[location] = (user.locations[location] || 0) + 1;
+				if (createdAt > user.lastRequested) user.lastRequested = createdAt;
+			} else {
+				users[userID] = {
+					ipAddress: ipAddress ?? '',
+					customUserID: customUserID ?? '',
+					lastRequested: createdAt,
+					requests: 1,
+					locations: location ? { [location]: 1 } : {},
+				};
+			}
+		}
+
+		// 11. UA ID count
+		if (uaId != null) {
+			uaIdCount[uaId] = (uaIdCount[uaId] ?? 0) + 1;
+		}
+	}
+
+	// Post-process: sort response times and compute quartiles
+	responseTimes.sort((a, b) => a - b);
+	const rtLQ = quantile(responseTimes, 0.25);
+	const rtMedian = quantile(responseTimes, 0.5);
+	const rtUQ = quantile(responseTimes, 0.75);
+
+	// Build response time frequency histogram (fill gaps with 0)
+	const rtTimes = Object.keys(rtFreq).map(Number);
+	const rtFreqTimes: number[] = [];
+	const rtFreqCounts: number[] = [];
+	if (rtTimes.length > 0) {
+		const minRT = Math.min(...rtTimes);
+		const maxRT = Math.max(...rtTimes);
+		for (let i = 0; i < maxRT - minRT + 1; i++) {
+			rtFreqTimes.push(minRT + i);
+			rtFreqCounts.push(rtFreq[minRT + i] || 0);
+		}
+	}
+
+	// Build activity buckets (sorted ascending by date)
+	const activityBuckets: ActivityBucket[] = Array.from(activityMap, ([date, entry]) => ({
+		date,
+		requestCount: entry.requestCount,
+		userCount: entry.users.size,
+		avgResponseTime: entry.requestCount > 0 ? entry.totalRT / entry.requestCount : 0,
+		successRate: entry.requestCount > 0 ? entry.successCount / entry.requestCount : 0,
+	})).sort((a, b) => a.date - b.date);
+
+	// Build location bars (sorted by frequency, heights normalized)
+	let locationMax = 0;
+	for (const count of Object.values(locationCount)) {
+		if (count > locationMax) locationMax = count;
+	}
+	const locationBars: LocationBar[] = Object.entries(locationCount)
+		.map(([location, frequency]) => ({
+			location,
+			frequency,
+			height: locationMax > 0 ? frequency / locationMax : 0,
+		}))
+		.sort((a, b) => b.frequency - a.frequency);
+
+	// Build top users
+	const userValues = Object.values(users);
+	const totalUsers = userValues.length;
+	let topUsers: TopUserData[] | null = null;
+	let topUserIDActive = false;
+	let topLocationsActive = false;
+
+	if (totalUsers >= 10) {
+		const sorted = userValues.sort((a, b) => b.requests - a.requests);
+		const topUserRequestsCount = sorted.length > 0 ? sorted[0].requests : 0;
+		if (topUserRequestsCount > 1) {
+			topUsers = sorted.slice(0, TOP_USERS_LIMIT);
+			topUserIDActive = topUsers.some((u) => u.customUserID !== '' && u.customUserID !== null);
+			topLocationsActive = topUsers.some((u) => Object.keys(u.locations).length > 0);
+		}
+	}
+
+	const prevUserCount = countPrevUsers(previous);
+
+	return {
+		period: settings.period,
+		requestBuckets,
+		requestCount: n,
+		prevRequestCount: previous.length,
+		firstRequestDate: current[0][ColumnIndex.CreatedAt] as Date,
+		lastRequestDate: current[n - 1][ColumnIndex.CreatedAt] as Date,
+
+		userBuckets: userSets.map((s) => s.size),
+		userCount: totalUsers,
+		prevUserCount,
+
+		successRate: (successCount / n) * 100,
+		successBuckets,
+
+		activityBuckets,
+
+		sortedResponseTimes: responseTimes,
+		rtFreqTimes,
+		rtFreqCounts,
+		rtLQ,
+		rtMedian,
+		rtUQ,
+
+		versionCount,
+		versionHasMultiple: versionTypes > 1,
+
+		hourlyBuckets,
+		locationBars,
+		endpointFreq,
+
+		topUsers,
+		topUserIDActive,
+		topLocationsActive,
+
+		uaIdCount,
+	};
+}

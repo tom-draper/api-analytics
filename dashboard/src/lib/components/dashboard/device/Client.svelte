@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { graphColors } from '$lib/consts';
-	import { ColumnIndex } from '$lib/consts';
 	import { cachedFunction } from '$lib/cache';
 	import { type Candidate, maintainCandidates } from '$lib/candidates';
 
@@ -31,22 +30,10 @@
 		{ name: 'Ruby', regex: /Ruby/, matches: 0 },
 		{ name: 'Node.js', regex: /node/, matches: 0 },
 		{ name: 'Next.js', regex: /Next\.js/, matches: 0 },
-		{
-			name: 'Vercel Edge Functions',
-			regex: /Vercel Edge Functions/,
-			matches: 0
-		},
-		{
-			name: 'OpenAI Image Downloader',
-			regex: /OpenAI Image Downloader/,
-			matches: 0
-		},
+		{ name: 'Vercel Edge Functions', regex: /Vercel Edge Functions/, matches: 0 },
+		{ name: 'OpenAI Image Downloader', regex: /OpenAI Image Downloader/, matches: 0 },
 		{ name: 'OpenAI', regex: /OpenAI/, matches: 0 },
-		{
-			name: 'Tsunami Security Scanner',
-			regex: /TsunamiSecurityScanner/,
-			matches: 0
-		},
+		{ name: 'Tsunami Security Scanner', regex: /TsunamiSecurityScanner/, matches: 0 },
 		{ name: 'iOS', regex: /iOS\//, matches: 0 },
 		{ name: 'Safari', regex: /Safari\//, matches: 0 },
 		{ name: 'Edge', regex: /Edg\//, matches: 0 },
@@ -55,28 +42,19 @@
 	];
 
 	function getClient(userAgent: string | null): string {
-		if (!userAgent) {
-			return 'Unknown';
-		}
-
+		if (!userAgent) return 'Unknown';
 		for (let i = 0; i < clientCandidates.length; i++) {
 			const candidate = clientCandidates[i];
 			if (userAgent.match(candidate.regex)) {
 				candidate.matches++;
-				// Ensure clientCandidates remains sorted by matches desc for future hits
 				maintainCandidates(i, clientCandidates);
 				return candidate.name;
 			}
 		}
-
 		return 'Other';
 	}
 
 	function getPlotLayout() {
-		const monthAgo = new Date();
-		monthAgo.setDate(monthAgo.getDate() - 30);
-		const tomorrow = new Date();
-		tomorrow.setDate(tomorrow.getDate() + 1);
 		return {
 			title: false,
 			autosize: true,
@@ -86,90 +64,44 @@
 			paper_bgcolor: 'transparent',
 			height: 196,
 			width: 411,
-			yaxis: {
-				title: { text: 'Requests' },
-				gridcolor: 'gray',
-				showgrid: false,
-				fixedrange: true
-			},
-			xaxis: {
-				visible: false
-			},
+			yaxis: { title: { text: 'Requests' }, gridcolor: 'gray', showgrid: false, fixedrange: true },
+			xaxis: { visible: false },
 			dragmode: false
 		};
 	}
 
-	function donut(data: RequestsData) {
+	function donut(uaIdCount: { [id: number]: number }, userAgents: UserAgents) {
 		const clientCount: ValueCount = {};
 		const clientGetter = cachedFunction(getClient);
-		for (let i = 0; i < data.length; i++) {
-			const userAgent = userAgents[data[i][ColumnIndex.UserAgent]] || '';
+		for (const [uaId, count] of Object.entries(uaIdCount)) {
+			const userAgent = userAgents[uaId as unknown as number] || '';
 			const client = clientGetter(userAgent);
-			if (client in clientCount) {
-				clientCount[client]++;
-			} else {
-				clientCount[client] = 1;
-			}
+			clientCount[client] = (clientCount[client] ?? 0) + count;
 		}
 
 		const dataPoints = Object.entries(clientCount).sort((a, b) => b[1] - a[1]);
+		const clients = dataPoints.map(([c]) => c);
+		const counts = dataPoints.map(([, n]) => n);
 
-		const clients = new Array(dataPoints.length);
-		const counts = new Array(dataPoints.length);
-		let i = 0;
-		for (const [client, count] of dataPoints) {
-			clients[i] = client;
-			counts[i] = count;
-			i++;
-		}
-
-		return [
-			{
-				values: counts,
-				labels: clients,
-				type: 'pie',
-				hole: 0.6,
-				marker: {
-					colors: graphColors
-				}
-			}
-		];
+		return [{ values: counts, labels: clients, type: 'pie', hole: 0.6, marker: { colors: graphColors } }];
 	}
 
-	function getPlotData(data: RequestsData) {
-		return {
-			data: donut(data),
-			layout: getPlotLayout(),
-			config: {
-				responsive: true,
-				showSendToCloud: false,
-				displayModeBar: false
-			}
-		};
-	}
-
-	function generatePlot(data: RequestsData) {
+	function generatePlot(uaIdCount: { [id: number]: number }, userAgents: UserAgents) {
+		const d = donut(uaIdCount, userAgents);
+		const layout = getPlotLayout();
+		const config = { responsive: true, showSendToCloud: false, displayModeBar: false };
 		if (plotDiv.data) {
-			refreshPlot(data);
+			Plotly.react(plotDiv, d, layout);
 		} else {
-			newPlot(data);
+			Plotly.newPlot(plotDiv, d, layout, config);
 		}
 	}
 
-	async function newPlot(data: RequestsData) {
-		const plotData = getPlotData(data);
-		Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
-	}
-
-	function refreshPlot(data: RequestsData) {
-		Plotly.react(plotDiv, donut(data), getPlotLayout());
-	}
-
-	let { data, userAgents }: { data: RequestsData; userAgents: { [id: string]: string } } = $props();
+	let { uaIdCount, userAgents }: { uaIdCount: { [id: number]: number }; userAgents: UserAgents } = $props();
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
 	$effect(() => {
-		if (plotDiv && data) generatePlot(data);
+		if (plotDiv && uaIdCount) generatePlot(uaIdCount, userAgents);
 	});
 </script>
 

@@ -82,7 +82,7 @@
 	}
 
 	.redirect {
-		background: #4598ff;
+		background: #5cadff;
 	}
 
 	.bad {

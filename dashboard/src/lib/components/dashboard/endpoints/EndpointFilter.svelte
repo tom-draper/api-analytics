@@ -50,7 +50,7 @@
 
 	.toggle > .redirect-active,
 	.toggle > .redirect-active:hover {
-		background: #4598ff;
+		background: #5cadff;
 	}
 
 	.toggle > .bad-active,

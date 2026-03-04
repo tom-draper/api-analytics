@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { periodToDays, type Period } from '$lib/period';
-	import { ColumnIndex } from '$lib/consts';
 
 	function getPlotLayout() {
 		return {
@@ -25,40 +24,11 @@
 		};
 	}
 
-	function getUserIdentifier(request: RequestsData[number]) {
-		return request[ColumnIndex.IPAddress] ?? '' + request[ColumnIndex.UserID].toString() ?? '';
-	}
-
-	function lines(data: RequestsData) {
-		const n = 5;
-		const x = [...Array(n).keys()];
-		const uniqueUsers: Set<string>[] = Array.from({ length: n }, () => new Set<string>());
-
-		if (data.length > 0) {
-			const start = data[0][ColumnIndex.CreatedAt].getTime();
-			const end = data[data.length - 1][ColumnIndex.CreatedAt].getTime();
-			const range = end - start;
-			const interval = range > 0 ? range / n : 1; // Avoid division by zero
-
-			for (const row of data) {
-				const userID = getUserIdentifier(row);
-				if (!userID) continue;
-
-				const time = row[ColumnIndex.CreatedAt].getTime();
-				if (time < start) continue;
-
-				const idx = Math.min(n - 1, Math.floor((time - start) / interval));
-
-				uniqueUsers[idx].add(userID);
-			}
-		}
-
-		const y = uniqueUsers.map((set) => set.size);
-
+	function lines(buckets: number[]) {
 		return [
 			{
-				x,
-				y,
+				x: [...Array(buckets.length).keys()],
+				y: buckets,
 				type: 'lines',
 				marker: { color: 'transparent' },
 				showlegend: false,
@@ -69,96 +39,54 @@
 		];
 	}
 
-	function getPlotData(data: RequestsData) {
-		return {
-			data: lines(data),
-			layout: getPlotLayout(),
-			config: {
-				responsive: true,
-				showSendToCloud: false,
-				displayModeBar: false
-			}
-		};
-	}
-
-	function generatePlot(data: RequestsData) {
+	function generatePlot(buckets: number[]) {
 		if (plotDiv.data) {
-			refreshPlot(data);
+			Plotly.react(plotDiv, lines(buckets), getPlotLayout());
 		} else {
-			newPlot(data);
+			const plotData = {
+				data: lines(buckets),
+				layout: getPlotLayout(),
+				config: { responsive: true, showSendToCloud: false, displayModeBar: false }
+			};
+			Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
 		}
-	}
-
-	async function newPlot(data: RequestsData) {
-		const plotData = getPlotData(data);
-		Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
-	}
-
-	function refreshPlot(data: RequestsData) {
-		Plotly.react(plotDiv, lines(data), getPlotLayout());
 	}
 
 	function togglePeriod() {
 		perHour = !perHour;
 	}
 
-	function getPercentageChange(now: number, prev: number) {
-		if (prev === 0) {
-			return null;
-		}
-
-		return (now / prev) * 100 - 100;
+	function getPercentageChange(count: number, prevCount: number) {
+		if (prevCount === 0) return null;
+		return (count / prevCount) * 100 - 100;
 	}
 
-	function getUsersPerHour(users: Set<string>, period: Period) {
-		if (users.size === 0) {
-			return 0;
-		}
-
+	function getUsersPerHour(count: number, period: Period, firstDate: Date | null, lastDate: Date | null) {
+		if (count === 0) return 0;
 		let days = periodToDays(period);
-		if (days === null) {
-			days = daysBetween(
-				data[0][ColumnIndex.CreatedAt],
-				data[data.length - 1][ColumnIndex.CreatedAt]
-			);
+		if (days === null && firstDate && lastDate) {
+			const diff = lastDate.getTime() - firstDate.getTime();
+			days = Math.floor(diff / (1000 * 60 * 60 * 24));
 		}
-		return users.size / (24 * days);
+		if (!days) return count;
+		return count / (24 * days);
 	}
 
-	function daysBetween(date1: Date, date2: Date) {
-		const diff = date2.getTime() - date1.getTime();
-		return Math.floor(diff / (1000 * 60 * 60 * 24));
-	}
-
-	function getUsers(data: RequestsData): Set<string> {
-		const users: Set<string> = new Set();
-
-		for (const row of data) {
-			const userID = getUserIdentifier(row);
-			if (userID) {
-				users.add(userID);
-			}
-		}
-
-		return users;
-	}
-
-	let { data, prevData, period }: { data: RequestsData; prevData: RequestsData; period: Period } = $props();
+	let { buckets, count, prevCount, firstDate, lastDate, period }: {
+		buckets: number[];
+		count: number;
+		prevCount: number;
+		firstDate: Date | null;
+		lastDate: Date | null;
+		period: Period;
+	} = $props();
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 	let perHour = $state(false);
-	const stats = $derived.by(() => {
-		if (!data) return { userCount: 0, percentageChange: null, usersPerHour: 0 };
-		const users = getUsers(data);
-		const prevUsers = getUsers(prevData);
-		return {
-			userCount: users.size,
-			percentageChange: getPercentageChange(users.size, prevUsers.size),
-			usersPerHour: getUsersPerHour(users, period)
-		};
-	});
+	const percentageChange = $derived(getPercentageChange(count, prevCount));
+	const usersPerHour = $derived(getUsersPerHour(count, period, firstDate, lastDate));
 
 	$effect(() => {
-		if (plotDiv && data) generatePlot(data);
+		if (plotDiv && buckets) generatePlot(buckets);
 	});
 </script>
 
@@ -167,28 +95,26 @@
 		<div class="card-title">
 			Users <span class="per-hour">/ hour</span>
 		</div>
-		{#if stats.usersPerHour !== undefined}
-			<div class="value">
-				{stats.usersPerHour === 0 ? '0' : stats.usersPerHour.toFixed(2)}
-			</div>
-		{/if}
+		<div class="value">
+			{usersPerHour === 0 ? '0' : usersPerHour.toFixed(2)}
+		</div>
 	{:else}
-		{#if stats.percentageChange}
+		{#if percentageChange}
 			<div
 				class="percentage-change flex"
-				class:positive={stats.percentageChange > 0}
-				class:negative={stats.percentageChange < 0}
+				class:positive={percentageChange > 0}
+				class:negative={percentageChange < 0}
 			>
-				{#if stats.percentageChange > 0}
+				{#if percentageChange > 0}
 					<img class="arrow" src="/images/icons/green-up.png" alt="" />
-				{:else if stats.percentageChange < 0}
+				{:else if percentageChange < 0}
 					<img class="arrow" src="/images/icons/red-down.png" alt="" />
 				{/if}
-				{Math.abs(stats.percentageChange).toFixed(1)}%
+				{Math.abs(percentageChange).toFixed(1)}%
 			</div>
 		{/if}
 		<div class="card-title">Users</div>
-		<div class="value">{stats.userCount.toLocaleString()}</div>
+		<div class="value">{count.toLocaleString()}</div>
 	{/if}
 	<div id="plotly">
 		<div id="plotDiv" bind:this={plotDiv}>

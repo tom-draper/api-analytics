@@ -3,46 +3,59 @@
 	import { page } from '$app/state';
 	import EndpointList from './EndpointList.svelte';
 	import EndpointFilter from './EndpointFilter.svelte';
-	import { type Endpoint, type EndpointFilterType, getEndpoints } from '$lib/endpoints';
+	import { type Endpoint, type EndpointFilterType } from '$lib/endpoints';
 
-	let activeFilter = $state<EndpointFilterType>('all');
-	const endpointData = $derived(
-		data ? getEndpoints(data, activeFilter, ignoreParams) : { endpoints: [], maxCount: 0 }
-	);
+	type EndpointFreq = { [key: string]: { path: string; status: number; count: number } };
 
-	// URL Parameter Management
+	function statusMatchesFilter(status: number, activeFilter: EndpointFilterType): boolean {
+		return (
+			activeFilter === 'all' ||
+			(activeFilter === 'success' && status >= 200 && status <= 299) ||
+			(activeFilter === 'redirect' && status >= 300 && status <= 399) ||
+			(activeFilter === 'client' && status >= 400 && status <= 499) ||
+			(activeFilter === 'server' && status >= 500)
+		);
+	}
+
+	function getFilteredEndpoints(freq: EndpointFreq, activeFilter: EndpointFilterType) {
+		const endpoints: Endpoint[] = [];
+		let maxCount = 0;
+		for (const ep of Object.values(freq)) {
+			if (statusMatchesFilter(ep.status, activeFilter)) {
+				endpoints.push(ep);
+				if (ep.count > maxCount) maxCount = ep.count;
+			}
+		}
+		endpoints.sort((a, b) => b.count - a.count);
+		return { endpoints: endpoints.slice(0, 50), maxCount };
+	}
+
 	function updateUrlParams(path: string | null, status: number | null): void {
 		if (path === null) {
 			page.url.searchParams.delete('path');
 		} else {
 			page.url.searchParams.set('path', path);
 		}
-
 		if (status === null) {
 			page.url.searchParams.delete('status');
 		} else {
 			page.url.searchParams.set('status', status.toString());
 		}
-
 		replaceState(page.url, page.state);
 	}
 
 	function handleEndpointSelection(path: string | null, status: number | null): void {
 		if (path === null || status === null) {
-			// Reset selection
 			targetPath = null;
 			targetStatus = null;
 			updateUrlParams(null, null);
 		} else if (targetPath === null) {
-			// Set path first
 			targetPath = path;
 			updateUrlParams(path, null);
 		} else if (endpointData.endpoints.length > 1 && targetStatus === null) {
-			// Path already set, now set status if multiple endpoints exist
 			targetStatus = status;
 			updateUrlParams(targetPath, status);
 		} else {
-			// Reset if both already set
 			targetPath = null;
 			targetStatus = null;
 			updateUrlParams(null, null);
@@ -57,7 +70,14 @@
 		handleEndpointSelection(null, null);
 	}
 
-	let { data, targetPath = $bindable<string | null>(null), targetStatus = $bindable<number | null>(null), ignoreParams = $bindable(false) }: { data: RequestsData; targetPath: string | null; targetStatus: number | null; ignoreParams: boolean } = $props();
+	let { endpointFreq, targetPath = $bindable<string | null>(null), targetStatus = $bindable<number | null>(null) }: {
+		endpointFreq: EndpointFreq;
+		targetPath: string | null;
+		targetStatus: number | null;
+	} = $props();
+
+	let activeFilter = $state<EndpointFilterType>('all');
+	const endpointData = $derived(getFilteredEndpoints(endpointFreq, activeFilter));
 </script>
 
 <div class="card">

@@ -1,29 +1,12 @@
 <script lang="ts">
-	import { formatUserID, getUserIdentifier } from '$lib/user';
-	import { ColumnIndex } from '$lib/consts';
+	import { formatUserID } from '$lib/user';
 	import { setParam, setParamNoReplace } from '$lib/params';
+	import type { TopUserData } from '$lib/aggregate';
 
-	type Users = {
-		[userID: string]: User;
-	};
-
-	type User = {
-		ipAddress: string;
-		customUserID: string;
-		lastRequested: Date;
-		requests: number;
-		locations: Locations;
-	};
-
-	type Locations = {
-		[location: string]: number;
-	};
+	type Locations = { [location: string]: number };
 
 	function maxLocation(locations: Locations) {
-		const max = {
-			location: '',
-			count: 0
-		};
+		const max = { location: '', count: 0 };
 		for (const location in locations) {
 			if (locations[location] > max.count) {
 				max.count = locations[location];
@@ -50,7 +33,7 @@
 			const formattedTargetUserID = formatUserID(targetUser.ipAddress, targetUser.userID);
 			targetUser = null;
 			if (formattedUserID !== formattedTargetUserID) {
-				selectUser(ipAddress, userID); // If a different user was selected, select this one instead
+				selectUser(ipAddress, userID);
 			} else {
 				setUserParams(null, null);
 			}
@@ -61,7 +44,7 @@
 				setIPAddressParam(ipAddress);
 			} else {
 				targetUser = null;
-				selectUser(ipAddress, userID); // If a different user was selected, select this one instead
+				selectUser(ipAddress, userID);
 			}
 		}
 	}
@@ -79,130 +62,28 @@
 		setParam('userID', userID);
 	}
 
-	function build(data: RequestsData) {
-		const users = getUsers(data);
-
-		const totalUsers = Object.keys(users).length;
-		const topUserRequestsCount = getTopUserRequestsCount(users);
-		if (totalUsers < 10 || topUserRequestsCount <= 1) {
-			topUsers = null;
-			dataPage = null;
-			userIDActive = false;
-			locationsActive = false;
-			pageNumber = 1;
-			return;
-		}
-
-		const newTopUsers = Object.values(users)
-			.sort((a, b) => b.requests - a.requests)
-			.slice(0, pageSize * maxPages);
-
-		topUsers = newTopUsers;
-		userIDActive = getUserIDActive(users);
-		locationsActive = getLocationsActive(users);
-		pageNumber = 1;
-		dataPage = newTopUsers.slice(0, pageSize);
-	}
-
-	function getUsers(data: RequestsData) {
-		const users: Users = {};
-
-		for (const row of data) {
-			const userID = getUserIdentifier(row);
-			if (!userID) {
-				continue;
-			}
-
-			const createdAt = row[ColumnIndex.CreatedAt];
-			const location = row[ColumnIndex.Location];
-			let user = users[userID];
-
-			if (user) {
-				user.requests++;
-				user.locations[location] = (user.locations[location] || 0) + 1;
-
-				if (createdAt > user.lastRequested) {
-					user.lastRequested = createdAt;
-				}
-			} else {
-				users[userID] = {
-					ipAddress: row[ColumnIndex.IPAddress],
-					customUserID: row[ColumnIndex.UserID],
-					lastRequested: createdAt,
-					requests: 1,
-					locations: location ? { [location]: 1 } : {}
-				};
-			}
-		}
-
-		return users;
-	}
-
-	function getTopUserRequestsCount(users: Users) {
-		let max = 0;
-		for (const user of Object.values(users)) {
-			if (user.requests > max) {
-				max = user.requests;
-			}
-		}
-		return max;
-	}
-
-	function getUserIDActive(users: Users) {
-		for (const user of Object.values(users)) {
-			if (user.customUserID !== '' && user.customUserID !== null) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	function getLocationsActive(users: Users) {
-		for (const user of Object.values(users)) {
-			if (user.locations) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	function multipleUserIDOccurances(userID: string) {
-		const users = getPage();
-
+		const page = getPage();
 		let count = 0;
-		for (let i = 0; i < users.length; i++) {
-			if (users[i].customUserID === userID) {
-				count++;
-			}
-
-			if (count > 1) {
-				return true;
-			}
+		for (let i = 0; i < page.length; i++) {
+			if (page[i].customUserID === userID) count++;
+			if (count > 1) return true;
 		}
-
 		return false;
 	}
 
 	function userTargeted(ipAddress: string, userID: string) {
-		if (!targetUser) {
-			return false;
-		}
-
+		if (!targetUser) return false;
 		if (targetUser.composite) {
-			return (
-				formatUserID(ipAddress, userID) === formatUserID(targetUser.ipAddress, targetUser.userID)
-			);
+			return formatUserID(ipAddress, userID) === formatUserID(targetUser.ipAddress, targetUser.userID);
 		} else {
 			return targetUser.userID === userID;
 		}
 	}
 
 	function totalPages() {
-		if (!topUsers) {
-			return 0;
-		}
-
-		return Math.ceil(topUsers.length / pageSize);
+		if (!users) return 0;
+		return Math.ceil(users.length / PAGE_SIZE);
 	}
 
 	function nextPage() {
@@ -216,30 +97,26 @@
 	}
 
 	function getPage() {
-		if (!topUsers) {
-			return [];
-		}
-
-		return topUsers.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
+		if (!users) return [];
+		return users.slice((pageNumber - 1) * PAGE_SIZE, pageNumber * PAGE_SIZE);
 	}
 
-	type TargetUser = {
-		ipAddress: string;
-		userID: string;
-		composite: boolean;
-	};
+	type TargetUser = { ipAddress: string; userID: string; composite: boolean };
 
-	let { data, targetUser = $bindable<TargetUser | null>(null) }: { data: RequestsData; targetUser: TargetUser | null } = $props();
-	let topUsers = $state<User[] | null>(null);
-	let dataPage = $state<User[] | null>(null);
-	let userIDActive = $state(false);
-	let locationsActive = $state(false);
+	let { users, userIDActive, locationsActive, targetUser = $bindable<TargetUser | null>(null) }: {
+		users: TopUserData[] | null;
+		userIDActive: boolean;
+		locationsActive: boolean;
+		targetUser: TargetUser | null;
+	} = $props();
+
+	const PAGE_SIZE = 10;
 	let pageNumber = $state(1);
-	const pageSize = 10;
-	const maxPages = 100;
+	let dataPage = $state<TopUserData[] | null>(null);
 
 	$effect(() => {
-		if (data) build(data);
+		pageNumber = 1;
+		dataPage = users ? users.slice(0, PAGE_SIZE) : null;
 	});
 </script>
 
@@ -293,11 +170,11 @@
 			<div class="current-page">Page {pageNumber} of {totalPages()}</div>
 			{#if pageNumber > 1}
 				<button
-					class:btn-prev={topUsers && topUsers.length / pageSize > pageNumber}
+					class:btn-prev={users && users.length / PAGE_SIZE > pageNumber}
 					onclick={prevPage}>Previous</button
 				>
 			{/if}
-			{#if topUsers && topUsers.length / pageSize > pageNumber}
+			{#if users && users.length / PAGE_SIZE > pageNumber}
 				<button class="btn-next" onclick={nextPage}>Next</button>
 			{/if}
 		</div>

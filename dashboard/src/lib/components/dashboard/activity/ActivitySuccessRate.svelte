@@ -1,96 +1,53 @@
 <script lang="ts">
 	import { periodToDays, type Period } from '$lib/period';
-	import { ColumnIndex } from '$lib/consts';
-	import { statusSuccessful } from '$lib/status';
+	import type { ActivityBucket } from '$lib/aggregate';
 
 	function daysAgo(date: Date): number {
-		const now = new Date();
-		// Calculate the difference in milliseconds
-		const differenceInMilliseconds = now.getTime() - date.getTime();
-
-		// Convert the difference to days
-		const millisecondsPerDay = 24 * 60 * 60 * 1000;
-		const differenceInDays = Math.floor(differenceInMilliseconds / millisecondsPerDay);
-
-		return differenceInDays;
-	}
-
-	function daysAgoTime(time: number): number {
-		const now = new Date();
-		return Math.floor((now.getTime() - time) / (24 * 60 * 60 * 1000));
+		return Math.floor((Date.now() - date.getTime()) / (24 * 60 * 60 * 1000));
 	}
 
 	function hoursAgoTime(time: number): number {
-		const now = new Date();
-		return Math.floor((now.getTime() - time) / (60 * 60 * 1000));
+		return Math.floor((Date.now() - time) / (60 * 60 * 1000));
 	}
 
-	type NumberSuccessCounter = Map<number, { total: number; successful: number }>;
+	function daysAgoTime(time: number): number {
+		return Math.floor((Date.now() - time) / (24 * 60 * 60 * 1000));
+	}
 
-	function getSuccessRate(data: RequestsData) {
-		const success: NumberSuccessCounter = new Map();
-		let minDate = new Date(8640000000000000);
-
-		for (const row of data) {
-			const date = new Date(row[ColumnIndex.CreatedAt]);
-			if (period === '24 hours' || period === 'week') {
-				// Hourly
-				date.setMinutes(0, 0, 0);
-			} else {
-				date.setHours(0, 0, 0, 0);
-			}
-
-			const time = date.getTime();
-			let entry = success.get(time);
-			if (!entry) {
-				entry = { total: 0, successful: 0 };
-				success.set(time, entry);
-			}
-
-			entry.total++;
-			if (statusSuccessful(row[ColumnIndex.Status])) {
-				entry.successful++;
-			}
-
-			if (time < minDate.getTime()) {
-				minDate = date;
-			}
-		}
-
-		let successArr: number[];
-
+	function getSuccessRateArr(buckets: ActivityBucket[], period: Period, firstRequestDate: Date | null): number[] {
 		if (period === '24 hours' || period === 'week') {
 			const hours = period === '24 hours' ? 24 : 24 * 7;
-			successArr = new Array(hours).fill(0);
-
-			for (const [time, entry] of success.entries()) {
-				const idx = hoursAgoTime(time);
+			const successArr = new Array(hours).fill(0);
+			for (const bucket of buckets) {
+				const idx = hoursAgoTime(bucket.date);
 				if (idx >= 0 && idx < hours) {
-					successArr[successArr.length - 1 - idx] = entry.successful / entry.total;
+					successArr[successArr.length - 1 - idx] = bucket.successRate;
 				}
 			}
+			return successArr;
 		} else {
-			let days = period === 'all time' ? daysAgo(minDate) : periodToDays(period);
-			if (days === null) {
-				throw new Error('Invalid period');
-			}
-			days = Math.min(days, 500); // Limit to 500 days
-			successArr = new Array(days).fill(0);
-
-			for (const [time, entry] of success.entries()) {
-				const idx = daysAgoTime(time);
+			let days = period === 'all time'
+				? (firstRequestDate ? daysAgo(firstRequestDate) : 0)
+				: (periodToDays(period) ?? 0);
+			days = Math.min(days, 500);
+			const successArr = new Array(days).fill(0);
+			for (const bucket of buckets) {
+				const idx = daysAgoTime(bucket.date);
 				if (idx >= 0 && idx < days) {
-					successArr[successArr.length - 1 - idx] = entry.successful / entry.total;
+					successArr[successArr.length - 1 - idx] = bucket.successRate;
 				}
 			}
+			return successArr;
 		}
-
-		return successArr;
 	}
 
-	let { data, period }: { data: RequestsData; period: Period } = $props();
+	let { activityBuckets, period, firstRequestDate }: {
+		activityBuckets: ActivityBucket[];
+		period: Period;
+		firstRequestDate: Date | null;
+	} = $props();
 
-	const successRate = $derived(data ? getSuccessRate(data) : undefined);
+	const successRate = $derived(getSuccessRateArr(activityBuckets, period, firstRequestDate));
 </script>
 
 <div class="success-rate-container">

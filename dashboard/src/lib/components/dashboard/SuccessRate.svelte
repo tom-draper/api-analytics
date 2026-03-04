@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { ColumnIndex } from '$lib/consts';
-	import { statusSuccessful } from '$lib/status';
-
 	function getPlotLayout() {
 		return {
 			title: false,
@@ -25,23 +22,12 @@
 		};
 	}
 
-	function lines(data: RequestsData) {
-		const n = 5;
-		const x = [...Array(n).keys()];
-		const y = Array(n).fill(0);
-
-		for (let i = 0; i < data.length; i++) {
-			const idx = Math.min(Math.floor(i / (data.length / n)), n - 1);
-
-			if (statusSuccessful(data[i][ColumnIndex.Status])) {
-				y[idx] += 1;
-			}
-		}
-
+	function lines(buckets: number[]) {
+		const n = buckets.length;
 		return [
 			{
-				x: x,
-				y: y,
+				x: [...Array(n).keys()],
+				y: buckets,
 				type: 'lines',
 				marker: { color: 'transparent' },
 				showlegend: false,
@@ -52,56 +38,24 @@
 		];
 	}
 
-	function getPlotData(data: RequestsData) {
-		return {
-			data: lines(data),
-			layout: getPlotLayout(),
-			config: {
-				responsive: true,
-				showSendToCloud: false,
-				displayModeBar: false
-			}
-		};
-	}
-
-	function generatePlot(data: RequestsData) {
+	function generatePlot(buckets: number[]) {
 		if (plotDiv.data) {
-			refreshPlot(data);
+			Plotly.react(plotDiv, lines(buckets), getPlotLayout());
 		} else {
-			newPlot(data);
+			const plotData = {
+				data: lines(buckets),
+				layout: getPlotLayout(),
+				config: { responsive: true, showSendToCloud: false, displayModeBar: false }
+			};
+			Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
 		}
 	}
 
-	async function newPlot(data: RequestsData) {
-		const plotData = getPlotData(data);
-		Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
-	}
-
-	function refreshPlot(data: RequestsData) {
-		Plotly.react(plotDiv, lines(data), getPlotLayout());
-	}
-
-	function getSuccessRate(data: RequestsData) {
-		if (!data || data.length === 0) {
-			return null;
-		}
-
-		let successfulRequests = 0;
-		for (let i = 0; i < data.length; i++) {
-			if (statusSuccessful(data[i][ColumnIndex.Status])) {
-				successfulRequests++;
-			}
-		}
-
-		return (successfulRequests / data.length) * 100;
-	}
-
-	let { data }: { data: RequestsData } = $props();
+	let { rate, buckets }: { rate: number | null; buckets: number[] } = $props();
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
-	const successRate = $derived(data ? getSuccessRate(data) : null);
 
 	$effect(() => {
-		if (plotDiv && data) generatePlot(data);
+		if (plotDiv && buckets) generatePlot(buckets);
 	});
 </script>
 
@@ -109,11 +63,11 @@
 	<div class="card-title">Success rate</div>
 	<div
 		class="value"
-		class:red={successRate !== null && successRate <= 70}
-		class:yellow={successRate !== null && successRate > 70 && successRate < 90}
-		class:green={successRate === null || successRate > 90}
+		class:red={rate !== null && rate <= 70}
+		class:yellow={rate !== null && rate > 70 && rate < 90}
+		class:green={rate === null || rate > 90}
 	>
-		{successRate !== null ? `${successRate.toFixed(1)}%` : 'N/A'}
+		{rate !== null ? `${rate.toFixed(1)}%` : 'N/A'}
 	</div>
 	<div id="plotly">
 		<div id="plotDiv" bind:this={plotDiv}>

@@ -31,6 +31,7 @@
 	import Loading from '$components/Loading.svelte';
 	import { get } from 'svelte/store';
 	import { untrack } from 'svelte';
+	import type { AggregatedData } from '$lib/aggregate';
 
 	const userID = formatUUID(page.params.uuid);
 
@@ -213,14 +214,15 @@
 		show: false
 	});
 	let periodData = $state.raw<{ current: RequestsData; previous: RequestsData } | undefined>(undefined);
+	let aggregated = $state.raw<AggregatedData | undefined>(undefined);
 	let loading = $state(true);
 	let fetchStatus = $state<{ failed: boolean; status: number; message: string } | undefined>(undefined);
 	let worker = $state.raw<Worker | undefined>(undefined);
 
-	// When data changes: send full requests to worker cache, then filter
+	// When data changes: send full requests + userAgents to worker cache, then filter
 	$effect(() => {
 		if (!worker || !data) return;
-		worker.postMessage({ type: 'init', requests: data.requests, settings: untrack(() => $state.snapshot(settings)) });
+		worker.postMessage({ type: 'init', requests: data.requests, userAgents: data.userAgents, settings: untrack(() => $state.snapshot(settings)) });
 	});
 
 	// When settings change: re-filter using cached requests in worker
@@ -233,8 +235,9 @@
 	onMount(async () => {
 		const w = new Worker(new URL('$lib/dashboardWorker.ts', import.meta.url), { type: 'module' });
 		w.onmessage = (e) => {
-			const { current, previous, hostnames: h } = e.data;
+			const { current, previous, aggregated: agg, hostnames: h } = e.data;
 			periodData = { current, previous };
+			aggregated = agg;
 			if (h !== undefined) hostnames = h;
 		};
 		worker = w;
@@ -272,7 +275,7 @@
 	}}
 />
 <Notification state={notification} />
-{#if periodData && data.requests.length > 0}
+{#if aggregated && data && data.requests.length > 0}
 	<div class="dashboard">
 		<Navigation bind:settings bind:showSettings bind:hostnames />
 
@@ -280,40 +283,61 @@
 			<div class="left">
 				<div class="row">
 					<Logo bind:loading />
-					<SuccessRate data={periodData.current} />
+					<SuccessRate rate={aggregated.successRate} buckets={aggregated.successBuckets} />
 				</div>
 				<div class="row">
 					<Requests
-						data={periodData.current}
-						prevData={periodData.previous}
+						buckets={aggregated.requestBuckets}
+						count={aggregated.requestCount}
+						prevCount={aggregated.prevRequestCount}
+						firstDate={aggregated.firstRequestDate}
+						lastDate={aggregated.lastRequestDate}
 						period={settings.period}
 					/>
 					<Users
-						data={periodData.current}
-						prevData={periodData.previous}
+						buckets={aggregated.userBuckets}
+						count={aggregated.userCount}
+						prevCount={aggregated.prevUserCount}
+						firstDate={aggregated.firstRequestDate}
+						lastDate={aggregated.lastRequestDate}
 						period={settings.period}
 					/>
 				</div>
-				<ResponseTimes data={periodData.current} />
+				<ResponseTimes
+					sortedTimes={aggregated.sortedResponseTimes}
+					freqTimes={aggregated.rtFreqTimes}
+					freqCounts={aggregated.rtFreqCounts}
+					LQ={aggregated.rtLQ}
+					median={aggregated.rtMedian}
+					UQ={aggregated.rtUQ}
+				/>
 				<Endpoints
-					data={periodData.current}
+					endpointFreq={aggregated.endpointFreq}
 					bind:targetPath={settings.targetEndpoint.path}
 					bind:targetStatus={settings.targetEndpoint.status}
-					bind:ignoreParams={settings.ignoreParams}
 				/>
-				<Version data={periodData.current} />
+				<Version versionCount={aggregated.versionCount} hasMultiple={aggregated.versionHasMultiple} />
 			</div>
 			<div class="right">
-				<Activity data={periodData.current} period={settings.period} />
+				<Activity
+					activityBuckets={aggregated.activityBuckets}
+					period={aggregated.period}
+					firstRequestDate={aggregated.firstRequestDate}
+				/>
 				<div class="grid-row">
-					<Location data={periodData.current} bind:targetLocation={settings.targetLocation} />
-					<Device data={periodData.current} userAgents={data.userAgents} />
+					<Location locationBars={aggregated.locationBars} bind:targetLocation={settings.targetLocation} />
+					<Device uaIdCount={aggregated.uaIdCount} userAgents={data.userAgents} />
 				</div>
 				<div class="flex">
 					<div class="flex-grow">
 						<!-- <Health data={periodData.current} /> -->
-						<UsageTime data={periodData.current} />
-						<TopUsers data={periodData.current} bind:targetUser={settings.targetUser} />
+						<UsageTime hourlyBuckets={aggregated.hourlyBuckets} />
+						<TopUsers
+							users={aggregated.topUsers}
+							userIDActive={aggregated.topUserIDActive}
+							locationsActive={aggregated.topLocationsActive}
+							bind:targetUser={settings.targetUser}
+						/>
 					</div>
 					<div>
 						<!-- <Referrer data={periodData.current} bind:targetReferrer={settings.targetReferrer} bind:ignoreParams={settings.ignoreParams}/> -->
@@ -322,7 +346,7 @@
 			</div>
 		</div>
 	</div>
-{:else if periodData && data.requests.length <= 0}
+{:else if aggregated && data && data.requests.length <= 0}
 	<Error status={400} message="" />
 {:else if fetchStatus && fetchStatus.failed}
 	<Error status={fetchStatus.status} message={fetchStatus.message} />
@@ -381,7 +405,7 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 3.8rem;
-		width: 500px;
+		width: min(500px, 90vw);
 	}
 
 	/* Multi-text animation container */

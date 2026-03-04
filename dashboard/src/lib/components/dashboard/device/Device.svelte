@@ -1,38 +1,21 @@
 <script lang="ts">
 	import Client from './Client.svelte';
+	import OperatingSystem from './OperatingSystem.svelte';
+	import DeviceType from './DeviceType.svelte';
 
 	type Tab = 'client' | 'os' | 'device';
 
-	// Track the active tab
 	let activeBtn = $state<Tab>('client');
-	let osLoaded = $state(false);
-	let deviceLoaded = $state(false);
-	let OperatingSystem = $state<any>(undefined);
-	let DeviceType = $state<any>(undefined);
 
-	// Function to load components dynamically
-	async function loadComponent(tab: Tab) {
-		if (tab === 'os' && !osLoaded) {
-			const { default: importedOperatingSystem } = await import('./OperatingSystem.svelte');
-			OperatingSystem = importedOperatingSystem;
-			osLoaded = true;
-		} else if (tab === 'device' && !deviceLoaded) {
-			const { default: importedDeviceType } = await import('./DeviceType.svelte');
-			DeviceType = importedDeviceType;
-			deviceLoaded = true;
-		}
-	}
-
-	// Function to set the active button
 	function setBtn(target: Tab) {
 		activeBtn = target;
-		// Load the component when the tab is clicked
-		loadComponent(target);
-		// Resize window to trigger new plot resize to match current card size
-		// window.dispatchEvent(new Event('resize'));
+		window.dispatchEvent(new Event('resize'));
 	}
 
-	let { data, userAgents }: { data: RequestsData; userAgents: { [id: string]: string } } = $props();
+	let { uaIdCount, userAgents }: {
+		uaIdCount: { [id: number]: number };
+		userAgents: UserAgents;
+	} = $props();
 </script>
 
 <div class="card">
@@ -49,21 +32,15 @@
 		</div>
 	</div>
 
-	<div class="client" class:display={activeBtn === 'client'}>
-		<Client {data} {userAgents} />
+	<div class="tab" class:tab-active={activeBtn === 'client'}>
+		<Client {uaIdCount} {userAgents} />
 	</div>
-
-	{#if activeBtn === 'os' && OperatingSystem}
-		<div>
-			<OperatingSystem {data} {userAgents} />
-		</div>
-	{/if}
-
-	{#if activeBtn === 'device' && DeviceType}
-		<div>
-			<DeviceType {data} {userAgents} />
-		</div>
-	{/if}
+	<div class="tab" class:tab-active={activeBtn === 'os'}>
+		<OperatingSystem {uaIdCount} {userAgents} />
+	</div>
+	<div class="tab" class:tab-active={activeBtn === 'device'}>
+		<DeviceType {uaIdCount} {userAgents} />
+	</div>
 </div>
 
 <style scoped>
@@ -80,11 +57,11 @@
 	.toggle > .active {
 		background: var(--highlight);
 	}
-	.client {
+	.tab {
 		display: none;
 	}
-	.display {
-		display: initial;
+	.tab-active {
+		display: block;
 	}
 	.toggle > button {
 		font-size: 0.85em;
