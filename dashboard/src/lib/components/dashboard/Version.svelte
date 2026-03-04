@@ -1,23 +1,21 @@
 <script lang="ts">
 	import { ColumnIndex, graphColors } from '$lib/consts';
 
-	function getVersions(data: RequestsData) {
+	function getVersionCount(data: RequestsData): { versions: Set<string>; count: ValueCount } {
 		const versions = new Set<string>();
+		const count: ValueCount = {};
 		for (let i = 0; i < data.length; i++) {
-			const match = data[i][ColumnIndex.Path].match(/\/(v\d)[^a-z0-9]/i);
+			const match = data[i][ColumnIndex.Path].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
 			if (match) {
-				versions.add(match[1]);
+				const v = match[1];
+				versions.add(v);
+				count[v] = (count[v] ?? 0) + 1;
 			}
 		}
-		return versions;
+		return { versions, count };
 	}
 
-	function buildPlot(data: RequestsData) {
-		genPlot(data);
-		window?.dispatchEvent(new Event('resize'));
-	}
-
-	function getLayout() {
+function getLayout() {
 		return {
 			title: false,
 			autosize: true,
@@ -39,21 +37,7 @@
 		};
 	}
 
-	function pieChart(data: RequestsData) {
-		const versionCount: ValueCount = {};
-		for (let i = 0; i < data.length; i++) {
-			const match = data[i][ColumnIndex.Path].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
-			if (!match) {
-				continue;
-			}
-			const version = match[1];
-			if (version in versionCount) {
-				versionCount[version]++;
-			} else {
-				versionCount[version] = 1;
-			}
-		}
-
+	function pieChart(versionCount: ValueCount) {
 		const versions = Object.keys(versionCount);
 		const count = Object.values(versionCount);
 
@@ -70,9 +54,9 @@
 		];
 	}
 
-	function getPlotData(data: RequestsData) {
+	function getPlotData(versionCount: ValueCount) {
 		return {
-			data: pieChart(data),
+			data: pieChart(versionCount),
 			layout: getLayout(),
 			config: {
 				responsive: true,
@@ -82,22 +66,25 @@
 		};
 	}
 
-	function genPlot(data: RequestsData) {
-		const plotData = getPlotData(data);
+	function genPlot(versionCount: ValueCount) {
+		const plotData = getPlotData(versionCount);
 		//@ts-ignore
 		new Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
 	}
 
 	let { data }: { data: RequestsData } = $props();
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
-	const versions = $derived(data ? getVersions(data) : undefined);
+	const versionData = $derived(data ? getVersionCount(data) : undefined);
 
 	$effect(() => {
-		if (plotDiv && data && versions && versions.size > 1) buildPlot(data);
+		if (plotDiv && versionData && versionData.versions.size > 1) {
+			genPlot(versionData.count);
+			window?.dispatchEvent(new Event('resize'));
+		}
 	});
 </script>
 
-<div class="card flex-1" class:hidden={versions === undefined || versions.size <= 1}>
+<div class="card flex-1" class:hidden={versionData === undefined || versionData.versions.size <= 1}>
 	<div class="card-title">Version</div>
 	<div id="plotly">
 		<div id="plotDiv" class="mr-[20px]" bind:this={plotDiv}>

@@ -127,7 +127,6 @@
 		text-align: right;
 	}
 	.donate {
-		/* margin-left: auto; */
 		display: grid;
 		place-items: center;
 		margin-right: 1rem;
@@ -135,7 +134,7 @@
 
 	.donate-link {
 		transition: 0.1s;
-		color: #707070;
+		color: #474747;
 	}
 	.donate-link:hover {
 		color: var(--highlight);

@@ -12,7 +12,7 @@
 	import UsageTime from '$components/dashboard/UsageTime.svelte';
 	import Location from '$components/dashboard/Location.svelte';
 	import Device from '$components/dashboard/device/Device.svelte';
-	import { dateInPeriod, dateInPrevPeriod, isPeriod } from '$lib/period';
+	import { dateInPeriod, isPeriod, periodToDays } from '$lib/period';
 	import generateDemoData from '$lib/demo';
 	import formatUUID from '$lib/uuid';
 	import Settings from '$components/dashboard/Settings.svelte';
@@ -35,16 +35,30 @@
 	const userID = formatUUID(page.params.uuid);
 
 	function getPeriodData(data: RequestsData, settings: DashboardSettings) {
-		const inRange = getInRange();
-		const inPrevRange = getInPrevRange();
+		const now = Date.now();
+		const hasHiddenEndpoints = settings.hiddenEndpoints.size > 0;
+		const allTime = settings.period === 'all time';
 
-		const current = [];
-		const previous = [];
-		for (const request of data) {
-			// Created inverted version of the if statement to reduce nesting
+		const current: RequestsData = [];
+		const previous: RequestsData = [];
+
+		let startIdx = 0;
+		let currentStartMs = 0;
+		let prevStartMs = 0;
+
+		if (!allTime) {
+			const days = periodToDays(settings.period)!;
+			const periodMs = days * 86400000;
+			currentStartMs = now - periodMs;
+			prevStartMs = now - periodMs * 2;
+			// Binary search: skip requests older than the previous period
+			startIdx = lowerBound(data, prevStartMs);
+		}
+
+		for (let i = startIdx; i < data.length; i++) {
+			const request = data[i];
 			const status = request[ColumnIndex.Status];
 			const path = request[ColumnIndex.Path];
-			const referrer = request[ColumnIndex.Path];
 			const hostname = request[ColumnIndex.Hostname];
 			const location = request[ColumnIndex.Location];
 			const ipAddress = request[ColumnIndex.IPAddress];
@@ -55,16 +69,20 @@
 				(!settings.disable404 || status !== 404) &&
 				(settings.targetEndpoint.path === null || settings.targetEndpoint.path === path) &&
 				(settings.targetEndpoint.status === null || settings.targetEndpoint.status === status) &&
-				(settings.targetReferrer === null || settings.targetReferrer === referrer) &&
+				(settings.targetReferrer === null || settings.targetReferrer === path) &&
 				(settings.targetLocation === null || settings.targetLocation === location) &&
-				!isHiddenEndpoint(path) &&
+				(!hasHiddenEndpoints || !isHiddenEndpoint(path)) &&
 				(settings.hostname === null || settings.hostname === hostname)
 			) {
-				const date = request[ColumnIndex.CreatedAt];
-				if (inRange(date)) {
+				if (allTime) {
 					current.push(request);
-				} else if (inPrevRange(date)) {
-					previous.push(request);
+				} else {
+					const dateMs = (request[ColumnIndex.CreatedAt] as Date).getTime();
+					if (dateMs >= currentStartMs) {
+						current.push(request);
+					} else if (dateMs >= prevStartMs) {
+						previous.push(request);
+					}
 				}
 			}
 		}
@@ -72,28 +90,18 @@
 		return { current, previous };
 	}
 
-	function allTimePeriod(_: Date) {
-		return true;
-	}
-
-	function getInRange() {
-		if (settings.period === 'all time') {
-			return allTimePeriod;
+	function lowerBound(data: RequestsData, targetMs: number): number {
+		let lo = 0;
+		let hi = data.length;
+		while (lo < hi) {
+			const mid = (lo + hi) >>> 1;
+			if ((data[mid][ColumnIndex.CreatedAt] as Date).getTime() < targetMs) {
+				lo = mid + 1;
+			} else {
+				hi = mid;
+			}
 		}
-
-		return (date: Date) => {
-			return dateInPeriod(date, settings.period);
-		};
-	}
-
-	function getInPrevRange() {
-		if (settings.period === 'all time') {
-			return allTimePeriod;
-		}
-
-		return (date: Date) => {
-			return dateInPrevPeriod(date, settings.period);
-		};
+		return lo;
 	}
 
 	function isHiddenEndpoint(endpoint: string) {
@@ -213,7 +221,7 @@
 				return 0;
 			}
 
-			data.userAgents = { ...data.userAgents, ...body.user_agents };
+			Object.assign(data.userAgents, body.user_agents);
 
 			parseDates(body.requests);
 			sortByTime(body.requests);
@@ -221,10 +229,10 @@
 			const mostRecent = body.requests[body.requests.length - 1][ColumnIndex.CreatedAt];
 			if (dateInPeriod(mostRecent, settings.period)) {
 				// Trigger dashboard re-render
-				data.requests = data.requests.concat(body.requests);
+				data = { ...data, requests: data.requests.concat(body.requests) };
 			} else {
 				// Avoid triggering dashboard re-render
-				Object.assign(data.requests, data.requests.concat(body.requests));
+				data.requests.push(...body.requests);
 			}
 
 			dataStore.set(data);
@@ -320,7 +328,7 @@
 		return settings;
 	}
 
-	let data = $state<DashboardData | undefined>(undefined);
+	let data = $state.raw<DashboardData | undefined>(undefined);
 	let settings = $state(getSettings());
 	let showSettings = $state(false);
 	let hostnames = $state<string[]>([]);
@@ -329,7 +337,7 @@
 		style: 'error',
 		show: false
 	});
-	let periodData = $state<{ current: RequestsData; previous: RequestsData } | undefined>(undefined);
+	let periodData = $state.raw<{ current: RequestsData; previous: RequestsData } | undefined>(undefined);
 	let loading = $state(true);
 	let fetchStatus = $state<{ failed: boolean; status: number; message: string } | undefined>(undefined);
 

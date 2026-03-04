@@ -154,8 +154,8 @@
 		filter = defaultFilter(data.requests);
 	}
 
-	let data = $state<DashboardData | undefined>(undefined);
-	let filteredRequests = $state<RequestsData>([]);
+	let data = $state.raw<DashboardData | undefined>(undefined);
+	let filteredRequests = $state.raw<RequestsData>([]);
 	let filter = $state<Filter | undefined>(undefined);
 
 	$effect(() => {
