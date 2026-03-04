@@ -2,30 +2,9 @@
 	import type { DashboardSettings } from '$lib/settings';
 	import Dropdown from './Dropdown.svelte';
 	import type { Period } from '$lib/period';
-	import { onMount } from 'svelte';
 	import { setParam } from '$lib/params';
 
 	const timePeriods: Period[] = ['24 hours', 'week', 'month', '6 months', 'year', 'all time'];
-
-	const donateMessages = [
-		'Donate',
-		'Support',
-		'Contribute',
-		'Contribute today',
-		'Support this project',
-		'Keep API Analytics running',
-		'Keep this project going',
-		'Keep this project alive',
-		'Donate to API Analytics',
-		'Support API Analytics',
-		'Give back',
-		'Support us',
-		'Buy us a coffee',
-		'Give us a tip',
-		'Make a donation',
-		'Support development',
-		'Help with server costs'
-	];
 
 	const timePeriodsDisplay: Record<Period, string> = {
 		'24 hours': '24 hours',
@@ -45,13 +24,8 @@
 	}
 
 	let { settings = $bindable(), showSettings = $bindable(false), hostnames = $bindable([]) }: { settings: DashboardSettings; showSettings: boolean; hostnames: string[] } = $props();
-	let donateMessage = $state('');
 	let dropdownOpen = $state(false);
 	let selectedHostname = $state<string | null>(settings.hostname ?? null);
-
-	onMount(() => {
-		donateMessage = donateMessages[Math.floor(Math.random() * donateMessages.length)];
-	});
 
 	$effect(() => {
 		settings.hostname = selectedHostname;
@@ -82,7 +56,7 @@
 		<a
 			target="_blank"
 			href="https://www.buymeacoffee.com/tomdraper"
-			class="donate-link text-[#464646]">{donateMessage}</a
+			class="donate-link">Buy me a coffee</a
 		>
 	</div>
 	<button
@@ -161,6 +135,7 @@
 
 	.donate-link {
 		transition: 0.1s;
+		color: #707070;
 	}
 	.donate-link:hover {
 		color: var(--highlight);

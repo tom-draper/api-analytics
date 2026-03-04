@@ -33,11 +33,6 @@
 		return max.location;
 	}
 
-	function resetFlags() {
-		userIDActive = false;
-		locationsActive = false;
-	}
-
 	function selectUser(ipAddress: string, userID: string) {
 		if (!targetUser) {
 			targetUser = {
@@ -85,25 +80,28 @@
 	}
 
 	function build(data: RequestsData) {
-		resetFlags();
-
 		const users = getUsers(data);
 
 		const totalUsers = Object.keys(users).length;
 		const topUserRequestsCount = getTopUserRequestsCount(users);
 		if (totalUsers < 10 || topUserRequestsCount <= 1) {
 			topUsers = null;
+			dataPage = null;
+			userIDActive = false;
+			locationsActive = false;
+			pageNumber = 1;
 			return;
 		}
 
-		userIDActive = getUserIDActive(users);
-		locationsActive = getLocationsActive(users);
-
-		topUsers = Object.values(users)
+		const newTopUsers = Object.values(users)
 			.sort((a, b) => b.requests - a.requests)
 			.slice(0, pageSize * maxPages);
 
-		resetPage();
+		topUsers = newTopUsers;
+		userIDActive = getUserIDActive(users);
+		locationsActive = getLocationsActive(users);
+		pageNumber = 1;
+		dataPage = newTopUsers.slice(0, pageSize);
 	}
 
 	function getUsers(data: RequestsData) {
@@ -205,11 +203,6 @@
 		}
 
 		return Math.ceil(topUsers.length / pageSize);
-	}
-
-	function resetPage() {
-		pageNumber = 1;
-		dataPage = getPage();
 	}
 
 	function nextPage() {
