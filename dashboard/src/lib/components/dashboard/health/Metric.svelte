@@ -1,14 +1,10 @@
 <script lang="ts">
-	let dashOffset = 0;
+	let { label, value }: { label: string; value: number } = $props();
 
-	function updateChart(value: number) {
+	const dashOffset = $derived.by(() => {
 		const circumference = 2 * Math.PI * 44;
-		dashOffset = circumference - (value / 100) * circumference; // Adjust by 2 units
-	}
-
-	$: updateChart(value);
-
-	export let label: string, value: number;
+		return circumference - (value / 100) * circumference;
+	});
 </script>
 
 <div class="chart-container p-2">

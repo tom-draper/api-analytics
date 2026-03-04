@@ -83,13 +83,12 @@
 		Plotly.react(plotDiv, bars(data), getPlotLayout());
 	}
 
-	let plotDiv: HTMLDivElement;
+	let { data }: { data: RequestsData } = $props();
+	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
-	$: if (plotDiv && data) {
-		generatePlot(data);
-	}
-
-	export let data: RequestsData;
+	$effect(() => {
+		if (plotDiv && data) generatePlot(data);
+	});
 </script>
 
 <div class="card">

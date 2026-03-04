@@ -136,13 +136,15 @@
 		Plotly.react(plotDiv, bars(data, period), getPlotLayout(period));
 	}
 
-	let plotDiv: HTMLDivElement;
+	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
-	$: if (plotDiv) {
-		generatePlot(data, period);
-	}
+	$effect(() => {
+		if (plotDiv) {
+			generatePlot(data, period);
+		}
+	});
 
-	export let data: RequestsData, period: Period;
+	let { data, period }: { data: RequestsData; period: Period } = $props();
 </script>
 
 <div id="plotly">

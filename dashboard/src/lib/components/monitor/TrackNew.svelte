@@ -63,17 +63,13 @@
 		}
 	}
 
-	let monitorURL: string;
+	let { userID, showTrackNew = $bindable(false), monitorCount, notification = $bindable(), addEmptyMonitor }: { userID: string; showTrackNew: boolean; monitorCount: number; notification: NotificationState; addEmptyMonitor: (url: string) => void } = $props();
+
+	let monitorURL = $state('');
 	const options = ['https', 'http'];
-	let urlPrefix = options[0];
+	let urlPrefix = $state(options[0]);
 
 	const monitorLimit = 3;
-
-	export let userID: string,
-		showTrackNew: boolean,
-		monitorCount: number,
-		notification: NotificationState,
-		addEmptyMonitor: (url: string) => void;
 </script>
 
 <div class="card">
@@ -88,7 +84,7 @@
 				class="text-sm font-normal"
 				bind:value={monitorURL}
 			/>
-			<button class="add" on:click={postMonitor}>Add</button>
+			<button class="add" onclick={postMonitor}>Add</button>
 		</div>
 		<div class="detail">
 			Endpoints are pinged by our servers every 30 mins and response <b>status</b>

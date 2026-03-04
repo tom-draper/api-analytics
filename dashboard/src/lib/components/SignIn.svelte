@@ -3,11 +3,12 @@
 	import { formatPath } from '$lib/path';
 	import { page } from '$app/state';
 
-	let apiKey: string = '';
-	let loading: boolean = false;
+	let { type }: { type: 'dashboard' | 'monitor' | 'explorer' } = $props();
 
-	let params: string;
-	$: params = page.url.searchParams.toString();
+	let apiKey = $state('');
+	let loading = $state(false);
+
+	const params = $derived(page.url.searchParams.toString());
 
 	async function submit() {
 		if (!apiKey) {
@@ -33,12 +34,11 @@
 	}
 
 	function enter(e: KeyboardEvent) {
-		if (e.keyCode === 13) {
+		if (e.key === 'Enter') {
 			submit();
 		}
 	}
 
-	export let type: 'dashboard' | 'monitor' | 'explorer';
 </script>
 
 <div class="generate">
@@ -52,8 +52,8 @@
 				Explorer
 			{/if}
 		</h2>
-		<input type="text" bind:value={apiKey} placeholder="Enter API key" on:keydown={enter} />
-		<button id="formBtn" on:click={submit} class="text-sm" class:no-display={loading}>Load</button>
+		<input type="text" bind:value={apiKey} placeholder="Enter API key" onkeydown={enter} />
+		<button id="formBtn" onclick={submit} class="text-sm" class:no-display={loading}>Load</button>
 		<div id="formBtn" class="grid place-items-center" class:no-display={!loading}>
 			<div class="h-auto place-items-center">
 				<div class="loader !h-[1em] !w-[1em]"></div>

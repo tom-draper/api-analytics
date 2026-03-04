@@ -49,7 +49,7 @@
 		{ language: 'ruby', framework: 'Sinatra' },
 		{ language: 'csharp', framework: 'ASP.NET Core' }
 	];
-	let currentFramework = frameworks[0];
+	let currentFramework = $state(frameworks[0]);
 
 	function setFramework(value: SupportedFramework) {
 		currentFramework = value;
@@ -69,7 +69,7 @@
 			<button
 				class="framework {language}"
 				class:active={currentFramework.framework === framework}
-				on:click={() => {
+				onclick={() => {
 					setFramework({ language, framework });
 				}}>{framework}</button
 			>

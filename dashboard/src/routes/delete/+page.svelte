@@ -23,8 +23,8 @@
 		}
 	}
 
-	function enter(e) {
-		if (e.keyCode === 13) {
+	function enter(e: KeyboardEvent) {
+		if (e.key === 'Enter') {
 			submit();
 		}
 	}

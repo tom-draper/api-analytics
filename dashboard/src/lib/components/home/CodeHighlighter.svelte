@@ -8,10 +8,9 @@
 	import 'prismjs/components/prism-go.js';
 	import 'prismjs/components/prism-ruby.js';
 
-	export let language: string, code: string;
+	let { language, code }: { language: string; code: string } = $props();
 
-	let highlightedCode: string;
-	$: highlightedCode = Prism.highlight(code, Prism.languages[language], language);
+	const highlightedCode = $derived(Prism.highlight(code, Prism.languages[language], language));
 </script>
 
 <svelte:head>

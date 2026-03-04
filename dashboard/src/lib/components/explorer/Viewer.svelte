@@ -3,7 +3,7 @@
 	import Search from './Search.svelte';
 	import Table from './Table.svelte';
 
-	export let data: DashboardData, filteredData: RequestsData;
+	let { data, filteredData }: { data: DashboardData; filteredData: RequestsData } = $props();
 </script>
 
 <div class="ml-[20em] w-[100%] text-[var(--faded-text)]">

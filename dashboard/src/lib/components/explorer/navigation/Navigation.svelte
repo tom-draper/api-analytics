@@ -12,7 +12,7 @@
 		filter = defaultFilter(data.requests);
 	}
 
-	export let data: DashboardData, filteredRequests: RequestsData, filter: Filter;
+	let { data = $bindable(), filteredRequests, filter = $bindable() }: { data: DashboardData; filteredRequests: RequestsData; filter: Filter } = $props();
 </script>
 
 <nav

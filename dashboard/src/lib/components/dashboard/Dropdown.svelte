@@ -8,9 +8,9 @@
 		open = true;
 	}
 
-	function closeDropdown(e) {
+	function closeDropdown(e: MouseEvent) {
 		// Check if the click is outside the dropdown
-		if (!dropdown.contains(e.target)) {
+		if (!dropdown.contains(e.target as Node)) {
 			open = false;
 		}
 	}
@@ -27,13 +27,12 @@
 		};
 	});
 
-	export let open: boolean = false;
-	export let options: string[], selected: string | null, defaultOption: string | null;
+	let { open = $bindable(false), options, selected = $bindable<string | null>(null), defaultOption }: { open: boolean; options: string[]; selected: string | null; defaultOption: string | null } = $props();
 </script>
 
 <div class="dropdown" id="dropdown" bind:this={dropdown}>
 	<div class="inner" class:no-click={!open}>
-		<button class="current" class:square-bottom={open} on:click={toggleOpen}>
+		<button class="current" class:square-bottom={open} onclick={toggleOpen}>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				fill="none"
@@ -53,7 +52,7 @@
 						class="option"
 						class:last-option={(selected === defaultOption && i === options.length - 1) ||
 							(selected !== defaultOption && i === options.length)}
-						on:click={() => {
+						onclick={() => {
 							const value = option === defaultOption ? null : option;
 							selectOption(value);
 							open = false;

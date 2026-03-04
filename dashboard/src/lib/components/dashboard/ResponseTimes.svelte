@@ -20,9 +20,11 @@
 			responseTimes[i] = data[i][ColumnIndex.ResponseTime];
 		}
 		responseTimes.sort((a, b) => a - b);
-		LQ = quantile(responseTimes, 0.25);
-		median = quantile(responseTimes, 0.5);
-		UQ = quantile(responseTimes, 0.75);
+		return {
+			LQ: quantile(responseTimes, 0.25),
+			median: quantile(responseTimes, 0.5),
+			UQ: quantile(responseTimes, 0.75)
+		};
 	}
 
 	function getPlotLayout(range: [number, number]) {
@@ -128,31 +130,25 @@
 		)
 	}
 
-	let median: number;
-	let LQ: number;
-	let UQ: number;
-	let plotDiv: HTMLDivElement;
+	let { data }: { data: RequestsData } = $props();
 
-	$: if (data) {
-		calcualteMetrics(data);
-	}
+	const metrics = $derived(data ? calcualteMetrics(data) : undefined);
+	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
-	$: if (plotDiv && data) {
-		generatePlot(data);
-	}
-
-	export let data: RequestsData;
+	$effect(() => {
+		if (plotDiv && data) generatePlot(data);
+	});
 </script>
 
 <div class="card">
 	<div class="card-title">
 		Response times <span class="milliseconds">(ms)</span>
 	</div>
-	{#if LQ !== undefined && median !== undefined && UQ !== undefined}
+	{#if metrics !== undefined}
 		<div class="values">
-			<div class="value lower-quartile">{LQ.toFixed(1)}</div>
-			<div class="value median">{median.toFixed(1)}</div>
-			<div class="value upper-quartile">{UQ.toFixed(1)}</div>
+			<div class="value lower-quartile">{metrics.LQ.toFixed(1)}</div>
+			<div class="value median">{metrics.median.toFixed(1)}</div>
+			<div class="value upper-quartile">{metrics.UQ.toFixed(1)}</div>
 		</div>
 	{/if}
 	<div class="labels">

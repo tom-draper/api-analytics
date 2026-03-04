@@ -2,7 +2,7 @@
 	import Lightning from '$components/Lightning.svelte';
 	import Loading from '$components/Loading.svelte';
 
-	export let loading: boolean;
+	let { loading }: { loading: boolean } = $props();
 </script>
 
 <div class="card">

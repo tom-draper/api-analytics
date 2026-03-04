@@ -4,15 +4,11 @@
 	type Tab = 'client' | 'os' | 'device';
 
 	// Track the active tab
-	let activeBtn: Tab = 'client';
-
-	// Track whether the other components should be loaded
-	let osLoaded = false;
-	let deviceLoaded = false;
-
-	// Variables to hold the dynamically imported components
-	let OperatingSystem: any;
-	let DeviceType: any;
+	let activeBtn = $state<Tab>('client');
+	let osLoaded = $state(false);
+	let deviceLoaded = $state(false);
+	let OperatingSystem = $state<any>(undefined);
+	let DeviceType = $state<any>(undefined);
 
 	// Function to load components dynamically
 	async function loadComponent(tab: Tab) {
@@ -36,19 +32,18 @@
 		// window.dispatchEvent(new Event('resize'));
 	}
 
-	export let data: RequestsData;
-	export let userAgents: { [id: string]: string };
+	let { data, userAgents }: { data: RequestsData; userAgents: { [id: string]: string } } = $props();
 </script>
 
 <div class="card">
 	<div class="card-title">
 		Device
 		<div class="toggle">
-			<button class:active={activeBtn === 'client'} on:click={() => setBtn('client')}>
+			<button class:active={activeBtn === 'client'} onclick={() => setBtn('client')}>
 				Client
 			</button>
-			<button class:active={activeBtn === 'os'} on:click={() => setBtn('os')}> OS </button>
-			<button class:active={activeBtn === 'device'} on:click={() => setBtn('device')}>
+			<button class:active={activeBtn === 'os'} onclick={() => setBtn('os')}> OS </button>
+			<button class:active={activeBtn === 'device'} onclick={() => setBtn('device')}>
 				Device
 			</button>
 		</div>

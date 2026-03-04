@@ -2,13 +2,12 @@
 	import { type Filter } from '$lib/filter';
 	import type { ComponentType } from 'svelte';
 
-	let hidden: boolean = false;
+	let { title, content, filter = $bindable(), data = $bindable() }: { title: string; content: ComponentType; filter: Filter; data: DashboardData } = $props();
+	let hidden = $state(false);
 
 	function toggleHidden() {
 		hidden = !hidden;
 	}
-
-	export let title: string, content: ComponentType, filter: Filter, data: DashboardData;
 </script>
 
 <div class="text-left text-[16px] text-[var(--faint-text)]">

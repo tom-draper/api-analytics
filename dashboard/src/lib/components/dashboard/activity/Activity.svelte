@@ -4,7 +4,7 @@
 	import ActivityResponseTime from './ActivityResponseTime.svelte';
 	import ActivitySuccessRate from './ActivitySuccessRate.svelte';
 
-	export let data: RequestsData, period: Period;
+	let { data, period }: { data: RequestsData; period: Period } = $props();
 </script>
 
 <div class="card !m-0 !w-full">

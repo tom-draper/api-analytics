@@ -143,55 +143,52 @@
 		return users;
 	}
 
-	let plotDiv: HTMLDivElement;
-	let userCount: number = 0;
-	let usersPerHour: number;
-	let perHour = false;
-	let percentageChange: number | null;
-
-	$: if (data) {
+	let { data, prevData, period }: { data: RequestsData; prevData: RequestsData; period: Period } = $props();
+	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
+	let perHour = $state(false);
+	const stats = $derived.by(() => {
+		if (!data) return { userCount: 0, percentageChange: null, usersPerHour: 0 };
 		const users = getUsers(data);
 		const prevUsers = getUsers(prevData);
+		return {
+			userCount: users.size,
+			percentageChange: getPercentageChange(users.size, prevUsers.size),
+			usersPerHour: getUsersPerHour(users, period)
+		};
+	});
 
-		userCount = users.size;
-		percentageChange = getPercentageChange(users.size, prevUsers.size);
-		usersPerHour = getUsersPerHour(users, period);
-	}
-
-	$: if (plotDiv && data) {
-		generatePlot(data);
-	}
-
-	export let data: RequestsData, prevData: RequestsData, period: Period;
+	$effect(() => {
+		if (plotDiv && data) generatePlot(data);
+	});
 </script>
 
-<button class="card" on:click={togglePeriod} title="Based on IP address">
+<button class="card" onclick={togglePeriod} title="Based on IP address">
 	{#if perHour}
 		<div class="card-title">
 			Users <span class="per-hour">/ hour</span>
 		</div>
-		{#if usersPerHour !== undefined}
+		{#if stats.usersPerHour !== undefined}
 			<div class="value">
-				{usersPerHour === 0 ? '0' : usersPerHour.toFixed(2)}
+				{stats.usersPerHour === 0 ? '0' : stats.usersPerHour.toFixed(2)}
 			</div>
 		{/if}
 	{:else}
-		{#if percentageChange}
+		{#if stats.percentageChange}
 			<div
 				class="percentage-change flex"
-				class:positive={percentageChange > 0}
-				class:negative={percentageChange < 0}
+				class:positive={stats.percentageChange > 0}
+				class:negative={stats.percentageChange < 0}
 			>
-				{#if percentageChange > 0}
+				{#if stats.percentageChange > 0}
 					<img class="arrow" src="/images/icons/green-up.png" alt="" />
-				{:else if percentageChange < 0}
+				{:else if stats.percentageChange < 0}
 					<img class="arrow" src="/images/icons/red-down.png" alt="" />
 				{/if}
-				{Math.abs(percentageChange).toFixed(1)}%
+				{Math.abs(stats.percentageChange).toFixed(1)}%
 			</div>
 		{/if}
 		<div class="card-title">Users</div>
-		<div class="value">{userCount.toLocaleString()}</div>
+		<div class="value">{stats.userCount.toLocaleString()}</div>
 	{/if}
 	<div id="plotly">
 		<div id="plotDiv" bind:this={plotDiv}>

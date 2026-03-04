@@ -5,14 +5,10 @@
 	import EndpointFilter from './EndpointFilter.svelte';
 	import { type Endpoint, type EndpointFilterType, getEndpoints } from '$lib/endpoints';
 
-	let activeFilter: EndpointFilterType = 'all';
-	let endpoints: Endpoint[] = [];
-	let maxCount = 0;
-
-	// Derived state - recalculate endpoints when data or filter changes
-	$: if (data && activeFilter) {
-		({ endpoints, maxCount } = getEndpoints(data, activeFilter, ignoreParams));
-	}
+	let activeFilter = $state<EndpointFilterType>('all');
+	const endpointData = $derived(
+		data ? getEndpoints(data, activeFilter, ignoreParams) : { endpoints: [], maxCount: 0 }
+	);
 
 	// URL Parameter Management
 	function updateUrlParams(path: string | null, status: number | null): void {
@@ -31,11 +27,7 @@
 		replaceState(page.url, page.state);
 	}
 
-	function handleEndpointSelection(
-		e: CustomEvent<{ path: string | null; status: number | null }>
-	): void {
-		const { path, status } = e.detail;
-
+	function handleEndpointSelection(path: string | null, status: number | null): void {
 		if (path === null || status === null) {
 			// Reset selection
 			targetPath = null;
@@ -45,7 +37,7 @@
 			// Set path first
 			targetPath = path;
 			updateUrlParams(path, null);
-		} else if (endpoints.length > 1 && targetStatus === null) {
+		} else if (endpointData.endpoints.length > 1 && targetStatus === null) {
 			// Path already set, now set status if multiple endpoints exist
 			targetStatus = status;
 			updateUrlParams(targetPath, status);
@@ -57,22 +49,15 @@
 		}
 	}
 
-	function handleFilterChange(e: CustomEvent<EndpointFilterType>): void {
-		activeFilter = e.detail;
+	function handleFilterChange(value: EndpointFilterType): void {
+		activeFilter = value;
 	}
 
 	function clearSelection(): void {
-		handleEndpointSelection(
-			new CustomEvent('selectEndpoint', {
-				detail: { path: null, status: null }
-			})
-		);
+		handleEndpointSelection(null, null);
 	}
 
-	export let data: RequestsData,
-		targetPath: string | null,
-		targetStatus: number | null,
-		ignoreParams: boolean;
+	let { data, targetPath = $bindable<string | null>(null), targetStatus = $bindable<number | null>(null), ignoreParams = $bindable(false) }: { data: RequestsData; targetPath: string | null; targetStatus: number | null; ignoreParams: boolean } = $props();
 </script>
 
 <div class="card">
@@ -94,12 +79,12 @@
 					{/if}
 				</div>
 			</div>
-			<button class="hover:text-[#ededed]" on:click={clearSelection}>Clear</button>
+			<button class="hover:text-[#ededed]" onclick={clearSelection}>Clear</button>
 		</div>
 	{/if}
 
-	{#if endpoints.length > 0}
-		<EndpointList {endpoints} {maxCount} selectEndpoint={handleEndpointSelection} />
+	{#if endpointData.endpoints.length > 0}
+		<EndpointList endpoints={endpointData.endpoints} maxCount={endpointData.maxCount} selectEndpoint={handleEndpointSelection} />
 	{/if}
 </div>
 

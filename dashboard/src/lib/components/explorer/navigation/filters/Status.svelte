@@ -2,7 +2,7 @@
 	import Checkbox from '$components/explorer/navigation/Checkbox.svelte';
 	import { type Filter } from '$lib/filter';
 
-	export let filter: Filter;
+	let { filter = $bindable() }: { filter: Filter } = $props();
 </script>
 
 <div class="flex flex-col text-[14px]">

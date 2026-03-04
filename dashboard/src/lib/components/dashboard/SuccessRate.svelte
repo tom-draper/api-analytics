@@ -96,18 +96,13 @@
 		return (successfulRequests / data.length) * 100;
 	}
 
-	let plotDiv: HTMLDivElement;
-	let successRate: number | null;
+	let { data }: { data: RequestsData } = $props();
+	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
+	const successRate = $derived(data ? getSuccessRate(data) : null);
 
-	$: if (data) {
-		successRate = getSuccessRate(data);
-	}
-
-	$: if (plotDiv && data) {
-		generatePlot(data);
-	}
-
-	export let data: RequestsData;
+	$effect(() => {
+		if (plotDiv && data) generatePlot(data);
+	});
 </script>
 
 <div class="card">

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import Requests from '$components/dashboard/Requests.svelte';
 	import Logo from '$components/dashboard/Logo.svelte';
@@ -32,7 +32,7 @@
 	import Loading from '$components/Loading.svelte';
 	import { get } from 'svelte/store';
 
-	const userID = formatUUID($page.params.uuid);
+	const userID = formatUUID(page.params.uuid);
 
 	function getPeriodData(data: RequestsData, settings: DashboardSettings) {
 		const inRange = getInRange();
@@ -238,7 +238,7 @@
 	}
 
 	function isDemo() {
-		return $page.params.uuid === 'demo';
+		return page.params.uuid === 'demo';
 	}
 
 	async function getDashboardData() {
@@ -273,27 +273,27 @@
 	function getSettings() {
 		const settings = initSettings();
 
-		const period = $page.url.searchParams.get('period');
+		const period = page.url.searchParams.get('period');
 		if (period && isPeriod(period)) {
 			settings.period = period;
 		}
-		const hostname = $page.url.searchParams.get('hostname');
+		const hostname = page.url.searchParams.get('hostname');
 		if (hostname) {
 			settings.hostname = hostname;
 		}
-		const location = $page.url.searchParams.get('location');
+		const location = page.url.searchParams.get('location');
 		if (location) {
 			settings.targetLocation = location;
 		}
-		const path = $page.url.searchParams.get('path');
+		const path = page.url.searchParams.get('path');
 		if (path) {
 			settings.targetEndpoint.path = path;
 		}
-		const status = $page.url.searchParams.get('status');
+		const status = page.url.searchParams.get('status');
 		if (status) {
 			settings.targetEndpoint.status = parseInt(status);
 		}
-		const userID = $page.url.searchParams.get('userID');
+		const userID = page.url.searchParams.get('userID');
 		if (userID) {
 			if (settings.targetUser === null) {
 				settings.targetUser = {
@@ -305,7 +305,7 @@
 			settings.targetUser.userID = userID;
 		}
 
-		const ipAddress = $page.url.searchParams.get('ipAddress');
+		const ipAddress = page.url.searchParams.get('ipAddress');
 		if (ipAddress) {
 			if (settings.targetUser === null) {
 				settings.targetUser = {

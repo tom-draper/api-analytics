@@ -4,19 +4,20 @@
 	import { type Filter } from '$lib/filter';
 	import RangeSlider from 'svelte-range-slider-pips';
 
-	export let filter: Filter, data: DashboardData;
+	let { filter = $bindable(), data = $bindable() }: { filter: Filter; data: DashboardData } = $props();
 
-	let values: [number, number];
+	let values = $state<[number, number]>([0, 0]);
+	let minDate = $state<Date>(new Date());
+	let maxDate = $state<Date>(new Date());
 
-	let minDate: Date = new Date();
-	let maxDate: Date = new Date();
+	$effect(() => {
+		if (data) {
+			minDate = data.requests[0][ColumnIndex.CreatedAt];
+			maxDate = data.requests[data.requests.length - 1][ColumnIndex.CreatedAt];
 
-	$: if (data) {
-		minDate = data.requests[0][ColumnIndex.CreatedAt];
-		maxDate = data.requests[data.requests.length - 1][ColumnIndex.CreatedAt];
-
-		values = [filter.timespan[0], filter.timespan[1]];
-	}
+			values = [filter.timespan[0], filter.timespan[1]];
+		}
+	});
 </script>
 
 {#if filter && minDate && maxDate}
@@ -28,7 +29,7 @@
 			pips={false}
 			first={true}
 			pushy={true}
-			on:stop={(e) => {
+			onstop={(e) => {
 				filter.timespan[e.detail.activeHandle] = e.detail.value;
 			}}
 		/>

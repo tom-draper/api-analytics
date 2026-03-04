@@ -2,16 +2,13 @@
 	import { ColumnIndex, methodMap } from '$lib/consts';
 	import { statusBad, statusError, statusSuccess } from '$lib/status';
 
-	const pageSize = 18;
-	let pageNumber = 1;
-	let page: Page;
-
 	type Nullable<T extends any[]> = { [K in keyof T]: T[K] | null };
 	type Page = Nullable<RequestsData[number]>[];
 
-	$: if (data) {
-		page = getPage(data, pageNumber);
-	}
+	let { data }: { data: RequestsData } = $props();
+	const pageSize = 18;
+	let pageNumber = $state(1);
+	const page = $derived(data ? getPage(data, pageNumber) : undefined);
 
 	function prevPage() {
 		if (pageNumber > 1) {
@@ -46,7 +43,6 @@
 		return page;
 	}
 
-	export let data: RequestsData;
 </script>
 
 <div class="min-h-[inherit] flex flex-col">

@@ -12,13 +12,9 @@
 		return versions;
 	}
 
-	function build(data: RequestsData) {
-		versions = getVersions(data);
-
-		if (versions.size > 1) {
-			genPlot(data);
-			window?.dispatchEvent(new Event('resize'));
-		}
+	function buildPlot(data: RequestsData) {
+		genPlot(data);
+		window?.dispatchEvent(new Event('resize'));
 	}
 
 	function getLayout() {
@@ -92,14 +88,13 @@
 		new Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
 	}
 
-	let versions: Set<string>;
-	let plotDiv: HTMLDivElement;
+	let { data }: { data: RequestsData } = $props();
+	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
+	const versions = $derived(data ? getVersions(data) : undefined);
 
-	$: if (plotDiv && data) {
-		build(data);
-	}
-
-	export let data: RequestsData;
+	$effect(() => {
+		if (plotDiv && data && versions && versions.size > 1) buildPlot(data);
+	});
 </script>
 
 <div class="card flex-1" class:hidden={versions === undefined || versions.size <= 1}>

@@ -71,36 +71,28 @@
 		};
 	}
 
-	let referrers: {
-		referrer: string;
-		count: number;
-	}[];
-	let maxCount: number;
+	let { data, targetReferrer = $bindable<string | null>(null), ignoreParams }: { data: RequestsData; targetReferrer: string | null; ignoreParams: boolean } = $props();
 
-	$: if (data) {
-		({ referrers, maxCount } = getReferrers(data));
-	}
-
-	export let data: RequestsData, targetReferrer: string | null, ignoreParams: boolean;
+	const referrerData = $derived(data ? getReferrers(data) : undefined);
 </script>
 
 <div class="card">
 	<div class="card-title">Referrer</div>
 
-	{#if referrers != undefined}
+	{#if referrerData != undefined}
 		<div class="endpoints">
-			{#each referrers as referrer, i}
+			{#each referrerData.referrers as referrer, i}
 				<div class="endpoint-container">
 					<button
 						class="endpoint"
 						id="endpoint-{i}"
-						on:click={() => setTargetEndpoint(referrer.referrer)}
+						onclick={() => setTargetEndpoint(referrer.referrer)}
 					>
 						<div class="path">
 							<span class="font-semibold">{referrer.count.toLocaleString()}</span>
 							{referrer.referrer}
 						</div>
-						<div class="background" style="width: {(referrer.count / maxCount) * 100}%"></div>
+						<div class="background" style="width: {(referrer.count / referrerData.maxCount) * 100}%"></div>
 					</button>
 				</div>
 			{/each}

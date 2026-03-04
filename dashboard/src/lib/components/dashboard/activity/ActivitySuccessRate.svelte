@@ -88,13 +88,9 @@
 		return successArr;
 	}
 
-	let successRate: number[];
+	let { data, period }: { data: RequestsData; period: Period } = $props();
 
-	$: if (data) {
-		successRate = getSuccessRate(data);
-	}
-
-	export let data: RequestsData, period: Period;
+	const successRate = $derived(data ? getSuccessRate(data) : undefined);
 </script>
 
 <div class="success-rate-container">

@@ -34,35 +34,31 @@
 		return 75;
 	}
 
-	let resiliance = 0;
-	let performance = 0;
-	let adoption = 0;
-	let overall = 0;
+	let { data }: { data: RequestsData } = $props();
 
-	$: if (data) {
-		resiliance = computeResiliance(data);
-		performance = computePerformance(data);
-		adoption = computeAdoption(data);
-		overall = computeOverall(data, resiliance, performance, adoption);
-	}
-
-	export let data: RequestsData;
+	const healthMetrics = $derived.by(() => {
+		if (!data) return { resiliance: 0, performance: 0, adoption: 0, overall: 0 };
+		const resiliance = computeResiliance(data);
+		const performance = computePerformance(data);
+		const adoption = computeAdoption(data);
+		return { resiliance, performance, adoption, overall: computeOverall(data, resiliance, performance, adoption) };
+	});
 </script>
 
 <div class="card">
 	<h2 class="card-title">Health</h2>
 	<div class="health-container flex flex-row px-4 pb-4">
 		<div class="health-item grid flex-1 place-items-center">
-			<Metric label="Resiliance" value={resiliance} />
+			<Metric label="Resiliance" value={healthMetrics.resiliance} />
 		</div>
 		<div class="health-item grid flex-1 place-items-center">
-			<Metric label="Performance" value={performance} />
+			<Metric label="Performance" value={healthMetrics.performance} />
 		</div>
 		<div class="health-item grid flex-1 place-items-center">
-			<Metric label="Adoption" value={adoption} />
+			<Metric label="Adoption" value={healthMetrics.adoption} />
 		</div>
 		<div class="health-item grid flex-1 place-items-center">
-			<Metric label="Overall" value={overall} />
+			<Metric label="Overall" value={healthMetrics.overall} />
 		</div>
 	</div>
 </div>

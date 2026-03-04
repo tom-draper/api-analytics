@@ -44,20 +44,17 @@
 		setParam('hostname', hostname);
 	}
 
-	let donateMessage: string;
+	let { settings = $bindable(), showSettings = $bindable(false), hostnames = $bindable([]) }: { settings: DashboardSettings; showSettings: boolean; hostnames: string[] } = $props();
+	let donateMessage = $state('');
+	let dropdownOpen = $state(false);
+
 	onMount(() => {
 		donateMessage = donateMessages[Math.floor(Math.random() * donateMessages.length)];
 	});
 
-	$: hostname = settings.hostname;
-
-	$: {
-		setHostnameParam(hostname ?? null);
-	}
-
-	let dropdownOpen: boolean = false;
-
-	export let settings: DashboardSettings, showSettings: boolean, hostnames: string[];
+	$effect(() => {
+		setHostnameParam(settings.hostname ?? null);
+	});
 </script>
 
 <nav class="button-nav flex text-sm">
@@ -88,7 +85,7 @@
 	</div>
 	<button
 		class="settings"
-		on:click={() => {
+		onclick={() => {
 			showSettings = true;
 		}}
 	>
@@ -107,7 +104,7 @@
 			<button
 				class="time-period-btn cursor-pointer border-none bg-[var(--background)] px-[12px] py-[4px] text-[var(--dim-text)]"
 				class:time-period-btn-active={settings.period === period}
-				on:click={() => {
+				onclick={() => {
 					settings.period = period;
 					dropdownOpen = false;
 					setPeriodParam(period);

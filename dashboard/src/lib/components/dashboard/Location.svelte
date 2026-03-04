@@ -56,13 +56,9 @@
 		setParam('location', location)
 	}
 
-	let locations: LocationBar[] = [];
+	let { data, targetLocation = $bindable<string | null>(null) }: { data: RequestsData; targetLocation: string | null } = $props();
 
-	$: if (data) {
-		locations = getLocationBars(data);
-	}
-
-	export let data: RequestsData, targetLocation: string | null;
+	const locations = $derived(data ? getLocationBars(data) : []);
 </script>
 
 <div class="card">
@@ -78,7 +74,7 @@
 						title="{countryCodeToName(
 							location.location
 						)}: {location.frequency.toLocaleString()} requests"
-						on:click={() => {
+						onclick={() => {
 							const value = targetLocation === location.location ? null : location.location;
 							targetLocation = value;
 							setLocationParam(value);

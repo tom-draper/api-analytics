@@ -28,15 +28,15 @@
 		}
 	}
 
-	function handleClick(e) {
+	function handleClick(e: MouseEvent) {
 		e.stopImmediatePropagation();
 	}
 
-	export let show: boolean, settings: DashboardSettings, exportCSV: () => void;
+	let { show = $bindable(false), settings = $bindable(), exportCSV }: { show: boolean; settings: DashboardSettings; exportCSV: () => void } = $props();
 </script>
 
-<div class="background" class:hidden={!show} on:click={hideSettings}>
-	<div class="container" on:click={handleClick}>
+<div class="background" class:hidden={!show} onclick={hideSettings}>
+	<div class="container" onclick={handleClick}>
 		<h2 class="title">Settings</h2>
 		<div class="disable404 setting mb-2">
 			<div class="setting-label">Ignore status 404</div>
@@ -44,7 +44,7 @@
 				type="checkbox"
 				name="disable404"
 				id="checkbox"
-				on:change={toggleDisable404}
+				onchange={toggleDisable404}
 				title="Hide requests made to non-existent routes"
 			/>
 		</div>
@@ -54,7 +54,7 @@
 				type="checkbox"
 				name="ignoreParams"
 				id="checkbox"
-				on:change={toggleIgnoreParams}
+				onchange={toggleIgnoreParams}
 				title="Ignore URL parameters when grouping endpoints"
 			/>
 		</div>
@@ -84,7 +84,7 @@
 			<List bind:items={settings.hiddenEndpoints} placeholder={'/api/v1/example'} />
 		</div>
 		<div class="export-csv">
-			<button class="export-csv-btn" on:click={exportCSV} title="Export data to CSV"
+			<button class="export-csv-btn" onclick={exportCSV} title="Export data to CSV"
 				><svg
 					xmlns="http://www.w3.org/2000/svg"
 					fill="none"

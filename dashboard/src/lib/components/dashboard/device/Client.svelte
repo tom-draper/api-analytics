@@ -165,13 +165,12 @@
 		Plotly.react(plotDiv, donut(data), getPlotLayout());
 	}
 
-	let plotDiv: HTMLDivElement;
+	let { data, userAgents }: { data: RequestsData; userAgents: { [id: string]: string } } = $props();
+	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
-	$: if (plotDiv && data) {
-		generatePlot(data);
-	}
-
-	export let data: RequestsData, userAgents: { [id: string]: string };
+	$effect(() => {
+		if (plotDiv && data) generatePlot(data);
+	});
 </script>
 
 <div id="plotly">

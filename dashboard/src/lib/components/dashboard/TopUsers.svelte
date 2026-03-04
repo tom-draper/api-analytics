@@ -230,25 +230,24 @@
 		return topUsers.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
 	}
 
-	let topUsers: User[] | null = null;
-	let dataPage: User[] | null = null;
-	let userIDActive = false;
-	let locationsActive = false;
-	let pageNumber = 1;
-	const pageSize = 10;
-	const maxPages = 100;
-
-	$: if (data) {
-		build(data);
-	}
-
 	type TargetUser = {
 		ipAddress: string;
 		userID: string;
 		composite: boolean;
 	};
 
-	export let data: RequestsData, targetUser: TargetUser | null;
+	let { data, targetUser = $bindable<TargetUser | null>(null) }: { data: RequestsData; targetUser: TargetUser | null } = $props();
+	let topUsers = $state<User[] | null>(null);
+	let dataPage = $state<User[] | null>(null);
+	let userIDActive = $state(false);
+	let locationsActive = $state(false);
+	let pageNumber = $state(1);
+	const pageSize = 10;
+	const maxPages = 100;
+
+	$effect(() => {
+		if (data) build(data);
+	});
 </script>
 
 {#if dataPage !== null}
@@ -277,19 +276,19 @@
 							class:dim-row={targetUser !== null && !userTargeted(ipAddress, customUserID)}
 							class:last-row={i === dataPage.length - 1}
 						>
-							<td on:click={() => selectUser(ipAddress, customUserID)}>{ipAddress}</td>
+							<td onclick={() => selectUser(ipAddress, customUserID)}>{ipAddress}</td>
 							{#if userIDActive}
-								<td on:click={() => selectUser(ipAddress, customUserID)}>{customUserID ?? ''}</td>
+								<td onclick={() => selectUser(ipAddress, customUserID)}>{customUserID ?? ''}</td>
 							{/if}
 							{#if locationsActive}
-								<td on:click={() => selectUser(ipAddress, customUserID)}
+								<td onclick={() => selectUser(ipAddress, customUserID)}
 									>{locations ? maxLocation(locations) : ''}</td
 								>
 							{/if}
-							<td on:click={() => selectUser(ipAddress, customUserID)}>
+							<td onclick={() => selectUser(ipAddress, customUserID)}>
 								{lastRequested.toLocaleString()}
 							</td>
-							<td class="align-right" on:click={() => selectUser(ipAddress, customUserID)}>
+							<td class="align-right" onclick={() => selectUser(ipAddress, customUserID)}>
 								{requests.toLocaleString()}
 							</td>
 						</tr>
@@ -302,11 +301,11 @@
 			{#if pageNumber > 1}
 				<button
 					class:btn-prev={topUsers && topUsers.length / pageSize > pageNumber}
-					on:click={prevPage}>Previous</button
+					onclick={prevPage}>Previous</button
 				>
 			{/if}
 			{#if topUsers && topUsers.length / pageSize > pageNumber}
-				<button class="btn-next" on:click={nextPage}>Next</button>
+				<button class="btn-next" onclick={nextPage}>Next</button>
 			{/if}
 		</div>
 	</div>

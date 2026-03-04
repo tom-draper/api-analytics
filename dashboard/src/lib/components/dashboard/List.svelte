@@ -20,15 +20,14 @@
 	}
 
 	function handleInputKeyDown(e: KeyboardEvent) {
-		if (e.keyCode === 13) {
+		if (e.key === 'Enter') {
 			addItem(input.value);
 		}
 	}
 
-	let input: HTMLInputElement;
+	let { items = $bindable(new Set<string>()), placeholder }: { items: Set<string>; placeholder: string } = $props();
+	let input = $state<HTMLInputElement | undefined>(undefined);
 	const hideOptions: boolean = true;
-
-	export let items: Set<string>, placeholder: string;
 </script>
 
 <div class="container">
@@ -39,7 +38,7 @@
 			id=""
 			{placeholder}
 			bind:this={input}
-			on:keydown={handleInputKeyDown}
+			onkeydown={handleInputKeyDown}
 		/>
 		<div class="items" class:hidden={hideOptions}>
 			{#each Array.from(items) as item, _}
@@ -47,7 +46,7 @@
 					<button
 						class="remove-btn"
 						aria-label="Remove item"
-						on:click={() => {
+						onclick={() => {
 							removeItem(item);
 						}}
 					>

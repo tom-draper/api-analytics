@@ -194,30 +194,26 @@
 		return false;
 	}
 
-	let uptime: number | null;
-	let currentStatus: 'success' | 'error' | 'no-request' = 'no-request';
-	let samples: Sample[];
-	let separatedURL = {
-		prefix: '',
-		body: ''
-	};
+	let { url, data, userID, period, anyError = $bindable(false), notification = $bindable(), removeMonitor }: { url: string; data: MonitorData; userID: string; period: MonitorPeriod; anyError: boolean; notification: NotificationState; removeMonitor: (url: string) => void } = $props();
+
+	let uptime = $state<number | null>(null);
+	let currentStatus = $state<'success' | 'error' | 'no-request'>('no-request');
+	let samples = $state<Sample[]>([]);
+	let separatedURL = $state({ prefix: '', body: '' });
 
 	// If card period or url changes at any time, rebuild
-	$: if (data) {
-		separatedURL = separateURL(url);
-		samples = getSamples(data, period);
-		currentStatus = getCurrentStatus(samples) || currentStatus;
-		anyError = anyError || currentStatus === 'error';
-		uptime = getUptime(samples);
-	}
-
-	export let url: string,
-		data: MonitorData,
-		userID: string,
-		period: MonitorPeriod,
-		anyError: boolean,
-		notification: NotificationState,
-		removeMonitor: (url: string) => void;
+	$effect(() => {
+		if (data) {
+			const newSamples = getSamples(data, period);
+			const newStatus = getCurrentStatus(newSamples);
+			const newUptime = getUptime(newSamples);
+			separatedURL = separateURL(url);
+			samples = newSamples;
+			if (newStatus) currentStatus = newStatus;
+			if (newStatus === 'error') anyError = true;
+			uptime = newUptime;
+		}
+	});
 </script>
 
 <div class="card" class:card-error={currentStatus === 'error'}>
@@ -236,7 +232,7 @@
 			>
 			<button
 				class="delete"
-				on:click={deleteMonitor}
+				onclick={deleteMonitor}
 				aria-label="Delete monitor"
 				title="Delete monitor"
 			>
@@ -253,7 +249,7 @@
 			</button>
 		</div>
 	</div>
-	{#if samples !== undefined}
+	{#if samples.length > 0}
 		<div class="measurements">
 			{#each samples as sample}
 				<div class="measurement {sample.label}" title={getTitle(sample)}></div>
@@ -281,7 +277,7 @@
 		</div>
 		{#if samples[samples.length - 1].label !== 'no-request' && hasSuccess(samples)}
 			<div class="response-time">
-				<ResponseTime bind:data={samples} {period} />
+				<ResponseTime data={samples} {period} />
 			</div>
 		{/if}
 	{/if}

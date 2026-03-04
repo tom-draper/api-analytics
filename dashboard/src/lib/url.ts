@@ -11,11 +11,9 @@ function getSourceURL() {
 }
 
 function getEnvSourceURL() {
-	try {
-		return cleanURL(process.env.SERVER_URL || import.meta.env.VITE_SERVER_URL);
-	} catch (e) {
-		return null;
-	}
+	const url = import.meta.env.VITE_SERVER_URL;
+	if (!url) return null;
+	return cleanURL(url);
 }
 
 function cleanURL(url: string) {

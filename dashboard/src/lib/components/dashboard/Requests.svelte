@@ -91,7 +91,7 @@
 			return null;
 		}
 
-		return (percentageChange = (data.length / prevData.length) * 100 - 100);
+		return (data.length / prevData.length) * 100 - 100;
 	}
 
 	function getRequestsPerHour(data: RequestsData) {
@@ -118,24 +118,18 @@
 		perHour = !perHour;
 	}
 
-	let plotDiv: HTMLDivElement;
-	let requestsPerHour: number;
-	let percentageChange: number | null;
-	let perHour = false;
+	let { data, prevData, period }: { data: RequestsData; prevData: RequestsData; period: Period } = $props();
+	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
+	let perHour = $state(false);
+	const percentageChange = $derived(data ? getPercentageChange(data) : undefined);
+	const requestsPerHour = $derived(data ? getRequestsPerHour(data) : undefined);
 
-	$: if (data) {
-		percentageChange = getPercentageChange(data);
-		requestsPerHour = getRequestsPerHour(data);
-	}
-
-	$: if (plotDiv && data) {
-		generatePlot(data);
-	}
-
-	export let data: RequestsData, prevData: RequestsData, period: Period;
+	$effect(() => {
+		if (plotDiv && data) generatePlot(data);
+	});
 </script>
 
-<button class="card" on:click={togglePeriod}>
+<button class="card" onclick={togglePeriod}>
 	{#if perHour}
 		<div class="card-title">
 			Requests <span class="per-hour">/ hour</span>
