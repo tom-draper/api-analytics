@@ -12,7 +12,7 @@
 	import UsageTime from '$components/dashboard/UsageTime.svelte';
 	import Location from '$components/dashboard/Location.svelte';
 	import Device from '$components/dashboard/device/Device.svelte';
-	import { dateInPeriod, isPeriod, periodToDays } from '$lib/period';
+	import { dateInPeriod, isPeriod } from '$lib/period';
 	import generateDemoData from '$lib/demo';
 	import formatUUID from '$lib/uuid';
 	import Settings from '$components/dashboard/Settings.svelte';
@@ -25,139 +25,14 @@
 	import TopUsers from '$components/dashboard/TopUsers.svelte';
 	import { getServerURL } from '$lib/url';
 	import Navigation from '$components/dashboard/Navigation.svelte';
-	import { userTargeted } from '$lib/user';
 	import { dataStore } from '$lib/dataStore';
 	import Health from '$components/dashboard/health/Health.svelte';
 	import Referrer from '$components/dashboard/Referrer.svelte';
 	import Loading from '$components/Loading.svelte';
 	import { get } from 'svelte/store';
+	import { untrack } from 'svelte';
 
 	const userID = formatUUID(page.params.uuid);
-
-	function getPeriodData(data: RequestsData, settings: DashboardSettings) {
-		const now = Date.now();
-		const hasHiddenEndpoints = settings.hiddenEndpoints.size > 0;
-		const allTime = settings.period === 'all time';
-
-		const current: RequestsData = [];
-		const previous: RequestsData = [];
-
-		let startIdx = 0;
-		let currentStartMs = 0;
-		let prevStartMs = 0;
-
-		if (!allTime) {
-			const days = periodToDays(settings.period)!;
-			const periodMs = days * 86400000;
-			currentStartMs = now - periodMs;
-			prevStartMs = now - periodMs * 2;
-			// Binary search: skip requests older than the previous period
-			startIdx = lowerBound(data, prevStartMs);
-		}
-
-		for (let i = startIdx; i < data.length; i++) {
-			const request = data[i];
-			const status = request[ColumnIndex.Status];
-			const path = request[ColumnIndex.Path];
-			const hostname = request[ColumnIndex.Hostname];
-			const location = request[ColumnIndex.Location];
-			const ipAddress = request[ColumnIndex.IPAddress];
-			const customUserID = request[ColumnIndex.UserID];
-			if (
-				(settings.targetUser === null ||
-					userTargeted(settings.targetUser, ipAddress, customUserID)) &&
-				(!settings.disable404 || status !== 404) &&
-				(settings.targetEndpoint.path === null || settings.targetEndpoint.path === path) &&
-				(settings.targetEndpoint.status === null || settings.targetEndpoint.status === status) &&
-				(settings.targetReferrer === null || settings.targetReferrer === path) &&
-				(settings.targetLocation === null || settings.targetLocation === location) &&
-				(!hasHiddenEndpoints || !isHiddenEndpoint(path)) &&
-				(settings.hostname === null || settings.hostname === hostname)
-			) {
-				if (allTime) {
-					current.push(request);
-				} else {
-					const dateMs = (request[ColumnIndex.CreatedAt] as Date).getTime();
-					if (dateMs >= currentStartMs) {
-						current.push(request);
-					} else if (dateMs >= prevStartMs) {
-						previous.push(request);
-					}
-				}
-			}
-		}
-
-		return { current, previous };
-	}
-
-	function lowerBound(data: RequestsData, targetMs: number): number {
-		let lo = 0;
-		let hi = data.length;
-		while (lo < hi) {
-			const mid = (lo + hi) >>> 1;
-			if ((data[mid][ColumnIndex.CreatedAt] as Date).getTime() < targetMs) {
-				lo = mid + 1;
-			} else {
-				hi = mid;
-			}
-		}
-		return lo;
-	}
-
-	function isHiddenEndpoint(endpoint: string) {
-		const normalized = endpoint.replace(/^\/|\/$/g, ''); // Trim leading/trailing slashes
-		return (
-			settings.hiddenEndpoints.has(endpoint) ||
-			settings.hiddenEndpoints.has('/' + normalized) ||
-			settings.hiddenEndpoints.has(normalized) ||
-			wildCardMatch(endpoint)
-		);
-	}
-
-	function wildCardMatch(endpoint: string) {
-		// Ensure endpoint has a trailing slash
-		endpoint = endpoint.endsWith('/') ? endpoint : endpoint + '/';
-
-		for (const hidden of settings.hiddenEndpoints) {
-			if (!hidden.endsWith('*')) {
-				continue;
-			}
-
-			let prefix = hidden.slice(0, -1); // Remove trailing '*'
-			prefix = prefix.startsWith('/') ? prefix : '/' + prefix;
-			prefix = prefix.endsWith('/') ? prefix : prefix + '/';
-
-			if (endpoint.startsWith(prefix)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	function sortedFrequencies(freq: ValueCount): string[] {
-		return Object.entries(freq)
-			.sort((a, b) => {
-				return b[1] - a[1];
-			})
-			.map((value) => value[0]);
-	}
-
-	function getHostnames(data: RequestsData) {
-		const hostnameFreq: ValueCount = {};
-		for (let i = 0; i < data.length; i++) {
-			const hostname = data[i][ColumnIndex.Hostname];
-			if (hostname === null || hostname === '') {
-				continue;
-			}
-			if (hostname in hostnameFreq) {
-				hostnameFreq[hostname]++;
-			} else {
-				hostnameFreq[hostname] = 1;
-			}
-		}
-
-		return sortedFrequencies(hostnameFreq);
-	}
 
 	async function fetchData() {
 		const url = getServerURL();
@@ -340,21 +215,30 @@
 	let periodData = $state.raw<{ current: RequestsData; previous: RequestsData } | undefined>(undefined);
 	let loading = $state(true);
 	let fetchStatus = $state<{ failed: boolean; status: number; message: string } | undefined>(undefined);
+	let worker = $state.raw<Worker | undefined>(undefined);
 
-	// If data or settings are changed, recalculate data
+	// When data changes: send full requests to worker cache, then filter
 	$effect(() => {
-		if (data) {
-			periodData = getPeriodData(data.requests, settings);
-		}
+		if (!worker || !data) return;
+		worker.postMessage({ type: 'init', requests: data.requests, settings: untrack(() => $state.snapshot(settings)) });
 	});
 
+	// When settings change: re-filter using cached requests in worker
 	$effect(() => {
-		if (data) {
-			hostnames = getHostnames(data.requests);
-		}
+		const s = $state.snapshot(settings);
+		if (!worker || !untrack(() => data)) return;
+		worker.postMessage({ type: 'filter', settings: s });
 	});
 
 	onMount(async () => {
+		const w = new Worker(new URL('$lib/dashboardWorker.ts', import.meta.url), { type: 'module' });
+		w.onmessage = (e) => {
+			const { current, previous, hostnames: h } = e.data;
+			periodData = { current, previous };
+			if (h !== undefined) hostnames = h;
+		};
+		worker = w;
+
 		const storeData = get(dataStore);
 		if (storeData && storeData.requests.length > 0) {
 			parseDates(storeData.requests);
@@ -373,8 +257,10 @@
 			parseDates(dashboardData.requests);
 			sortByTime(dashboardData.requests);
 			data = dashboardData;
-			dataStore.set(dashboardData); // Optional but ensures state is saved
+			dataStore.set(dashboardData);
 		}
+
+		return () => w.terminate();
 	});
 </script>
 
