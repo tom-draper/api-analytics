@@ -42,7 +42,6 @@ export type AggregatedData = {
 
 	activityBuckets: ActivityBucket[];
 
-	sortedResponseTimes: number[];
 	rtFreqTimes: number[];
 	rtFreqCounts: number[];
 	rtLQ: number;
@@ -147,7 +146,6 @@ function emptyResult(previous: RequestsData, settings: DashboardSettings): Aggre
 		successRate: null,
 		successBuckets: [0, 0, 0, 0, 0],
 		activityBuckets: [],
-		sortedResponseTimes: [],
 		rtFreqTimes: [],
 		rtFreqCounts: [],
 		rtLQ: 0,
@@ -191,6 +189,7 @@ export function aggregate(
 
 	const versionCount: { [v: string]: number } = {};
 	let versionTypes = 0;
+	const pathVersionCache = new Map<string, string | null>();
 
 	const hourlyBuckets = new Array(24).fill(0);
 	const locationCount: { [loc: string]: number } = {};
@@ -205,6 +204,9 @@ export function aggregate(
 	};
 	const users: { [userID: string]: UserEntry } = {};
 	const uaIdCount: { [id: number]: number } = {};
+
+	// Reuse a single Date object for activity bucketing to avoid per-row allocation
+	const actDate = new Date(0);
 
 	for (let i = 0; i < n; i++) {
 		const row = current[i];
@@ -236,7 +238,7 @@ export function aggregate(
 		}
 
 		// 4. Activity buckets (period-aware time buckets)
-		const actDate = new Date(dateMs);
+		actDate.setTime(dateMs);
 		modifyDateForPeriod(actDate, days);
 		const actTime = actDate.getTime();
 		let actEntry = activityMap.get(actTime);
@@ -254,12 +256,16 @@ export function aggregate(
 		const rtRounded = Math.round(responseTime) || 0;
 		rtFreq[rtRounded] = (rtFreq[rtRounded] ?? 0) + 1;
 
-		// 6. Version (regex on path)
-		const vMatch = path.match(/[^a-z0-9](v\d)[^a-z0-9]/i);
-		if (vMatch) {
-			const v = vMatch[1];
-			if (!(v in versionCount)) versionTypes++;
-			versionCount[v] = (versionCount[v] ?? 0) + 1;
+		// 6. Version (regex on path, cached per unique path)
+		let cachedVersion = pathVersionCache.get(path);
+		if (cachedVersion === undefined) {
+			const vMatch = path.match(/[^a-z0-9](v\d)[^a-z0-9]/i);
+			cachedVersion = vMatch ? vMatch[1] : null;
+			pathVersionCache.set(path, cachedVersion);
+		}
+		if (cachedVersion !== null) {
+			if (!(cachedVersion in versionCount)) versionTypes++;
+			versionCount[cachedVersion] = (versionCount[cachedVersion] ?? 0) + 1;
 		}
 
 		// 7. Usage time (24-hour clock buckets)
@@ -280,13 +286,13 @@ export function aggregate(
 		}
 		ep.count++;
 
-		// 10. Top users
+		// 10. Top users (data is sorted ascending so last seen is always most recent)
 		if (userID) {
 			let user = users[userID];
 			if (user) {
 				user.requests++;
 				if (location) user.locations[location] = (user.locations[location] || 0) + 1;
-				if (createdAt > user.lastRequested) user.lastRequested = createdAt;
+				user.lastRequested = createdAt;
 			} else {
 				users[userID] = {
 					ipAddress: ipAddress ?? '',
@@ -304,24 +310,15 @@ export function aggregate(
 		}
 	}
 
-	// Post-process: sort response times and compute quartiles
+	// Sort response times and compute quartiles
 	responseTimes.sort((a, b) => a - b);
 	const rtLQ = quantile(responseTimes, 0.25);
 	const rtMedian = quantile(responseTimes, 0.5);
 	const rtUQ = quantile(responseTimes, 0.75);
 
-	// Build response time frequency histogram (fill gaps with 0)
-	const rtTimes = Object.keys(rtFreq).map(Number);
-	const rtFreqTimes: number[] = [];
-	const rtFreqCounts: number[] = [];
-	if (rtTimes.length > 0) {
-		const minRT = Math.min(...rtTimes);
-		const maxRT = Math.max(...rtTimes);
-		for (let i = 0; i < maxRT - minRT + 1; i++) {
-			rtFreqTimes.push(minRT + i);
-			rtFreqCounts.push(rtFreq[minRT + i] || 0);
-		}
-	}
+	// Build sparse response time frequency histogram (only non-zero entries)
+	const rtFreqTimes = Object.keys(rtFreq).map(Number).sort((a, b) => a - b);
+	const rtFreqCounts = rtFreqTimes.map((t) => rtFreq[t]);
 
 	// Build activity buckets (sorted ascending by date)
 	const activityBuckets: ActivityBucket[] = Array.from(activityMap, ([date, entry]) => ({
@@ -381,7 +378,6 @@ export function aggregate(
 
 		activityBuckets,
 
-		sortedResponseTimes: responseTimes,
 		rtFreqTimes,
 		rtFreqCounts,
 		rtLQ,

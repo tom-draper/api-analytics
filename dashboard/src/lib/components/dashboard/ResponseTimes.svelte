@@ -47,8 +47,7 @@
 		}
 	}
 
-	let { sortedTimes, freqTimes, freqCounts, LQ, median, UQ }: {
-		sortedTimes: number[];
+	let { freqTimes, freqCounts, LQ, median, UQ }: {
 		freqTimes: number[];
 		freqCounts: number[];
 		LQ: number;

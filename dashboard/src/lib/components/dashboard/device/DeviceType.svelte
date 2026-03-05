@@ -15,11 +15,11 @@
 		return matchCandidate(userAgent, deviceCandidates);
 	}
 
+	const deviceGetter = cachedFunction(getDevice);
 	const colors = ['#3FCF8E', '#E46161', '#EBEB81'];
 
 	function donut(uaIdCount: { [id: number]: number }, userAgents: UserAgents) {
 		const deviceCount: ValueCount = {};
-		const deviceGetter = cachedFunction(getDevice);
 		for (const [uaId, count] of Object.entries(uaIdCount)) {
 			const userAgent = userAgents[uaId as unknown as number] || '';
 			const device = deviceGetter(userAgent);

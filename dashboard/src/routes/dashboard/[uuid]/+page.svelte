@@ -49,7 +49,6 @@
 			if (response.ok && response.status === 200) {
 				data = { requests: body.requests, userAgents: body.user_agents };
 				dataStore.set(data);
-				console.log(data);
 			} else {
 				fetchStatus = {
 					failed: true,
@@ -58,7 +57,6 @@
 				};
 			}
 		} catch (e) {
-			console.log(e);
 			fetchStatus = {
 				failed: true,
 				message: 'Internal server error.',
@@ -99,10 +97,7 @@
 
 			Object.assign(data.userAgents, body.user_agents);
 
-			parseDates(body.requests);
-			sortByTime(body.requests);
-
-			const mostRecent = body.requests[body.requests.length - 1][ColumnIndex.CreatedAt];
+			const mostRecent = new Date(body.requests[body.requests.length - 1][ColumnIndex.CreatedAt]);
 			if (dateInPeriod(mostRecent, settings.period)) {
 				// Trigger dashboard re-render
 				data = { ...data, requests: data.requests.concat(body.requests) };
@@ -112,7 +107,6 @@
 			}
 
 			dataStore.set(data);
-			console.log(data);
 
 			return body.requests.length;
 		} catch (e) {
@@ -142,19 +136,7 @@
 		});
 	}
 
-	function parseDates(data: RequestsData) {
-		for (let i = 0; i < data.length; i++) {
-			data[i][ColumnIndex.CreatedAt] = new Date(data[i][ColumnIndex.CreatedAt]);
-		}
-	}
-
-	function sortByTime(data: RequestsData) {
-		data.sort((a, b) => {
-			return a[ColumnIndex.CreatedAt].getTime() - b[ColumnIndex.CreatedAt].getTime();
-		});
-	}
-
-	function getSettings() {
+function getSettings() {
 		const settings = initSettings();
 
 		const period = page.url.searchParams.get('period');
@@ -213,7 +195,6 @@
 		style: 'error',
 		show: false
 	});
-	let periodData = $state.raw<{ current: RequestsData; previous: RequestsData } | undefined>(undefined);
 	let aggregated = $state.raw<AggregatedData | undefined>(undefined);
 	let loading = $state(true);
 	let fetchStatus = $state<{ failed: boolean; status: number; message: string } | undefined>(undefined);
@@ -226,26 +207,30 @@
 	});
 
 	// When settings change: re-filter using cached requests in worker
+	// worker is untracked so this effect only fires on settings changes, not on initial data load
+	// (the init effect handles the initial aggregation)
 	$effect(() => {
 		const s = $state.snapshot(settings);
-		if (!worker || !untrack(() => data)) return;
-		worker.postMessage({ type: 'filter', settings: s });
+		const w = untrack(() => worker);
+		if (!w || !untrack(() => data)) return;
+		w.postMessage({ type: 'filter', settings: s });
 	});
 
 	onMount(async () => {
 		const w = new Worker(new URL('$lib/dashboardWorker.ts', import.meta.url), { type: 'module' });
 		w.onmessage = (e) => {
-			const { current, previous, aggregated: agg, hostnames: h } = e.data;
-			periodData = { current, previous };
-			aggregated = agg;
-			if (h !== undefined) hostnames = h;
+			const msg = e.data;
+			if (msg.type === 'export') {
+				exportCSV(msg.current, columns, data!.userAgents);
+				return;
+			}
+			aggregated = msg.aggregated;
+			if (msg.hostnames !== undefined) hostnames = msg.hostnames;
 		};
 		worker = w;
 
 		const storeData = get(dataStore);
 		if (storeData && storeData.requests.length > 0) {
-			parseDates(storeData.requests);
-			sortByTime(storeData.requests);
 			data = storeData;
 			loading = false;
 		} else {
@@ -257,8 +242,6 @@
 				loading = false;
 			}
 
-			parseDates(dashboardData.requests);
-			sortByTime(dashboardData.requests);
 			data = dashboardData;
 			dataStore.set(dashboardData);
 		}
@@ -271,7 +254,7 @@
 	bind:show={showSettings}
 	bind:settings
 	exportCSV={() => {
-		exportCSV(periodData.current, columns, data.userAgents);
+		worker?.postMessage({ type: 'export' });
 	}}
 />
 <Notification state={notification} />
@@ -304,7 +287,6 @@
 					/>
 				</div>
 				<ResponseTimes
-					sortedTimes={aggregated.sortedResponseTimes}
 					freqTimes={aggregated.rtFreqTimes}
 					freqCounts={aggregated.rtFreqCounts}
 					LQ={aggregated.rtLQ}

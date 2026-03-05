@@ -37,9 +37,10 @@
 		return matchCandidate(userAgent, osCandidates);
 	}
 
+	const osGetter = cachedFunction(getOS);
+
 	function donut(uaIdCount: { [id: number]: number }, userAgents: UserAgents) {
 		const osCount: ValueCount = {};
-		const osGetter = cachedFunction(getOS);
 		for (const [uaId, count] of Object.entries(uaIdCount)) {
 			const userAgent = userAgents[uaId as unknown as number] || '';
 			const os = osGetter(userAgent);

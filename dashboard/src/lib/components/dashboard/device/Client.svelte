@@ -46,9 +46,10 @@
 		return matchCandidate(userAgent, clientCandidates);
 	}
 
+	const clientGetter = cachedFunction(getClient);
+
 	function donut(uaIdCount: { [id: number]: number }, userAgents: UserAgents) {
 		const clientCount: ValueCount = {};
-		const clientGetter = cachedFunction(getClient);
 		for (const [uaId, count] of Object.entries(uaIdCount)) {
 			const userAgent = userAgents[uaId as unknown as number] || '';
 			const client = clientGetter(userAgent);
