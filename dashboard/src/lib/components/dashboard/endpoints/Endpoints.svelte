@@ -66,11 +66,7 @@
 		activeFilter = value;
 	}
 
-	function clearSelection(): void {
-		handleEndpointSelection(null, null);
-	}
-
-	let { endpointFreq, targetPath = $bindable<string | null>(null), targetStatus = $bindable<number | null>(null) }: {
+let { endpointFreq, targetPath = $bindable<string | null>(null), targetStatus = $bindable<number | null>(null) }: {
 		endpointFreq: EndpointFreq;
 		targetPath: string | null;
 		targetStatus: number | null;
@@ -88,29 +84,21 @@
 		</div>
 	</div>
 
-	{#if targetPath !== null}
-		<div class="mb-[-8px] flex px-[25px] pt-3 text-[13px] text-[#707070]">
-			<div class="mr-3 flex-grow text-left">
-				<div>
-					{#if targetStatus === null}
-						{targetPath}
-					{:else}
-						{targetPath}, status: {targetStatus}
-					{/if}
-				</div>
-			</div>
-			<button class="hover:text-[#ededed]" onclick={clearSelection}>Clear</button>
-		</div>
-	{/if}
-
 	{#if endpointData.endpoints.length > 0}
 		<EndpointList endpoints={endpointData.endpoints} maxCount={endpointData.maxCount} selectEndpoint={handleEndpointSelection} />
+	{/if}
+	{#if targetPath !== null}
+		<div class="clear-row">
+			<button class="clear-btn" onclick={() => handleEndpointSelection(null, null)}>Clear filter</button>
+		</div>
 	{/if}
 </div>
 
 <style>
 	.card {
 		min-height: 361px;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.header {
@@ -121,14 +109,30 @@
 		margin-left: auto;
 	}
 
+	.clear-row {
+		margin-top: auto;
+		text-align: right;
+		padding: 0 20px 12px;
+	}
+
+	.clear-btn {
+		font-size: 0.75em;
+		color: #707070;
+		cursor: pointer;
+	}
+
+	.clear-btn:hover {
+		color: #ededed;
+	}
+
 	@media screen and (max-width: 470px) {
 		.header {
-			flex-direction: column;
-			gap: 8px;
+			flex-wrap: wrap;
 		}
 
 		.filter {
 			margin-left: 0;
+			width: 100%;
 		}
 	}
 
