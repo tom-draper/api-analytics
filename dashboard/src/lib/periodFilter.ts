@@ -2,6 +2,7 @@ import { ColumnIndex } from '$lib/consts';
 import { periodToDays } from '$lib/period';
 import type { DashboardSettings } from '$lib/settings';
 import { userTargeted } from '$lib/user';
+import { clientCandidates, deviceCandidates, osCandidates, matchLabel } from '$lib/device';
 
 function lowerBound(data: RequestsData, targetMs: number): number {
 	let lo = 0;
@@ -59,6 +60,18 @@ export function getPeriodData(
 		}
 	}
 
+	function buildUASet(label: string, candidates: typeof clientCandidates): Set<number> {
+		const set = new Set<number>();
+		for (const [id, ua] of Object.entries(userAgents)) {
+			if (matchLabel(ua, candidates) === label) set.add(Number(id));
+		}
+		return set;
+	}
+
+	const clientUAIds = settings.targetClient !== null ? buildUASet(settings.targetClient, clientCandidates) : null;
+	const deviceUAIds = settings.targetDeviceType !== null ? buildUASet(settings.targetDeviceType, deviceCandidates) : null;
+	const osUAIds = settings.targetOS !== null ? buildUASet(settings.targetOS, osCandidates) : null;
+
 	const current: RequestsData = [];
 	const previous: RequestsData = [];
 
@@ -101,6 +114,9 @@ export function getPeriodData(
 				userTargeted(settings.targetUser, ipAddress, customUserID)) &&
 			(!settings.disable404 || status !== 404) &&
 			(!botUAIds || !botUAIds.has(request[ColumnIndex.UserAgent] as number)) &&
+			(!clientUAIds || clientUAIds.has(request[ColumnIndex.UserAgent] as number)) &&
+			(!deviceUAIds || deviceUAIds.has(request[ColumnIndex.UserAgent] as number)) &&
+			(!osUAIds || osUAIds.has(request[ColumnIndex.UserAgent] as number)) &&
 			(settings.targetEndpoint.path === null || settings.targetEndpoint.path === path) &&
 			(settings.targetEndpoint.status === null || settings.targetEndpoint.status === status) &&
 			(settings.targetReferrer === null || settings.targetReferrer === referrer) &&

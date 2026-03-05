@@ -1,37 +1,11 @@
 <script lang="ts">
 	import { cachedFunction } from '$lib/cache';
-	import { type Candidate, matchCandidate } from '$lib/candidates';
+	import { matchCandidate } from '$lib/candidates';
+	import { osCandidates } from '$lib/device';
 	import { graphColors } from '$lib/consts';
 	import { renderPlot, donutLayout, buildDonutData } from '$lib/plotly';
-
-	const osCandidates: Candidate[] = [
-		{ name: 'Windows 3.11', regex: /Win16/, matches: 0 },
-		{ name: 'Windows 95', regex: /(Windows 95)|(Win95)|(Windows_95)/, matches: 0 },
-		{ name: 'Windows 98', regex: /(Windows 98)|(Win98)/, matches: 0 },
-		{ name: 'Windows 2000', regex: /(Windows NT 5.0)|(Windows 2000)/, matches: 0 },
-		{ name: 'Windows XP', regex: /(Windows NT 5.1)|(Windows XP)/, matches: 0 },
-		{ name: 'Windows Server 2003', regex: /(Windows NT 5.2)/, matches: 0 },
-		{ name: 'Windows Vista', regex: /(Windows NT 6.0)/, matches: 0 },
-		{ name: 'Windows 7', regex: /(Windows NT 6.1)/, matches: 0 },
-		{ name: 'Windows 8', regex: /(Windows NT 6.2)/, matches: 0 },
-		{ name: 'Windows 10/11', regex: /(Windows NT 10.0)/, matches: 0 },
-		{ name: 'Windows NT 4.0', regex: /(Windows NT 4.0)|(WinNT4.0)|(WinNT)|(Windows NT)/, matches: 0 },
-		{ name: 'Windows ME', regex: /Windows ME/, matches: 0 },
-		{ name: 'OpenBSD', regex: /OpenBSD/, matches: 0 },
-		{ name: 'SunOS', regex: /SunOS/, matches: 0 },
-		{ name: 'Android', regex: /Android/, matches: 0 },
-		{ name: 'Linux', regex: /(Linux)|(X11)/, matches: 0 },
-		{ name: 'MacOS', regex: /(Mac_PowerPC)|(Macintosh)/, matches: 0 },
-		{ name: 'QNX', regex: /QNX/, matches: 0 },
-		{ name: 'iOS', regex: /iPhone OS/, matches: 0 },
-		{ name: 'BeOS', regex: /BeOS/, matches: 0 },
-		{ name: 'OS/2', regex: /OS\/2/, matches: 0 },
-		{
-			name: 'Search Bot',
-			regex: /(APIs-Google)|(AdsBot)|(nuhk)|(Googlebot)|(Storebot)|(Google-Site-Verification)|(Mediapartners)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves\/Teoma)|(ia_archiver)/,
-			matches: 0
-		}
-	];
+	import { setParam } from '$lib/params';
+	import { untrack } from 'svelte';
 
 	function getOS(userAgent: string | null): string {
 		return matchCandidate(userAgent, osCandidates);
@@ -39,11 +13,44 @@
 
 	const osGetter = cachedFunction(getOS);
 
-	let { uaIdCount, userAgents }: { uaIdCount: { [id: number]: number }; userAgents: UserAgents } = $props();
+	function selectLabel(label: string) {
+		const current = untrack(() => targetOS);
+		if (current === label) {
+			targetOS = null;
+			setParam('os', null);
+		} else {
+			targetOS = label;
+			setParam('os', label);
+		}
+	}
+
+	let { uaIdCount, userAgents, targetOS = $bindable<string | null>(null) }: {
+		uaIdCount: { [id: number]: number };
+		userAgents: UserAgents;
+		targetOS: string | null;
+	} = $props();
+
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
 	$effect(() => {
-		if (plotDiv && uaIdCount) renderPlot(plotDiv, buildDonutData(uaIdCount, userAgents, osGetter, graphColors), donutLayout(411));
+		if (!plotDiv || !uaIdCount) return;
+
+		renderPlot(plotDiv, buildDonutData(uaIdCount, userAgents, osGetter, graphColors, targetOS), donutLayout(411));
+		window?.dispatchEvent(new Event('resize'));
+
+		const el = plotDiv as any;
+		el.removeAllListeners?.('plotly_click');
+		el.removeAllListeners?.('plotly_legendclick');
+
+		el.on?.('plotly_click', (data: any) => {
+			const label = data.points[0]?.label;
+			if (label) selectLabel(label);
+		});
+		el.on?.('plotly_legendclick', (data: any) => {
+			const label = data.data?.[0]?.labels?.[data.expandedIndex];
+			if (label) selectLabel(label);
+			return false;
+		});
 	});
 </script>
 

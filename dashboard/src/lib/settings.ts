@@ -13,6 +13,9 @@ export type DashboardSettings = {
 	targetLocation: string | null;
 	targetWeekday: number | null;
 	targetVersion: string | null;
+	targetClient: string | null;
+	targetDeviceType: string | null;
+	targetOS: string | null;
 	targetUser: {
 		ipAddress: string,
 		userID: string,
@@ -36,6 +39,9 @@ export function initSettings(): DashboardSettings {
 		targetLocation: null,
 		targetWeekday: null,
 		targetVersion: null,
+		targetClient: null,
+		targetDeviceType: null,
+		targetOS: null,
 		targetUser: null,
 		hiddenEndpoints: new Set(),
 		ignoreParams: true,

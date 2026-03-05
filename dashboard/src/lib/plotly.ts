@@ -69,7 +69,8 @@ export function buildDonutData(
 	uaIdCount: { [id: number]: number },
 	userAgents: UserAgents,
 	getter: (ua: string) => string,
-	colors: string[]
+	colors: string[],
+	selectedLabel?: string | null
 ): object[] {
 	const count: { [key: string]: number } = {};
 	for (const [uaId, c] of Object.entries(uaIdCount)) {
@@ -78,7 +79,10 @@ export function buildDonutData(
 		count[key] = (count[key] ?? 0) + c;
 	}
 	const dataPoints = Object.entries(count).sort((a, b) => b[1] - a[1]);
-	return donutData(dataPoints.map(([k]) => k), dataPoints.map(([, v]) => v), colors);
+	const labels = dataPoints.map(([k]) => k);
+	const values = dataPoints.map(([, v]) => v);
+	const pull = selectedLabel != null ? labels.map((l) => (l === selectedLabel ? 0.08 : 0)) : undefined;
+	return [{ values, labels, type: 'pie', hole: 0.6, marker: { colors }, ...(pull ? { pull } : {}) }];
 }
 
 /** Layout for ActivityRequests / ActivityResponseTime bar charts */
