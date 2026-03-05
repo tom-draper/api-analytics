@@ -2,6 +2,7 @@ import { defaultPeriod, type Period } from "./period";
 
 export type DashboardSettings = {
 	disable404: boolean;
+	ignoreBots: boolean;
 	hostname: string | null;
 	period: Period;
 	targetEndpoint: {
@@ -24,6 +25,7 @@ export type DashboardSettings = {
 export function initSettings(): DashboardSettings {
 	return {
 		disable404: false,
+		ignoreBots: false,
 		hostname: null,
 		period: defaultPeriod,
 		targetEndpoint: {

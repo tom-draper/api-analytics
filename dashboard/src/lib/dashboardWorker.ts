@@ -37,7 +37,7 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
 
 	if (!cachedRequests) return;
 
-	const { current, previous } = getPeriodData(cachedRequests, msg.settings);
+	const { current, previous } = getPeriodData(cachedRequests, msg.settings, cachedUserAgents);
 	cachedCurrent = current;
 	const aggregated = aggregate(current, previous, msg.settings);
 	self.postMessage({ aggregated, hostnames: msg.type === 'init' ? cachedHostnames : undefined });

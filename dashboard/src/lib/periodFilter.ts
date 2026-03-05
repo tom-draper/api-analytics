@@ -39,14 +39,25 @@ function wildCardMatch(endpoint: string, hiddenEndpoints: Set<string>): boolean 
 	return false;
 }
 
+const botPattern = /bot|crawl|spider|scraper|slurp|curl|wget|python|java(?!script)|ruby|php|perl|go-http|okhttp|libwww|httpclient|axios|requests|puppeteer|playwright|selenium|headless/i;
+
 export function getPeriodData(
 	data: RequestsData,
-	settings: DashboardSettings
+	settings: DashboardSettings,
+	userAgents: UserAgents = {}
 ): { current: RequestsData; previous: RequestsData } {
 	const now = Date.now();
 	const hasHiddenEndpoints = settings.hiddenEndpoints.size > 0;
 	const allTime = settings.period === 'all time';
 	const pathVersionCache = new Map<string, string | null>();
+
+	let botUAIds: Set<number> | null = null;
+	if (settings.ignoreBots) {
+		botUAIds = new Set();
+		for (const [id, ua] of Object.entries(userAgents)) {
+			if (botPattern.test(ua)) botUAIds.add(Number(id));
+		}
+	}
 
 	const current: RequestsData = [];
 	const previous: RequestsData = [];
@@ -89,6 +100,7 @@ export function getPeriodData(
 			(settings.targetUser === null ||
 				userTargeted(settings.targetUser, ipAddress, customUserID)) &&
 			(!settings.disable404 || status !== 404) &&
+			(!botUAIds || !botUAIds.has(request[ColumnIndex.UserAgent] as number)) &&
 			(settings.targetEndpoint.path === null || settings.targetEndpoint.path === path) &&
 			(settings.targetEndpoint.status === null || settings.targetEndpoint.status === status) &&
 			(settings.targetReferrer === null || settings.targetReferrer === referrer) &&

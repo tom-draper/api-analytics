@@ -10,6 +10,10 @@
 		settings.ignoreParams = !settings.ignoreParams;
 	}
 
+	function toggleIgnoreBots() {
+		settings.ignoreBots = !settings.ignoreBots;
+	}
+
 	function hideSettings() {
 		show = false;
 	}
@@ -44,7 +48,7 @@
 	<div class="container" onclick={handleClick}>
 		<h2 class="title">Settings</h2>
 		<div class="disable404 setting mb-2">
-			<div class="setting-label">Ignore status 404</div>
+			<div class="setting-label">Exclude status 404</div>
 			<input
 				type="checkbox"
 				name="disable404"
@@ -53,8 +57,18 @@
 				title="Hide requests made to non-existent routes"
 			/>
 		</div>
+		<div class="disable404 setting mb-2">
+			<div class="setting-label">Exclude bots and crawlers</div>
+			<input
+				type="checkbox"
+				name="ignoreBots"
+				id="checkbox"
+				onchange={toggleIgnoreBots}
+				title="Hide requests from bots, crawlers and automated tools"
+			/>
+		</div>
 		<div class="disable404 setting mb-8">
-			<div class="setting-label">Ignore URL params</div>
+			<div class="setting-label">Exclude URL params</div>
 			<input
 				type="checkbox"
 				name="ignoreParams"
