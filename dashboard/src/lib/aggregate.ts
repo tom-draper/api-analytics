@@ -387,10 +387,10 @@ export function aggregate(
 	let topUserIDActive = false;
 	let topLocationsActive = false;
 
-	if (totalUsers >= 10) {
+	if (totalUsers >= 10 || settings.targetUser !== null) {
 		const sorted = userValues.sort((a, b) => b.requests - a.requests);
 		const topUserRequestsCount = sorted.length > 0 ? sorted[0].requests : 0;
-		if (topUserRequestsCount > 1) {
+		if (topUserRequestsCount > 1 || settings.targetUser !== null) {
 			topUsers = sorted.slice(0, TOP_USERS_LIMIT);
 			topUserIDActive = topUsers.some((u) => u.customUserID !== '' && u.customUserID !== null);
 			topLocationsActive = topUsers.some((u) => Object.keys(u.locations).length > 0);

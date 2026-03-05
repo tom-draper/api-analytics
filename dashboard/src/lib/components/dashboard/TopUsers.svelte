@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { formatUserID } from '$lib/user';
+	import { formatUserID, formatDisplayUserID } from '$lib/user';
 	import { setParam, setParamNoReplace } from '$lib/params';
 	import type { TopUserData } from '$lib/aggregate';
 
@@ -103,9 +103,9 @@
 	function prevPage() { pageNumber -= 1; }
 </script>
 
-{#if dataPage.length > 0}
+{#if dataPage.length > 0 || targetUser !== null}
 	<div class="card">
-		<h2 class="card-title">Top Users</h2>
+		<h2 class="card-title">Top users</h2>
 		<div class="table-container">
 			<table class="table">
 				<thead>
@@ -148,6 +148,9 @@
 					{/each}
 				</tbody>
 			</table>
+			{#if dataPage.length === 0 && targetUser !== null}
+				<div class="no-results">Filtered by: <span class="no-results-user">{formatDisplayUserID(targetUser)}</span> — <button onclick={() => { targetUser = null; setUserParams(null, null); }}>Clear filter</button></div>
+			{/if}
 		</div>
 		<div class="buttons">
 			<div class="current-page">Page {pageNumber} of {totalPages}</div>
@@ -244,6 +247,22 @@
 		color: #ededed;
 	}
 
+	.no-results {
+		font-size: 0.85em;
+		color: #505050;
+		padding: 0.8em 1.2em 0.4em;
+	}
+	.no-results-user {
+		color: #707070;
+	}
+	.no-results button {
+		color: var(--highlight);
+		background: none;
+		border: none;
+		cursor: pointer;
+		font-size: inherit;
+		padding: 0;
+	}
 	.current-page {
 		place-self: center;
 		color: #505050;
