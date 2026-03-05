@@ -1,40 +1,7 @@
 <script lang="ts">
-	import { periodToDays, type Period } from '$lib/period';
+	import { type Period } from '$lib/period';
 	import type { ActivityBucket } from '$lib/aggregate';
-
-	function getPlotLayout(period: Period) {
-		const days = periodToDays(period);
-		let periodAgo: Date | null = null;
-		if (days !== null) {
-			periodAgo = new Date();
-			periodAgo.setDate(periodAgo.getDate() - days);
-		}
-		const now = new Date();
-
-		return {
-			title: false,
-			autosize: true,
-			margin: { r: 35, l: 70, t: 20, b: 20, pad: 10 },
-			hovermode: 'closest',
-			plot_bgcolor: 'transparent',
-			paper_bgcolor: 'transparent',
-			height: 159,
-			yaxis: {
-				title: { text: 'Response time (ms)' },
-				gridcolor: 'gray',
-				showgrid: false,
-				fixedrange: true
-			},
-			xaxis: {
-				title: { text: 'Date' },
-				showgrid: false,
-				fixedrange: true,
-				range: [periodAgo, now],
-				visible: false
-			},
-			dragmode: false
-		};
-	}
+	import { renderPlot, activityLayout } from '$lib/plotly';
 
 	function bars(buckets: ActivityBucket[]) {
 		return [
@@ -49,23 +16,12 @@
 		];
 	}
 
-	function generatePlot(buckets: ActivityBucket[], period: Period) {
-		const b = bars(buckets);
-		const layout = getPlotLayout(period);
-		const config = { responsive: true, showSendToCloud: false, displayModeBar: false };
-		if (plotDiv.data) {
-			Plotly.react(plotDiv, b, layout);
-		} else {
-			Plotly.newPlot(plotDiv, b, layout, config);
-		}
-	}
-
 	let { activityBuckets, period }: { activityBuckets: ActivityBucket[]; period: Period } = $props();
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
 	$effect(() => {
 		if (plotDiv) {
-			generatePlot(activityBuckets, period);
+			renderPlot(plotDiv, bars(activityBuckets), activityLayout(period, 'Response time (ms)'));
 		}
 	});
 </script>

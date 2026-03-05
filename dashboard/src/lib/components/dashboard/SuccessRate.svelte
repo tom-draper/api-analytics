@@ -1,61 +1,11 @@
 <script lang="ts">
-	function getPlotLayout() {
-		return {
-			title: false,
-			autosize: true,
-			margin: { r: 0, l: 0, t: 0, b: 0, pad: 0 },
-			hovermode: false,
-			plot_bgcolor: 'transparent',
-			paper_bgcolor: 'transparent',
-			height: 60,
-			yaxis: {
-				gridcolor: 'gray',
-				showgrid: false,
-				fixedrange: true,
-				dragmode: false
-			},
-			xaxis: {
-				visible: false,
-				dragmode: false
-			},
-			dragmode: false
-		};
-	}
-
-	function lines(buckets: number[]) {
-		const n = buckets.length;
-		return [
-			{
-				x: [...Array(n).keys()],
-				y: buckets,
-				type: 'lines',
-				marker: { color: 'transparent' },
-				showlegend: false,
-				line: { shape: 'spline', smoothing: 1, color: '#3FCF8E30' },
-				fill: 'tozeroy',
-				fillcolor: '#3fcf8e15'
-			}
-		];
-	}
-
-	function generatePlot(buckets: number[]) {
-		if (plotDiv.data) {
-			Plotly.react(plotDiv, lines(buckets), getPlotLayout());
-		} else {
-			const plotData = {
-				data: lines(buckets),
-				layout: getPlotLayout(),
-				config: { responsive: true, showSendToCloud: false, displayModeBar: false }
-			};
-			Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
-		}
-	}
+	import { renderPlot, sparklineData, sparklineLayout } from '$lib/plotly';
 
 	let { rate, buckets }: { rate: number | null; buckets: number[] } = $props();
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
 	$effect(() => {
-		if (plotDiv && buckets) generatePlot(buckets);
+		if (plotDiv && buckets) renderPlot(plotDiv, sparklineData(buckets), sparklineLayout());
 	});
 </script>
 

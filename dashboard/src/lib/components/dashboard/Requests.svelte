@@ -1,72 +1,7 @@
 <script lang="ts">
-	import { periodToDays, type Period } from '$lib/period';
-
-	function getPlotLayout() {
-		return {
-			title: false,
-			autosize: true,
-			margin: { r: 0, l: 0, t: 0, b: 0, pad: 0 },
-			hovermode: false,
-			plot_bgcolor: 'transparent',
-			paper_bgcolor: 'transparent',
-			height: 60,
-			yaxis: {
-				gridcolor: 'gray',
-				showgrid: false,
-				fixedrange: true,
-				dragmode: false
-			},
-			xaxis: {
-				visible: false,
-				dragmode: false
-			},
-			dragmode: false
-		};
-	}
-
-	function lines(buckets: number[]) {
-		return [
-			{
-				x: [...Array(buckets.length).keys()],
-				y: buckets,
-				type: 'lines',
-				marker: { color: 'transparent' },
-				showlegend: false,
-				line: { shape: 'spline', smoothing: 1, color: '#3FCF8E30' },
-				fill: 'tozeroy',
-				fillcolor: '#3fcf8e15'
-			}
-		];
-	}
-
-	function generatePlot(buckets: number[]) {
-		if (plotDiv.data) {
-			Plotly.react(plotDiv, lines(buckets), getPlotLayout());
-		} else {
-			const plotData = {
-				data: lines(buckets),
-				layout: getPlotLayout(),
-				config: { responsive: true, showSendToCloud: false, displayModeBar: false }
-			};
-			Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
-		}
-	}
-
-	function getPercentageChange(count: number, prevCount: number) {
-		if (prevCount === 0) return null;
-		return (count / prevCount) * 100 - 100;
-	}
-
-	function getRequestsPerHour(count: number, period: Period, firstDate: Date | null, lastDate: Date | null) {
-		if (count <= 1) return count;
-		let days = periodToDays(period);
-		if (days === null && firstDate && lastDate) {
-			const diff = lastDate.getTime() - firstDate.getTime();
-			days = Math.floor(diff / (1000 * 60 * 60 * 24));
-		}
-		if (!days) return count;
-		return count / (24 * days);
-	}
+	import { type Period } from '$lib/period';
+	import { renderPlot, sparklineData, sparklineLayout } from '$lib/plotly';
+	import { getPercentageChange, countPerHour } from '$lib/utils';
 
 	function togglePeriod() {
 		perHour = !perHour;
@@ -83,10 +18,10 @@
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 	let perHour = $state(false);
 	const percentageChange = $derived(getPercentageChange(count, prevCount));
-	const requestsPerHour = $derived(getRequestsPerHour(count, period, firstDate, lastDate));
+	const requestsPerHour = $derived(count <= 1 ? count : countPerHour(count, period, firstDate, lastDate));
 
 	$effect(() => {
-		if (plotDiv && buckets) generatePlot(buckets);
+		if (plotDiv && buckets) renderPlot(plotDiv, sparklineData(buckets), sparklineLayout());
 	});
 </script>
 

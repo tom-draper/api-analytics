@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { cachedFunction } from '$lib/cache';
-	import { type Candidate, maintainCandidates } from '$lib/candidates';
+	import { type Candidate, matchCandidate } from '$lib/candidates';
 	import { graphColors } from '$lib/consts';
+	import { renderPlot, donutLayout, donutData } from '$lib/plotly';
 
 	const osCandidates: Candidate[] = [
 		{ name: 'Windows 3.11', regex: /Win16/, matches: 0 },
@@ -33,32 +34,7 @@
 	];
 
 	function getOS(userAgent: string | null): string {
-		if (!userAgent) return 'Unknown';
-		for (let i = 0; i < osCandidates.length; i++) {
-			const candidate = osCandidates[i];
-			if (userAgent.match(candidate.regex)) {
-				candidate.matches++;
-				maintainCandidates(i, osCandidates);
-				return candidate.name;
-			}
-		}
-		return 'Other';
-	}
-
-	function getPlotLayout() {
-		return {
-			title: false,
-			autosize: true,
-			margin: { r: 30, l: 30, t: 25, b: 25, pad: 0 },
-			hovermode: 'closest',
-			plot_bgcolor: 'transparent',
-			paper_bgcolor: 'transparent',
-			height: 196,
-			width: 411,
-			yaxis: { title: { text: 'Requests' }, gridcolor: 'gray', showgrid: false, fixedrange: true },
-			xaxis: { visible: false },
-			dragmode: false
-		};
+		return matchCandidate(userAgent, osCandidates);
 	}
 
 	function donut(uaIdCount: { [id: number]: number }, userAgents: UserAgents) {
@@ -74,25 +50,14 @@
 		const oss = dataPoints.map(([o]) => o);
 		const counts = dataPoints.map(([, n]) => n);
 
-		return [{ values: counts, labels: oss, type: 'pie', hole: 0.6, marker: { colors: graphColors } }];
-	}
-
-	function generatePlot(uaIdCount: { [id: number]: number }, userAgents: UserAgents) {
-		const d = donut(uaIdCount, userAgents);
-		const layout = getPlotLayout();
-		const config = { responsive: true, showSendToCloud: false, displayModeBar: false };
-		if (plotDiv.data) {
-			Plotly.react(plotDiv, d, layout);
-		} else {
-			Plotly.newPlot(plotDiv, d, layout, config);
-		}
+		return donutData(oss, counts, graphColors);
 	}
 
 	let { uaIdCount, userAgents }: { uaIdCount: { [id: number]: number }; userAgents: UserAgents } = $props();
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
 	$effect(() => {
-		if (plotDiv && uaIdCount) generatePlot(uaIdCount, userAgents);
+		if (plotDiv && uaIdCount) renderPlot(plotDiv, donut(uaIdCount, userAgents), donutLayout(411));
 	});
 </script>
 
