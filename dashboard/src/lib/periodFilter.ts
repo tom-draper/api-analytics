@@ -71,6 +71,7 @@ export function getPeriodData(
 		const ipAddress = request[ColumnIndex.IPAddress];
 		const customUserID = request[ColumnIndex.UserID];
 		const referrer = request[ColumnIndex.Referrer] as string | null | undefined;
+		const weekday = (request[ColumnIndex.CreatedAt] as Date).getDay();
 
 		if (
 			(settings.targetUser === null ||
@@ -80,6 +81,7 @@ export function getPeriodData(
 			(settings.targetEndpoint.status === null || settings.targetEndpoint.status === status) &&
 			(settings.targetReferrer === null || settings.targetReferrer === referrer) &&
 			(settings.targetLocation === null || settings.targetLocation === location) &&
+			(settings.targetWeekday === null || settings.targetWeekday === weekday) &&
 			(!hasHiddenEndpoints || !isHiddenEndpoint(path, settings.hiddenEndpoints)) &&
 			(settings.hostname === null || settings.hostname === hostname)
 		) {

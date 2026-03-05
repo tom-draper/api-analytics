@@ -10,6 +10,7 @@ export type DashboardSettings = {
 	};
 	targetReferrer: string | null;
 	targetLocation: string | null;
+	targetWeekday: number | null;
 	targetUser: {
 		ipAddress: string,
 		userID: string,
@@ -30,6 +31,7 @@ export function initSettings(): DashboardSettings {
 		},
 		targetReferrer: null,
 		targetLocation: null,
+		targetWeekday: null,
 		targetUser: null,
 		hiddenEndpoints: new Set(),
 		ignoreParams: true,

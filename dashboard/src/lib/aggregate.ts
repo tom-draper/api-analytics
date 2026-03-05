@@ -58,6 +58,7 @@ export type AggregatedData = {
 	versionHasMultiple: boolean;
 
 	hourlyBuckets: number[];
+	weekdayBuckets: number[];
 
 	locationBars: LocationBar[];
 	referrerBars: ReferrerBar[];
@@ -162,6 +163,7 @@ function emptyResult(previous: RequestsData, settings: DashboardSettings): Aggre
 		versionCount: {},
 		versionHasMultiple: false,
 		hourlyBuckets: new Array(24).fill(0),
+		weekdayBuckets: new Array(7).fill(0),
 		locationBars: [],
 		referrerBars: [],
 		referrerAvailable: false,
@@ -202,6 +204,7 @@ export function aggregate(
 	const pathVersionCache = new Map<string, string | null>();
 
 	const hourlyBuckets = new Array(24).fill(0);
+	const weekdayBuckets = new Array(7).fill(0);
 	const locationCount: { [loc: string]: number } = {};
 	const referrerCount: { [ref: string]: number } = {};
 	let referrerAvailable = false;
@@ -280,8 +283,9 @@ export function aggregate(
 			versionCount[cachedVersion] = (versionCount[cachedVersion] ?? 0) + 1;
 		}
 
-		// 7. Usage time (24-hour clock buckets)
+		// 7. Usage time (24-hour clock buckets) + day of week
 		hourlyBuckets[createdAt.getHours()]++;
+		weekdayBuckets[createdAt.getDay()]++;
 
 		// 8. Location
 		if (location) {
@@ -422,6 +426,7 @@ export function aggregate(
 		versionHasMultiple: versionTypes > 1,
 
 		hourlyBuckets,
+		weekdayBuckets,
 		locationBars,
 		referrerBars,
 		referrerAvailable,

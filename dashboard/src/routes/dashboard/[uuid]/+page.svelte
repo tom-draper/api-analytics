@@ -10,6 +10,7 @@
 	import Activity from '$components/dashboard/activity/Activity.svelte';
 	import Version from '$components/dashboard/Version.svelte';
 	import UsageTime from '$components/dashboard/UsageTime.svelte';
+	import DayOfWeek from '$components/dashboard/DayOfWeek.svelte';
 	import Location from '$components/dashboard/Location.svelte';
 	import Device from '$components/dashboard/device/Device.svelte';
 	import { dateInPeriod, isPeriod } from '$lib/period';
@@ -182,6 +183,12 @@ function getSettings() {
 			settings.targetUser.ipAddress = ipAddress;
 		}
 
+		const weekday = page.url.searchParams.get('weekday');
+		if (weekday !== null) {
+			const parsed = parseInt(weekday);
+			if (parsed >= 0 && parsed <= 6) settings.targetWeekday = parsed;
+		}
+
 		return settings;
 	}
 
@@ -312,6 +319,7 @@ function getSettings() {
 				<div class="flex">
 					<div class="flex-grow">
 						<UsageTime hourlyBuckets={aggregated.hourlyBuckets} />
+						<DayOfWeek weekdayBuckets={aggregated.weekdayBuckets} bind:targetWeekday={settings.targetWeekday} />
 						<TopUsers
 							users={aggregated.topUsers}
 							userIDActive={aggregated.topUserIDActive}
