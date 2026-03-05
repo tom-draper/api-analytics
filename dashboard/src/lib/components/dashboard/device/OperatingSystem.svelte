@@ -2,7 +2,7 @@
 	import { cachedFunction } from '$lib/cache';
 	import { type Candidate, matchCandidate } from '$lib/candidates';
 	import { graphColors } from '$lib/consts';
-	import { renderPlot, donutLayout, donutData } from '$lib/plotly';
+	import { renderPlot, donutLayout, buildDonutData } from '$lib/plotly';
 
 	const osCandidates: Candidate[] = [
 		{ name: 'Windows 3.11', regex: /Win16/, matches: 0 },
@@ -39,26 +39,11 @@
 
 	const osGetter = cachedFunction(getOS);
 
-	function donut(uaIdCount: { [id: number]: number }, userAgents: UserAgents) {
-		const osCount: ValueCount = {};
-		for (const [uaId, count] of Object.entries(uaIdCount)) {
-			const userAgent = userAgents[uaId as unknown as number] || '';
-			const os = osGetter(userAgent);
-			osCount[os] = (osCount[os] ?? 0) + count;
-		}
-
-		const dataPoints = Object.entries(osCount).sort((a, b) => b[1] - a[1]);
-		const oss = dataPoints.map(([o]) => o);
-		const counts = dataPoints.map(([, n]) => n);
-
-		return donutData(oss, counts, graphColors);
-	}
-
 	let { uaIdCount, userAgents }: { uaIdCount: { [id: number]: number }; userAgents: UserAgents } = $props();
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
 	$effect(() => {
-		if (plotDiv && uaIdCount) renderPlot(plotDiv, donut(uaIdCount, userAgents), donutLayout(411));
+		if (plotDiv && uaIdCount) renderPlot(plotDiv, buildDonutData(uaIdCount, userAgents, osGetter, graphColors), donutLayout(411));
 	});
 </script>
 

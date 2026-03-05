@@ -15,6 +15,7 @@ export const columns = [
 	'location',
 	'user_id',
 	'time',
+	'referrer',
 ];
 
 export const enum ColumnIndex {
@@ -28,6 +29,7 @@ export const enum ColumnIndex {
 	Location = 7,
 	UserID = 8,
 	CreatedAt = 9,
+	Referrer = 10,
 }
 
 export const graphColors = [

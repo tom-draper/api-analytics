@@ -191,6 +191,23 @@ function getLocation() {
 	return locations[idx];
 }
 
+const referrers = [
+	'https://github.com',
+	'https://google.com',
+	'https://stackoverflow.com',
+	'https://docs.example.com',
+	'https://twitter.com',
+	'https://reddit.com',
+	'https://npmjs.com',
+	null,
+];
+const referrersDist = [0.2, 0.18, 0.12, 0.1, 0.08, 0.07, 0.05, 0.2];
+
+function getReferrer() {
+	const idx = randomChoice(referrersDist);
+	return referrers[idx];
+}
+
 const hostnames = ['example.com', 'example2.com', 'example3.com'];
 const hostnamesDist = [0.5, 0.35, 0.15];
 
@@ -283,6 +300,7 @@ function addDemoSamples(
 			getLocation(),
 			userID,
 			date,
+			getReferrer(),
 		]);
 	}
 }

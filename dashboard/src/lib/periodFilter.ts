@@ -70,6 +70,7 @@ export function getPeriodData(
 		const location = request[ColumnIndex.Location];
 		const ipAddress = request[ColumnIndex.IPAddress];
 		const customUserID = request[ColumnIndex.UserID];
+		const referrer = request[ColumnIndex.Referrer] as string | null | undefined;
 
 		if (
 			(settings.targetUser === null ||
@@ -77,7 +78,7 @@ export function getPeriodData(
 			(!settings.disable404 || status !== 404) &&
 			(settings.targetEndpoint.path === null || settings.targetEndpoint.path === path) &&
 			(settings.targetEndpoint.status === null || settings.targetEndpoint.status === status) &&
-			(settings.targetReferrer === null || settings.targetReferrer === path) &&
+			(settings.targetReferrer === null || settings.targetReferrer === referrer) &&
 			(settings.targetLocation === null || settings.targetLocation === location) &&
 			(!hasHiddenEndpoints || !isHiddenEndpoint(path, settings.hiddenEndpoints)) &&
 			(settings.hostname === null || settings.hostname === hostname)

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { renderPlot } from '$lib/plotly';
+
 	function getPlotLayout(range: [number, number]) {
 		return {
 			title: false,
@@ -39,12 +41,7 @@
 
 	function generatePlot(freqTimes: number[], freqCounts: number[]) {
 		const range: [number, number] = [freqTimes[0] ?? 0, freqTimes[freqTimes.length - 1] ?? 0];
-		const b = bars(freqTimes, freqCounts);
-		if (plotDiv.data) {
-			Plotly.react(plotDiv, b, getPlotLayout(range));
-		} else {
-			Plotly.newPlot(plotDiv, b, getPlotLayout(range), { responsive: true, showSendToCloud: false, displayModeBar: false });
-		}
+		renderPlot(plotDiv, bars(freqTimes, freqCounts), getPlotLayout(range));
 	}
 
 	let { freqTimes, freqCounts, LQ, median, UQ }: {

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { renderPlot } from '$lib/plotly';
+
 	function getPlotLayout() {
 		return {
 			font: { size: 12 },
@@ -32,14 +34,7 @@
 	}
 
 	function generatePlot(hourlyBuckets: number[]) {
-		const b = bars(hourlyBuckets);
-		const layout = getPlotLayout();
-		const config = { responsive: true, showSendToCloud: false, displayModeBar: false };
-		if (plotDiv.data) {
-			Plotly.react(plotDiv, b, layout);
-		} else {
-			Plotly.newPlot(plotDiv, b, layout, config);
-		}
+		renderPlot(plotDiv, bars(hourlyBuckets), getPlotLayout());
 	}
 
 	let { hourlyBuckets }: { hourlyBuckets: number[] } = $props();

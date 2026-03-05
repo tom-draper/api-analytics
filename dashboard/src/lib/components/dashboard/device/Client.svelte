@@ -2,7 +2,7 @@
 	import { graphColors } from '$lib/consts';
 	import { cachedFunction } from '$lib/cache';
 	import { type Candidate, matchCandidate } from '$lib/candidates';
-	import { renderPlot, donutLayout, donutData } from '$lib/plotly';
+	import { renderPlot, donutLayout, buildDonutData } from '$lib/plotly';
 
 	const clientCandidates: Candidate[] = [
 		{ name: 'Curl', regex: /curl\//, matches: 0 },
@@ -48,26 +48,11 @@
 
 	const clientGetter = cachedFunction(getClient);
 
-	function donut(uaIdCount: { [id: number]: number }, userAgents: UserAgents) {
-		const clientCount: ValueCount = {};
-		for (const [uaId, count] of Object.entries(uaIdCount)) {
-			const userAgent = userAgents[uaId as unknown as number] || '';
-			const client = clientGetter(userAgent);
-			clientCount[client] = (clientCount[client] ?? 0) + count;
-		}
-
-		const dataPoints = Object.entries(clientCount).sort((a, b) => b[1] - a[1]);
-		const clients = dataPoints.map(([c]) => c);
-		const counts = dataPoints.map(([, n]) => n);
-
-		return donutData(clients, counts, graphColors);
-	}
-
 	let { uaIdCount, userAgents }: { uaIdCount: { [id: number]: number }; userAgents: UserAgents } = $props();
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
 	$effect(() => {
-		if (plotDiv && uaIdCount) renderPlot(plotDiv, donut(uaIdCount, userAgents), donutLayout(411));
+		if (plotDiv && uaIdCount) renderPlot(plotDiv, buildDonutData(uaIdCount, userAgents, clientGetter, graphColors), donutLayout(411));
 	});
 </script>
 

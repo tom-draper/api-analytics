@@ -26,7 +26,6 @@
 	import { getServerURL } from '$lib/url';
 	import Navigation from '$components/dashboard/Navigation.svelte';
 	import { dataStore } from '$lib/dataStore';
-	import Health from '$components/dashboard/health/Health.svelte';
 	import Referrer from '$components/dashboard/Referrer.svelte';
 	import Loading from '$components/Loading.svelte';
 	import { get } from 'svelte/store';
@@ -312,7 +311,6 @@ function getSettings() {
 				</div>
 				<div class="flex">
 					<div class="flex-grow">
-						<!-- <Health data={periodData.current} /> -->
 						<UsageTime hourlyBuckets={aggregated.hourlyBuckets} />
 						<TopUsers
 							users={aggregated.topUsers}
@@ -322,7 +320,9 @@ function getSettings() {
 						/>
 					</div>
 					<div>
-						<!-- <Referrer data={periodData.current} bind:targetReferrer={settings.targetReferrer} bind:ignoreParams={settings.ignoreParams}/> -->
+						{#if aggregated.referrerAvailable}
+						<Referrer referrerBars={aggregated.referrerBars} bind:targetReferrer={settings.targetReferrer} />
+					{/if}
 					</div>
 				</div>
 			</div>

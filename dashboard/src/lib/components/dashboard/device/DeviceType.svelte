@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { graphColors } from '$lib/consts';
 	import { cachedFunction } from '$lib/cache';
 	import { type Candidate, matchCandidate } from '$lib/candidates';
-	import { renderPlot, donutLayout, donutData } from '$lib/plotly';
+	import { renderPlot, donutLayout, buildDonutData } from '$lib/plotly';
 
 	const deviceCandidates: Candidate[] = [
 		{ name: 'iPhone', regex: /iPhone/, matches: 0 },
@@ -16,28 +17,12 @@
 	}
 
 	const deviceGetter = cachedFunction(getDevice);
-	const colors = ['#3FCF8E', '#E46161', '#EBEB81'];
-
-	function donut(uaIdCount: { [id: number]: number }, userAgents: UserAgents) {
-		const deviceCount: ValueCount = {};
-		for (const [uaId, count] of Object.entries(uaIdCount)) {
-			const userAgent = userAgents[uaId as unknown as number] || '';
-			const device = deviceGetter(userAgent);
-			deviceCount[device] = (deviceCount[device] ?? 0) + count;
-		}
-
-		const dataPoints = Object.entries(deviceCount).sort((a, b) => b[1] - a[1]);
-		const devices = dataPoints.map(([d]) => d);
-		const counts = dataPoints.map(([, n]) => n);
-
-		return donutData(devices, counts, colors);
-	}
 
 	let { uaIdCount, userAgents }: { uaIdCount: { [id: number]: number }; userAgents: UserAgents } = $props();
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
 	$effect(() => {
-		if (plotDiv && uaIdCount) renderPlot(plotDiv, donut(uaIdCount, userAgents), donutLayout(411));
+		if (plotDiv && uaIdCount) renderPlot(plotDiv, buildDonutData(uaIdCount, userAgents, deviceGetter, graphColors), donutLayout(411));
 	});
 </script>
 

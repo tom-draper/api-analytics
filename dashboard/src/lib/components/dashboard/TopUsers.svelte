@@ -63,10 +63,9 @@
 	}
 
 	function multipleUserIDOccurances(userID: string) {
-		const page = getPage();
 		let count = 0;
-		for (let i = 0; i < page.length; i++) {
-			if (page[i].customUserID === userID) count++;
+		for (let i = 0; i < dataPage.length; i++) {
+			if (dataPage[i].customUserID === userID) count++;
 			if (count > 1) return true;
 		}
 		return false;
@@ -81,26 +80,6 @@
 		}
 	}
 
-	function totalPages() {
-		if (!users) return 0;
-		return Math.ceil(users.length / PAGE_SIZE);
-	}
-
-	function nextPage() {
-		pageNumber += 1;
-		dataPage = getPage();
-	}
-
-	function prevPage() {
-		pageNumber -= 1;
-		dataPage = getPage();
-	}
-
-	function getPage() {
-		if (!users) return [];
-		return users.slice((pageNumber - 1) * PAGE_SIZE, pageNumber * PAGE_SIZE);
-	}
-
 	type TargetUser = { ipAddress: string; userID: string; composite: boolean };
 
 	let { users, userIDActive, locationsActive, targetUser = $bindable<TargetUser | null>(null) }: {
@@ -112,15 +91,19 @@
 
 	const PAGE_SIZE = 10;
 	let pageNumber = $state(1);
-	let dataPage = $state<TopUserData[] | null>(null);
+	const totalPages = $derived(Math.ceil((users?.length ?? 0) / PAGE_SIZE));
+	const dataPage = $derived(users ? users.slice((pageNumber - 1) * PAGE_SIZE, pageNumber * PAGE_SIZE) : []);
 
 	$effect(() => {
+		users;
 		pageNumber = 1;
-		dataPage = users ? users.slice(0, PAGE_SIZE) : null;
 	});
+
+	function nextPage() { pageNumber += 1; }
+	function prevPage() { pageNumber -= 1; }
 </script>
 
-{#if dataPage !== null}
+{#if dataPage.length > 0}
 	<div class="card">
 		<h2 class="card-title">Top Users</h2>
 		<div class="table-container">
@@ -167,14 +150,14 @@
 			</table>
 		</div>
 		<div class="buttons">
-			<div class="current-page">Page {pageNumber} of {totalPages()}</div>
+			<div class="current-page">Page {pageNumber} of {totalPages}</div>
 			{#if pageNumber > 1}
 				<button
-					class:btn-prev={users && users.length / PAGE_SIZE > pageNumber}
+					class:btn-prev={pageNumber < totalPages}
 					onclick={prevPage}>Previous</button
 				>
 			{/if}
-			{#if users && users.length / PAGE_SIZE > pageNumber}
+			{#if pageNumber < totalPages}
 				<button class="btn-next" onclick={nextPage}>Next</button>
 			{/if}
 		</div>

@@ -64,6 +64,23 @@ export function donutData(labels: string[], values: number[], colors: string[]) 
 	return [{ values, labels, type: 'pie', hole: 0.6, marker: { colors } }];
 }
 
+/** Build donut chart data by aggregating UA IDs through a getter function */
+export function buildDonutData(
+	uaIdCount: { [id: number]: number },
+	userAgents: UserAgents,
+	getter: (ua: string) => string,
+	colors: string[]
+): object[] {
+	const count: { [key: string]: number } = {};
+	for (const [uaId, c] of Object.entries(uaIdCount)) {
+		const ua = userAgents[uaId as unknown as number] || '';
+		const key = getter(ua);
+		count[key] = (count[key] ?? 0) + c;
+	}
+	const dataPoints = Object.entries(count).sort((a, b) => b[1] - a[1]);
+	return donutData(dataPoints.map(([k]) => k), dataPoints.map(([, v]) => v), colors);
+}
+
 /** Layout for ActivityRequests / ActivityResponseTime bar charts */
 export function activityLayout(period: Period, yAxisTitle: string, barmode?: string) {
 	const days = periodToDays(period);

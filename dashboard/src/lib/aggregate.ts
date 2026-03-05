@@ -25,6 +25,12 @@ export type TopUserData = {
 	locations: { [loc: string]: number };
 };
 
+export type ReferrerBar = {
+	referrer: string;
+	count: number;
+	height: number;
+};
+
 export type AggregatedData = {
 	period: Period;
 	requestBuckets: number[];
@@ -54,6 +60,8 @@ export type AggregatedData = {
 	hourlyBuckets: number[];
 
 	locationBars: LocationBar[];
+	referrerBars: ReferrerBar[];
+	referrerAvailable: boolean;
 
 	endpointFreq: { [key: string]: { path: string; status: number; count: number } };
 
@@ -155,6 +163,8 @@ function emptyResult(previous: RequestsData, settings: DashboardSettings): Aggre
 		versionHasMultiple: false,
 		hourlyBuckets: new Array(24).fill(0),
 		locationBars: [],
+		referrerBars: [],
+		referrerAvailable: false,
 		endpointFreq: {},
 		topUsers: null,
 		topUserIDActive: false,
@@ -193,6 +203,8 @@ export function aggregate(
 
 	const hourlyBuckets = new Array(24).fill(0);
 	const locationCount: { [loc: string]: number } = {};
+	const referrerCount: { [ref: string]: number } = {};
+	let referrerAvailable = false;
 	const endpointFreq: { [key: string]: { path: string; status: number; count: number } } = {};
 
 	type UserEntry = {
@@ -276,6 +288,14 @@ export function aggregate(
 			locationCount[location] = (locationCount[location] ?? 0) + 1;
 		}
 
+		// 8b. Referrer
+		const referrer = row[ColumnIndex.Referrer] as string | null | undefined;
+		if (referrer) {
+			const ref = settings.ignoreParams ? referrer.split('?')[0] : referrer;
+			referrerCount[ref] = (referrerCount[ref] ?? 0) + 1;
+			referrerAvailable = true;
+		}
+
 		// 9. Endpoints
 		const ePath = settings.ignoreParams ? path.split('?')[0] : path;
 		const eKey = `${ePath}${status}`;
@@ -342,6 +362,20 @@ export function aggregate(
 		}))
 		.sort((a, b) => b.frequency - a.frequency);
 
+	// Build referrer bars (sorted by count, heights normalized, top 50)
+	let referrerMax = 0;
+	for (const count of Object.values(referrerCount)) {
+		if (count > referrerMax) referrerMax = count;
+	}
+	const referrerBars: ReferrerBar[] = Object.entries(referrerCount)
+		.map(([referrer, count]) => ({
+			referrer,
+			count,
+			height: referrerMax > 0 ? count / referrerMax : 0,
+		}))
+		.sort((a, b) => b.count - a.count)
+		.slice(0, 50);
+
 	// Build top users
 	const userValues = Object.values(users);
 	const totalUsers = userValues.length;
@@ -389,6 +423,8 @@ export function aggregate(
 
 		hourlyBuckets,
 		locationBars,
+		referrerBars,
+		referrerAvailable,
 		endpointFreq,
 
 		topUsers,
