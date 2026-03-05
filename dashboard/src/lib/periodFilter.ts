@@ -46,6 +46,7 @@ export function getPeriodData(
 	const now = Date.now();
 	const hasHiddenEndpoints = settings.hiddenEndpoints.size > 0;
 	const allTime = settings.period === 'all time';
+	const pathVersionCache = new Map<string, string | null>();
 
 	const current: RequestsData = [];
 	const previous: RequestsData = [];
@@ -73,6 +74,17 @@ export function getPeriodData(
 		const referrer = request[ColumnIndex.Referrer] as string | null | undefined;
 		const weekday = (request[ColumnIndex.CreatedAt] as Date).getDay();
 
+		let version: string | null | undefined;
+		if (settings.targetVersion !== null) {
+			const vPath = settings.ignoreParams ? path.split('?')[0] : path;
+			version = pathVersionCache.get(vPath);
+			if (version === undefined) {
+				const m = vPath.match(/[^a-z0-9](v\d)[^a-z0-9]/i);
+				version = m ? m[1] : null;
+				pathVersionCache.set(vPath, version);
+			}
+		}
+
 		if (
 			(settings.targetUser === null ||
 				userTargeted(settings.targetUser, ipAddress, customUserID)) &&
@@ -82,6 +94,7 @@ export function getPeriodData(
 			(settings.targetReferrer === null || settings.targetReferrer === referrer) &&
 			(settings.targetLocation === null || settings.targetLocation === location) &&
 			(settings.targetWeekday === null || settings.targetWeekday === weekday) &&
+			(settings.targetVersion === null || settings.targetVersion === version) &&
 			(!hasHiddenEndpoints || !isHiddenEndpoint(path, settings.hiddenEndpoints)) &&
 			(settings.hostname === null || settings.hostname === hostname)
 		) {

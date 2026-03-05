@@ -90,6 +90,13 @@
 		height: 100%;
 		font-size: 0.85em;
 	}
+	@media screen and (max-width: 1600px) {
+		.card {
+			margin-left: 0;
+			width: 100%;
+			min-height: unset;
+		}
+	}
 	@media screen and (max-width: 1030px) {
 		.card {
 			width: auto;

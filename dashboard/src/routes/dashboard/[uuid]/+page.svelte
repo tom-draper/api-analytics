@@ -189,6 +189,9 @@ function getSettings() {
 			if (parsed >= 0 && parsed <= 6) settings.targetWeekday = parsed;
 		}
 
+		const version = page.url.searchParams.get('version');
+		if (version) settings.targetVersion = version;
+
 		return settings;
 	}
 
@@ -304,7 +307,7 @@ function getSettings() {
 					bind:targetPath={settings.targetEndpoint.path}
 					bind:targetStatus={settings.targetEndpoint.status}
 				/>
-				<Version versionCount={aggregated.versionCount} hasMultiple={aggregated.versionHasMultiple} />
+				<Version versionCount={aggregated.versionCount} hasMultiple={aggregated.versionHasMultiple} bind:targetVersion={settings.targetVersion} />
 			</div>
 			<div class="right">
 				<Activity
@@ -316,7 +319,7 @@ function getSettings() {
 					<Location locationBars={aggregated.locationBars} bind:targetLocation={settings.targetLocation} />
 					<Device uaIdCount={aggregated.uaIdCount} userAgents={data.userAgents} />
 				</div>
-				<div class="flex">
+				<div class="flex chart-row">
 					<div class="flex-grow">
 						<UsageTime hourlyBuckets={aggregated.hourlyBuckets} />
 						<DayOfWeek weekdayBuckets={aggregated.weekdayBuckets} bind:targetWeekday={settings.targetWeekday} />
@@ -327,7 +330,7 @@ function getSettings() {
 							bind:targetUser={settings.targetUser}
 						/>
 					</div>
-					<div>
+					<div class="referrer-col">
 						{#if aggregated.referrerAvailable}
 						<Referrer referrerBars={aggregated.referrerBars} bind:targetReferrer={settings.targetReferrer} />
 					{/if}
@@ -482,6 +485,13 @@ function getSettings() {
 	@media screen and (max-width: 1600px) {
 		.grid-row {
 			flex-direction: column;
+		}
+		.chart-row {
+			flex-direction: column;
+		}
+		.referrer-col {
+			order: -1;
+			width: 100%;
 		}
 	}
 	@media screen and (max-width: 1300px) {
