@@ -59,7 +59,12 @@
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
 	$effect(() => {
-		if (plotDiv && freqTimes.length > 0) generatePlot(freqTimes, freqCounts);
+		if (!plotDiv) return;
+		if (freqTimes.length > 0) {
+			generatePlot(freqTimes, freqCounts);
+		} else if (plotDiv.data) {
+			Plotly.purge(plotDiv);
+		}
 	});
 </script>
 
@@ -67,13 +72,11 @@
 	<div class="card-title">
 		Response times <span class="milliseconds">(ms)</span>
 	</div>
-	{#if sortedTimes.length > 0}
-		<div class="values">
-			<div class="value lower-quartile">{LQ.toFixed(1)}</div>
-			<div class="value median">{median.toFixed(1)}</div>
-			<div class="value upper-quartile">{UQ.toFixed(1)}</div>
-		</div>
-	{/if}
+	<div class="values">
+		<div class="value lower-quartile">{LQ.toFixed(1)}</div>
+		<div class="value median">{median.toFixed(1)}</div>
+		<div class="value upper-quartile">{UQ.toFixed(1)}</div>
+	</div>
 	<div class="labels">
 		<div class="label">LQ</div>
 		<div class="label">Median</div>
@@ -114,6 +117,10 @@
 	}
 	.label {
 		flex: 1;
+	}
+
+	#plotly {
+		min-height: 50px;
 	}
 
 	.milliseconds {
