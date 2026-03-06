@@ -1,7 +1,10 @@
 import { codeToHtml } from 'shiki';
+import { dev } from '$app/environment';
 import frameworkExamples, { frameworkLanguages } from '$lib/framework';
 
-export async function load() {
+export async function load({ request }) {
+	const host = request.headers.get('host') ?? '';
+	const isHosted = dev || host.includes('apianalytics.dev');
 	const opts = {
 		theme: 'one-dark-pro' as const,
 		colorReplacements: { '#282c34': 'transparent' }
@@ -17,5 +20,5 @@ export async function load() {
 		};
 	}
 
-	return { highlighted };
+	return { highlighted, isHosted };
 }

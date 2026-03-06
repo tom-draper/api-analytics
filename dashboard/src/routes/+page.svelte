@@ -28,5 +28,5 @@
 	/>
 	<GettingStarted highlighted={data.highlighted} />
 	<NginxAnalytics />
-	<DocLinks />
+	{#if data.isHosted}<DocLinks />{/if}
 </div>
