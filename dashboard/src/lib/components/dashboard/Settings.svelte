@@ -47,35 +47,44 @@
 <div class="background" class:hidden={!show} onclick={hideSettings}>
 	<div class="container" onclick={handleClick}>
 		<h2 class="title">Settings</h2>
-		<div class="disable404 setting mb-2">
+		<div class="setting mb-2">
 			<div class="setting-label">Exclude status 404</div>
-			<input
-				type="checkbox"
-				name="disable404"
-				id="checkbox"
-				onchange={toggleDisable404}
+			<button
+				class="toggle-switch"
+				class:on={settings.disable404}
+				onclick={toggleDisable404}
 				title="Hide requests made to non-existent routes"
-			/>
+				role="switch"
+				aria-checked={settings.disable404}
+			>
+				<span class="toggle-thumb"></span>
+			</button>
 		</div>
-		<div class="disable404 setting mb-2">
+		<div class="setting mb-2">
 			<div class="setting-label">Exclude bots and crawlers</div>
-			<input
-				type="checkbox"
-				name="ignoreBots"
-				id="checkbox"
-				onchange={toggleIgnoreBots}
+			<button
+				class="toggle-switch"
+				class:on={settings.ignoreBots}
+				onclick={toggleIgnoreBots}
 				title="Hide requests from bots, crawlers and automated tools"
-			/>
+				role="switch"
+				aria-checked={settings.ignoreBots}
+			>
+				<span class="toggle-thumb"></span>
+			</button>
 		</div>
-		<div class="disable404 setting mb-8">
+		<div class="setting mb-8">
 			<div class="setting-label">Exclude URL params</div>
-			<input
-				type="checkbox"
-				name="ignoreParams"
-				id="checkbox"
-				onchange={toggleIgnoreParams}
+			<button
+				class="toggle-switch"
+				class:on={settings.ignoreParams}
+				onclick={toggleIgnoreParams}
 				title="Ignore URL parameters when grouping endpoints"
-			/>
+				role="switch"
+				aria-checked={settings.ignoreParams}
+			>
+				<span class="toggle-thumb"></span>
+			</button>
 		</div>
 		<div class="setting-title">Filters:</div>
 		<div class="setting-filters mb-8 mt-1">
@@ -185,9 +194,41 @@
 	}
 	.setting {
 		display: flex;
+		align-items: center;
 	}
 	.setting-label {
 		margin-right: 10px;
+	}
+
+	/* Toggle switch */
+	.toggle-switch {
+		position: relative;
+		width: 36px;
+		height: 20px;
+		border-radius: 10px;
+		background: #3a3a3a;
+		border: none;
+		cursor: pointer;
+		padding: 0;
+		flex-shrink: 0;
+		transition: background 0.2s ease;
+	}
+	.toggle-switch.on {
+		background: var(--highlight);
+	}
+	.toggle-thumb {
+		position: absolute;
+		top: 3px;
+		left: 3px;
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: #fff;
+		transition: transform 0.2s ease;
+		pointer-events: none;
+	}
+	.toggle-switch.on .toggle-thumb {
+		transform: translateX(16px);
 	}
 
 	.setting-filters {
@@ -210,23 +251,9 @@
 		color: var(--background);
 	}
 
-	input {
-		margin: 0;
-	}
-	input[type='checkbox'] {
-		align-self: center;
-	}
-
 	svg {
 		width: 22px;
 		height: 22px;
-	}
-
-	#checkbox {
-		height: 12px;
-		width: 12px;
-		margin-top: 2px;
-		cursor: pointer;
 	}
 
 	.export-csv {
