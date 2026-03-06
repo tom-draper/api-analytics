@@ -23,7 +23,6 @@
 		"@tailwindcss/postcss": "^4.2.1",
 		"@tailwindcss/vite": "^4.2.1",
 		"@types/plotly.js": "^3.0.10",
-		"@types/prismjs": "^1.26.6",
 		"autoprefixer": "^10.4.27",
 		"eslint": "^10.0.2",
 		"eslint-config-prettier": "^10.1.8",
@@ -41,8 +40,7 @@
 		"vite": "^7.3.1"
 	},
 	"dependencies": {
-		"prismjs": "^1.30.0",
-		"svelte-highlight": "^7.9.0"
+		"shiki": "^4.0.1"
 	},
 	"packageManager": "pnpm@10.30.3+sha512.c961d1e0a2d8e354ecaa5166b822516668b7f44cb5bd95122d590dd81922f606f5473b6d23ec4a5be05e7fcd18e8488d47d978bbe981872f1145d06e9a740017"
 }
