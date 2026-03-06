@@ -15,12 +15,22 @@
 	}
 
 	function getSuccessRateArr(buckets: ActivityBucket[], period: Period, firstRequestDate: Date | null): number[] {
-		if (period === '24 hours' || period === 'week') {
-			const hours = period === '24 hours' ? 24 : 24 * 7;
-			const successArr = new Array(hours).fill(0);
+		if (period === '24 hours') {
+			const count = 288;
+			const successArr = new Array(count).fill(0);
+			for (const bucket of buckets) {
+				const idx = Math.floor((Date.now() - bucket.date) / (5 * 60 * 1000));
+				if (idx >= 0 && idx < count) {
+					successArr[successArr.length - 1 - idx] = bucket.successRate;
+				}
+			}
+			return successArr;
+		} else if (period === 'week') {
+			const count = 24 * 7;
+			const successArr = new Array(count).fill(0);
 			for (const bucket of buckets) {
 				const idx = hoursAgoTime(bucket.date);
-				if (idx >= 0 && idx < hours) {
+				if (idx >= 0 && idx < count) {
 					successArr[successArr.length - 1 - idx] = bucket.successRate;
 				}
 			}

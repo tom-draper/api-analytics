@@ -97,6 +97,24 @@
 			<div class="setting-filter" class:active={settings.targetUser}>
 				User: <span>{formatUserID(settings.targetUser) || 'None'}</span>
 			</div>
+			<div class="setting-filter" class:active={settings.targetVersion}>
+				Version: <span>{settings.targetVersion || 'None'}</span>
+			</div>
+			<div class="setting-filter" class:active={settings.targetClient}>
+				Client: <span>{settings.targetClient || 'None'}</span>
+			</div>
+			<div class="setting-filter" class:active={settings.targetDeviceType}>
+				Device: <span>{settings.targetDeviceType || 'None'}</span>
+			</div>
+			<div class="setting-filter" class:active={settings.targetOS}>
+				OS: <span>{settings.targetOS || 'None'}</span>
+			</div>
+			<div class="setting-filter" class:active={settings.targetWeekday !== null}>
+				Day: <span>{settings.targetWeekday !== null ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][settings.targetWeekday] : 'None'}</span>
+			</div>
+			<div class="setting-filter" class:active={settings.targetReferrer}>
+				Referrer: <span>{settings.targetReferrer || 'None'}</span>
+			</div>
 		</div>
 		<div class="setting-title">Hidden endpoints:</div>
 		<div class="setting mb-4">
