@@ -317,7 +317,7 @@ function getSettings() {
 				/>
 				<div class="grid-row">
 					<Location locationBars={aggregated.locationBars} bind:targetLocation={settings.targetLocation} />
-					<Device uaIdCount={aggregated.uaIdCount} userAgents={data.userAgents} />
+					<Device uaIdCount={aggregated.uaIdCount} userAgents={data.userAgents} bind:targetClient={settings.targetClient} bind:targetDeviceType={settings.targetDeviceType} bind:targetOS={settings.targetOS} />
 				</div>
 				<div class="flex chart-row">
 					<div class="flex-grow">

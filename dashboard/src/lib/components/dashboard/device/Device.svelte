@@ -12,9 +12,12 @@
 		window.dispatchEvent(new Event('resize'));
 	}
 
-	let { uaIdCount, userAgents }: {
+	let { uaIdCount, userAgents, targetClient = $bindable<string | null>(null), targetDeviceType = $bindable<string | null>(null), targetOS = $bindable<string | null>(null) }: {
 		uaIdCount: { [id: number]: number };
 		userAgents: UserAgents;
+		targetClient: string | null;
+		targetDeviceType: string | null;
+		targetOS: string | null;
 	} = $props();
 </script>
 
@@ -33,13 +36,13 @@
 	</div>
 
 	<div class="tab" class:tab-active={activeBtn === 'client'}>
-		<Client {uaIdCount} {userAgents} />
+		<Client {uaIdCount} {userAgents} bind:targetClient />
 	</div>
 	<div class="tab" class:tab-active={activeBtn === 'os'}>
-		<OperatingSystem {uaIdCount} {userAgents} />
+		<OperatingSystem {uaIdCount} {userAgents} bind:targetOS />
 	</div>
 	<div class="tab" class:tab-active={activeBtn === 'device'}>
-		<DeviceType {uaIdCount} {userAgents} />
+		<DeviceType {uaIdCount} {userAgents} bind:targetDeviceType />
 	</div>
 </div>
 
