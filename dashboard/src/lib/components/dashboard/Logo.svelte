@@ -30,7 +30,7 @@
 		height: 44px;
 		color: var(--highlight);
 	}
-	@media screen and (max-width: 1030px) {
+	@media screen and (max-width: 1070px) {
 		.card {
 			width: auto;
 			flex: 1;

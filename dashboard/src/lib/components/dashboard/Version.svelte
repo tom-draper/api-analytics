@@ -79,7 +79,7 @@
 	#plotDiv {
 		padding-right: 20px;
 	}
-	@media screen and (max-width: 1030px) {
+	@media screen and (max-width: 1070px) {
 		.card {
 			width: auto;
 			flex: 1;

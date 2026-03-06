@@ -66,7 +66,7 @@
 		activeFilter = value;
 	}
 
-let { endpointFreq, targetPath = $bindable<string | null>(null), targetStatus = $bindable<number | null>(null) }: {
+	let { endpointFreq, targetPath = $bindable<string | null>(null), targetStatus = $bindable<number | null>(null) }: {
 		endpointFreq: EndpointFreq;
 		targetPath: string | null;
 		targetStatus: number | null;
@@ -136,7 +136,7 @@ let { endpointFreq, targetPath = $bindable<string | null>(null), targetStatus = 
 		}
 	}
 
-	@media screen and (max-width: 1030px) {
+	@media screen and (max-width: 1070px) {
 		.card {
 			width: auto;
 			flex: 1;

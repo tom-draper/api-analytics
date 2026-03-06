@@ -357,7 +357,6 @@ function getSettings() {
 {:else}
 	<div class="placeholder">
 		<div class="spinner-container">
-			<!-- <div class="loader"></div> -->
 			<div class="w-[25px]">
 				<Loading />
 			</div>
@@ -513,7 +512,7 @@ function getSettings() {
 			margin: 1.4em 1em 3.5em;
 		}
 	}
-	@media screen and (max-width: 1030px) {
+	@media screen and (max-width: 1070px) {
 		.dashboard-content {
 			flex-direction: column;
 		}
