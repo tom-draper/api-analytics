@@ -96,7 +96,9 @@ export function getPeriodData(
 		const ipAddress = request[ColumnIndex.IPAddress];
 		const customUserID = request[ColumnIndex.UserID];
 		const referrer = request[ColumnIndex.Referrer] as string | null | undefined;
-		const weekday = (request[ColumnIndex.CreatedAt] as Date).getDay();
+		const createdAt = request[ColumnIndex.CreatedAt] as Date;
+		const weekday = createdAt.getDay();
+		const hour = createdAt.getHours();
 
 		let version: string | null | undefined;
 		if (settings.targetVersion !== null) {
@@ -122,6 +124,7 @@ export function getPeriodData(
 			(settings.targetReferrer === null || settings.targetReferrer === referrer) &&
 			(settings.targetLocation === null || settings.targetLocation === location) &&
 			(settings.targetWeekday === null || settings.targetWeekday === weekday) &&
+			(settings.targetHour === null || settings.targetHour === hour) &&
 			(settings.targetVersion === null || settings.targetVersion === version) &&
 			(!hasHiddenEndpoints || !isHiddenEndpoint(path, settings.hiddenEndpoints)) &&
 			(settings.hostname === null || settings.hostname === hostname)
@@ -129,7 +132,7 @@ export function getPeriodData(
 			if (allTime) {
 				current.push(request);
 			} else {
-				const dateMs = (request[ColumnIndex.CreatedAt] as Date).getTime();
+				const dateMs = createdAt.getTime();
 				if (dateMs >= currentStartMs) {
 					current.push(request);
 				} else if (dateMs >= prevStartMs) {

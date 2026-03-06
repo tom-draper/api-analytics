@@ -121,6 +121,9 @@
 			<div class="setting-filter" class:active={settings.targetWeekday !== null}>
 				Day: <span>{settings.targetWeekday !== null ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][settings.targetWeekday] : 'None'}</span>
 			</div>
+			<div class="setting-filter" class:active={settings.targetHour !== null}>
+				Hour: <span>{settings.targetHour !== null ? `${settings.targetHour}:00` : 'None'}</span>
+			</div>
 			<div class="setting-filter" class:active={settings.targetReferrer}>
 				Referrer: <span>{settings.targetReferrer || 'None'}</span>
 			</div>

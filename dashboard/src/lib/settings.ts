@@ -12,6 +12,7 @@ export type DashboardSettings = {
 	targetReferrer: string | null;
 	targetLocation: string | null;
 	targetWeekday: number | null;
+	targetHour: number | null;
 	targetVersion: string | null;
 	targetClient: string | null;
 	targetDeviceType: string | null;
@@ -38,6 +39,7 @@ export function initSettings(): DashboardSettings {
 		targetReferrer: null,
 		targetLocation: null,
 		targetWeekday: null,
+		targetHour: null,
 		targetVersion: null,
 		targetClient: null,
 		targetDeviceType: null,

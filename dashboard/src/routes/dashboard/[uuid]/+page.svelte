@@ -190,6 +190,12 @@ function getSettings() {
 			if (parsed >= 0 && parsed <= 6) settings.targetWeekday = parsed;
 		}
 
+		const hour = page.url.searchParams.get('hour');
+		if (hour !== null) {
+			const parsed = parseInt(hour);
+			if (parsed >= 0 && parsed <= 23) settings.targetHour = parsed;
+		}
+
 		const version = page.url.searchParams.get('version');
 		if (version) settings.targetVersion = version;
 
@@ -326,7 +332,7 @@ function getSettings() {
 				</div>
 				<div class="flex chart-row">
 					<div class="flex-grow">
-						<UsageTime hourlyBuckets={aggregated.hourlyBuckets} />
+						<UsageTime hourlyBuckets={aggregated.hourlyBuckets} bind:targetHour={settings.targetHour} />
 						<DayOfWeek weekdayBuckets={aggregated.weekdayBuckets} bind:targetWeekday={settings.targetWeekday} />
 						<TopUsers
 							users={aggregated.topUsers}
