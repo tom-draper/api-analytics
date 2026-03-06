@@ -234,8 +234,12 @@ function getSettings() {
 				exportCSV(msg.current, columns, data!.userAgents);
 				return;
 			}
-			aggregated = msg.aggregated;
 			if (msg.hostnames !== undefined) hostnames = msg.hostnames;
+			// Defer the render by one rAF so the CSS animation isn't starved
+			// by the synchronous Plotly chart initialisation that follows
+			requestAnimationFrame(() => {
+				aggregated = msg.aggregated;
+			});
 		};
 		worker = w;
 
