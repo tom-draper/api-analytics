@@ -85,6 +85,21 @@ export function buildDonutData(
 	return [{ values, labels, type: 'pie', hole: 0.6, marker: { colors }, ...(pull ? { pull } : {}) }];
 }
 
+/** Format a bucket start date as a time range label based on period bucket size */
+export function bucketRange(date: Date, period: Period): string {
+	const pad = (n: number) => String(n).padStart(2, '0');
+	if (period === '24 hours') {
+		const end = new Date(date.getTime() + 5 * 60 * 1000);
+		return `${pad(date.getHours())}:${pad(date.getMinutes())}-${pad(end.getHours())}:${pad(end.getMinutes())}`;
+	} else if (period === 'week') {
+		const end = new Date(date.getTime() + 60 * 60 * 1000);
+		const day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+		return `${day} ${pad(date.getHours())}:00-${pad(end.getHours())}:00`;
+	} else {
+		return date.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
+	}
+}
+
 /** Layout for ActivityRequests / ActivityResponseTime bar charts */
 export function activityLayout(period: Period, yAxisTitle: string, barmode?: string) {
 	const days = periodToDays(period);

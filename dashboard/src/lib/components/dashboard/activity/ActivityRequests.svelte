@@ -1,36 +1,37 @@
 <script lang="ts">
 	import { type Period } from '$lib/period';
 	import type { ActivityBucket } from '$lib/aggregate';
-	import { renderPlot, activityLayout } from '$lib/plotly';
+	import { renderPlot, activityLayout, bucketRange } from '$lib/plotly';
 
-	function bars(buckets: ActivityBucket[]) {
+	function bars(buckets: ActivityBucket[], period: Period) {
 		const dates = buckets.map((b) => new Date(b.date));
+		const timeRanges = dates.map((d) => bucketRange(d, period));
 		const users = buckets.map((b) => b.userCount);
 		const requests = buckets.map((b) => b.requestCount - b.userCount);
 		const requestsText = buckets.map((b) => `${b.requestCount} requests`);
-		const usersText = buckets.map(
-			(b) => `${b.requestCount} requests from ${b.userCount} users`
-		);
+		const usersText = buckets.map((b) => `${b.requestCount} requests from ${b.userCount} users`);
 
 		return [
 			{
 				x: dates,
 				y: users,
 				text: usersText,
+				customdata: timeRanges,
 				textposition: 'none',
 				type: 'bar',
 				marker: { color: '#3fcf8e' },
-				hovertemplate: `<b>%{text}</b><br>%{x|%d %b %Y %H:%M}</b><extra></extra>`,
+				hovertemplate: `<b>%{text}</b><br>%{customdata}<extra></extra>`,
 				showlegend: false
 			},
 			{
 				x: dates,
 				y: requests,
 				text: requestsText,
+				customdata: timeRanges,
 				textposition: 'none',
 				type: 'bar',
 				marker: { color: '#228458' },
-				hovertemplate: `<b>%{text}</b><br>%{x|%d %b %Y %H:%M}</b><extra></extra>`,
+				hovertemplate: `<b>%{text}</b><br>%{customdata}<extra></extra>`,
 				showlegend: false
 			}
 		];
@@ -41,7 +42,7 @@
 
 	$effect(() => {
 		if (plotDiv && activityBuckets) {
-			renderPlot(plotDiv, bars(activityBuckets), activityLayout(period, 'Requests', 'stack'));
+			renderPlot(plotDiv, bars(activityBuckets, period), activityLayout(period, 'Requests', 'stack'));
 		}
 	});
 </script>

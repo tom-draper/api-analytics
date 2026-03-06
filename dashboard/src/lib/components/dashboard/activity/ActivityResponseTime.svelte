@@ -1,16 +1,18 @@
 <script lang="ts">
 	import { type Period } from '$lib/period';
 	import type { ActivityBucket } from '$lib/aggregate';
-	import { renderPlot, activityLayout } from '$lib/plotly';
+	import { renderPlot, activityLayout, bucketRange } from '$lib/plotly';
 
-	function bars(buckets: ActivityBucket[]) {
+	function bars(buckets: ActivityBucket[], period: Period) {
+		const dates = buckets.map((b) => new Date(b.date));
 		return [
 			{
-				x: buckets.map((b) => new Date(b.date)),
+				x: dates,
 				y: buckets.map((b) => b.avgResponseTime),
+				customdata: dates.map((d) => bucketRange(d, period)),
 				type: 'bar',
 				marker: { color: '#707070' },
-				hovertemplate: `<b>%{y:.1f}ms average</b><br>%{x|%d %b %Y %H:%M}</b><extra></extra>`,
+				hovertemplate: `<b>%{y:.1f}ms average</b><br>%{customdata}<extra></extra>`,
 				showlegend: false
 			}
 		];
@@ -21,7 +23,7 @@
 
 	$effect(() => {
 		if (plotDiv) {
-			renderPlot(plotDiv, bars(activityBuckets), activityLayout(period, 'Response time (ms)'));
+			renderPlot(plotDiv, bars(activityBuckets, period), activityLayout(period, 'Response time (ms)'));
 		}
 	});
 </script>
