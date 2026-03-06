@@ -28,6 +28,7 @@
 	import Navigation from '$components/dashboard/Navigation.svelte';
 	import { dataStore } from '$lib/dataStore';
 	import Referrer from '$components/dashboard/Referrer.svelte';
+	import UserIDList from '$components/dashboard/UserIDList.svelte';
 	import Loading from '$components/Loading.svelte';
 	import { get } from 'svelte/store';
 	import { untrack } from 'svelte';
@@ -332,8 +333,8 @@ function getSettings() {
 					</div>
 					<div class="referrer-col">
 						{#if aggregated.referrerAvailable}
-						<Referrer referrerBars={aggregated.referrerBars} bind:targetReferrer={settings.targetReferrer} />
-					{/if}
+							<Referrer referrerBars={aggregated.referrerBars} bind:targetReferrer={settings.targetReferrer} />
+						{/if}
 					</div>
 				</div>
 			</div>

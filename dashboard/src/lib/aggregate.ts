@@ -31,6 +31,12 @@ export type ReferrerBar = {
 	height: number;
 };
 
+export type UserIDBar = {
+	userID: string;
+	count: number;
+	height: number;
+};
+
 export type AggregatedData = {
 	period: Period;
 	requestBuckets: number[];
@@ -63,6 +69,8 @@ export type AggregatedData = {
 	locationBars: LocationBar[];
 	referrerBars: ReferrerBar[];
 	referrerAvailable: boolean;
+	userIDBars: UserIDBar[];
+	userIDAvailable: boolean;
 
 	endpointFreq: { [key: string]: { path: string; status: number; count: number } };
 
@@ -167,6 +175,8 @@ function emptyResult(previous: RequestsData, settings: DashboardSettings): Aggre
 		locationBars: [],
 		referrerBars: [],
 		referrerAvailable: false,
+		userIDBars: [],
+		userIDAvailable: false,
 		endpointFreq: {},
 		topUsers: null,
 		topUserIDActive: false,
@@ -208,6 +218,8 @@ export function aggregate(
 	const locationCount: { [loc: string]: number } = {};
 	const referrerCount: { [ref: string]: number } = {};
 	let referrerAvailable = false;
+	const userIDCount: { [id: string]: number } = {};
+	let userIDAvailable = false;
 	const endpointFreq: { [key: string]: { path: string; status: number; count: number } } = {};
 
 	type UserEntry = {
@@ -300,6 +312,12 @@ export function aggregate(
 			referrerAvailable = true;
 		}
 
+		// 8c. Custom user ID
+		if (customUserID) {
+			userIDCount[customUserID] = (userIDCount[customUserID] ?? 0) + 1;
+			userIDAvailable = true;
+		}
+
 		// 9. Endpoints
 		const ePath = settings.ignoreParams ? path.split('?')[0] : path;
 		const eKey = `${ePath}${status}`;
@@ -380,6 +398,20 @@ export function aggregate(
 		.sort((a, b) => b.count - a.count)
 		.slice(0, 50);
 
+	// Build user ID bars (sorted by count, heights normalized, top 50)
+	let userIDMax = 0;
+	for (const count of Object.values(userIDCount)) {
+		if (count > userIDMax) userIDMax = count;
+	}
+	const userIDBars: UserIDBar[] = Object.entries(userIDCount)
+		.map(([userID, count]) => ({
+			userID,
+			count,
+			height: userIDMax > 0 ? count / userIDMax : 0,
+		}))
+		.sort((a, b) => b.count - a.count)
+		.slice(0, 50);
+
 	// Build top users
 	const userValues = Object.values(users);
 	const totalUsers = userValues.length;
@@ -430,6 +462,8 @@ export function aggregate(
 		locationBars,
 		referrerBars,
 		referrerAvailable,
+		userIDBars,
+		userIDAvailable,
 		endpointFreq,
 
 		topUsers,
