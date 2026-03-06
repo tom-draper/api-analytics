@@ -40,9 +40,13 @@
 				? (firstRequestDate ? Math.floor((Date.now() - firstRequestDate.getTime()) / 86_400_000) : 0)
 				: (periodToDays(period) ?? 0);
 			days = Math.min(days, 500);
-			const step = 86_400_000;
+			const base = new Date();
+			base.setHours(0, 0, 0, 0);
+			const baseDay = base.getDate();
 			return Array.from({ length: days }, (_, i) => {
-				const date = snap - (days - 1 - i) * step;
+				const d = new Date(base);
+				d.setDate(baseDay - (days - 1 - i));
+				const date = d.getTime();
 				return { value: bucketMap.get(date) ?? 0, date };
 			});
 		}
