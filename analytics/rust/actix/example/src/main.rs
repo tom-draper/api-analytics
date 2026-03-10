@@ -21,11 +21,11 @@ async fn index() -> Result<impl Responder> {
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
 
-    println!("Server listening at: http://127.0.0.1:8080");
-    HttpServer::new(|| {
-        let api_key = std::env::var("API_KEY").expect("API_KEY must be set.");
+    let api_key = std::env::var("API_KEY").expect("API_KEY must be set.");
 
-        App::new().wrap(Analytics::new(api_key)).service(index)
+    println!("Server listening at: http://127.0.0.1:8080");
+    HttpServer::new(move || {
+        App::new().wrap(Analytics::new(api_key.clone())).service(index)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
