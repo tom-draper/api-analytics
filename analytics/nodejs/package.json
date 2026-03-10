@@ -3,13 +3,18 @@
   "version": "1.3.0",
   "description": "Monitoring and analytics for node API applications.",
   "main": "analytics.js",
+  "exports": "./analytics.js",
   "type": "module",
+  "files": [
+    "analytics.js"
+  ],
   "directories": {
-    "test": "tests"
+    "test": "test"
   },
-  "dependencies": {
-    "node-fetch": "^3.0.0"
+  "engines": {
+    "node": ">=18"
   },
+  "dependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -27,7 +32,7 @@
     "hono"
   ],
   "author": "Tom Draper",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/tom-draper/api-analytics/issues"
   },
