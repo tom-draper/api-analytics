@@ -1,0 +1,10 @@
+services:
+    ApiAnalytics\Symfony\AnalyticsEventSubscriber:
+        arguments:
+            $apiKey: '%env(API_ANALYTICS_KEY)%'
+            # Optional: override the server URL for self-hosting
+            # $serverUrl: 'https://your-self-hosted-server.com/'
+            # Optional: set privacy level (0 = full, 1 = no IP stored, 2 = no IP sent)
+            # $privacyLevel: 0
+        tags:
+            - { name: kernel.event_subscriber }
