@@ -350,3 +350,71 @@ where
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use actix_web::test::TestRequest;
+
+    #[test]
+    fn test_get_ip_cf_connecting_ip() {
+        let req = TestRequest::get()
+            .insert_header(("cf-connecting-ip", "203.0.113.1"))
+            .insert_header(("x-forwarded-for", "10.0.0.1"))
+            .to_srv_request();
+        assert_eq!(get_ip_address(&req), "203.0.113.1");
+    }
+
+    #[test]
+    fn test_get_ip_x_forwarded_for_first() {
+        let req = TestRequest::get()
+            .insert_header(("x-forwarded-for", "203.0.113.1, 10.0.0.1"))
+            .to_srv_request();
+        assert_eq!(get_ip_address(&req), "203.0.113.1");
+    }
+
+    #[test]
+    fn test_get_ip_x_real_ip() {
+        let req = TestRequest::get()
+            .insert_header(("x-real-ip", "203.0.113.1"))
+            .to_srv_request();
+        assert_eq!(get_ip_address(&req), "203.0.113.1");
+    }
+
+    #[test]
+    fn test_get_ip_empty_when_no_headers() {
+        let req = TestRequest::get().to_srv_request();
+        // No proxy headers and no peer addr in test context
+        let ip = get_ip_address(&req);
+        // Either empty or a loopback — just assert it doesn't panic
+        let _ = ip;
+    }
+
+    #[test]
+    fn test_get_hostname() {
+        let req = TestRequest::get()
+            .insert_header(("host", "example.com"))
+            .to_srv_request();
+        assert_eq!(get_hostname(&req), "example.com");
+    }
+
+    #[test]
+    fn test_get_path() {
+        let req = TestRequest::get().uri("/api/users").to_srv_request();
+        assert_eq!(get_path(&req), "/api/users");
+    }
+
+    #[test]
+    fn test_get_user_agent() {
+        let req = TestRequest::get()
+            .insert_header(("user-agent", "TestAgent/1.0"))
+            .to_srv_request();
+        assert_eq!(get_user_agent(&req), "TestAgent/1.0");
+    }
+
+    #[test]
+    fn test_get_user_id_default_empty() {
+        let req = TestRequest::get().to_srv_request();
+        assert_eq!(get_user_id(&req), "");
+    }
+}

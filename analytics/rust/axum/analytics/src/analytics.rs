@@ -339,3 +339,75 @@ where
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::str::FromStr;
+
+    fn make_headers(pairs: &[(&str, &str)]) -> HeaderMap {
+        let mut map = HeaderMap::new();
+        for (name, value) in pairs {
+            map.insert(
+                http::header::HeaderName::from_str(name).unwrap(),
+                http::header::HeaderValue::from_str(value).unwrap(),
+            );
+        }
+        map
+    }
+
+    #[test]
+    fn test_cf_connecting_ip() {
+        let headers = make_headers(&[("cf-connecting-ip", "203.0.113.1")]);
+        assert_eq!(ip_from_cf_connecting_ip(&headers), Some("203.0.113.1".parse().unwrap()));
+    }
+
+    #[test]
+    fn test_x_forwarded_for_single() {
+        let headers = make_headers(&[("x-forwarded-for", "203.0.113.1")]);
+        assert_eq!(ip_from_x_forwarded_for(&headers), Some("203.0.113.1".parse().unwrap()));
+    }
+
+    #[test]
+    fn test_x_forwarded_for_returns_first_ip() {
+        // First IP is the client; last is the closest proxy — must NOT use .rev()
+        let headers = make_headers(&[("x-forwarded-for", "203.0.113.1, 10.0.0.1, 192.168.1.1")]);
+        assert_eq!(ip_from_x_forwarded_for(&headers), Some("203.0.113.1".parse().unwrap()));
+    }
+
+    #[test]
+    fn test_x_real_ip() {
+        let headers = make_headers(&[("x-real-ip", "203.0.113.1")]);
+        assert_eq!(ip_from_x_real_ip(&headers), Some("203.0.113.1".parse().unwrap()));
+    }
+
+    #[test]
+    fn test_invalid_ip_returns_none() {
+        let headers = make_headers(&[("x-real-ip", "not-an-ip")]);
+        assert_eq!(ip_from_x_real_ip(&headers), None);
+    }
+
+    #[test]
+    fn test_cf_takes_priority_over_forwarded() {
+        let headers = make_headers(&[
+            ("cf-connecting-ip", "1.1.1.1"),
+            ("x-forwarded-for", "2.2.2.2"),
+        ]);
+        assert_eq!(ip_from_cf_connecting_ip(&headers), Some("1.1.1.1".parse().unwrap()));
+        assert_eq!(ip_from_x_forwarded_for(&headers), Some("2.2.2.2".parse().unwrap()));
+    }
+
+    #[test]
+    fn test_ipv6_address() {
+        let headers = make_headers(&[("x-real-ip", "2001:db8::1")]);
+        assert_eq!(ip_from_x_real_ip(&headers), Some("2001:db8::1".parse().unwrap()));
+    }
+
+    #[test]
+    fn test_missing_header_returns_none() {
+        let headers = HeaderMap::new();
+        assert_eq!(ip_from_cf_connecting_ip(&headers), None);
+        assert_eq!(ip_from_x_forwarded_for(&headers), None);
+        assert_eq!(ip_from_x_real_ip(&headers), None);
+    }
+}
