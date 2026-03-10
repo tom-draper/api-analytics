@@ -1,0 +1,25 @@
+{
+  "name": "@api-analytics/hono",
+  "version": "1.0.0",
+  "description": "API Analytics middleware for Hono applications.",
+  "main": "index.js",
+  "exports": "./index.js",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "files": ["index.js"],
+  "keywords": ["analytics", "api", "dashboard", "hono", "middleware"],
+  "author": "Tom Draper",
+  "license": "MIT",
+  "dependencies": {
+    "@api-analytics/core": "^1.0.0"
+  },
+  "peerDependencies": {
+    "hono": ">=3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tom-draper/api-analytics.git"
+  },
+  "bugs": { "url": "https://github.com/tom-draper/api-analytics/issues" },
+  "homepage": "https://github.com/tom-draper/api-analytics#readme"
+}

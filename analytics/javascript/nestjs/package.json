@@ -1,0 +1,25 @@
+{
+  "name": "@api-analytics/nestjs",
+  "version": "1.0.0",
+  "description": "API Analytics middleware for NestJS applications.",
+  "main": "index.js",
+  "exports": "./index.js",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "files": ["index.js"],
+  "keywords": ["analytics", "api", "dashboard", "nestjs", "middleware"],
+  "author": "Tom Draper",
+  "license": "MIT",
+  "dependencies": {
+    "@api-analytics/core": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@nestjs/core": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tom-draper/api-analytics.git"
+  },
+  "bugs": { "url": "https://github.com/tom-draper/api-analytics/issues" },
+  "homepage": "https://github.com/tom-draper/api-analytics#readme"
+}
