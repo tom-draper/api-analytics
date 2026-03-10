@@ -1,14 +1,15 @@
 import logging
 import threading
 from datetime import datetime
-from typing import Dict, List, Union
+from typing import Dict, List
 
 import requests
 
 DEFAULT_SERVER_URL = "https://www.apianalytics-server.com"
 
-_requests = []
-_last_posted = datetime.now()
+_lock = threading.Lock()
+_requests: Dict[str, List[Dict]] = {}
+_last_posted: Dict[str, datetime] = {}
 
 logger = logging.getLogger("api_analytics")
 logger.setLevel(logging.DEBUG)
@@ -22,20 +23,28 @@ def log_request(
     server_url: str,
 ):
     logger.debug(f"Logging request: {request_data}")
-    if api_key == "" or api_key is None:
-        logging.debug("Aborting log request: API key is not set.")
+    if not api_key:
+        logger.debug("Aborting log request: API key is not set.")
         return
 
-    global _requests, _last_posted
-    _requests.append(request_data)
-    now = datetime.now()
-    if (now - _last_posted).total_seconds() > 60.0:
+    requests_to_post = None
+    with _lock:
+        if api_key not in _requests:
+            _requests[api_key] = []
+            _last_posted[api_key] = datetime.now()
+
+        _requests[api_key].append(request_data)
+        now = datetime.now()
+        if (now - _last_posted[api_key]).total_seconds() > 60.0:
+            requests_to_post = list(_requests[api_key])
+            _requests[api_key] = []
+            _last_posted[api_key] = now
+
+    if requests_to_post:
         threading.Thread(
             target=_post_requests,
-            args=(api_key, _requests, framework, privacy_level, server_url),
+            args=(api_key, requests_to_post, framework, privacy_level, server_url),
         ).start()
-        _requests = []
-        _last_posted = now
 
 
 def _post_requests(
@@ -47,9 +56,6 @@ def _post_requests(
 ):
     url = _endpoint_url(server_url)
     logger.debug(f"Posting {len(requests_data)} logged requests to server: {url}")
-    if url is None:
-        logger.debug("Aborting post to server: Server URL is not set.")
-        return
 
     try:
         response = requests.post(
@@ -64,12 +70,12 @@ def _post_requests(
         )
         logger.debug(f"Response from server ({response.status_code}): {response.text}")
     except Exception as e:
-        logger.debug(f'Failed to post logs: {e}')
+        logger.debug(f"Failed to post logs: {e}")
 
 
-def _endpoint_url(server_url: Union[str, None]):
-    if server_url is None or server_url == "":
-        return server_url
-    elif server_url[-1] == "/":
+def _endpoint_url(server_url: str) -> str:
+    if not server_url:
+        return DEFAULT_SERVER_URL + "/api/log-request"
+    if server_url.endswith("/"):
         return server_url + "api/log-request"
     return server_url + "/api/log-request"

@@ -4,7 +4,7 @@ from time import time
 from typing import Callable, Union
 
 from .core import log_request, logger, DEFAULT_SERVER_URL
-from flask import Flask, Request, Response, request
+from flask import Flask, Request, Response, g, request
 
 
 def add_middleware(app: Flask, api_key: str, config: "Config" = None):
@@ -16,7 +16,6 @@ def add_middleware(app: Flask, api_key: str, config: "Config" = None):
     :param config: Optional configuration for the middleware
     """
     config = config or Config()
-    start = 0.0
 
     if not api_key:
         logger.debug("API key is not set.")
@@ -25,12 +24,10 @@ def add_middleware(app: Flask, api_key: str, config: "Config" = None):
 
     @app.before_request
     def prepare():
-        nonlocal start
-        start = time()
+        g.analytics_start = time()
 
     @app.after_request
     def on_finish(response: Response) -> Response:
-        nonlocal start
         request_data = {
             "hostname": config.get_hostname(request),
             "ip_address": _get_ip_address(request, config),
@@ -38,7 +35,7 @@ def add_middleware(app: Flask, api_key: str, config: "Config" = None):
             "user_agent": config.get_user_agent(request),
             "method": request.method,
             "status": response.status_code,
-            "response_time": int((time() - start) * 1000),
+            "response_time": int((time() - g.analytics_start) * 1000),
             "user_id": config.get_user_id(request),
             "created_at": datetime.now().isoformat(),
         }
@@ -68,11 +65,7 @@ class Mappers:
 
     @staticmethod
     def get_user_agent(request: Request) -> Union[str, None]:
-        if "user-agent" in request.headers:
-            return request.headers["user-agent"]
-        elif "User-Agent" in request.headers:
-            return request.headers["User-Agent"]
-        return None
+        return request.headers.get("User-Agent")
 
 
 def _get_ip_address(request: Request, config: "Config") -> Union[str, None]:
