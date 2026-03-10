@@ -19,7 +19,7 @@ public class Config
     public Func<HttpContext, string>? GetUserAgent { get; set; } = null;
     public Func<HttpContext, string>? GetUserID { get; set; } = null;
     public int PrivacyLevel { get; set; } = 0;
-    public string ServerUrl { get; set; } = "https://www.apianalytics-server.com/api/log-request";
+    public string ServerUrl { get; set; } = "https://www.apianalytics-server.com/";
 }
 
 public class AnalyticsService : IDisposable
@@ -33,7 +33,7 @@ public class AnalyticsService : IDisposable
     private readonly SemaphoreSlim _flushSemaphore = new(1, 1);
     private bool _disposed = false;
     private static readonly TimeSpan FlushInterval = TimeSpan.FromSeconds(60);
-    private static readonly TimeSpan HttpTimeout = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan HttpTimeout = TimeSpan.FromSeconds(10);
 
     public AnalyticsService(string apiKey, Config config, ILogger<AnalyticsService> logger)
     {
@@ -47,6 +47,12 @@ public class AnalyticsService : IDisposable
         };
 
         _flushTimer = new Timer(async _ => await FlushRequestsAsync(), null, FlushInterval, FlushInterval);
+    }
+
+    private string GetEndpointUrl()
+    {
+        var baseUrl = _config.ServerUrl.TrimEnd('/');
+        return baseUrl + "/api/log-request";
     }
 
     private struct Payload
@@ -70,7 +76,7 @@ public class AnalyticsService : IDisposable
         public string Hostname { get; set; }
 
         [JsonPropertyName("ip_address")]
-        public string IPAddress { get; set; }
+        public string? IPAddress { get; set; }
 
         [JsonPropertyName("user_agent")]
         public string UserAgent { get; set; }
@@ -88,7 +94,7 @@ public class AnalyticsService : IDisposable
         public int Status { get; set; }
 
         [JsonPropertyName("user_id")]
-        public string UserID { get; set; }
+        public string? UserID { get; set; }
 
         [JsonPropertyName("created_at")]
         public string CreatedAt { get; set; }
@@ -117,7 +123,7 @@ public class AnalyticsService : IDisposable
             var json = JsonSerializer.Serialize(payload);
             using var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync(_config.ServerUrl, content);
+            var response = await _httpClient.PostAsync(GetEndpointUrl(), content);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -173,7 +179,6 @@ public class AnalyticsService : IDisposable
             return;
 
         _requests.Enqueue(requestData);
-        // No immediate flush - only timer-based flushing every 60 seconds
     }
 
     public RequestData CreateRequestData(HttpContext context, long responseTimeMs, DateTime createdAt)
@@ -192,31 +197,37 @@ public class AnalyticsService : IDisposable
         };
     }
 
-    private string GetIPAddress(HttpContext context)
+    private string? GetIPAddress(HttpContext context)
     {
         if (_config.PrivacyLevel >= 2)
-            return "";
+            return null;
 
         try
         {
             if (_config.GetIPAddress != null)
-                return _config.GetIPAddress.Invoke(context) ?? "";
+                return _config.GetIPAddress.Invoke(context);
 
-            // Check for forwarded IP addresses first
+            var cfConnectingIp = context.Request.Headers["CF-Connecting-IP"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(cfConnectingIp))
+                return cfConnectingIp;
+
             var forwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
             if (!string.IsNullOrEmpty(forwardedFor))
             {
-                // Take the first IP if multiple are present
                 var firstIp = forwardedFor.Split(',')[0].Trim();
                 if (!string.IsNullOrEmpty(firstIp))
                     return firstIp;
             }
 
-            return context.Connection.RemoteIpAddress?.ToString() ?? "";
+            var realIp = context.Request.Headers["X-Real-IP"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(realIp))
+                return realIp;
+
+            return context.Connection.RemoteIpAddress?.ToString();
         }
         catch
         {
-            return "";
+            return null;
         }
     }
 
@@ -262,17 +273,17 @@ public class AnalyticsService : IDisposable
         }
     }
 
-    private string GetUserID(HttpContext context)
+    private string? GetUserID(HttpContext context)
     {
         try
         {
             if (_config.GetUserID != null)
-                return _config.GetUserID.Invoke(context) ?? "";
-            return "";
+                return _config.GetUserID.Invoke(context);
+            return null;
         }
         catch
         {
-            return "";
+            return null;
         }
     }
 
@@ -299,17 +310,6 @@ public class AnalyticsService : IDisposable
         if (!_disposed)
         {
             _flushTimer?.Dispose();
-
-            // Flush any remaining requests synchronously
-            try
-            {
-                FlushAsync().GetAwaiter().GetResult();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while flushing analytics data during disposal");
-            }
-
             _httpClient?.Dispose();
             _flushSemaphore?.Dispose();
             _disposed = true;
@@ -317,11 +317,18 @@ public class AnalyticsService : IDisposable
     }
 }
 
-public class AnalyticsMiddleware(RequestDelegate next, AnalyticsService analyticsService, ILogger<AnalyticsMiddleware> logger)
+public class AnalyticsMiddleware
 {
-    private readonly RequestDelegate _next = next ?? throw new ArgumentNullException(nameof(next));
-    private readonly AnalyticsService _analyticsService = analyticsService ?? throw new ArgumentNullException(nameof(analyticsService));
-    private readonly ILogger<AnalyticsMiddleware> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly RequestDelegate _next;
+    private readonly AnalyticsService _analyticsService;
+    private readonly ILogger<AnalyticsMiddleware> _logger;
+
+    public AnalyticsMiddleware(RequestDelegate next, AnalyticsService analyticsService, ILogger<AnalyticsMiddleware> logger)
+    {
+        _next = next ?? throw new ArgumentNullException(nameof(next));
+        _analyticsService = analyticsService ?? throw new ArgumentNullException(nameof(analyticsService));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -356,30 +363,33 @@ public static class AnalyticsExtensions
         if (string.IsNullOrEmpty(apiKey))
             throw new ArgumentException("API key cannot be null or empty", nameof(apiKey));
 
-        // Create the analytics service
         var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger<AnalyticsService>();
-        var analyticsService = new AnalyticsService(apiKey, config ?? new Config(), logger);
+        var serviceLogger = loggerFactory.CreateLogger<AnalyticsService>();
+        var analyticsService = new AnalyticsService(apiKey, config ?? new Config(), serviceLogger);
 
-        // Handle disposal during application shutdown
         var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
         appLifetime.ApplicationStopping.Register(() =>
         {
             try
             {
-                logger.LogInformation("Analytics service is stopping, flushing remaining data...");
+                loggerFactory.CreateLogger<AnalyticsService>()
+                    .LogInformation("Analytics service is stopping, flushing remaining data...");
                 analyticsService.FlushAsync().GetAwaiter().GetResult();
-                analyticsService.Dispose();
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error occurred while disposing analytics service during shutdown");
+                loggerFactory.CreateLogger<AnalyticsService>()
+                    .LogError(ex, "Error occurred while flushing analytics data during shutdown");
+            }
+            finally
+            {
+                analyticsService.Dispose();
             }
         });
 
+        var middlewareLogger = loggerFactory.CreateLogger<AnalyticsMiddleware>();
         return app.Use(async (context, next) =>
         {
-            var middlewareLogger = loggerFactory.CreateLogger<AnalyticsMiddleware>();
             var middleware = new AnalyticsMiddleware(
                 async (ctx) => await next(),
                 analyticsService,
@@ -387,38 +397,5 @@ public static class AnalyticsExtensions
             );
             await middleware.InvokeAsync(context);
         });
-    }
-}
-
-public class AnalyticsBackgroundService(AnalyticsService analyticsService, ILogger<AnalyticsBackgroundService> logger) : BackgroundService
-{
-    private readonly AnalyticsService _analyticsService = analyticsService ?? throw new ArgumentNullException(nameof(analyticsService));
-    private readonly ILogger<AnalyticsBackgroundService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        // This service mainly exists to ensure proper cleanup during shutdown
-        try
-        {
-            await Task.Delay(Timeout.Infinite, stoppingToken);
-        }
-        catch (OperationCanceledException)
-        {
-            // Expected when cancellation is requested
-        }
-    }
-
-    public override async Task StopAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Analytics service is stopping, flushing remaining data...");
-        try
-        {
-            await _analyticsService.FlushAsync();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while flushing analytics data during shutdown");
-        }
-        await base.StopAsync(cancellationToken);
     }
 }
