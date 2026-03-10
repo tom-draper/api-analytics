@@ -5,7 +5,7 @@ An effortless API analytics solution, complete with a dashboard.
 Currently compatible with:
 
 - Python: <b>FastAPI</b>, <b>Flask</b>, <b>Django</b> and <b>Tornado</b>
-- Node.js: <b>Express</b>, <b>Fastify</b>, <b>Koa</b> and <b>Hono</b>
+- JavaScript: <b>Express</b>, <b>Fastify</b>, <b>Koa</b>, <b>Hono</b> and <b>Elysia</b>
 - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
 - Rust: <b>Actix</b>, <b>Axum</b> and <b>Rocket</b>
 - Ruby: <b>Rails</b> and <b>Sinatra</b>
@@ -125,15 +125,15 @@ if __name__ == "__main__":
 
 #### Express
 
-[![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://www.npmjs.com/package/node-api-analytics)
+[![Npm package version](https://img.shields.io/npm/v/api-analytics-js)](https://www.npmjs.com/package/api-analytics-js)
 
 ```bash
-npm install node-api-analytics
+npm install api-analytics-js
 ```
 
 ```js
 import express from 'express';
-import { expressAnalytics } from 'node-api-analytics';
+import { expressAnalytics } from 'api-analytics-js';
 
 const app = express();
 
@@ -150,15 +150,15 @@ app.listen(8080, () => {
 
 #### Fastify
 
-[![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://www.npmjs.com/package/node-api-analytics)
+[![Npm package version](https://img.shields.io/npm/v/api-analytics-js)](https://www.npmjs.com/package/api-analytics-js)
 
 ```bash
-npm install node-api-analytics
+npm install api-analytics-js
 ```
 
 ```js
 import fastify from 'Fastify';
-import { useFastifyAnalytics } from 'node-api-analytics';
+import { useFastifyAnalytics } from 'api-analytics-js';
 
 const fastify = Fastify();
 
@@ -179,15 +179,15 @@ fastify.listen({ port: 8080 }, function (err, address) {
 
 #### Koa
 
-[![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://www.npmjs.com/package/node-api-analytics)
+[![Npm package version](https://img.shields.io/npm/v/api-analytics-js)](https://www.npmjs.com/package/api-analytics-js)
 
 ```bash
-npm install node-api-analytics
+npm install api-analytics-js
 ```
 
 ```js
 import Koa from "koa";
-import { koaAnalytics } from 'node-api-analytics';
+import { koaAnalytics } from 'api-analytics-js';
 
 const app = new Koa();
 
@@ -204,16 +204,16 @@ app.listen(8080, () =>
 
 #### Hono
 
-[![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://www.npmjs.com/package/node-api-analytics)
+[![Npm package version](https://img.shields.io/npm/v/api-analytics-js)](https://www.npmjs.com/package/api-analytics-js)
 
 ```bash
-npm install node-api-analytics
+npm install api-analytics-js
 ```
 
 ```js
 import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
-import { honoAnalytics } from 'node-api-analytics';
+import { honoAnalytics } from 'api-analytics-js';
 
 const app = new Hono();
 
