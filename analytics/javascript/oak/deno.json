@@ -1,0 +1,8 @@
+{
+  "name": "@api-analytics/oak",
+  "version": "1.0.0",
+  "exports": "./mod.ts",
+  "imports": {
+    "@oak/oak": "jsr:@oak/oak@^17"
+  }
+}
