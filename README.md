@@ -9,6 +9,7 @@ Currently compatible with:
 - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
 - Rust: <b>Actix</b>, <b>Axum</b> and <b>Rocket</b>
 - Ruby: <b>Rails</b> and <b>Sinatra</b>
+- PHP: <b>Laravel</b> and <b>Native PHP</b>
 - C#: <b>ASP.NET Core</b>
 
 ![banner](https://github.com/user-attachments/assets/4d366f69-bb9b-43b7-8b9e-97a341d1b057)
@@ -530,6 +531,57 @@ end
 get '/' do
     {message: 'Hello, World!'}.to_json
 end
+```
+
+#### Laravel
+
+[![Packagist Version](https://img.shields.io/packagist/v/api-analytics/laravel)](https://packagist.org/packages/api-analytics/laravel)
+
+```bash
+composer require api-analytics/laravel
+```
+
+Add your API key to `.env`:
+
+```env
+API_ANALYTICS_KEY=<API-KEY>
+```
+
+Register the middleware in `app/Http/Kernel.php`:
+
+```php
+protected $middleware = [
+    // ... other middleware
+    \ApiAnalytics\Laravel\AnalyticsMiddleware::class, // Add middleware
+];
+```
+
+#### Native PHP
+
+[![Packagist Version](https://img.shields.io/packagist/v/api-analytics/php)](https://packagist.org/packages/api-analytics/php)
+
+```bash
+composer require api-analytics/php
+```
+
+```php
+use ApiAnalytics\PHP\Analytics;
+
+$analytics = new Analytics(<API-KEY>);
+
+$startTime = microtime(true);
+
+// Your API logic here
+$response = ['message' => 'Hello, World!'];
+$statusCode = 200;
+
+$responseTimeMs = (int) round((microtime(true) - $startTime) * 1000);
+
+$analytics->log($_SERVER, $responseTimeMs, $statusCode); // Log request
+
+header('Content-Type: application/json');
+http_response_code($statusCode);
+echo json_encode($response);
 ```
 
 #### ASP.NET Core
