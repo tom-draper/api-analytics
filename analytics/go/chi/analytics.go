@@ -3,6 +3,7 @@ package analytics
 import (
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/tom-draper/api-analytics/analytics/go/core"
@@ -27,6 +28,13 @@ func (rw *responseWriter) WriteHeader(code int) {
 	rw.status = code
 	rw.ResponseWriter.WriteHeader(code)
 	rw.wroteHeader = true
+}
+
+func (rw *responseWriter) Write(b []byte) (int, error) {
+	if !rw.wroteHeader {
+		rw.WriteHeader(http.StatusOK)
+	}
+	return rw.ResponseWriter.Write(b)
 }
 
 type Config struct {
@@ -141,6 +149,15 @@ func GetUserAgent(r *http.Request) string {
 }
 
 func GetIPAddress(r *http.Request) string {
+	if ip := r.Header.Get("CF-Connecting-IP"); ip != "" {
+		return ip
+	}
+	if fwd := r.Header.Get("X-Forwarded-For"); fwd != "" {
+		return strings.TrimSpace(strings.SplitN(fwd, ",", 2)[0])
+	}
+	if ip := r.Header.Get("X-Real-IP"); ip != "" {
+		return ip
+	}
 	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 	return ip
 }

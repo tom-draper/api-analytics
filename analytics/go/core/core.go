@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+var httpClient = &http.Client{Timeout: 10 * time.Second}
+
 const DefaultServerURL string = "https://www.apianalytics-server.com/"
 
 type Client struct {
@@ -73,7 +75,11 @@ func (c *Client) LogRequest(request RequestData) {
 		return
 	}
 
-	c.requestChannel <- request
+	select {
+	case c.requestChannel <- request:
+	default:
+		log.Println("API Analytics: request buffer full, dropping request")
+	}
 }
 
 func (c *Client) worker() {
@@ -94,7 +100,10 @@ func (c *Client) worker() {
 			}
 
 		case <-c.done:
-			// Send any remaining requests before shutting down
+			// Drain any requests still sitting in the channel
+			for len(c.requestChannel) > 0 {
+				requests = append(requests, <-c.requestChannel)
+			}
 			if len(requests) > 0 {
 				c.pushRequests(requests)
 			}
@@ -115,7 +124,7 @@ func (c *Client) pushRequests(requests []RequestData) {
 		log.Printf("Failed to send requests: %v", err)
 		return
 	}
-	resp, err := http.Post(c.endpointURL, "application/json", bytes.NewBuffer(body))
+	resp, err := httpClient.Post(c.endpointURL, "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		log.Printf("Failed to send requests: %v", err)
 		return
@@ -130,20 +139,5 @@ func (c *Client) Shutdown() {
 	if c == nil {
 		return
 	}
-
-	// Signal the worker to shut down
 	close(c.done)
-
-	// Drain the requestChannel
-	var remainingRequests []RequestData
-	for request := range c.requestChannel {
-		remainingRequests = append(remainingRequests, request)
-	}
-
-	// Push any remaining requests
-	if len(remainingRequests) > 0 {
-		c.pushRequests(remainingRequests)
-	}
-
-	close(c.requestChannel)
 }
