@@ -41,9 +41,9 @@
 		<button id="formBtn" on:click={submit} class="text-sm" class:no-display={state != 'delete'}
 			>Delete</button
 		>
-		<button id="formBtn" class="text-sm" class:no-display={state != 'loading'}>
+		<button id="formBtn" class="text-sm" aria-label="Loading" class:no-display={state != 'loading'}>
 			<div class="spinner">
-				<div class="loader" />
+				<div class="loader"></div>
 			</div>
 		</button>
 		<button id="formBtn" class="copied-btn text-sm" class:no-display={state != 'deleted'}
