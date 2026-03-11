@@ -9,16 +9,9 @@
             "email": "tomjdraper1@gmail.com"
         }
     ],
-    "homepage": "https://github.com/tom-draper/api-analytics",
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../core"
-        }
-    ],
+    "homepage": "https://github.com/tom-draper/api-analytics-php-laravel",
     "require": {
         "php": "^8.0",
-        "api-analytics/core": "^1.0 || dev-main",
         "illuminate/contracts": "^9.0 || ^10.0 || ^11.0",
         "illuminate/http": "^9.0 || ^10.0 || ^11.0",
         "illuminate/support": "^9.0 || ^10.0 || ^11.0"
@@ -29,7 +22,8 @@
     },
     "autoload": {
         "psr-4": {
-            "ApiAnalytics\\Laravel\\": "src/"
+            "ApiAnalytics\\Laravel\\": "src/",
+            "ApiAnalytics\\Core\\": "src/Core/"
         }
     },
     "autoload-dev": {
