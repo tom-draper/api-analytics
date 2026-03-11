@@ -11,6 +11,7 @@ Shared core package for the API Analytics JavaScript middleware packages. This p
 | Koa | [@api-analytics/koa](https://www.npmjs.com/package/@api-analytics/koa) |
 | Hono | [@api-analytics/hono](https://www.npmjs.com/package/@api-analytics/hono) |
 | NestJS | [@api-analytics/nestjs](https://www.npmjs.com/package/@api-analytics/nestjs) |
+| H3 | [@api-analytics/h3](https://www.npmjs.com/package/@api-analytics/h3) |
 | Elysia | [@api-analytics/elysia](https://www.npmjs.com/package/@api-analytics/elysia) |
 | Bun | [@api-analytics/bun](https://www.npmjs.com/package/@api-analytics/bun) |
 | Oak (Deno) | [@api-analytics/oak](https://jsr.io/@api-analytics/oak) |
