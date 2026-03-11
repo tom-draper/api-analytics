@@ -66,7 +66,8 @@ export function buildDonutData(
 	userAgents: UserAgents,
 	getter: (ua: string) => string,
 	colors: string[],
-	selectedLabel?: string | null
+	selectedLabel?: string | null,
+	colorMap?: Map<string, string>
 ): object[] {
 	const count: { [key: string]: number } = {};
 	for (const [uaId, c] of Object.entries(uaIdCount)) {
@@ -77,8 +78,17 @@ export function buildDonutData(
 	const dataPoints = Object.entries(count).sort((a, b) => b[1] - a[1]);
 	const labels = dataPoints.map(([k]) => k);
 	const values = dataPoints.map(([, v]) => v);
+	let markerColors: string[];
+	if (colorMap) {
+		for (const label of labels) {
+			if (!colorMap.has(label)) colorMap.set(label, colors[colorMap.size % colors.length]);
+		}
+		markerColors = labels.map((l) => colorMap.get(l)!);
+	} else {
+		markerColors = colors;
+	}
 	const pull = selectedLabel != null ? labels.map((l) => (l === selectedLabel ? 0.08 : 0)) : undefined;
-	return [{ values, labels, type: 'pie', hole: 0.6, marker: { colors }, ...(pull ? { pull } : {}) }];
+	return [{ values, labels, type: 'pie', hole: 0.6, marker: { colors: markerColors }, ...(pull ? { pull } : {}) }];
 }
 
 /** Format a bucket start date as a time range label based on period bucket size */

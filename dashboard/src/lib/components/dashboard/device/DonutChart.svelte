@@ -13,6 +13,7 @@
 	} = $props();
 
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
+	const colorMap = new Map<string, string>();
 
 	function selectLabel(label: string) {
 		const current = untrack(() => target);
@@ -28,7 +29,7 @@
 	$effect(() => {
 		if (!plotDiv || !uaIdCount) return;
 
-		renderPlot(plotDiv, buildDonutData(uaIdCount, userAgents, getter, graphColors, target), donutLayout(411));
+		renderPlot(plotDiv, buildDonutData(uaIdCount, userAgents, getter, graphColors, target, colorMap), donutLayout(411));
 		window?.dispatchEvent(new Event('resize'));
 
 		const el = plotDiv as any;
