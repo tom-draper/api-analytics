@@ -42,7 +42,7 @@
 		margin-left: 2em;
 	}
 	.endpoints {
-		margin: 0.9em 20px 0.6em;
+		margin: 0.9em 20px 0.9em;
 	}
 	.endpoint {
 		border-radius: 3px;
