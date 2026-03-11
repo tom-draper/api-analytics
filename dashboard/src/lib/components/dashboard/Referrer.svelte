@@ -1,18 +1,10 @@
 <script lang="ts">
-	import { replaceState } from '$app/navigation';
-	import { page } from '$app/state';
 	import { setParam } from '$lib/params';
 	import type { ReferrerBar } from '$lib/aggregate';
 
 	function setTargetReferrer(referrer: string) {
-		if (targetReferrer === referrer) {
-			targetReferrer = null;
-			page.url.searchParams.delete('referrer');
-			replaceState(page.url, page.state);
-		} else {
-			targetReferrer = referrer;
-			setParam('referrer', referrer);
-		}
+		targetReferrer = targetReferrer === referrer ? null : referrer;
+		setParam('referrer', targetReferrer);
 	}
 
 	let { referrerBars, targetReferrer = $bindable<string | null>(null) }: {

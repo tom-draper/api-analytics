@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Endpoint } from '$lib/endpoints';
+	import { statusSuccess, statusRedirect, statusBad, statusError } from '$lib/status';
 
 	function handleSelect(path: string, status: number): void {
 		selectEndpoint?.(path, status);
@@ -24,10 +25,10 @@
 				<div
 					class="background"
 					style="width: {(endpoint.count / maxCount) * 100}%"
-					class:success={endpoint.status >= 200 && endpoint.status <= 299}
-					class:redirect={endpoint.status >= 300 && endpoint.status <= 399}
-					class:bad={endpoint.status >= 400 && endpoint.status <= 499}
-					class:error={endpoint.status >= 500}
+					class:success={statusSuccess(endpoint.status)}
+					class:redirect={statusRedirect(endpoint.status)}
+					class:bad={statusBad(endpoint.status)}
+					class:error={statusError(endpoint.status)}
 					class:other={endpoint.status <= 100}
 				></div>
 			</button>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { formatUserID, formatDisplayUserID } from '$lib/user';
+	import { formatUserID, formatDisplayUserID, userTargeted } from '$lib/user';
 	import { setParam, setParamNoReplace } from '$lib/params';
 	import type { TopUserData } from '$lib/aggregate';
 
@@ -71,15 +71,6 @@
 		return false;
 	}
 
-	function userTargeted(ipAddress: string, userID: string) {
-		if (!targetUser) return false;
-		if (targetUser.composite) {
-			return formatUserID(ipAddress, userID) === formatUserID(targetUser.ipAddress, targetUser.userID);
-		} else {
-			return targetUser.userID === userID;
-		}
-	}
-
 	type TargetUser = { ipAddress: string; userID: string; composite: boolean };
 
 	let { users, userIDActive, locationsActive, targetUser = $bindable<TargetUser | null>(null) }: {
@@ -125,8 +116,8 @@
 					{#each dataPage as { ipAddress, customUserID, requests, locations, lastRequested }, i}
 						<tr
 							class="highlight-row"
-							class:highlighted-row={targetUser !== null && userTargeted(ipAddress, customUserID)}
-							class:dim-row={targetUser !== null && !userTargeted(ipAddress, customUserID)}
+							class:highlighted-row={targetUser !== null && userTargeted(targetUser, ipAddress, customUserID)}
+							class:dim-row={targetUser !== null && !userTargeted(targetUser, ipAddress, customUserID)}
 							class:last-row={i === dataPage.length - 1}
 						>
 							<td onclick={() => selectUser(ipAddress, customUserID)}>{ipAddress}</td>

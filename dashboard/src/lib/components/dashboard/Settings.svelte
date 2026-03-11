@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { DashboardSettings } from '$lib/settings';
+	import { periodDisplay } from '$lib/period';
+	import { formatDisplayUserID } from '$lib/user';
 	import List from './List.svelte';
 
 	function toggleDisable404() {
@@ -16,20 +18,6 @@
 
 	function hideSettings() {
 		show = false;
-	}
-
-	function formatUserID(
-		targetUser: { ipAddress: string; userID: string; composite: boolean } | null
-	) {
-		if (!targetUser) {
-			return '';
-		}
-
-		if (targetUser.composite && targetUser.ipAddress && targetUser.userID) {
-			return `${targetUser.ipAddress} + ${targetUser.userID}`;
-		} else {
-			return targetUser.userID || targetUser.ipAddress || '';
-		}
 	}
 
 	function handleClick(e: MouseEvent) {
@@ -92,7 +80,7 @@
 				Hostname: <span>{settings.hostname || 'None'}</span>
 			</div>
 			<div class="setting-filter" class:active={settings.period}>
-				Period: <span>{settings.period === 'All time' ? 'None' : settings.period}</span>
+				Period: <span>{periodDisplay[settings.period]}</span>
 			</div>
 			<div class="setting-filter" class:active={settings.targetEndpoint.path}>
 				Endpoint: <span>{settings.targetEndpoint.path || 'None'}</span>
@@ -104,7 +92,7 @@
 				Location: <span>{settings.targetLocation || 'None'}</span>
 			</div>
 			<div class="setting-filter" class:active={settings.targetUser}>
-				User: <span>{formatUserID(settings.targetUser) || 'None'}</span>
+				User: <span>{formatDisplayUserID(settings.targetUser) || 'None'}</span>
 			</div>
 			<div class="setting-filter" class:active={settings.targetVersion}>
 				Version: <span>{settings.targetVersion || 'None'}</span>

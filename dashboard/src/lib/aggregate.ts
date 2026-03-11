@@ -83,6 +83,22 @@ export type AggregatedData = {
 
 const TOP_USERS_LIMIT = 1000;
 
+function buildBars<T>(
+	counts: { [key: string]: number },
+	mapper: (key: string, count: number, height: number) => T,
+	limit?: number
+): T[] {
+	let max = 0;
+	const entries = Object.entries(counts);
+	for (const [, count] of entries) {
+		if (count > max) max = count;
+	}
+	const bars = entries
+		.sort((a, b) => b[1] - a[1])
+		.map(([key, count]) => mapper(key, count, max > 0 ? count / max : 0));
+	return limit !== undefined ? bars.slice(0, limit) : bars;
+}
+
 function quantileFromFreq(times: number[], counts: number[], total: number, q: number): number {
 	if (total === 0) return 0;
 	const pos = (total - 1) * q;
@@ -374,46 +390,10 @@ export function aggregate(
 		successRate: entry.requestCount > 0 ? entry.successCount / entry.requestCount : 0,
 	})).sort((a, b) => a.date - b.date);
 
-	// Build location bars (sorted by frequency, heights normalized)
-	let locationMax = 0;
-	for (const count of Object.values(locationCount)) {
-		if (count > locationMax) locationMax = count;
-	}
-	const locationBars: LocationBar[] = Object.entries(locationCount)
-		.map(([location, frequency]) => ({
-			location,
-			frequency,
-			height: locationMax > 0 ? frequency / locationMax : 0,
-		}))
-		.sort((a, b) => b.frequency - a.frequency);
-
-	// Build referrer bars (sorted by count, heights normalized, top 50)
-	let referrerMax = 0;
-	for (const count of Object.values(referrerCount)) {
-		if (count > referrerMax) referrerMax = count;
-	}
-	const referrerBars: ReferrerBar[] = Object.entries(referrerCount)
-		.map(([referrer, count]) => ({
-			referrer,
-			count,
-			height: referrerMax > 0 ? count / referrerMax : 0,
-		}))
-		.sort((a, b) => b.count - a.count)
-		.slice(0, topListLimit);
-
-	// Build user ID bars (sorted by count, heights normalized, top 50)
-	let userIDMax = 0;
-	for (const count of Object.values(userIDCount)) {
-		if (count > userIDMax) userIDMax = count;
-	}
-	const userIDBars: UserIDBar[] = Object.entries(userIDCount)
-		.map(([userID, count]) => ({
-			userID,
-			count,
-			height: userIDMax > 0 ? count / userIDMax : 0,
-		}))
-		.sort((a, b) => b.count - a.count)
-		.slice(0, topListLimit);
+	// Build location, referrer, and user ID bars (sorted by count, heights normalized)
+	const locationBars: LocationBar[] = buildBars(locationCount, (location, frequency, height) => ({ location, frequency, height }));
+	const referrerBars: ReferrerBar[] = buildBars(referrerCount, (referrer, count, height) => ({ referrer, count, height }), topListLimit);
+	const userIDBars: UserIDBar[] = buildBars(userIDCount, (userID, count, height) => ({ userID, count, height }), topListLimit);
 
 	// Build top users
 	const userValues = Object.values(users);

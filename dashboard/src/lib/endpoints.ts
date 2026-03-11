@@ -44,7 +44,7 @@ function createEndpointFrequencyMap(data: RequestsData, ignoreParams: boolean): 
 /**
  * Determines if a status code matches the active filter
  */
-function statusMatchesFilter(status: number, activeFilter: EndpointFilterType): boolean {
+export function statusMatchesFilter(status: number, activeFilter: EndpointFilterType): boolean {
     return (
         activeFilter === 'all' ||
         (activeFilter === 'success' && status >= 200 && status <= 299) ||

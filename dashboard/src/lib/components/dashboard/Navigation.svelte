@@ -1,19 +1,11 @@
 <script lang="ts">
 	import type { DashboardSettings } from '$lib/settings';
 	import Dropdown from './Dropdown.svelte';
-	import type { Period } from '$lib/period';
+	import { type Period, periodDisplay } from '$lib/period';
 	import { setParam } from '$lib/params';
 
 	const timePeriods: Period[] = ['24 hours', 'week', 'month', '6 months', 'year', 'all time'];
 
-	const timePeriodsDisplay: Record<Period, string> = {
-		'24 hours': '24 hours',
-		week: 'Week',
-		month: 'Month',
-		'6 months': '6 months',
-		year: 'Year',
-		'all time': 'All time'
-	};
 
 	function setPeriodParam(period: Period) {
 		setParam('period', period);
@@ -86,7 +78,7 @@
 					setPeriodParam(period);
 				}}
 			>
-				{timePeriodsDisplay[period]}
+				{periodDisplay[period]}
 			</button>
 		{/each}
 	</div>
