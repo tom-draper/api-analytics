@@ -10,7 +10,7 @@
 {@render children()}
 
 <svelte:head>
-	<script src="https://cdn.plot.ly/plotly-1.58.5.min.js" type="text/javascript"></script>
+	<script src="https://cdn.plot.ly/plotly-3.4.0.min.js" type="text/javascript"></script>
 </svelte:head>
 
 {#if currentRoute !== '/explorer/[uuid]'}

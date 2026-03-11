@@ -6,10 +6,6 @@
 	}
 </script>
 
-<svelte:head>
-	<link rel="stylesheet" href="/css/prism.css" />
-</svelte:head>
-
 <div class="info-page-container">
 	<h1>Frequently Asked Questions</h1>
 

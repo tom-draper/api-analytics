@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { NotificationState } from '$lib/notification';
 
-	export let state: NotificationState;
+	let { state }: { state: NotificationState } = $props();
 </script>
 
 <div

@@ -10,6 +10,10 @@
 		settings.ignoreParams = !settings.ignoreParams;
 	}
 
+	function toggleIgnoreBots() {
+		settings.ignoreBots = !settings.ignoreBots;
+	}
+
 	function hideSettings() {
 		show = false;
 	}
@@ -28,35 +32,59 @@
 		}
 	}
 
-	function handleClick(e) {
+	function handleClick(e: MouseEvent) {
 		e.stopImmediatePropagation();
 	}
 
-	export let show: boolean, settings: DashboardSettings, exportCSV: () => void;
+	let { show = $bindable(false), settings = $bindable(), exportCSV }: { show: boolean; settings: DashboardSettings; exportCSV: () => void } = $props();
+	let hiddenEndpoints = $state<Set<string>>(settings.hiddenEndpoints);
+
+	$effect(() => {
+		settings.hiddenEndpoints = hiddenEndpoints;
+	});
 </script>
 
-<div class="background" class:hidden={!show} on:click={hideSettings}>
-	<div class="container" on:click={handleClick}>
+<div class="background" class:hidden={!show} onclick={hideSettings}>
+	<div class="container" onclick={handleClick}>
 		<h2 class="title">Settings</h2>
-		<div class="disable404 setting mb-2">
-			<div class="setting-label">Ignore status 404</div>
-			<input
-				type="checkbox"
-				name="disable404"
-				id="checkbox"
-				on:change={toggleDisable404}
+		<div class="setting mb-2">
+			<div class="setting-label">Exclude status 404</div>
+			<button
+				class="toggle-switch"
+				class:on={settings.disable404}
+				onclick={toggleDisable404}
 				title="Hide requests made to non-existent routes"
-			/>
+				role="switch"
+				aria-checked={settings.disable404}
+			>
+				<span class="toggle-thumb"></span>
+			</button>
 		</div>
-		<div class="disable404 setting mb-8">
-			<div class="setting-label">Ignore URL params</div>
-			<input
-				type="checkbox"
-				name="ignoreParams"
-				id="checkbox"
-				on:change={toggleIgnoreParams}
+		<div class="setting mb-2">
+			<div class="setting-label">Exclude bots and crawlers</div>
+			<button
+				class="toggle-switch"
+				class:on={settings.ignoreBots}
+				onclick={toggleIgnoreBots}
+				title="Hide requests from bots, crawlers and automated tools"
+				role="switch"
+				aria-checked={settings.ignoreBots}
+			>
+				<span class="toggle-thumb"></span>
+			</button>
+		</div>
+		<div class="setting mb-8">
+			<div class="setting-label">Exclude URL params</div>
+			<button
+				class="toggle-switch"
+				class:on={settings.ignoreParams}
+				onclick={toggleIgnoreParams}
 				title="Ignore URL parameters when grouping endpoints"
-			/>
+				role="switch"
+				aria-checked={settings.ignoreParams}
+			>
+				<span class="toggle-thumb"></span>
+			</button>
 		</div>
 		<div class="setting-title">Filters:</div>
 		<div class="setting-filters mb-8 mt-1">
@@ -78,13 +106,34 @@
 			<div class="setting-filter" class:active={settings.targetUser}>
 				User: <span>{formatUserID(settings.targetUser) || 'None'}</span>
 			</div>
+			<div class="setting-filter" class:active={settings.targetVersion}>
+				Version: <span>{settings.targetVersion || 'None'}</span>
+			</div>
+			<div class="setting-filter" class:active={settings.targetClient}>
+				Client: <span>{settings.targetClient || 'None'}</span>
+			</div>
+			<div class="setting-filter" class:active={settings.targetDeviceType}>
+				Device: <span>{settings.targetDeviceType || 'None'}</span>
+			</div>
+			<div class="setting-filter" class:active={settings.targetOS}>
+				OS: <span>{settings.targetOS || 'None'}</span>
+			</div>
+			<div class="setting-filter" class:active={settings.targetWeekday !== null}>
+				Day: <span>{settings.targetWeekday !== null ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][settings.targetWeekday] : 'None'}</span>
+			</div>
+			<div class="setting-filter" class:active={settings.targetHour !== null}>
+				Hour: <span>{settings.targetHour !== null ? `${settings.targetHour}:00` : 'None'}</span>
+			</div>
+			<div class="setting-filter" class:active={settings.targetReferrer}>
+				Referrer: <span>{settings.targetReferrer || 'None'}</span>
+			</div>
 		</div>
 		<div class="setting-title">Hidden endpoints:</div>
 		<div class="setting mb-4">
-			<List bind:items={settings.hiddenEndpoints} placeholder={'/api/v1/example'} />
+			<List bind:items={hiddenEndpoints} placeholder={'/api/v1/example'} />
 		</div>
 		<div class="export-csv">
-			<button class="export-csv-btn" on:click={exportCSV} title="Export data to CSV"
+			<button class="export-csv-btn" onclick={exportCSV} title="Export data to CSV"
 				><svg
 					xmlns="http://www.w3.org/2000/svg"
 					fill="none"
@@ -148,9 +197,41 @@
 	}
 	.setting {
 		display: flex;
+		align-items: center;
 	}
 	.setting-label {
 		margin-right: 10px;
+	}
+
+	/* Toggle switch */
+	.toggle-switch {
+		position: relative;
+		width: 36px;
+		height: 20px;
+		border-radius: 10px;
+		background: #3a3a3a;
+		border: none;
+		cursor: pointer;
+		padding: 0;
+		flex-shrink: 0;
+		transition: background 0.2s ease;
+	}
+	.toggle-switch.on {
+		background: var(--highlight);
+	}
+	.toggle-thumb {
+		position: absolute;
+		top: 3px;
+		left: 3px;
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: #fff;
+		transition: transform 0.2s ease;
+		pointer-events: none;
+	}
+	.toggle-switch.on .toggle-thumb {
+		transform: translateX(16px);
 	}
 
 	.setting-filters {
@@ -173,23 +254,9 @@
 		color: var(--background);
 	}
 
-	input {
-		margin: 0;
-	}
-	input[type='checkbox'] {
-		align-self: center;
-	}
-
 	svg {
 		width: 22px;
 		height: 22px;
-	}
-
-	#checkbox {
-		height: 12px;
-		width: 12px;
-		margin-top: 2px;
-		cursor: pointer;
 	}
 
 	.export-csv {

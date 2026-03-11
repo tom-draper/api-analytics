@@ -1,11 +1,9 @@
 <script lang="ts">
-	$: color;
+	let { checked = $bindable(false), label, color }: { checked: boolean; label: string; color: string } = $props();
 
 	function toggleChecked() {
 		checked = !checked;
 	}
-
-	export let checked: boolean, label: string, color: string;
 </script>
 
 <div class="flex items-center gap-2 px-2 py-2">

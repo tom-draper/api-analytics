@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let status: number, message: string;
+	let { status, message }: { status: number; message: string } = $props();
 </script>
 
 <div class="min-h-[75vh] overflow-hidden text-[var(--highlight)]">

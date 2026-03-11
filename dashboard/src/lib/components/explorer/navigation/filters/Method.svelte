@@ -3,7 +3,7 @@
 	import { methodMap } from '$lib/consts';
 	import { type Filter } from '$lib/filter';
 
-	export let filter: Filter;
+	let { filter = $bindable() }: { filter: Filter } = $props();
 </script>
 
 <div class="flex flex-col">

@@ -2,30 +2,9 @@
 	import type { DashboardSettings } from '$lib/settings';
 	import Dropdown from './Dropdown.svelte';
 	import type { Period } from '$lib/period';
-	import { onMount } from 'svelte';
 	import { setParam } from '$lib/params';
 
 	const timePeriods: Period[] = ['24 hours', 'week', 'month', '6 months', 'year', 'all time'];
-
-	const donateMessages = [
-		'Donate',
-		'Support',
-		'Contribute',
-		'Contribute today',
-		'Support this project',
-		'Keep API Analytics running',
-		'Keep this project going',
-		'Keep this project alive',
-		'Donate to API Analytics',
-		'Support API Analytics',
-		'Give back',
-		'Support us',
-		'Buy us a coffee',
-		'Give us a tip',
-		'Make a donation',
-		'Support development',
-		'Help with server costs'
-	];
 
 	const timePeriodsDisplay: Record<Period, string> = {
 		'24 hours': '24 hours',
@@ -44,20 +23,14 @@
 		setParam('hostname', hostname);
 	}
 
-	let donateMessage: string;
-	onMount(() => {
-		donateMessage = donateMessages[Math.floor(Math.random() * donateMessages.length)];
+	let { settings = $bindable(), showSettings = $bindable(false), hostnames = $bindable([]) }: { settings: DashboardSettings; showSettings: boolean; hostnames: string[] } = $props();
+	let dropdownOpen = $state(false);
+	let selectedHostname = $state<string | null>(settings.hostname ?? null);
+
+	$effect(() => {
+		settings.hostname = selectedHostname;
+		setHostnameParam(selectedHostname ?? null);
 	});
-
-	$: hostname = settings.hostname;
-
-	$: {
-		setHostnameParam(hostname ?? null);
-	}
-
-	let dropdownOpen: boolean = false;
-
-	export let settings: DashboardSettings, showSettings: boolean, hostnames: string[];
 </script>
 
 <nav class="button-nav flex text-sm">
@@ -83,12 +56,12 @@
 		<a
 			target="_blank"
 			href="https://www.buymeacoffee.com/tomdraper"
-			class="donate-link text-[#464646]">{donateMessage}</a
+			class="donate-link">Buy me a coffee</a
 		>
 	</div>
 	<button
 		class="settings"
-		on:click={() => {
+		onclick={() => {
 			showSettings = true;
 		}}
 	>
@@ -97,7 +70,7 @@
 	<div class="dropdown-container mr-[10px]" class:no-display={hostnames.length <= 1}>
 		<Dropdown
 			options={hostnames.slice(0, 25)}
-			bind:selected={settings.hostname}
+			bind:selected={selectedHostname}
 			bind:open={dropdownOpen}
 			defaultOption={'All hostnames'}
 		/>
@@ -107,7 +80,7 @@
 			<button
 				class="time-period-btn cursor-pointer border-none bg-[var(--background)] px-[12px] py-[4px] text-[var(--dim-text)]"
 				class:time-period-btn-active={settings.period === period}
-				on:click={() => {
+				onclick={() => {
 					settings.period = period;
 					dropdownOpen = false;
 					setPeriodParam(period);
@@ -154,7 +127,6 @@
 		text-align: right;
 	}
 	.donate {
-		/* margin-left: auto; */
 		display: grid;
 		place-items: center;
 		margin-right: 1rem;
@@ -162,6 +134,7 @@
 
 	.donate-link {
 		transition: 0.1s;
+		color: #474747;
 	}
 	.donate-link:hover {
 		color: var(--highlight);

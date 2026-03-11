@@ -1,148 +1,36 @@
 <script lang="ts">
-	import { periodToDays, type Period } from '$lib/period';
-	import { ColumnIndex } from '$lib/consts';
-
-	function getPlotLayout() {
-		return {
-			title: false,
-			autosize: true,
-			margin: { r: 0, l: 0, t: 0, b: 0, pad: 0 },
-			hovermode: false,
-			plot_bgcolor: 'transparent',
-			paper_bgcolor: 'transparent',
-			height: 60,
-			yaxis: {
-				gridcolor: 'gray',
-				showgrid: false,
-				fixedrange: true,
-				dragmode: false
-			},
-			xaxis: {
-				visible: false,
-				dragmode: false
-			},
-			dragmode: false
-		};
-	}
-
-	function lines(data: RequestsData) {
-		const n = 5;
-		const x = [...Array(n).keys()];
-		const y = Array(n).fill(0);
-
-		if (data.length > 0) {
-			const start = data[0][ColumnIndex.CreatedAt].getTime();
-			const end = data[data.length - 1][ColumnIndex.CreatedAt].getTime();
-			const range = end - start;
-			for (let i = 0; i < data.length; i++) {
-				const time = data[i][ColumnIndex.CreatedAt].getTime();
-				const diff = time - start;
-				// Make sure idx doesn't exceed n - 1
-				const idx = Math.min(Math.floor(diff / (range / n)), n - 1);
-				y[idx] += 1;
-			}
-		}
-
-		return [
-			{
-				x: x,
-				y: y,
-				type: 'lines',
-				marker: { color: 'transparent' },
-				showlegend: false,
-				line: { shape: 'spline', smoothing: 1, color: '#3FCF8E30' },
-				fill: 'tozeroy',
-				fillcolor: '#3fcf8e15'
-			}
-		];
-	}
-
-	function getPlotData(data: RequestsData) {
-		return {
-			data: lines(data),
-			layout: getPlotLayout(),
-			config: {
-				responsive: true,
-				showSendToCloud: false,
-				displayModeBar: false
-			}
-		};
-	}
-
-	function generatePlot(data: RequestsData) {
-		if (plotDiv.data) {
-			refreshPlot(data);
-		} else {
-			newPlot(data);
-		}
-	}
-
-	async function newPlot(data: RequestsData) {
-		const plotData = getPlotData(data);
-		Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
-	}
-
-	function refreshPlot(data: RequestsData) {
-		Plotly.react(plotDiv, lines(data), getPlotLayout());
-	}
-
-	function getPercentageChange(data: RequestsData) {
-		if (prevData.length == 0) {
-			return null;
-		}
-
-		return (percentageChange = (data.length / prevData.length) * 100 - 100);
-	}
-
-	function getRequestsPerHour(data: RequestsData) {
-		if (data.length === 0 || data.length === 1) {
-			return data.length;
-		}
-
-		let days = periodToDays(period);
-		if (days === null) {
-			days = daysBetween(
-				data[0][ColumnIndex.CreatedAt],
-				data[data.length - 1][ColumnIndex.CreatedAt]
-			);
-		}
-		return data.length / (24 * days);
-	}
-
-	function daysBetween(date1: Date, date2: Date) {
-		const diff = date2.getTime() - date1.getTime();
-		return Math.floor(diff / (1000 * 60 * 60 * 24));
-	}
+	import { type Period } from '$lib/period';
+	import { renderPlot, sparklineData, sparklineLayout } from '$lib/plotly';
+	import { getPercentageChange, countPerHour } from '$lib/utils';
 
 	function togglePeriod() {
 		perHour = !perHour;
 	}
 
-	let plotDiv: HTMLDivElement;
-	let requestsPerHour: number;
-	let percentageChange: number | null;
-	let perHour = false;
+	let { buckets, count, prevCount, firstDate, lastDate, period }: {
+		buckets: number[];
+		count: number;
+		prevCount: number;
+		firstDate: Date | null;
+		lastDate: Date | null;
+		period: Period;
+	} = $props();
+	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
+	let perHour = $state(false);
+	const percentageChange = $derived(getPercentageChange(count, prevCount));
+	const requestsPerHour = $derived(count <= 1 ? count : countPerHour(count, period, firstDate, lastDate));
 
-	$: if (data) {
-		percentageChange = getPercentageChange(data);
-		requestsPerHour = getRequestsPerHour(data);
-	}
-
-	$: if (plotDiv && data) {
-		generatePlot(data);
-	}
-
-	export let data: RequestsData, prevData: RequestsData, period: Period;
+	$effect(() => {
+		if (plotDiv && buckets) renderPlot(plotDiv, sparklineData(buckets), sparklineLayout());
+	});
 </script>
 
-<button class="card" on:click={togglePeriod}>
+<button class="card" onclick={togglePeriod}>
 	{#if perHour}
 		<div class="card-title">
 			Requests <span class="per-hour">/ hour</span>
 		</div>
-		{#if requestsPerHour !== undefined}
-			<div class="value">{requestsPerHour === 0 ? '0' : requestsPerHour.toFixed(2)}</div>
-		{/if}
+		<div class="value">{requestsPerHour === 0 ? '0' : requestsPerHour.toFixed(2)}</div>
 	{:else}
 		{#if percentageChange}
 			<div
@@ -161,7 +49,7 @@
 			</div>
 		{/if}
 		<div class="card-title">Requests</div>
-		<div class="value">{data.length.toLocaleString()}</div>
+		<div class="value">{count.toLocaleString()}</div>
 	{/if}
 	<div id="plotly">
 		<div id="plotDiv" bind:this={plotDiv}>
@@ -221,7 +109,7 @@
 		overflow: hidden;
 		margin: 0 -5%;
 	}
-	@media screen and (max-width: 1030px) {
+	@media screen and (max-width: 1070px) {
 		.card {
 			width: auto;
 			flex: 1;

@@ -1,136 +1,57 @@
 <script lang="ts">
-	import { ColumnIndex } from '$lib/consts';
+	import { graphColors } from '$lib/consts';
 	import { cachedFunction } from '$lib/cache';
-	import { type Candidate, maintainCandidates } from '$lib/candidates';
-
-	const deviceCandidates: Candidate[] = [
-		{ name: 'iPhone', regex: /iPhone/, matches: 0 },
-		{ name: 'Android', regex: /Android/, matches: 0 },
-		{ name: 'Samsung', regex: /Tizen\//, matches: 0 },
-		{ name: 'Mac', regex: /Macintosh/, matches: 0 },
-		{ name: 'Windows', regex: /Windows/, matches: 0 }
-	];
+	import { matchCandidate } from '$lib/candidates';
+	import { deviceCandidates } from '$lib/device';
+	import { renderPlot, donutLayout, buildDonutData } from '$lib/plotly';
+	import { setParam } from '$lib/params';
+	import { untrack } from 'svelte';
 
 	function getDevice(userAgent: string | null): string {
-		if (!userAgent) {
-			return 'Unknown';
-		}
-
-		for (let i = 0; i < deviceCandidates.length; i++) {
-			const candidate = deviceCandidates[i];
-			if (userAgent.match(candidate.regex)) {
-				candidate.matches++;
-				// Ensure deviceCandidates remains sorted by matches desc for future hits
-				maintainCandidates(i, deviceCandidates);
-				return candidate.name;
-			}
-		}
-
-		return 'Other';
+		return matchCandidate(userAgent, deviceCandidates);
 	}
 
-	function getPlotLayout() {
-		return {
-			title: false,
-			autosize: true,
-			margin: { r: 30, l: 30, t: 25, b: 25, pad: 0 },
-			hovermode: 'closest',
-			plot_bgcolor: 'transparent',
-			paper_bgcolor: 'transparent',
-			height: 196,
-			width: 411,
-			yaxis: {
-				title: { text: 'Requests' },
-				gridcolor: 'gray',
-				showgrid: false,
-				fixedrange: true
-			},
-			xaxis: {
-				visible: false
-			},
-			dragmode: false
-		};
-	}
+	const deviceGetter = cachedFunction(getDevice);
 
-	const colors = [
-		'#3FCF8E', // Green
-		'#E46161', // Red
-		'#EBEB81' // Yellow
-	];
-
-	function donut(data: RequestsData) {
-		const deviceCount: ValueCount = {};
-		const deviceGetter = cachedFunction(getDevice);
-		for (let i = 0; i < data.length; i++) {
-			const userAgent = userAgents[data[i][ColumnIndex.UserAgent]] || '';
-			const device = deviceGetter(userAgent);
-			if (device in deviceCount) {
-				deviceCount[device]++;
-			} else {
-				deviceCount[device] = 1;
-			}
-		}
-
-		const dataPoints = Object.entries(deviceCount).sort((a, b) => b[1] - a[1]);
-
-		const devices = new Array(dataPoints.length);
-		const counts = new Array(dataPoints.length);
-		let i = 0;
-		for (const [browser, count] of dataPoints) {
-			devices[i] = browser;
-			counts[i] = count;
-			i++;
-		}
-
-		return [
-			{
-				values: counts,
-				labels: devices,
-				type: 'pie',
-				hole: 0.6,
-				marker: {
-					colors: colors
-				}
-			}
-		];
-	}
-
-	function getPlotData(data: RequestsData) {
-		return {
-			data: donut(data),
-			layout: getPlotLayout(),
-			config: {
-				responsive: true,
-				showSendToCloud: false,
-				displayModeBar: false
-			}
-		};
-	}
-
-	function generatePlot(data: RequestsData) {
-		if (plotDiv.data) {
-			refreshPlot(data);
+	function selectLabel(label: string) {
+		const current = untrack(() => targetDeviceType);
+		if (current === label) {
+			targetDeviceType = null;
+			setParam('deviceType', null);
 		} else {
-			newPlot(data);
+			targetDeviceType = label;
+			setParam('deviceType', label);
 		}
 	}
 
-	async function newPlot(data: RequestsData) {
-		const plotData = getPlotData(data);
-		Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
-	}
+	let { uaIdCount, userAgents, targetDeviceType = $bindable<string | null>(null) }: {
+		uaIdCount: { [id: number]: number };
+		userAgents: UserAgents;
+		targetDeviceType: string | null;
+	} = $props();
 
-	function refreshPlot(data: RequestsData) {
-		Plotly.react(plotDiv, donut(data), getPlotLayout());
-	}
+	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
-	let plotDiv: HTMLDivElement;
+	$effect(() => {
+		if (!plotDiv || !uaIdCount) return;
 
-	$: if (plotDiv && data) {
-		generatePlot(data);
-	}
+		renderPlot(plotDiv, buildDonutData(uaIdCount, userAgents, deviceGetter, graphColors, targetDeviceType), donutLayout(411));
+		window?.dispatchEvent(new Event('resize'));
 
-	export let data: RequestsData, userAgents: { [id: string]: string };
+		const el = plotDiv as any;
+		el.removeAllListeners?.('plotly_click');
+		el.removeAllListeners?.('plotly_legendclick');
+
+		el.on?.('plotly_click', (data: any) => {
+			const label = data.points[0]?.label;
+			if (label) selectLabel(label);
+		});
+		el.on?.('plotly_legendclick', (data: any) => {
+			const label = data.data?.[0]?.labels?.[data.expandedIndex];
+			if (label) selectLabel(label);
+			return false;
+		});
+	});
 </script>
 
 <div id="plotly">

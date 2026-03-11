@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { type Filter } from '$lib/filter';
-	import type { ComponentType } from 'svelte';
+	import type { Component } from 'svelte';
 
-	let hidden: boolean = false;
+	let { title, content, filter = $bindable(), data = $bindable() }: { title: string; content: Component<{ filter: Filter; data: DashboardData }>; filter: Filter; data: DashboardData } = $props();
+	let hidden = $state(false);
 
 	function toggleHidden() {
 		hidden = !hidden;
 	}
-
-	export let title: string, content: ComponentType, filter: Filter, data: DashboardData;
 </script>
 
 <div class="text-left text-[16px] text-[var(--faint-text)]">
@@ -50,7 +49,8 @@
 	<div class="pb-2 pt-1" class:no-display={hidden || !data}>
 		<div class="rounded border border-solid border-[#2e2e2e] text-[14px]">
 			{#if content}
-				<svelte:component this={content} bind:filter={filter} bind:data={data} />
+				{@const Content = content}
+				<Content bind:filter={filter} bind:data={data} />
 			{/if}
 		</div>
 	</div>

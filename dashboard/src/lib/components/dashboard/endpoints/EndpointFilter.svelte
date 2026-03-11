@@ -2,28 +2,27 @@
 	import type { EndpointFilterType } from '$lib/endpoints';
 
 	function setFilter(value: EndpointFilterType): void {
-		filterChange?.(new CustomEvent('filterChange', { detail: value }));
+		filterChange?.(value);
 	}
 
-	export let activeFilter: EndpointFilterType,
-		filterChange: (e: CustomEvent<EndpointFilterType>) => void;
+	let { activeFilter, filterChange }: { activeFilter: EndpointFilterType; filterChange?: (value: EndpointFilterType) => void } = $props();
 </script>
 
 <div class="toggle">
-	<button class:active={activeFilter === 'all'} on:click={() => setFilter('all')}> All </button>
-	<button class:active={activeFilter === 'success'} on:click={() => setFilter('success')}>
+	<button class:active={activeFilter === 'all'} onclick={() => setFilter('all')}> All </button>
+	<button class:active={activeFilter === 'success'} onclick={() => setFilter('success')}>
 		Success
 	</button>
 	<button
 		class:redirect-active={activeFilter === 'redirect'}
-		on:click={() => setFilter('redirect')}
+		onclick={() => setFilter('redirect')}
 	>
 		Redirect
 	</button>
-	<button class:bad-active={activeFilter === 'client'} on:click={() => setFilter('client')}>
+	<button class:bad-active={activeFilter === 'client'} onclick={() => setFilter('client')}>
 		Client
 	</button>
-	<button class:error-active={activeFilter === 'server'} on:click={() => setFilter('server')}>
+	<button class:error-active={activeFilter === 'server'} onclick={() => setFilter('server')}>
 		Server
 	</button>
 </div>
@@ -51,7 +50,7 @@
 
 	.toggle > .redirect-active,
 	.toggle > .redirect-active:hover {
-		background: #4598ff;
+		background: #5cadff;
 	}
 
 	.toggle > .bad-active,

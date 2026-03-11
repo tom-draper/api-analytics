@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { replaceState } from '$app/navigation';
-	import { page } from '$app/state';
-	import { ColumnIndex } from '$lib/consts';
 	import { setParam } from '$lib/params';
+	import type { LocationBar } from '$lib/aggregate';
 
 	function getFlagEmoji(countryCode: string) {
 		const codePoints = countryCode
@@ -17,68 +15,28 @@
 		return regionNames.of(countryCode);
 	}
 
-	type LocationBar = { location: string; frequency: number; height: number };
-
-	function getLocationBars(data: RequestsData): LocationBar[] {
-		let max = 0;
-		const locationsFreq: ValueCount = {};
-		for (let i = 0; i < data.length; i++) {
-			const location = data[i][ColumnIndex.Location];
-			if (!location) {
-				continue;
-			}
-			if (location in locationsFreq) {
-				locationsFreq[location]++;
-			} else {
-				locationsFreq[location] = 1;
-			}
-			if (locationsFreq[location] > max) {
-				max = locationsFreq[location];
-			}
-		}
-
-		const locationBars = Object.entries(locationsFreq)
-			.map(([location, count]) => {
-				return {
-					location: location,
-					frequency: count,
-					height: count / max
-				};
-			})
-			.sort((a, b) => {
-				return b.frequency - a.frequency;
-			});
-
-		return locationBars;
-	}
-
 	function setLocationParam(location: string | null) {
-		setParam('location', location)
+		setParam('location', location);
 	}
 
-	let locations: LocationBar[] = [];
-
-	$: if (data) {
-		locations = getLocationBars(data);
-	}
-
-	export let data: RequestsData, targetLocation: string | null;
+	let { locationBars, targetLocation = $bindable<string | null>(null) }: {
+		locationBars: LocationBar[];
+		targetLocation: string | null;
+	} = $props();
 </script>
 
 <div class="card">
 	<div class="card-title">Location</div>
-	{#if locations.length > 0}
-		<div class="locations-count">{locations.length} location{locations.length > 1 ? 's' : ''}</div>
+	{#if locationBars.length > 0}
+		<div class="locations-count">{locationBars.length} location{locationBars.length > 1 ? 's' : ''}</div>
 		<div class="bars">
-			{#each locations.slice(0, 12) as location}
+			{#each locationBars.slice(0, 12) as location}
 				<div class="bar-container">
 					<button
 						aria-label="location"
 						class="bar"
-						title="{countryCodeToName(
-							location.location
-						)}: {location.frequency.toLocaleString()} requests"
-						on:click={() => {
+						title="{countryCodeToName(location.location)}: {location.frequency.toLocaleString()} requests"
+						onclick={() => {
 							const value = targetLocation === location.location ? null : location.location;
 							targetLocation = value;
 							setLocationParam(value);

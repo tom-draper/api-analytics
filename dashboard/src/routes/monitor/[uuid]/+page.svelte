@@ -6,11 +6,11 @@
 	import formatUUID from '$lib/uuid';
 	import type { NotificationState } from '$lib/notification';
 	import { getServerURL } from '$lib/url';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import Lightning from '$components/Lightning.svelte';
 	import type { MonitorPeriod } from '$lib/period';
 
-	const userID = formatUUID($page.params.uuid);
+	const userID = formatUUID(page.params.uuid);
 
 	async function fetchData() {
 		const url = getServerURL();
@@ -111,7 +111,7 @@
 	}
 
 	function isDemo() {
-		return $page.params.uuid === 'demo';
+		return page.params.uuid === 'demo';
 	}
 
 	onMount(async () => {
@@ -217,7 +217,7 @@
 			{/if}
 			{#each Object.keys(data).sort() as url}
 				<Card
-					bind:url
+					{url}
 					{data}
 					{userID}
 					{period}

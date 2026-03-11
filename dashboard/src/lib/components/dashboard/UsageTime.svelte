@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { ColumnIndex } from '$lib/consts';
+	import { renderPlot } from '$lib/plotly';
+	import { setParam } from '$lib/params';
+	import { untrack } from 'svelte';
 
 	function getPlotLayout() {
 		return {
@@ -16,80 +18,68 @@
 		};
 	}
 
-	function bars(data: RequestsData) {
-		const responseTimes = Array(24).fill(0);
-
-		for (let i = 0; i < data.length; i++) {
-			const date = data[i][ColumnIndex.CreatedAt];
-			const time = date.getHours();
-			responseTimes[time]++;
-		}
-
-		const requestFreqArr = Array.from({ length: 24 }, (_, i) => ({
-			hour: i,
-			responseTime: responseTimes[i]
-		})).sort((a, b) => {
-			return a.hour - b.hour;
-		});
-
-		let dates = new Array(requestFreqArr.length);
-		let requests = new Array(requestFreqArr.length);
-		for (let i = 0; i < requestFreqArr.length; i++) {
-			dates[i] = requestFreqArr[i].hour.toString() + ':00';
-			requests[i] = requestFreqArr[i].responseTime;
-		}
-
+	function bars(hourlyBuckets: number[], selectedHour: number | null) {
 		// Shift to 12 onwards to make barpolar like clock face
-		dates = dates.slice(12).concat(...dates.slice(0, 12));
-		requests = requests.slice(12).concat(...requests.slice(0, 12));
+		const dates = Array.from({ length: 24 }, (_, i) => i.toString() + ':00');
+		const shiftedDates = dates.slice(12).concat(...dates.slice(0, 12));
+		const shiftedBuckets = hourlyBuckets.slice(12).concat(...hourlyBuckets.slice(0, 12));
+
+		const colors = shiftedDates.map((label) => {
+			if (selectedHour === null) return '#3fcf8e';
+			return parseInt(label) === selectedHour ? '#3fcf8e' : '#3fcf8e30';
+		});
 
 		return [
 			{
-				r: requests,
-				theta: dates,
-				marker: { color: '#3fcf8e' },
+				r: shiftedBuckets,
+				theta: shiftedDates,
+				marker: { color: colors },
 				type: 'barpolar',
 				hovertemplate: `<b>%{r}</b> requests at <b>%{theta}</b><extra></extra>`
 			}
 		];
 	}
 
-	function getPlotData(data: RequestsData) {
-		return {
-			data: bars(data),
-			layout: getPlotLayout(),
-			config: {
-				responsive: true,
-				showSendToCloud: false,
-				displayModeBar: false
-			}
-		};
+	function generatePlot(hourlyBuckets: number[], selectedHour: number | null) {
+		renderPlot(plotDiv, bars(hourlyBuckets, selectedHour), getPlotLayout());
 	}
 
-	function generatePlot(data: RequestsData) {
-		if (plotDiv.data) {
-			refreshPlot(data);
+	function selectHour(hour: number) {
+		if (untrack(() => targetHour) === hour) {
+			targetHour = null;
+			setParam('hour', null);
 		} else {
-			newPlot(data);
+			targetHour = hour;
+			setParam('hour', String(hour));
 		}
 	}
 
-	async function newPlot(data: RequestsData) {
-		const plotData = getPlotData(data);
-		Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
-	}
+	let { hourlyBuckets, targetHour = $bindable<number | null>(null) }: {
+		hourlyBuckets: number[];
+		targetHour: number | null;
+	} = $props();
+	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
-	function refreshPlot(data: RequestsData) {
-		Plotly.react(plotDiv, bars(data), getPlotLayout());
-	}
+	$effect(() => {
+		if (!plotDiv || !hourlyBuckets) return;
 
-	let plotDiv: HTMLDivElement;
+		generatePlot(hourlyBuckets, untrack(() => targetHour));
 
-	$: if (plotDiv && data) {
-		generatePlot(data);
-	}
+		const el = plotDiv as any;
+		el.removeAllListeners?.('plotly_click');
+		el.on?.('plotly_click', (data: any) => {
+			const theta = data.points[0]?.theta as string;
+			if (theta !== undefined) selectHour(parseInt(theta));
+		});
+	});
 
-	export let data: RequestsData;
+	$effect(() => {
+		const h = targetHour;
+		const div = untrack(() => plotDiv);
+		const buckets = untrack(() => hourlyBuckets);
+		if (!div || !buckets) return;
+		generatePlot(buckets, h);
+	});
 </script>
 
 <div class="card">

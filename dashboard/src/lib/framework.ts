@@ -414,3 +414,13 @@ app.Run();`,
 };
 
 export default frameworkExamples;
+
+export const frameworkLanguages: Record<string, string> = {
+	FastAPI: 'python', Flask: 'python', Django: 'python', Tornado: 'python',
+	Express: 'javascript', Fastify: 'javascript', Koa: 'javascript', Hono: 'javascript',
+	Gin: 'go', Echo: 'go', Fiber: 'go', Chi: 'go',
+	Actix: 'rust', Axum: 'rust', Rocket: 'rust',
+	Rails: 'ruby', Sinatra: 'ruby',
+	Laravel: 'php',
+	'ASP.NET Core': 'csharp',
+};

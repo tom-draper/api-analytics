@@ -37,8 +37,10 @@
 		const x: (number | null)[] = Array.from({ length: markers });
 		const requests: (number | null)[] = Array.from({ length: markers });
 		for (let i = 0; i < markers; i++) {
-			requests[markers - i - 1] = data[i].responseTime;
-			dates[markers - i - 1] = data[i].createdAt;
+			if (i < data.length) {
+				requests[markers - i - 1] = data[i].responseTime;
+				dates[markers - i - 1] = data[i].createdAt;
+			}
 			x[markers - i - 1] = i;
 		}
 
@@ -99,13 +101,13 @@
 		Plotly.react(plotDiv, bars(data, period), getPlotLayout());
 	}
 
-	let plotDiv: HTMLDivElement;
+	let { data, period }: { data: Sample[]; period: MonitorPeriod } = $props();
 
-	$: if (plotDiv && data) {
-		generatePlot(data, period);
-	}
+	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
-	export let data: Sample[], period: MonitorPeriod;
+	$effect(() => {
+		if (plotDiv && data) generatePlot(data, period);
+	});
 </script>
 
 <div id="plotly">

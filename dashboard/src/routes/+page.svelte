@@ -6,9 +6,9 @@
 	import NginxAnalytics from '$components/home/NginxAnalytics.svelte';
 	import { page } from '$app/state';
 	import { formatPath } from '$lib/path';
-	// import Pricing from '$components/home/Pricing.svelte';
 
-	let params: string;
+	export let data;
+
 	$: params = page.url.searchParams.toString();
 </script>
 
@@ -20,20 +20,13 @@
 		path={formatPath('/dashboard', params)}
 		img="dashboard.png"
 	/>
-	<!-- <Highlight
-		title="Explorer"
-		description="A deep-dive into your logged requests."
-		path={formatPath('/explorer', params)}
-		img="dashboard.png"
-	/> -->
 	<Highlight
 		title="Monitor"
 		description="Active monitoring and error notifications. Peace of mind."
 		path={formatPath('/monitoring', params)}
 		img="monitoring.png"
 	/>
-	<!-- <Pricing /> -->
-	<GettingStarted />
+	<GettingStarted highlighted={data.highlighted} />
 	<NginxAnalytics />
-	<DocLinks />
+	{#if data.isHosted}<DocLinks />{/if}
 </div>

@@ -2,16 +2,10 @@
 	import type { Endpoint } from '$lib/endpoints';
 
 	function handleSelect(path: string, status: number): void {
-		selectEndpoint?.(
-			new CustomEvent('selectEndpoint', {
-				detail: { path, status }
-			})
-		);
+		selectEndpoint?.(path, status);
 	}
 
-	export let endpoints: Endpoint[],
-		maxCount: number,
-		selectEndpoint: (e: CustomEvent<{ path: string | null; status: number | null }>) => void;
+	let { endpoints, maxCount, selectEndpoint }: { endpoints: Endpoint[]; maxCount: number; selectEndpoint?: (path: string | null, status: number | null) => void } = $props();
 </script>
 
 <div class="endpoints">
@@ -21,7 +15,7 @@
 				class="endpoint"
 				id="endpoint-{i}"
 				title="Status: {endpoint.status}"
-				on:click={() => handleSelect(endpoint.path.split(' ')[2], endpoint.status)}
+				onclick={() => handleSelect(endpoint.path.split(' ')[2], endpoint.status)}
 			>
 				<div class="path">
 					<span class="font-semibold">{endpoint.count.toLocaleString()}</span>
@@ -88,7 +82,7 @@
 	}
 
 	.redirect {
-		background: #4598ff;
+		background: #5cadff;
 	}
 
 	.bad {

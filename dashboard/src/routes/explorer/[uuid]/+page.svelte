@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import generateDemoData from '$lib/demo';
 	import formatUUID from '$lib/uuid';
@@ -12,7 +12,7 @@
 	import { defaultFilter, type Filter } from '$lib/filter';
 	import { nextDay, toDay } from '$lib/date';
 
-	const userID = formatUUID($page.params.uuid);
+	const userID = formatUUID(page.params.uuid);
 
 	async function fetchData() {
 		const url = getServerURL();
@@ -81,7 +81,7 @@
 	}
 
 	function isDemo() {
-		return $page.params.uuid === 'demo';
+		return page.params.uuid === 'demo';
 	}
 
 	async function getDashboardData() {
@@ -154,13 +154,15 @@
 		filter = defaultFilter(data.requests);
 	}
 
-	let data: DashboardData;
-	let filteredRequests: RequestsData;
-	let filter: Filter;
+	let data = $state.raw<DashboardData | undefined>(undefined);
+	let filteredRequests = $state.raw<RequestsData>([]);
+	let filter = $state<Filter | undefined>(undefined);
 
-	$: if (data && filter) {
-		filteredRequests = applyFilter(data.requests, filter);
-	}
+	$effect(() => {
+		if (data && filter) {
+			filteredRequests = applyFilter(data.requests, filter);
+		}
+	});
 
 	onMount(async () => {
 		dataStore.subscribe((value) => {

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import frameworkExamples from '$lib/framework';
-	import CodeHighlighter from '$components/home/CodeHighlighter.svelte';
 
 	type Language = 'python' | 'javascript' | 'go' | 'rust' | 'ruby' | 'csharp' | 'php';
 	type Framework =
@@ -49,7 +48,9 @@
 		{ language: 'ruby', framework: 'Sinatra' },
 		{ language: 'csharp', framework: 'ASP.NET Core' }
 	];
-	let currentFramework = frameworks[0];
+	let { highlighted }: { highlighted: Record<string, { install: string; example: string }> } = $props();
+
+	let currentFramework = $state(frameworks[0]);
 
 	function setFramework(value: SupportedFramework) {
 		currentFramework = value;
@@ -69,7 +70,7 @@
 			<button
 				class="framework {language}"
 				class:active={currentFramework.framework === framework}
-				on:click={() => {
+				onclick={() => {
 					setFramework({ language, framework });
 				}}>{framework}</button
 			>
@@ -81,16 +82,16 @@
 				<div class="subtitle">Install</div>
 				{#each frameworks as { framework }}
 					<div class:hidden={currentFramework.framework !== framework}>
-						<CodeHighlighter language="text" code={frameworkExamples[framework]?.install} />
+						{@html highlighted[framework]?.install ?? ''}
 					</div>
 				{/each}
 				<div class="subtitle">Add middleware to API</div>
 				<div class="code-file">
 					{frameworkExamples[currentFramework.framework].codeFile ?? ''}
 				</div>
-				{#each frameworks as { language, framework }}
+				{#each frameworks as { framework }}
 					<div class:hidden={currentFramework.framework !== framework}>
-						<CodeHighlighter {language} code={frameworkExamples[framework].example} />
+						{@html highlighted[framework]?.example ?? ''}
 					</div>
 				{/each}
 			</div>
@@ -299,6 +300,18 @@
 	}
 	.active.csharp {
 		border: 3px solid #178600;
+	}
+	:global(.shiki) {
+		margin: 4px 0;
+		border-radius: 6px;
+		padding: 1.5em 2em;
+		font-size: 0.875em;
+		overflow-x: auto;
+		background: var(--dark-background) !important;
+	}
+	:global(.shiki code) {
+		font-size: 0.875rem;
+		font-weight: 400;
 	}
 	.subtitle {
 		color: var(--faint-text);

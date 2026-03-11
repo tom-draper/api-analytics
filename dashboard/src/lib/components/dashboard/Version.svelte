@@ -1,108 +1,65 @@
 <script lang="ts">
-	import { ColumnIndex, graphColors } from '$lib/consts';
+	import { graphColors } from '$lib/consts';
+	import { renderPlot, donutLayout } from '$lib/plotly';
+	import { setParam } from '$lib/params';
+	import { untrack } from 'svelte';
 
-	function getVersions(data: RequestsData) {
-		const versions = new Set<string>();
-		for (let i = 0; i < data.length; i++) {
-			const match = data[i][ColumnIndex.Path].match(/\/(v\d)[^a-z0-9]/i);
-			if (match) {
-				versions.add(match[1]);
-			}
-		}
-		return versions;
+	let { versionCount, hasMultiple, targetVersion = $bindable<string | null>(null) }: {
+		versionCount: { [v: string]: number };
+		hasMultiple: boolean;
+		targetVersion: string | null;
+	} = $props();
+
+	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
+
+	function buildData(versions: string[], counts: number[]) {
+		return [{
+			values: counts,
+			labels: versions,
+			type: 'pie',
+			hole: 0.6,
+			marker: { colors: graphColors },
+			pull: versions.map((v) => (targetVersion === v ? 0.08 : 0)),
+		}];
 	}
 
-	function build(data: RequestsData) {
-		versions = getVersions(data);
-
-		if (versions.size > 1) {
-			genPlot(data);
-			window?.dispatchEvent(new Event('resize'));
+	function selectVersion(label: string) {
+		const current = untrack(() => targetVersion);
+		if (current === label) {
+			targetVersion = null;
+			setParam('version', null);
+		} else {
+			targetVersion = label;
+			setParam('version', label);
 		}
 	}
 
-	function getLayout() {
-		return {
-			title: false,
-			autosize: true,
-			margin: { r: 30, l: 30, t: 25, b: 25, pad: 0 },
-			hovermode: 'closest',
-			plot_bgcolor: 'transparent',
-			paper_bgcolor: 'transparent',
-			height: 196,
-			yaxis: {
-				title: { text: 'Requests' },
-				gridcolor: 'gray',
-				showgrid: false,
-				fixedrange: true
-			},
-			xaxis: {
-				visible: false
-			},
-			dragmode: false
-		};
-	}
-
-	function pieChart(data: RequestsData) {
-		const versionCount: ValueCount = {};
-		for (let i = 0; i < data.length; i++) {
-			const match = data[i][ColumnIndex.Path].match(/[^a-z0-9](v\d)[^a-z0-9]/i);
-			if (!match) {
-				continue;
-			}
-			const version = match[1];
-			if (version in versionCount) {
-				versionCount[version]++;
-			} else {
-				versionCount[version] = 1;
-			}
-		}
+	$effect(() => {
+		if (!plotDiv || (!hasMultiple && targetVersion === null)) return;
 
 		const versions = Object.keys(versionCount);
-		const count = Object.values(versionCount);
+		const counts = Object.values(versionCount);
+		renderPlot(plotDiv, buildData(versions, counts), donutLayout());
+		window?.dispatchEvent(new Event('resize'));
 
-		return [
-			{
-				values: count,
-				labels: versions,
-				type: 'pie',
-				hole: 0.6,
-				marker: {
-					colors: graphColors
-				}
-			}
-		];
-	}
+		const el = plotDiv as any;
+		el.removeAllListeners?.('plotly_click');
+		el.removeAllListeners?.('plotly_legendclick');
 
-	function getPlotData(data: RequestsData) {
-		return {
-			data: pieChart(data),
-			layout: getLayout(),
-			config: {
-				responsive: true,
-				showSendToCloud: false,
-				displayModeBar: false
-			}
-		};
-	}
+		el.on?.('plotly_click', (data: any) => {
+			const label = data.points[0]?.label;
+			if (label) selectVersion(label);
+		});
 
-	function genPlot(data: RequestsData) {
-		const plotData = getPlotData(data);
-		//@ts-ignore
-		new Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
-	}
-
-	let versions: Set<string>;
-	let plotDiv: HTMLDivElement;
-
-	$: if (plotDiv && data) {
-		build(data);
-	}
-
-	export let data: RequestsData;
+		el.on?.('plotly_legendclick', (data: any) => {
+			const label = data.data?.[0]?.labels?.[data.expandedIndex];
+			if (label) selectVersion(label);
+			return false;
+		});
+	});
 </script>
 
-<div class="card flex-1" class:hidden={versions === undefined || versions.size <= 1}>
+<div class="card flex-1" class:hidden={!hasMultiple && targetVersion === null}>
 	<div class="card-title">Version</div>
 	<div id="plotly">
 		<div id="plotDiv" class="mr-[20px]" bind:this={plotDiv}>
@@ -114,7 +71,6 @@
 <style scoped>
 	.card {
 		margin: 2em 0 2em 0;
-		/* padding-bottom: 1em; */
 		flex: 1;
 	}
 	.hidden {
@@ -123,7 +79,7 @@
 	#plotDiv {
 		padding-right: 20px;
 	}
-	@media screen and (max-width: 1030px) {
+	@media screen and (max-width: 1070px) {
 		.card {
 			width: auto;
 			flex: 1;

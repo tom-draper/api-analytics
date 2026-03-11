@@ -1,11 +1,13 @@
 <script lang="ts">
 	import Lightning from '$components/Lightning.svelte';
 	import Loading from '$components/Loading.svelte';
+	declare const __APP_VERSION__: string;
+	const version = __APP_VERSION__;
 
-	export let loading: boolean;
+	let { loading }: { loading: boolean } = $props();
 </script>
 
-<div class="card">
+<div class="card" title="API Analytics v{version}">
 	<div class="lightning">
 		{#if loading}
 			<Loading />
@@ -28,7 +30,7 @@
 		height: 44px;
 		color: var(--highlight);
 	}
-	@media screen and (max-width: 1030px) {
+	@media screen and (max-width: 1070px) {
 		.card {
 			width: auto;
 			flex: 1;

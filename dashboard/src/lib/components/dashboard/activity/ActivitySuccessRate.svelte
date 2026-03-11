@@ -1,110 +1,74 @@
 <script lang="ts">
 	import { periodToDays, type Period } from '$lib/period';
-	import { ColumnIndex } from '$lib/consts';
-	import { statusSuccessful } from '$lib/status';
+	import type { ActivityBucket } from '$lib/aggregate';
+	import { bucketRange } from '$lib/plotly';
 
-	function daysAgo(date: Date): number {
-		const now = new Date();
-		// Calculate the difference in milliseconds
-		const differenceInMilliseconds = now.getTime() - date.getTime();
+	type Cell = { value: number; date: number };
 
-		// Convert the difference to days
-		const millisecondsPerDay = 24 * 60 * 60 * 1000;
-		const differenceInDays = Math.floor(differenceInMilliseconds / millisecondsPerDay);
-
-		return differenceInDays;
-	}
-
-	function daysAgoTime(time: number): number {
-		const now = new Date();
-		return Math.floor((now.getTime() - time) / (24 * 60 * 60 * 1000));
-	}
-
-	function hoursAgoTime(time: number): number {
-		const now = new Date();
-		return Math.floor((now.getTime() - time) / (60 * 60 * 1000));
-	}
-
-	type NumberSuccessCounter = Map<number, { total: number; successful: number }>;
-
-	function getSuccessRate(data: RequestsData) {
-		const success: NumberSuccessCounter = new Map();
-		let minDate = new Date(8640000000000000);
-
-		for (const row of data) {
-			const date = new Date(row[ColumnIndex.CreatedAt]);
-			if (period === '24 hours' || period === 'week') {
-				// Hourly
-				date.setMinutes(0, 0, 0);
-			} else {
-				date.setHours(0, 0, 0, 0);
-			}
-
-			const time = date.getTime();
-			let entry = success.get(time);
-			if (!entry) {
-				entry = { total: 0, successful: 0 };
-				success.set(time, entry);
-			}
-
-			entry.total++;
-			if (statusSuccessful(row[ColumnIndex.Status])) {
-				entry.successful++;
-			}
-
-			if (time < minDate.getTime()) {
-				minDate = date;
-			}
-		}
-
-		let successArr: number[];
-
-		if (period === '24 hours' || period === 'week') {
-			const hours = period === '24 hours' ? 24 : 24 * 7;
-			successArr = new Array(hours).fill(0);
-
-			for (const [time, entry] of success.entries()) {
-				const idx = hoursAgoTime(time);
-				if (idx >= 0 && idx < hours) {
-					successArr[successArr.length - 1 - idx] = entry.successful / entry.total;
-				}
-			}
+	function snapNow(period: Period): number {
+		const d = new Date();
+		if (period === '24 hours') {
+			d.setSeconds(0, 0);
+			d.setMinutes(Math.floor(d.getMinutes() / 5) * 5);
+		} else if (period === 'week') {
+			d.setSeconds(0, 0);
+			d.setMinutes(0);
 		} else {
-			let days = period === 'all time' ? daysAgo(minDate) : periodToDays(period);
-			if (days === null) {
-				throw new Error('Invalid period');
-			}
-			days = Math.min(days, 500); // Limit to 500 days
-			successArr = new Array(days).fill(0);
-
-			for (const [time, entry] of success.entries()) {
-				const idx = daysAgoTime(time);
-				if (idx >= 0 && idx < days) {
-					successArr[successArr.length - 1 - idx] = entry.successful / entry.total;
-				}
-			}
+			d.setHours(0, 0, 0, 0);
 		}
-
-		return successArr;
+		return d.getTime();
 	}
 
-	let successRate: number[];
+	function getSuccessRateArr(buckets: ActivityBucket[], period: Period, firstRequestDate: Date | null): Cell[] {
+		const bucketMap = new Map<number, number>(buckets.map((b) => [b.date, b.successRate]));
+		const snap = snapNow(period);
 
-	$: if (data) {
-		successRate = getSuccessRate(data);
+		if (period === '24 hours') {
+			const step = 5 * 60 * 1000;
+			return Array.from({ length: 288 }, (_, i) => {
+				const date = snap - (287 - i) * step;
+				return { value: bucketMap.get(date) ?? 0, date };
+			});
+		} else if (period === 'week') {
+			const step = 60 * 60 * 1000;
+			return Array.from({ length: 168 }, (_, i) => {
+				const date = snap - (167 - i) * step;
+				return { value: bucketMap.get(date) ?? 0, date };
+			});
+		} else {
+			let days = period === 'all time'
+				? (firstRequestDate ? Math.floor((Date.now() - firstRequestDate.getTime()) / 86_400_000) : 0)
+				: (periodToDays(period) ?? 0);
+			days = Math.min(days, 500);
+			const base = new Date();
+			base.setHours(0, 0, 0, 0);
+			const baseDay = base.getDate();
+			return Array.from({ length: days }, (_, i) => {
+				const d = new Date(base);
+				d.setDate(baseDay - (days - 1 - i));
+				const date = d.getTime();
+				return { value: bucketMap.get(date) ?? 0, date };
+			});
+		}
 	}
 
-	export let data: RequestsData, period: Period;
+	let { activityBuckets, period, firstRequestDate }: {
+		activityBuckets: ActivityBucket[];
+		period: Period;
+		firstRequestDate: Date | null;
+	} = $props();
+
+	const successRate = $derived(getSuccessRateArr(activityBuckets, period, firstRequestDate));
 </script>
 
 <div class="success-rate-container">
 	{#if successRate != undefined}
 		<div class="success-rate-title">Success rate</div>
 		<div class="errors">
-			{#each successRate as value}
+			{#each successRate as { value, date }}
 				<div
 					class="error level-{Math.floor(value * 10)}"
-					title={value >= 0 ? `Success rate: ${(value * 100).toFixed(1)}%` : 'No requests'}
+					title={value > 0 ? `${bucketRange(new Date(date), period)}\n${(value * 100).toFixed(1)}% success` : bucketRange(new Date(date), period)}
 				></div>
 			{/each}
 		</div>

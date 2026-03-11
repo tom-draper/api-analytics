@@ -2,6 +2,7 @@ import { defaultPeriod, type Period } from "./period";
 
 export type DashboardSettings = {
 	disable404: boolean;
+	ignoreBots: boolean;
 	hostname: string | null;
 	period: Period;
 	targetEndpoint: {
@@ -10,6 +11,12 @@ export type DashboardSettings = {
 	};
 	targetReferrer: string | null;
 	targetLocation: string | null;
+	targetWeekday: number | null;
+	targetHour: number | null;
+	targetVersion: string | null;
+	targetClient: string | null;
+	targetDeviceType: string | null;
+	targetOS: string | null;
 	targetUser: {
 		ipAddress: string,
 		userID: string,
@@ -22,6 +29,7 @@ export type DashboardSettings = {
 export function initSettings(): DashboardSettings {
 	return {
 		disable404: false,
+		ignoreBots: false,
 		hostname: null,
 		period: defaultPeriod,
 		targetEndpoint: {
@@ -30,6 +38,12 @@ export function initSettings(): DashboardSettings {
 		},
 		targetReferrer: null,
 		targetLocation: null,
+		targetWeekday: null,
+		targetHour: null,
+		targetVersion: null,
+		targetClient: null,
+		targetDeviceType: null,
+		targetOS: null,
 		targetUser: null,
 		hiddenEndpoints: new Set(),
 		ignoreParams: true,

@@ -1,40 +1,38 @@
 <script lang="ts">
-	import { replaceState } from '$app/navigation';
-	import { page } from '$app/state';
 	import { setParam } from '$lib/params';
-	import type { ReferrerBar } from '$lib/aggregate';
+	import type { UserIDBar } from '$lib/aggregate';
+	import type { DashboardSettings } from '$lib/settings';
 
-	function setTargetReferrer(referrer: string) {
-		if (targetReferrer === referrer) {
-			targetReferrer = null;
-			page.url.searchParams.delete('referrer');
-			replaceState(page.url, page.state);
+	function selectUserID(userID: string) {
+		if (targetUser?.userID === userID && !targetUser?.composite) {
+			targetUser = null;
+			setParam('userID', null);
 		} else {
-			targetReferrer = referrer;
-			setParam('referrer', referrer);
+			targetUser = { ipAddress: '', userID, composite: false };
+			setParam('userID', userID);
 		}
 	}
 
-	let { referrerBars, targetReferrer = $bindable<string | null>(null) }: {
-		referrerBars: ReferrerBar[];
-		targetReferrer: string | null;
+	let { userIDBars, targetUser = $bindable<DashboardSettings['targetUser']>(null) }: {
+		userIDBars: UserIDBar[];
+		targetUser: DashboardSettings['targetUser'];
 	} = $props();
 </script>
 
 <div class="card">
-	<div class="card-title">Referrer</div>
-	<div class="endpoints">
-		{#each referrerBars as bar, i}
-			<div class="endpoint-container">
+	<div class="card-title">User ID</div>
+	<div class="list">
+		{#each userIDBars as bar, i}
+			<div class="row-container">
 				<button
-					class="endpoint"
-					id="endpoint-{i}"
-					class:selected={targetReferrer === bar.referrer}
-					onclick={() => setTargetReferrer(bar.referrer)}
+					class="row"
+					id="row-{i}"
+					class:selected={targetUser?.userID === bar.userID && !targetUser?.composite}
+					onclick={() => selectUserID(bar.userID)}
 				>
-					<div class="path">
+					<div class="label">
 						<span class="font-semibold">{bar.count.toLocaleString()}</span>
-						{bar.referrer}
+						{bar.userID}
 					</div>
 					<div class="background" style="width: {bar.height * 100}%"></div>
 				</button>
@@ -46,13 +44,13 @@
 <style scoped>
 	.card {
 		min-height: 361px;
-		margin-top: 0;
+		margin-top: 2em;
 		margin-left: 2em;
 	}
-	.endpoints {
+	.list {
 		margin: 0.9em 20px 0.6em;
 	}
-	.endpoint {
+	.row {
 		border-radius: 3px;
 		margin: 5px 0;
 		color: var(--light-background);
@@ -62,13 +60,13 @@
 		width: 100%;
 		cursor: pointer;
 	}
-	.endpoint:hover {
+	.row:hover {
 		background: linear-gradient(270deg, transparent, #444);
 	}
 	.selected {
 		background: linear-gradient(270deg, transparent, #444);
 	}
-	.path {
+	.label {
 		position: relative;
 		flex-grow: 1;
 		z-index: 1;
@@ -78,7 +76,7 @@
 		overflow-wrap: break-word;
 		font-family: 'Noto Sans' !important;
 	}
-	.endpoint-container {
+	.row-container {
 		display: flex;
 	}
 	.background {

@@ -4,8 +4,7 @@
 	import { formatPath } from '$lib/path';
 	import { page } from '$app/state';
 
-	let params: string;
-	$: params = page.url.searchParams.toString();
+	const params = $derived(page.url.searchParams.toString());
 
 	onMount(() => {
 		animate();
