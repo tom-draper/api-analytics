@@ -73,74 +73,74 @@ if __name__ == '__main__':
     IOLoop.instance().start()`,
 	},
 	Express: {
-		install: 'npm install node-api-analytics',
+		install: 'npm install @api-analytics/express',
 		example: `import express from 'express';
-import { expressAnalytics } from 'node-api-analytics';
+import { expressAnalytics } from '@api-analytics/express';
 
 const app = express();
 
 app.use(expressAnalytics(<API-KEY>)); // Add middleware
 
 app.get('/', (req, res) => {
-    res.send({ message: 'Hello, World!' });
+    res.send({ message: 'Hello World!' });
 });
 
 app.listen(8080, () => {
     console.log('Server listening at http://localhost:8080');
-})`,
+});`,
 	},
 	Fastify: {
-		install: 'npm install node-api-analytics',
+		install: 'npm install @api-analytics/fastify',
 		example: `import Fastify from 'fastify';
-import { fastifyAnalytics } from 'node-api-analytics';
+import { fastifyAnalytics } from '@api-analytics/fastify';
 
 const fastify = Fastify();
 
-fastify.addHook('onRequest', fastifyAnalytics(<API-KEY>)); // Add middleware
+fastifyAnalytics(fastify, <API-KEY>); // Add middleware
 
-fastify.get('/', function (request, reply) {
-    reply.send({ message: 'Hello, World!' });
-})
+fastify.get('/', (request, reply) => {
+    reply.send({ message: 'Hello World!' });
+});
 
-fastify.listen({ port: 8080 }, function (err, address) {
-    console.log('Server listening at http://localhost:8080');
+fastify.listen({ port: 8080 }, (err) => {
     if (err) {
         fastify.log.error(err);
         process.exit(1);
     }
-})`,
+    console.log('Server listening at http://localhost:8080');
+});`,
 	},
 	Koa: {
-		install: 'npm install node-api-analytics',
+		install: 'npm install @api-analytics/koa',
 		example: `import Koa from 'koa';
-import { koaAnalytics } from 'node-api-analytics';
+import { koaAnalytics } from '@api-analytics/koa';
 
 const app = new Koa();
 
 app.use(koaAnalytics(<API-KEY>)); // Add middleware
 
 app.use((ctx) => {
-    ctx.body = { message: 'Hello, World!' };
+    ctx.body = { message: 'Hello World!' };
 });
 
-app.listen(8080, () =>
+app.listen(8080, () => {
     console.log('Server listening at http://localhost:8080');
-);`,
+});`,
 	},
 	Hono: {
-		install: 'npm install node-api-analytics',
+		install: 'npm install @api-analytics/hono',
 		example: `import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
-import { honoAnalytics } from 'node-api-analytics';
+import { honoAnalytics } from '@api-analytics/hono';
 
 const app = new Hono();
 
-app.use('*', honoAnalytics(<API-KEY>));
+app.use('*', honoAnalytics(<API-KEY>)); // Add middleware
 
-app.get('/', (c) => c.text('Hello, world!'));
+app.get('/', (c) => c.json({ message: 'Hello World!' }));
 
 serve(app, (info) => {
-	console.log('Server listening at http://localhost:' + info.port);
+    console.log('Server listening at http://localhost:' + info.port);
 });`,
 	},
 	Gin: {
@@ -254,7 +254,7 @@ func main() {
 
     r.Use(analytics.Analytics(<API-KEY>)) // Add middleware
 
-    r.GET("/", root)
+    r.Get("/", root)
     http.ListenAndServe(":8080", r)
 }`,
 	},
@@ -291,14 +291,10 @@ async fn main() -> std::io::Result<()> {
 	},
 	Axum: {
 		install: 'cargo add axum-analytics',
-		example: `use axum::{
-    routing::get,
-    Json, Router,
-};
+		example: `use axum::{routing::get, Json, Router};
+use axum_analytics::Analytics;
 use serde::Serialize;
 use std::net::SocketAddr;
-use tokio;
-use axum_analytics::Analytics;
 
 #[derive(Serialize)]
 struct JsonData {
@@ -307,7 +303,7 @@ struct JsonData {
 
 async fn root() -> Json<JsonData> {
     let data = JsonData {
-        message: "Hello, World!".to_string(),
+        message: "Hello World!".to_string(),
     };
     Json(data)
 }
@@ -315,14 +311,12 @@ async fn root() -> Json<JsonData> {
 #[tokio::main]
 async fn main() {
     let app = Router::new()
-        .layer(Analytics::new(<API-KEY>))  // Add middleware
-        .route("/", get(root));
+        .route("/", get(root))
+        .layer(Analytics::new(<API-KEY>));  // Add middleware
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }`,
 	},
 	Rocket: {
@@ -386,17 +380,16 @@ get '/' do
 end`,
 	},
 	Laravel: {
-		install: 'coming soon',
+		install: 'composer require api-analytics/laravel',
 		codeFile: 'app/Http/Kernel.php',
 		example: `protected $middleware = [
-    \\App\\Http\\Middleware\\Analytics::class,
+    \\ApiAnalytics\\Laravel\\AnalyticsMiddleware::class,
     ...
 ]`,
 	},
 	'ASP.NET Core': {
 		install: 'dotnet add package APIAnalytics.AspNetCore',
-		example: `using analytics;
-using Microsoft.AspNetCore.Mvc;
+		example: `using Analytics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -404,10 +397,7 @@ var app = builder.Build();
 
 app.UseAnalytics(<API-KEY>); // Add middleware
 
-app.MapGet("/", () =>
-{
-    return Results.Ok(new OkObjectResult(new { message = "Hello, World!" }));
-});
+app.MapGet("/", () => Results.Ok(new { message = "Hello, World!" }));
 
 app.Run();`,
 	},
