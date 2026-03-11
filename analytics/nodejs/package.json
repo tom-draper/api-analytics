@@ -1,7 +1,7 @@
 {
-  "name": "api-analytics-js",
-  "version": "1.4.0",
-  "description": "Monitoring and analytics for JavaScript API applications.",
+  "name": "node-api-analytics",
+  "version": "1.4.1",
+  "description": "Monitoring and analytics for Node.js API applications.",
   "main": "analytics.js",
   "exports": "./analytics.js",
   "type": "module",
