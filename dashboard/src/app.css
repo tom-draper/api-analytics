@@ -36,6 +36,9 @@ body {
     padding: 0;
     text-align: center;
     background-color: var(--background);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 nav a {
@@ -102,16 +105,17 @@ p {
 /* Form */
 .generate {
     display: grid;
-    place-items: center;
+    place-items: start center;
+    flex: 1;
 }
 
 .content {
     width: fit-content;
     background: #343434;
     background: var(--background);
-    padding: 3.5em 4em 4em;
+    padding: 2.5em 3em 3em;
     border-radius: 9px;
-    margin: 20vh 0;
+    margin-top: 18vh;
     box-shadow: 0 0 180px 2px var(--highlight);
 }
 

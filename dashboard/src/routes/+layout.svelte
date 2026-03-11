@@ -18,7 +18,8 @@
 		<Footer
 			generic={currentRoute !== '/generate' &&
 				currentRoute !== '/dashboard' &&
-				currentRoute !== '/monitor'}
+				currentRoute !== '/monitor' &&
+				currentRoute !== '/explorer'}
 		/>
 	</footer>
 {/if}
