@@ -42,7 +42,7 @@
 		<p class="subtitle">Get a free API key to start tracking your requests.</p>
 
 		<label class="input-label" class:label-ready={state === 'copy' || state === 'copied'} for="api-key">
-			API Key
+			Your API Key
 			<svg class="arrow" viewBox="240 170 320 400" fill="none" xmlns="http://www.w3.org/2000/svg">
 				<g stroke-width="31" stroke="currentColor" stroke-linecap="square" transform="matrix(1,0,0,1,-4,0)">
 					<path d="M250 256.4Q413 180.4 550 556.4" marker-end="url(#arrowhead-gen)"/>
@@ -59,7 +59,7 @@
 			type="text"
 			readonly
 			bind:value={apiKey}
-			placeholder="Click generate to create your key"
+			placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 			class:input-ready={state === 'copy' || state === 'copied'}
 		/>
 
@@ -68,9 +68,9 @@
 		{/if}
 
 		{#if state === 'loading'}
-			<div class="form-btn grid place-items-center">
+			<button class="form-btn" disabled aria-label="Loading">
 				<div class="loader"></div>
-			</div>
+			</button>
 		{:else if state === 'copy' || state === 'copied'}
 			<button class="form-btn copy-btn" onclick={copyToClipboard}>
 				{state === 'copied' ? 'Copied ✓' : 'Copy to clipboard'}
@@ -79,11 +79,9 @@
 			<button class="form-btn" onclick={submit}>Generate</button>
 		{/if}
 
-		{#if state === 'copy' || state === 'copied'}
-			<p class="keep-safe">Keep your API key safe – it grants access to your analytics data.</p>
-		{:else}
-			<p class="keep-safe"></p>
-		{/if}
+		<p class="keep-safe" class:keep-safe-visible={state === 'copy' || state === 'copied'}>
+			Keep your API key safe – it grants access to your analytics data.
+		</p>
 	</div>
 </div>
 
@@ -135,6 +133,9 @@
 		background: #3fcf8e;
 		font-family: 'Noto Sans', 'Geist' !important;
 		font-weight: 400;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 	}
 	input {
 		color: #505050;
@@ -163,9 +164,16 @@
 	.keep-safe {
 		font-size: 0.78em;
 		color: var(--dim-text);
-		margin-top: 1.5em;
-		min-height: 1em;
 		padding: 0;
+		max-height: 0;
+		overflow: hidden;
+		opacity: 0;
+		transition: max-height 0.4s ease, opacity 0.4s, padding-top 0.4s;
+	}
+	.keep-safe-visible {
+		max-height: 3em;
+		opacity: 1;
+		padding-top: 1.5em;
 	}
 	.loader {
 		border: 3px solid #343434;

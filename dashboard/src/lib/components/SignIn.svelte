@@ -65,7 +65,7 @@
 		</h2>
 		<p class="subtitle">{subtitles[type]}</p>
 		<label class="input-label" for="api-key">
-			API Key
+			Enter API Key
 			<svg class="arrow" viewBox="240 170 320 400" fill="none" xmlns="http://www.w3.org/2000/svg">
 				<g stroke-width="31" stroke="currentColor" stroke-linecap="square" transform="matrix(1,0,0,1,-4,0)">
 					<path d="M250 256.4Q413 180.4 550 556.4" marker-end="url(#arrowhead)"/>
@@ -100,6 +100,9 @@
 </div>
 
 <style scoped>
+	input::placeholder {
+		color: #707070;
+	}
 	.logo-icon {
 		color: var(--highlight);
 		height: 36px;

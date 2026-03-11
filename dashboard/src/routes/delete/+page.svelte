@@ -45,7 +45,19 @@
 			</div>
 			<button id="formBtn" class="delete-btn" onclick={() => (state = 'idle')}>Try again</button>
 		{:else}
-			<label class="input-label" for="api-key">API Key</label>
+			<label class="input-label" for="api-key">
+				Enter API Key
+				<svg class="arrow" viewBox="240 170 320 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<g stroke-width="31" stroke="currentColor" stroke-linecap="square" transform="matrix(1,0,0,1,-4,0)">
+						<path d="M250 256.4Q413 180.4 550 556.4" marker-end="url(#arrowhead-del)"/>
+					</g>
+					<defs>
+						<marker markerWidth="6" markerHeight="6" refX="3" refY="3" viewBox="0 0 6 6" orient="auto" id="arrowhead-del">
+							<polygon points="0,6 0,0 6,3" fill="currentColor"/>
+						</marker>
+					</defs>
+				</svg>
+			</label>
 			<input
 				id="api-key"
 				type="text"
@@ -93,8 +105,18 @@
 		color: var(--dim-text);
 		margin-bottom: 0.5em;
 	}
+	.arrow {
+		display: inline-block;
+		width: 12px;
+		height: 17px;
+		margin-left: 3px;
+		vertical-align: middle;
+	}
 	#formBtn {
 		font-size: 0.9em;
+	}
+	input::placeholder {
+		color: #707070;
 	}
 	.delete-btn {
 		background: var(--red) !important;
