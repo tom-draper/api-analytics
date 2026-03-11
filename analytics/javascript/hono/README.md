@@ -18,6 +18,8 @@ Add our lightweight middleware to your API. Almost all processing is handled by 
 npm install @api-analytics/hono
 ```
 
+#### Node.js
+
 ```js
 import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
@@ -32,6 +34,36 @@ app.get('/', (c) => c.json({ message: 'Hello World!' }));
 serve(app, (info) => {
     console.log(`Server listening at http://localhost:${info.port}`);
 });
+```
+
+#### Bun
+
+```js
+import { Hono } from 'hono';
+import { honoAnalytics } from '@api-analytics/hono';
+
+const app = new Hono();
+
+app.use('*', honoAnalytics('<API-KEY>'));  // Add middleware
+
+app.get('/', (c) => c.json({ message: 'Hello World!' }));
+
+export default app;
+```
+
+#### Deno
+
+```ts
+import { Hono } from 'hono';
+import { honoAnalytics } from '@api-analytics/hono';
+
+const app = new Hono();
+
+app.use('*', honoAnalytics('<API-KEY>'));  // Add middleware
+
+app.get('/', (c) => c.json({ message: 'Hello World!' }));
+
+Deno.serve(app.fetch);
 ```
 
 ### 3. View your analytics

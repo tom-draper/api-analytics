@@ -14,8 +14,16 @@ Add our lightweight middleware to your API. Almost all processing is handled by 
 
 [![npm](https://img.shields.io/npm/v/@api-analytics/elysia)](https://www.npmjs.com/package/@api-analytics/elysia)
 
+#### Bun
+
 ```bash
 bun add @api-analytics/elysia
+```
+
+#### Node.js
+
+```bash
+npm install @api-analytics/elysia @elysiajs/node
 ```
 
 ```js

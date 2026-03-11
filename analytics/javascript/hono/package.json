@@ -5,7 +5,6 @@
   "main": "index.js",
   "exports": "./index.js",
   "type": "module",
-  "engines": { "node": ">=18" },
   "files": ["index.js"],
   "keywords": ["analytics", "api", "dashboard", "hono", "middleware"],
   "author": "Tom Draper",
