@@ -22,4 +22,8 @@
     "url": "https://github.com/tom-draper/api-analytics/issues"
   },
   "homepage": "https://github.com/tom-draper/api-analytics#readme"
+,
+  "publishConfig": {
+    "access": "public"
+  }
 }

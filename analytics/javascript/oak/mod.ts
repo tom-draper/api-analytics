@@ -96,7 +96,7 @@ function getIPAddress(ctx: Context, privacyLevel: number): string | null {
  * app.use(oakAnalytics("your-api-key"));
  * ```
  */
-export function oakAnalytics(apiKey: string, config: Config = {}) {
+export function oakAnalytics(apiKey: string, config: Config = {}): (ctx: Context, next: Next) => Promise<void> {
 	const {
 		privacyLevel = 0,
 		serverUrl = "https://www.apianalytics-server.com/",
