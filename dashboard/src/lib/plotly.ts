@@ -109,7 +109,7 @@ export function activityLayout(period: Period, yAxisTitle: string, barmode?: str
 		height: 159,
 		...(barmode ? { barmode } : {}),
 		yaxis: { title: { text: yAxisTitle }, gridcolor: 'gray', showgrid: false, fixedrange: true },
-		xaxis: { title: { text: 'Date' }, showgrid: false, fixedrange: true, range: [periodAgo, new Date()], visible: false },
+		xaxis: { title: { text: 'Date' }, showgrid: false, fixedrange: true, ...(periodAgo !== null ? { range: [periodAgo, new Date()] } : {}), visible: false },
 		dragmode: false,
 	};
 }
