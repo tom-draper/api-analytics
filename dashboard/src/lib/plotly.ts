@@ -59,11 +59,6 @@ export function donutLayout(width?: number) {
 	};
 }
 
-/** Data trace for donut/pie charts */
-export function donutData(labels: string[], values: number[], colors: string[]) {
-	return [{ values, labels, type: 'pie', hole: 0.6, marker: { colors } }];
-}
-
 /** Build donut chart data by aggregating UA IDs through a getter function */
 export function buildDonutData(
 	uaIdCount: { [id: number]: number },

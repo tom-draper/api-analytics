@@ -25,6 +25,7 @@
 	import Error from '$components/Error.svelte';
 	import TopUsers from '$components/dashboard/TopUsers.svelte';
 	import { getServerURL } from '$lib/url';
+	import { fetchPageRaw } from '$lib/fetchRequests';
 	import Navigation from '$components/dashboard/Navigation.svelte';
 	import { dataStore } from '$lib/dataStore';
 	import Referrer from '$components/dashboard/Referrer.svelte';
@@ -80,40 +81,22 @@
 	}
 
 	async function fetchAdditionalPage(page: number) {
-		const url = getServerURL();
+		const body = await fetchPageRaw(userID, page);
+		if (!body) return 0;
 
-		try {
-			const response = await fetch(`${url}/api/requests/${userID}/${page}`, {
-				signal: AbortSignal.timeout(250000),
-				keepalive: true
-			});
-			if (response.status !== 200) {
-				return 0;
-			}
+		Object.assign(data.userAgents, body.user_agents);
 
-			const body = await response.json();
-			if (body.requests.length <= 0) {
-				return 0;
-			}
-
-			Object.assign(data.userAgents, body.user_agents);
-
-			const mostRecent = new Date(body.requests[body.requests.length - 1][ColumnIndex.CreatedAt]);
-			if (dateInPeriod(mostRecent, settings.period)) {
-				// Trigger dashboard re-render
-				data = { ...data, requests: data.requests.concat(body.requests) };
-			} else {
-				// Avoid triggering dashboard re-render
-				data.requests.push(...body.requests);
-			}
-
-			dataStore.set(data);
-
-			return body.requests.length;
-		} catch (e) {
-			console.log(e);
-			return 0;
+		const mostRecent = new Date(body.requests[body.requests.length - 1][ColumnIndex.CreatedAt]);
+		if (dateInPeriod(mostRecent, settings.period)) {
+			// Trigger dashboard re-render
+			data = { ...data, requests: data.requests.concat(body.requests) };
+		} else {
+			// Avoid triggering dashboard re-render
+			data.requests.push(...body.requests);
 		}
+
+		dataStore.set(data);
+		return body.requests.length;
 	}
 
 	function isDemo() {

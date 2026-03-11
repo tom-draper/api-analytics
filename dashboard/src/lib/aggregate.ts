@@ -1,4 +1,4 @@
-import { ColumnIndex, methodMap } from '$lib/consts';
+import { ColumnIndex, methodMap, topListLimit } from '$lib/consts';
 import { periodToDays, type Period } from '$lib/period';
 import { statusSuccessful } from '$lib/status';
 import type { DashboardSettings } from '$lib/settings';
@@ -83,17 +83,25 @@ export type AggregatedData = {
 
 const TOP_USERS_LIMIT = 1000;
 
-function quantile(sortedArr: number[], q: number): number {
-	if (sortedArr.length === 0) return 0;
-	const pos = (sortedArr.length - 1) * q;
+function quantileFromFreq(times: number[], counts: number[], total: number, q: number): number {
+	if (total === 0) return 0;
+	const pos = (total - 1) * q;
 	const base = Math.floor(pos);
 	const rest = pos - base;
-	if (sortedArr[base + 1] !== undefined) {
-		return sortedArr[base] + rest * (sortedArr[base + 1] - sortedArr[base]);
-	} else if (sortedArr[base] !== undefined) {
-		return sortedArr[base];
+	let cumulative = 0;
+	let valAtBase: number | undefined;
+	let valAtBaseP1: number | undefined;
+	for (let i = 0; i < times.length; i++) {
+		cumulative += counts[i];
+		if (valAtBase === undefined && cumulative > base) valAtBase = times[i];
+		if (valAtBaseP1 === undefined && cumulative > base + 1) {
+			valAtBaseP1 = times[i];
+			break;
+		}
 	}
-	return 0;
+	if (valAtBase === undefined) return 0;
+	if (valAtBaseP1 === undefined) return valAtBase;
+	return valAtBase + rest * (valAtBaseP1 - valAtBase);
 }
 
 function modifyDateForPeriod(date: Date, days: number | null): void {
@@ -206,7 +214,6 @@ export function aggregate(
 
 	const activityMap = initActivityMap(days);
 
-	const responseTimes = new Array<number>(n);
 	const rtFreq: { [rt: number]: number } = {};
 
 	const versionCount: { [v: string]: number } = {};
@@ -278,8 +285,7 @@ export function aggregate(
 		actEntry.totalRT += responseTime;
 		if (isSuccessful) actEntry.successCount++;
 
-		// 5. Response times
-		responseTimes[i] = responseTime;
+		// 5. Response time frequency
 		const rtRounded = Math.round(responseTime) || 0;
 		rtFreq[rtRounded] = (rtFreq[rtRounded] ?? 0) + 1;
 
@@ -352,15 +358,12 @@ export function aggregate(
 		}
 	}
 
-	// Sort response times and compute quartiles
-	responseTimes.sort((a, b) => a - b);
-	const rtLQ = quantile(responseTimes, 0.25);
-	const rtMedian = quantile(responseTimes, 0.5);
-	const rtUQ = quantile(responseTimes, 0.75);
-
-	// Build sparse response time frequency histogram (only non-zero entries)
+	// Build sparse response time frequency histogram and compute quartiles from it
 	const rtFreqTimes = Object.keys(rtFreq).map(Number).sort((a, b) => a - b);
 	const rtFreqCounts = rtFreqTimes.map((t) => rtFreq[t]);
+	const rtLQ = quantileFromFreq(rtFreqTimes, rtFreqCounts, n, 0.25);
+	const rtMedian = quantileFromFreq(rtFreqTimes, rtFreqCounts, n, 0.5);
+	const rtUQ = quantileFromFreq(rtFreqTimes, rtFreqCounts, n, 0.75);
 
 	// Build activity buckets (sorted ascending by date)
 	const activityBuckets: ActivityBucket[] = Array.from(activityMap, ([date, entry]) => ({
@@ -396,7 +399,7 @@ export function aggregate(
 			height: referrerMax > 0 ? count / referrerMax : 0,
 		}))
 		.sort((a, b) => b.count - a.count)
-		.slice(0, 50);
+		.slice(0, topListLimit);
 
 	// Build user ID bars (sorted by count, heights normalized, top 50)
 	let userIDMax = 0;
@@ -410,7 +413,7 @@ export function aggregate(
 			height: userIDMax > 0 ? count / userIDMax : 0,
 		}))
 		.sort((a, b) => b.count - a.count)
-		.slice(0, 50);
+		.slice(0, topListLimit);
 
 	// Build top users
 	const userValues = Object.values(users);

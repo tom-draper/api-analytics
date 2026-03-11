@@ -18,7 +18,7 @@ export function matchCandidate(userAgent: string | null, candidates: Candidate[]
     return 'Other';
 }
 
-export function maintainCandidates(indexUpdated: number, candidates: Candidate[]) {
+function maintainCandidates(indexUpdated: number, candidates: Candidate[]) {
     // Updated candidate with matches incremented, now need to shift this candidate
     // along to before its original group to maintain sorted order.
     //           v (+1)                          j <-> i            i     j   
