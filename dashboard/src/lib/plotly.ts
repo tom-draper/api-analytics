@@ -53,6 +53,7 @@ export function donutLayout(width?: number) {
 		paper_bgcolor: 'transparent',
 		height: 196,
 		...(width !== undefined ? { width } : {}),
+		legend: { itemclick: false, itemdoubleclick: false },
 		yaxis: { title: { text: 'Requests' }, gridcolor: 'gray', showgrid: false, fixedrange: true },
 		xaxis: { visible: false },
 		dragmode: false,

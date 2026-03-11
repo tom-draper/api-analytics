@@ -52,7 +52,7 @@
 		});
 
 		el.on?.('plotly_legendclick', (data: any) => {
-			const label = data.data?.[0]?.labels?.[data.expandedIndex];
+			const label = data.node?.querySelector?.('.legendtext')?.textContent?.trim();
 			if (label) selectVersion(label);
 			return false;
 		});
