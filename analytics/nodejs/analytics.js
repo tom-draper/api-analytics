@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 /** API Analytics config to define custom mapper functions that can overwrite
  * the default functionality when extracting data from the request. */
 export class Config {
@@ -123,13 +121,16 @@ class Analytics {
 		if (now - this.lastPosted > 60000 && this.requests.length > 0) {
 			this.lastPosted = now;
 
+			const requestsToSend = this.requests;
+			this.requests = [];
+
 			const url = this.getServerEndpoint();
 			try {
 				await fetch(url, {
 					method: "POST",
 					body: JSON.stringify({
 						api_key: this.apiKey,
-						requests: this.requests,
+						requests: requestsToSend,
 						framework: this.framework,
 						privacy_level: this.config.privacyLevel,
 					}),
@@ -140,8 +141,6 @@ class Analytics {
 			} catch (error) {
 				console.error("Failed to send analytics data:", error);
 			}
-
-			this.requests = [];
 		}
 	}
 
@@ -201,13 +200,8 @@ export function expressAnalytics(apiKey, config = new Config()) {
 export function useFastifyAnalytics(fastify, apiKey, config = new Config()) {
 	const analytics = new Analytics(apiKey, "Fastify", config);
 
-	fastify.addHook("onRequest", (request, reply, done) => {
-		request.startTime = performance.now();
-		done();
-	});
-
 	fastify.addHook("onResponse", (request, reply, done) => {
-		const responseTime = Math.round(performance.now() - request.startTime);
+		const responseTime = Math.round(reply.elapsedTime);
 		const requestData = {
 			hostname: config.getHostname(request),
 			ip_address: getIPAddress(request, config),
@@ -318,11 +312,16 @@ class Mappers {
 	 * @returns {string}
 	 */
 	static getIPAddress(req) {
-		const forwardedFor =
-			req.headers["x-forwarded-for"] || req.headers["X-Forwarded-For"];
-		return forwardedFor
-			? forwardedFor.split(",")[0].trim()
-			: req.socket.remoteAddress;
+		if (req.headers["cf-connecting-ip"]) {
+			return req.headers["cf-connecting-ip"];
+		}
+		if (req.headers["x-forwarded-for"]) {
+			return req.headers["x-forwarded-for"].split(",")[0].trim();
+		}
+		if (req.headers["x-real-ip"]) {
+			return req.headers["x-real-ip"];
+		}
+		return req.socket.remoteAddress;
 	}
 
 	/**
@@ -332,7 +331,7 @@ class Mappers {
 	 * @returns {string}
 	 */
 	static getUserAgent(req) {
-		return req.headers["user-agent"] || req.headers["User-Agent"];
+		return req.headers["user-agent"];
 	}
 
 	/**
