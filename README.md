@@ -535,7 +535,7 @@ end
 
 #### Laravel
 
-[![Packagist Version](https://img.shields.io/packagist/v/api-analytics/laravel)](https://packagist.org/packages/api-analytics/laravel)
+[![Packagist Version](https://img.shields.io/packagist/v/api-analytics/laravel?color=blue)](https://packagist.org/packages/api-analytics/laravel)
 
 ```bash
 composer require api-analytics/laravel
@@ -558,7 +558,7 @@ protected $middleware = [
 
 #### Native PHP
 
-[![Packagist Version](https://img.shields.io/packagist/v/api-analytics/php)](https://packagist.org/packages/api-analytics/php)
+[![Packagist Version](https://img.shields.io/packagist/v/api-analytics/php?color=blue)](https://packagist.org/packages/api-analytics/php)
 
 ```bash
 composer require api-analytics/php
