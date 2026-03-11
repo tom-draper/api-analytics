@@ -1,0 +1,29 @@
+{
+  "name": "@api-analytics/core",
+  "version": "1.0.0",
+  "description": "Core analytics client for API Analytics JavaScript packages.",
+  "main": "index.js",
+  "exports": "./index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "index.js"
+  ],
+  "keywords": ["analytics", "api", "core"],
+  "author": "Tom Draper",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tom-draper/api-analytics.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tom-draper/api-analytics/issues"
+  },
+  "homepage": "https://github.com/tom-draper/api-analytics#readme"
+,
+  "publishConfig": {
+    "access": "public"
+  }
+}
