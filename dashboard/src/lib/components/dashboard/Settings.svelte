@@ -32,8 +32,8 @@
 	});
 </script>
 
-<div class="background" class:hidden={!show} onclick={hideSettings}>
-	<div class="container" onclick={handleClick}>
+<div class="background" class:hidden={!show} role="presentation" onclick={hideSettings} onkeydown={(e) => e.key === 'Escape' && hideSettings()}>
+	<div class="container" role="dialog" aria-modal="true" aria-label="Settings" onclick={handleClick} onkeydown={handleClick}>
 		<h2 class="title">Settings</h2>
 		<div class="setting mb-2">
 			<div class="setting-label">Exclude status 404</div>
