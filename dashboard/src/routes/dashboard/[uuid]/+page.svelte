@@ -13,11 +13,11 @@
 	import DayOfWeek from '$components/dashboard/DayOfWeek.svelte';
 	import Location from '$components/dashboard/Location.svelte';
 	import Device from '$components/dashboard/device/Device.svelte';
-	import { dateInPeriod, isPeriod } from '$lib/period';
+	import { dateInPeriod } from '$lib/period';
 	import generateDemoData from '$lib/demo';
 	import formatUUID from '$lib/uuid';
 	import Settings from '$components/dashboard/Settings.svelte';
-	import { initSettings, type DashboardSettings } from '$lib/settings';
+	import { initSettings, parseSettingsFromURL, type DashboardSettings } from '$lib/settings';
 	import type { NotificationState } from '$lib/notification';
 	import Notification from '$components/dashboard/Notification.svelte';
 	import exportCSV from '$lib/exportData';
@@ -137,73 +137,8 @@
 		});
 	}
 
-function getSettings() {
-		const settings = initSettings();
-
-		const period = page.url.searchParams.get('period');
-		if (period && isPeriod(period)) {
-			settings.period = period;
-		}
-		const hostname = page.url.searchParams.get('hostname');
-		if (hostname) {
-			settings.hostname = hostname;
-		}
-		const location = page.url.searchParams.get('location');
-		if (location) {
-			settings.targetLocation = location;
-		}
-		const path = page.url.searchParams.get('path');
-		if (path) {
-			settings.targetEndpoint.path = path;
-		}
-		const status = page.url.searchParams.get('status');
-		if (status) {
-			settings.targetEndpoint.status = parseInt(status);
-		}
-		const userID = page.url.searchParams.get('userID');
-		if (userID) {
-			if (settings.targetUser === null) {
-				settings.targetUser = {
-					ipAddress: '',
-					userID: '',
-					composite: false
-				};
-			}
-			settings.targetUser.userID = userID;
-		}
-
-		const ipAddress = page.url.searchParams.get('ipAddress');
-		if (ipAddress) {
-			if (settings.targetUser === null) {
-				settings.targetUser = {
-					ipAddress: '',
-					userID: '',
-					composite: false
-				};
-			}
-			settings.targetUser.ipAddress = ipAddress;
-		}
-
-		const weekday = page.url.searchParams.get('weekday');
-		if (weekday !== null) {
-			const parsed = parseInt(weekday);
-			if (parsed >= 0 && parsed <= 6) settings.targetWeekday = parsed;
-		}
-
-		const hour = page.url.searchParams.get('hour');
-		if (hour !== null) {
-			const parsed = parseInt(hour);
-			if (parsed >= 0 && parsed <= 23) settings.targetHour = parsed;
-		}
-
-		const version = page.url.searchParams.get('version');
-		if (version) settings.targetVersion = version;
-
-		return settings;
-	}
-
 	let data = $state.raw<DashboardData | undefined>(undefined);
-	let settings = $state(getSettings());
+	let settings = $state(parseSettingsFromURL(page.url.searchParams));
 	let showSettings = $state(false);
 	let hostnames = $state<string[]>([]);
 	let notification = $state<NotificationState>({
