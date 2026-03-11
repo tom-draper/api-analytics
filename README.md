@@ -90,40 +90,6 @@ MIDDLEWARE = [
 ]
 ```
 
-#### Tornado
-
-[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.org/project/api-analytics)
-
-```bash
-pip install api-analytics[tornado]
-```
-
-Modify your handler to inherit from `Analytics`. Create a `__init__()` method, passing along the application and response along with your unique API key.
-
-```py
-import asyncio
-from tornado.web import Application
-from api_analytics.tornado import Analytics
-
-# Inherit from the Analytics middleware class
-class MainHandler(Analytics):
-    def __init__(self, app, res):
-        super().__init__(app, res, <API-KEY>)  # Provide api key
-    
-    def get(self):
-        self.write({'message': 'Hello, World!'})
-
-def make_app():
-    return Application([
-        (r"/", MainHandler),
-    ])
-
-if __name__ == "__main__":
-    app = make_app()
-    app.listen(8080)
-    IOLoop.instance().start()
-```
-
 #### Express
 
 [![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://www.npmjs.com/package/node-api-analytics)
@@ -147,60 +113,6 @@ app.get('/', (req, res) => {
 app.listen(8080, () => {
     console.log('Server listening at http://localhost:8080');
 })
-```
-
-#### Fastify
-
-[![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://www.npmjs.com/package/node-api-analytics)
-
-```bash
-npm install node-api-analytics
-```
-
-```js
-import fastify from 'Fastify';
-import { useFastifyAnalytics } from 'node-api-analytics';
-
-const fastify = Fastify();
-
-useFastifyAnalytics(fastify, apiKey);
-
-fastify.get('/', function (request, reply) {
-    reply.send({ message: 'Hello World!' });
-})
-
-fastify.listen({ port: 8080 }, function (err, address) {
-    console.log('Server listening at https://localhost:8080');
-    if (err) {
-        fastify.log.error(err);
-        process.exit(1);
-    }
-})
-```
-
-#### Koa
-
-[![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://www.npmjs.com/package/node-api-analytics)
-
-```bash
-npm install node-api-analytics
-```
-
-```js
-import Koa from "koa";
-import { koaAnalytics } from 'node-api-analytics';
-
-const app = new Koa();
-
-app.use(koaAnalytics(<API-KEY>)); // Add middleware
-
-app.use((ctx) => {
-    ctx.body = { message: 'Hello, World!' };
-});
-
-app.listen(8080, () =>
-    console.log('Server listening at http://localhost:8080');
-);
 ```
 
 #### Hono
@@ -261,41 +173,6 @@ func main() {
 }
 ```
 
-#### Echo
-
-[![Echo](https://img.shields.io/badge/go.mod-Echo-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/echo)
-
-
-```bash
-go get -u github.com/tom-draper/api-analytics/analytics/go/echo
-```
-
-```go
-package main
-
-import (
-    "net/http"
-    echo "github.com/labstack/echo/v4"
-    analytics "github.com/tom-draper/api-analytics/analytics/go/echo"
-)
-
-func root(c echo.Context) error {
-    data := map[string]string{
-        "message": "Hello, World!",
-    }
-    return c.JSON(http.StatusOK, data)
-}
-
-func main() {
-    e := echo.New()
-
-    e.Use(analytics.Analytics(<API-KEY>)) // Add middleware
-
-    e.GET("/", root)
-    e.Start(":8080")
-}
-```
-
 #### Fiber
 
 [![Fiber](https://img.shields.io/badge/go.mod-Fiber-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/fiber)
@@ -326,47 +203,6 @@ func main() {
 
     app.Get("/", root)
     app.Listen(":8080")
-}
-```
-
-#### Chi
-
-[![Chi](https://img.shields.io/badge/go.mod-Chi-blue)](https://github.com/tom-draper/api-analytics/tree/main/analytics/go/chi)
-
-```bash
-go get -u github.com/tom-draper/api-analytics/analytics/go/chi
-```
-
-```go
-package main
-
-import (
-    "net/http"
-    analytics "github.com/tom-draper/api-analytics/analytics/go/chi"
-    chi "github.com/go-chi/chi/v5"
-)
-
-func root(w http.ResponseWriter, r *http.Request) {
-    data := map[string]string{
-        "message": "Hello, World!",
-    }
-    w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(http.StatusOK)
-
-    err := json.NewEncoder(w).Encode(data)
-    if err != nil {
-        http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
-        return
-    }
-}
-
-func main() {
-    r := chi.NewRouter()
-
-    r.Use(analytics.Analytics(<API-KEY>)) // Add middleware
-
-    r.GET("/", root)
-    r.Run(":8080")
 }
 ```
 
@@ -448,42 +284,6 @@ async fn main() {
 }
 ```
 
-#### Rocket
-
-[![Crates.io](https://img.shields.io/crates/v/rocket-analytics.svg)](https://crates.io/crates/rocket-analytics)
-
-```bash
-cargo add rocket-analytics
-```
-
-```rust
-#[macro_use]
-extern crate rocket;
-use rocket::serde::json::Json;
-use serde::Serialize;
-use rocket_analytics::Analytics;
-
-#[derive(Serialize)]
-pub struct JsonData {
-    message: String,
-}
-
-#[get("/")]
-fn root() -> Json<JsonData> {
-    let data = JsonData {
-        message: "Hello, World!".to_string(),
-    };
-    Json(data)
-}
-
-#[launch]
-fn rocket() -> _ {
-    rocket::build()
-        .mount("/", routes![root])
-        .attach(Analytics::new(<API-KEY>))
-}
-```
-
 #### Rails
 
 [![Gem version](https://img.shields.io/gem/v/api_analytics)](https://rubygems.org/gems/api_analytics)
@@ -556,34 +356,6 @@ protected $middleware = [
 ];
 ```
 
-#### Native PHP
-
-[![Packagist Version](https://img.shields.io/packagist/v/api-analytics/php?color=blue)](https://packagist.org/packages/api-analytics/php)
-
-```bash
-composer require api-analytics/php
-```
-
-```php
-use ApiAnalytics\PHP\Analytics;
-
-$analytics = new Analytics(<API-KEY>);
-
-$startTime = microtime(true);
-
-// Your API logic here
-$response = ['message' => 'Hello, World!'];
-$statusCode = 200;
-
-$responseTimeMs = (int) round((microtime(true) - $startTime) * 1000);
-
-$analytics->log($_SERVER, $responseTimeMs, $statusCode); // Log request
-
-header('Content-Type: application/json');
-http_response_code($statusCode);
-echo json_encode($response);
-```
-
 #### ASP.NET Core
 
 [![NuGet Version](https://img.shields.io/nuget/v/APIAnalytics.AspNetCore)](https://www.nuget.org/packages/APIAnalytics.AspNetCore)
@@ -594,18 +366,13 @@ dotnet add package APIAnalytics.AspNetCore
 
 ```cs
 using Analytics;
-using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
-
 var app = builder.Build();
 
-app.UseAnalytics(<API-KEY>); // Add middleware
+app.UseAnalytics("API-KEY"); // Add middleware
 
-app.MapGet("/", () =>
-{
-    return Results.Ok(new OkObjectResult(new { message = "Hello, World!" }));
-});
+app.MapGet("/", () => new { message = "Hello, World!" });
 
 app.Run();
 ```
