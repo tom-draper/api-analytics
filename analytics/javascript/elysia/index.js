@@ -32,7 +32,7 @@ export function elysiaAnalytics(app, apiKey, config = new Config()) {
 				status,
 				method: request.method,
 				response_time: Math.round(performance.now() - _analyticsStart),
-				user_id: null,
+				user_id: config.getUserID(request),
 				created_at: new Date().toISOString(),
 			});
 		});
