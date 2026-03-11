@@ -88,13 +88,13 @@
 		{#if error}
 			<p class="error-msg">API key not found. Please check and try again.</p>
 		{/if}
-		{#if loading}
-			<div id="formBtn" class="grid place-items-center">
+		<button class="form-btn" onclick={submit} disabled={loading}>
+			{#if loading}
 				<div class="loader"></div>
-			</div>
-		{:else}
-			<button id="formBtn" onclick={submit}>{buttonLabels[type]}</button>
-		{/if}
+			{:else}
+				{buttonLabels[type]}
+			{/if}
+		</button>
 		<a href="/generate" class="generate-link">Don't have an API key? Generate one →</a>
 	</div>
 </div>
@@ -140,7 +140,7 @@
 	.error-msg {
 		font-size: 0.8em;
 		color: var(--red);
-		text-align: left;
+		text-align: center;
 		margin-top: -1.8em;
 		margin-bottom: 1.2em;
 		padding: 0;
@@ -151,8 +151,18 @@
 		width: 1em;
 		height: 1em;
 	}
-	#formBtn {
+	.form-btn {
 		font-size: 0.9em;
+		height: 40px;
+		border-radius: 4px;
+		padding: 0 20px;
+		border: none;
+		cursor: pointer;
+		width: 100px;
+		background: var(--highlight);
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 	}
 	.generate-link {
 		display: block;
