@@ -3,7 +3,7 @@ from datetime import datetime
 from time import time
 from typing import Callable, Union
 
-from api_analytics.core import log_request, logger, DEFAULT_SERVER_URL
+from .core import log_request, logger, DEFAULT_SERVER_URL
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
@@ -17,7 +17,7 @@ class Analytics(BaseHTTPMiddleware):
         super().__init__(app)
         self.api_key = api_key
         self.config = config or Config()
-        
+
         if not self.api_key:
             logger.debug("API key is not set.")
         if not self.config.server_url:
@@ -71,11 +71,7 @@ class Analytics(BaseHTTPMiddleware):
 
         @staticmethod
         def get_user_agent(request: Request) -> Union[str, None]:
-            if "user-agent" in request.headers:
-                return request.headers["user-agent"]
-            elif "User-Agent" in request.headers:
-                return request.headers["User-Agent"]
-            return None
+            return request.headers.get("User-Agent")
 
     def _get_ip_address(self, request: Request) -> Union[str, None]:
         # If privacy_level is max, client IP address is never sent to the server

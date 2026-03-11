@@ -66,11 +66,7 @@ class Analytics:
 
         @staticmethod
         def get_user_agent(request: WSGIRequest) -> Union[str, None]:
-            if "user-agent" in request.headers:
-                return request.headers["user-agent"]
-            elif "User-Agent" in request.headers:
-                return request.headers["User-Agent"]
-            return None
+            return request.headers.get("User-Agent")
 
     def _get_ip_address(self, request: WSGIRequest) -> Union[str, None]:
         # If privacy_level is max, client IP address is never sent to the server

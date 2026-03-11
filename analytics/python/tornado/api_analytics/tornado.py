@@ -72,20 +72,13 @@ class Analytics(RequestHandler):
 
         @staticmethod
         def get_user_agent(request: HTTPServerRequest) -> Union[str, None]:
-            if "user-agent" in request.headers:
-                return request.headers["user-agent"]
-            elif "User-Agent" in request.headers:
-                return request.headers["User-Agent"]
-            return None
+            return request.headers.get("User-Agent")
 
     def _get_ip_address(self) -> Union[str, None]:
         # If privacy_level is max, client IP address is never sent to the server
         if self.config.privacy_level >= 2:
             return None
-
-        if self.config.get_ip_address:
-            return self.config.get_ip_address(self.request)
-        return self.request.remote_ip
+        return self.config.get_ip_address(self.request)
 
 
 @dataclass
