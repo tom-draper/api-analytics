@@ -5,57 +5,30 @@ use http::{
     header::{HeaderValue, HOST, USER_AGENT},
     Extensions, HeaderMap,
 };
-use lazy_static::lazy_static;
 use reqwest::Client;
 use serde::Serialize;
 use std::{
     net::{IpAddr, SocketAddr},
+    pin::Pin,
+    sync::Arc,
     task::{Context, Poll},
-    time::Instant,
+    time::{Duration, Instant},
 };
-use std::{pin::Pin, sync::Arc};
 use tokio::sync::RwLock;
-use tokio::time::{interval, Duration};
+use tokio::time::interval;
 use tower::{Layer, Service};
 
 #[derive(Debug, Clone, Serialize)]
 struct RequestData {
     hostname: String,
-    ip_address: String,
+    ip_address: Option<String>,
     path: String,
     user_agent: String,
     method: String,
     response_time: u32,
     status: u16,
-    user_id: String,
+    user_id: Option<String>,
     created_at: String,
-}
-
-impl RequestData {
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        hostname: String,
-        ip_address: String,
-        path: String,
-        user_agent: String,
-        method: String,
-        status: u16,
-        response_time: u32,
-        user_id: String,
-        created_at: String,
-    ) -> Self {
-        Self {
-            hostname,
-            ip_address,
-            path,
-            user_agent,
-            method,
-            response_time,
-            status,
-            user_id,
-            created_at,
-        }
-    }
 }
 
 type StringMapper = dyn for<'a> Fn(&Request<Body>) -> String + Send + Sync;
@@ -103,28 +76,35 @@ fn get_hostname(req: &Request<Body>) -> String {
 }
 
 fn get_ip_address(req: &Request<Body>) -> String {
-    let extensions = req.extensions();
     let headers = req.headers();
-    let mut ip_address = String::new();
-    if let Some(val) = ip_from_x_forwarded_for(headers) {
-        ip_address = val.to_string();
-    } else if let Some(val) = ip_from_x_real_ip(headers) {
-        ip_address = val.to_string();
-    } else if let Some(val) = ip_from_connect_info(extensions) {
-        ip_address = val.to_string();
+    let extensions = req.extensions();
+    if let Some(val) = ip_from_cf_connecting_ip(headers) {
+        return val.to_string();
     }
-    ip_address
+    if let Some(val) = ip_from_x_forwarded_for(headers) {
+        return val.to_string();
+    }
+    if let Some(val) = ip_from_x_real_ip(headers) {
+        return val.to_string();
+    }
+    if let Some(val) = ip_from_connect_info(extensions) {
+        return val.to_string();
+    }
+    String::new()
+}
+
+fn ip_from_cf_connecting_ip(headers: &HeaderMap) -> Option<IpAddr> {
+    headers
+        .get("cf-connecting-ip")
+        .and_then(|hv| hv.to_str().ok())
+        .and_then(|s| s.trim().parse::<IpAddr>().ok())
 }
 
 fn ip_from_x_forwarded_for(headers: &HeaderMap) -> Option<IpAddr> {
     headers
         .get("x-forwarded-for")
         .and_then(|hv| hv.to_str().ok())
-        .and_then(|s| {
-            s.split(',')
-                .rev()
-                .find_map(|s| s.trim().parse::<IpAddr>().ok())
-        })
+        .and_then(|s| s.split(',').find_map(|s| s.trim().parse::<IpAddr>().ok()))
 }
 
 fn ip_from_x_real_ip(headers: &HeaderMap) -> Option<IpAddr> {
@@ -158,39 +138,39 @@ fn get_user_id(_req: &Request<Body>) -> String {
 #[derive(Clone)]
 pub struct Analytics {
     config: Config,
+    requests: Arc<RwLock<Vec<RequestData>>>,
 }
 
 impl Analytics {
     pub fn new(api_key: String) -> Self {
+        let requests: Arc<RwLock<Vec<RequestData>>> = Arc::new(RwLock::new(vec![]));
+        let requests_clone = Arc::clone(&requests);
         let config = Config::default();
-        let api_key_clone = api_key.clone();
         let privacy_level = config.privacy_level;
         let server_url = config.server_url.clone();
 
         tokio::spawn(async move {
-            let mut interval = interval(Duration::from_secs(60));
+            let client = Client::builder()
+                .timeout(Duration::from_secs(10))
+                .build()
+                .unwrap_or_else(|_| Client::new());
+
+            let mut ticker = interval(Duration::from_secs(60));
+            ticker.tick().await; // skip the immediate first tick
             loop {
-                interval.tick().await; // Wait for the next interval
-
-                let mut requests = REQUESTS.write().await;
-                if !requests.is_empty() {
-                    let payload = Payload::new(
-                        api_key_clone.clone(),
-                        requests.clone(),
-                        privacy_level,
-                    );
-
-                    requests.clear(); // Clear requests after reading
-                    drop(requests); // Explicitly drop the lock
-
-                    let url = server_url.clone();
-
-                    tokio::spawn(async move { post_requests(payload, url).await });
+                ticker.tick().await;
+                let batch = {
+                    let mut reqs = requests_clone.write().await;
+                    std::mem::take(&mut *reqs)
+                };
+                if !batch.is_empty() {
+                    let payload = Payload::new(api_key.clone(), batch, privacy_level);
+                    post_requests(&client, payload, &server_url).await;
                 }
             }
         });
 
-        Self { config }
+        Self { config, requests }
     }
 
     pub fn with_privacy_level(mut self, privacy_level: i32) -> Self {
@@ -199,11 +179,11 @@ impl Analytics {
     }
 
     pub fn with_server_url(mut self, server_url: String) -> Self {
-        if server_url.ends_with("/") {
-            self.config.server_url = server_url;
+        self.config.server_url = if server_url.ends_with('/') {
+            server_url
         } else {
-            self.config.server_url = server_url + "/";
-        }
+            server_url + "/"
+        };
         self
     }
 
@@ -238,6 +218,14 @@ impl Analytics {
         self.config.get_user_agent = Arc::new(mapper);
         self
     }
+
+    pub fn with_user_id_mapper<F>(mut self, mapper: F) -> Self
+    where
+        F: Fn(&Request<Body>) -> String + Send + Sync + 'static,
+    {
+        self.config.get_user_id = Arc::new(mapper);
+        self
+    }
 }
 
 impl<S> Layer<S> for Analytics {
@@ -246,6 +234,7 @@ impl<S> Layer<S> for Analytics {
     fn layer(&self, inner: S) -> Self::Service {
         AnalyticsMiddleware {
             config: Arc::new(self.config.clone()),
+            requests: Arc::clone(&self.requests),
             inner,
         }
     }
@@ -254,11 +243,8 @@ impl<S> Layer<S> for Analytics {
 #[derive(Clone)]
 pub struct AnalyticsMiddleware<S> {
     config: Arc<Config>,
+    requests: Arc<RwLock<Vec<RequestData>>>,
     inner: S,
-}
-
-lazy_static! {
-    static ref REQUESTS: Arc<RwLock<Vec<RequestData>>> = Arc::new(RwLock::new(vec![]));
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -280,18 +266,10 @@ impl Payload {
     }
 }
 
-async fn post_requests(data: Payload, server_url: String) {
-    let client = Client::new();
-    let response = client
-        .post(server_url + "api/log-request")
-        .json(&data)
-        .send()
-        .await;
-
-    match response {
-        Ok(resp) if resp.status().is_success() => {
-            return;
-        }
+async fn post_requests(client: &Client, data: Payload, server_url: &str) {
+    let url = format!("{}api/log-request", server_url);
+    match client.post(url).json(&data).send().await {
+        Ok(resp) if resp.status().is_success() => {}
         Ok(resp) => {
             eprintln!(
                 "Failed to send analytics data. Server responded with status: {}",
@@ -302,11 +280,6 @@ async fn post_requests(data: Payload, server_url: String) {
             eprintln!("Error sending analytics data: {}", err);
         }
     }
-}
-
-async fn log_request(request_data: RequestData) {
-    let mut requests = REQUESTS.write().await;
-    requests.push(request_data);
 }
 
 impl<S> Service<Request<Body>> for AnalyticsMiddleware<S>
@@ -327,34 +300,114 @@ where
         let now = Instant::now();
 
         let hostname = (self.config.get_hostname)(&req);
-        let ip_address = (self.config.get_ip_address)(&req);
+        let ip_address = if self.config.privacy_level >= 2 {
+            None
+        } else {
+            let val = (self.config.get_ip_address)(&req);
+            if val.is_empty() { None } else { Some(val) }
+        };
         let path = (self.config.get_path)(&req);
         let method = req.method().to_string();
         let user_agent = (self.config.get_user_agent)(&req);
-        let user_id = (self.config.get_user_id)(&req);
+        let user_id = {
+            let val = (self.config.get_user_id)(&req);
+            if val.is_empty() { None } else { Some(val) }
+        };
+        let requests = Arc::clone(&self.requests);
 
         let future = self.inner.call(req);
 
         Box::pin(async move {
             let res: Response = future.await?;
-
             let response_time = now.elapsed().as_millis().min(u32::MAX as u128) as u32;
 
-            let request_data = RequestData::new(
+            let request_data = RequestData {
                 hostname,
                 ip_address,
                 path,
                 user_agent,
                 method,
-                res.status().as_u16(),
                 response_time,
+                status: res.status().as_u16(),
                 user_id,
-                Utc::now().to_rfc3339(),
-            );
+                created_at: Utc::now().to_rfc3339(),
+            };
 
-            tokio::spawn(log_request(request_data));
+            requests.write().await.push(request_data);
 
             Ok(res)
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::str::FromStr;
+
+    fn make_headers(pairs: &[(&str, &str)]) -> HeaderMap {
+        let mut map = HeaderMap::new();
+        for (name, value) in pairs {
+            map.insert(
+                http::header::HeaderName::from_str(name).unwrap(),
+                http::header::HeaderValue::from_str(value).unwrap(),
+            );
+        }
+        map
+    }
+
+    #[test]
+    fn test_cf_connecting_ip() {
+        let headers = make_headers(&[("cf-connecting-ip", "203.0.113.1")]);
+        assert_eq!(ip_from_cf_connecting_ip(&headers), Some("203.0.113.1".parse().unwrap()));
+    }
+
+    #[test]
+    fn test_x_forwarded_for_single() {
+        let headers = make_headers(&[("x-forwarded-for", "203.0.113.1")]);
+        assert_eq!(ip_from_x_forwarded_for(&headers), Some("203.0.113.1".parse().unwrap()));
+    }
+
+    #[test]
+    fn test_x_forwarded_for_returns_first_ip() {
+        // First IP is the client; last is the closest proxy — must NOT use .rev()
+        let headers = make_headers(&[("x-forwarded-for", "203.0.113.1, 10.0.0.1, 192.168.1.1")]);
+        assert_eq!(ip_from_x_forwarded_for(&headers), Some("203.0.113.1".parse().unwrap()));
+    }
+
+    #[test]
+    fn test_x_real_ip() {
+        let headers = make_headers(&[("x-real-ip", "203.0.113.1")]);
+        assert_eq!(ip_from_x_real_ip(&headers), Some("203.0.113.1".parse().unwrap()));
+    }
+
+    #[test]
+    fn test_invalid_ip_returns_none() {
+        let headers = make_headers(&[("x-real-ip", "not-an-ip")]);
+        assert_eq!(ip_from_x_real_ip(&headers), None);
+    }
+
+    #[test]
+    fn test_cf_takes_priority_over_forwarded() {
+        let headers = make_headers(&[
+            ("cf-connecting-ip", "1.1.1.1"),
+            ("x-forwarded-for", "2.2.2.2"),
+        ]);
+        assert_eq!(ip_from_cf_connecting_ip(&headers), Some("1.1.1.1".parse().unwrap()));
+        assert_eq!(ip_from_x_forwarded_for(&headers), Some("2.2.2.2".parse().unwrap()));
+    }
+
+    #[test]
+    fn test_ipv6_address() {
+        let headers = make_headers(&[("x-real-ip", "2001:db8::1")]);
+        assert_eq!(ip_from_x_real_ip(&headers), Some("2001:db8::1".parse().unwrap()));
+    }
+
+    #[test]
+    fn test_missing_header_returns_none() {
+        let headers = HeaderMap::new();
+        assert_eq!(ip_from_cf_connecting_ip(&headers), None);
+        assert_eq!(ip_from_x_forwarded_for(&headers), None);
+        assert_eq!(ip_from_x_real_ip(&headers), None);
     }
 }

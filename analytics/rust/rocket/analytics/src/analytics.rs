@@ -1,52 +1,24 @@
 use chrono::Utc;
-use lazy_static::lazy_static;
-use reqwest::blocking::Client;
+use reqwest::Client;
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome};
 use rocket::{Data, Request, Response};
 use serde::Serialize;
-use std::sync::Mutex;
-use std::thread::spawn;
-use std::time::Instant;
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 #[derive(Debug, Clone, Serialize)]
 struct RequestData {
     hostname: String,
-    ip_address: String,
+    ip_address: Option<String>,
     path: String,
     user_agent: String,
     method: String,
     response_time: u32,
     status: u16,
-    user_id: String,
+    user_id: Option<String>,
     created_at: String,
-}
-
-impl RequestData {
-    pub fn new(
-        hostname: String,
-        ip_address: String,
-        path: String,
-        user_agent: String,
-        method: String,
-        response_time: u32,
-        status: u16,
-        user_id: String,
-        created_at: String,
-    ) -> Self {
-        Self {
-            hostname,
-            ip_address,
-            path,
-            user_agent,
-            method,
-            response_time,
-            status,
-            user_id,
-            created_at,
-        }
-    }
 }
 
 type StringMapper = dyn for<'a> Fn(&Request<'a>) -> String + Send + Sync;
@@ -76,11 +48,43 @@ impl Default for Config {
 }
 
 fn get_hostname(req: &Request) -> String {
-    req.host().unwrap().to_string()
+    req.host()
+        .map(|h| h.to_string())
+        .unwrap_or_default()
 }
 
 fn get_ip_address(req: &Request) -> String {
-    req.client_ip().unwrap().to_string()
+    if let Some(val) = req
+        .headers()
+        .get_one("cf-connecting-ip")
+        .map(|s| s.trim().to_owned())
+        .filter(|s| !s.is_empty())
+    {
+        return val;
+    }
+
+    if let Some(val) = req
+        .headers()
+        .get_one("x-forwarded-for")
+        .and_then(|s| s.split(',').next())
+        .map(|s| s.trim().to_owned())
+        .filter(|s| !s.is_empty())
+    {
+        return val;
+    }
+
+    if let Some(val) = req
+        .headers()
+        .get_one("x-real-ip")
+        .map(|s| s.trim().to_owned())
+        .filter(|s| !s.is_empty())
+    {
+        return val;
+    }
+
+    req.client_ip()
+        .map(|ip| ip.to_string())
+        .unwrap_or_default()
 }
 
 fn get_path(req: &Request) -> String {
@@ -98,17 +102,39 @@ fn get_user_id(_req: &Request) -> String {
     String::new()
 }
 
-#[derive(Default)]
+struct RequestBuffer {
+    requests: Vec<RequestData>,
+    last_posted: Instant,
+}
+
+impl RequestBuffer {
+    fn new() -> Self {
+        Self {
+            requests: Vec::new(),
+            last_posted: Instant::now(),
+        }
+    }
+}
+
 pub struct Analytics {
     api_key: String,
     config: Config,
+    buffer: Arc<Mutex<RequestBuffer>>,
+    client: Arc<Client>,
 }
 
 impl Analytics {
     pub fn new(api_key: String) -> Self {
+        let client = Client::builder()
+            .timeout(Duration::from_secs(10))
+            .build()
+            .unwrap_or_else(|_| Client::new());
+
         Self {
             api_key,
             config: Config::default(),
+            buffer: Arc::new(Mutex::new(RequestBuffer::new())),
+            client: Arc::new(client),
         }
     }
 
@@ -118,11 +144,11 @@ impl Analytics {
     }
 
     pub fn with_server_url(mut self, server_url: String) -> Self {
-        if server_url.ends_with("/") {
-            self.config.server_url = server_url;
+        self.config.server_url = if server_url.ends_with('/') {
+            server_url
         } else {
-            self.config.server_url = server_url + "/";
-        }
+            server_url + "/"
+        };
         self
     }
 
@@ -157,15 +183,18 @@ impl Analytics {
         self.config.get_user_agent = Box::new(mapper);
         self
     }
+
+    pub fn with_user_id_mapper<F>(mut self, mapper: F) -> Self
+    where
+        F: for<'a> Fn(&Request<'a>) -> String + Send + Sync + 'static,
+    {
+        self.config.get_user_id = Box::new(mapper);
+        self
+    }
 }
 
 #[derive(Clone)]
 pub struct Start<T = Instant>(T);
-
-lazy_static! {
-    static ref REQUESTS: Mutex<Vec<RequestData>> = Mutex::new(vec![]);
-    static ref LAST_POSTED: Mutex<Instant> = Mutex::new(Instant::now());
-}
 
 #[derive(Debug, Clone, Serialize)]
 struct Payload {
@@ -186,26 +215,9 @@ impl Payload {
     }
 }
 
-fn post_requests(data: Payload, server_url: String) {
-    let _ = Client::new()
-        .post(server_url + "api/log-request")
-        .json(&data)
-        .send();
-}
-
-fn log_request(api_key: &str, request_data: RequestData, config: &Config) {
-    REQUESTS.lock().unwrap().push(request_data);
-    if LAST_POSTED.lock().unwrap().elapsed().as_secs_f64() > 60.0 {
-        let payload = Payload::new(
-            api_key.to_string(),
-            REQUESTS.lock().unwrap().to_vec(),
-            config.privacy_level,
-        );
-        let server_url = config.server_url.to_owned();
-        REQUESTS.lock().unwrap().clear();
-        spawn(|| post_requests(payload, server_url));
-        *LAST_POSTED.lock().unwrap() = Instant::now();
-    }
+async fn post_requests(client: &Client, data: Payload, server_url: &str) {
+    let url = format!("{}api/log-request", server_url);
+    let _ = client.post(url).json(&data).send().await;
 }
 
 #[rocket::async_trait]
@@ -223,26 +235,56 @@ impl Fairing for Analytics {
 
     async fn on_response<'r>(&self, req: &'r Request<'_>, res: &mut Response<'r>) {
         let start = &req.local_cache(|| Start::<Option<Instant>>(None)).0;
+
         let hostname = (self.config.get_hostname)(req);
-        let ip_address = (self.config.get_ip_address)(req);
+        let ip_address = if self.config.privacy_level >= 2 {
+            None
+        } else {
+            let val = (self.config.get_ip_address)(req);
+            if val.is_empty() { None } else { Some(val) }
+        };
         let method = req.method().to_string();
         let user_agent = (self.config.get_user_agent)(req);
         let path = (self.config.get_path)(req);
-        let user_id = (self.config.get_user_id)(req);
+        let user_id = {
+            let val = (self.config.get_user_id)(req);
+            if val.is_empty() { None } else { Some(val) }
+        };
+        let response_time = start
+            .map(|s| s.elapsed().as_millis().min(u32::MAX as u128) as u32)
+            .unwrap_or(0);
 
-        let request_data = RequestData::new(
+        let request_data = RequestData {
             hostname,
             ip_address,
             path,
             user_agent,
             method,
-            start.unwrap().elapsed().as_millis() as u32,
-            res.status().code,
+            response_time,
+            status: res.status().code,
             user_id,
-            Utc::now().to_rfc3339(),
-        );
+            created_at: Utc::now().to_rfc3339(),
+        };
 
-        log_request(&self.api_key, request_data, &self.config);
+        let batch = {
+            let mut buf = self.buffer.lock().unwrap();
+            buf.requests.push(request_data);
+            if buf.last_posted.elapsed().as_secs_f64() > 60.0 {
+                buf.last_posted = Instant::now();
+                std::mem::take(&mut buf.requests)
+            } else {
+                vec![]
+            }
+        };
+
+        if !batch.is_empty() {
+            let payload = Payload::new(self.api_key.clone(), batch, self.config.privacy_level);
+            let server_url = self.config.server_url.clone();
+            let client = Arc::clone(&self.client);
+            tokio::spawn(async move {
+                post_requests(&client, payload, &server_url).await;
+            });
+        }
     }
 }
 
