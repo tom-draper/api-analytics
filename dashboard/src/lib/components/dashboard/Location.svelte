@@ -100,7 +100,7 @@
 		bottom: 0;
 		width: 100%;
 		background: var(--highlight);
-		border-radius: 3px;
+		border-radius: var(--radius-sm);
 	}
 	.label {
 		padding-top: 8px;
@@ -110,7 +110,7 @@
 		top: 1.5em;
 		right: 2em;
 		font-size: 0.9em;
-		color: #505050;
+		color: var(--muted-text);
 	}
 
 	@media screen and (max-width: 1600px) {

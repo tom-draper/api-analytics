@@ -103,7 +103,7 @@
 		background: #3fcf8e;
 	}
 	input {
-		color: #505050;
+		color: var(--muted-text);
 		transition: color 0.2s;
 	}
 	.input-ready {

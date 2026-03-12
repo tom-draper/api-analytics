@@ -91,7 +91,7 @@
 		bottom: 0;
 		width: 100%;
 		background: var(--highlight);
-		border-radius: 3px;
+		border-radius: var(--radius-sm);
 	}
 	.label {
 		padding-top: 8px;

@@ -25,6 +25,8 @@
 	--white-red: #ffc1c1;
     --white-yellow: #c0c0c0;
     --border: #2e2e2e;
+    --muted-text: #505050;
+    --radius-sm: 3px;
     --fade-down: linear-gradient(transparent, #444);
     --fade-right: linear-gradient(270deg, transparent, #444);
 }

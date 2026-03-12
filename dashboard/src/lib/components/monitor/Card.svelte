@@ -255,12 +255,12 @@
 				<div class="measurement {sample.label}" title={getTitle(sample)}></div>
 			{/each}
 		</div>
-		<div class="mx-[2rem] mb-4 mt-3 flex text-[0.75em] !font-semibold text-[#505050]">
+		<div class="mx-[2rem] mb-4 mt-3 flex text-[0.75em] !font-semibold text-[var(--muted-text)]">
 			<div class="flex flex-1">
 				<div>
 					{periodTimespanLabel(period)}
 				</div>
-				<div class="mx-4 h-[50%] flex-grow border-b border-[#505050]"></div>
+				<div class="mx-4 h-[50%] flex-grow border-b border-[var(--muted-text)]"></div>
 			</div>
 			<div
 				class="text-[var(--dim-text)]"
@@ -271,7 +271,7 @@
 				{uptime === null ? 'Pending' : `${formatUptime(uptime)} uptime`}
 			</div>
 			<div class="flex flex-1">
-				<div class="mx-4 h-[50%] flex-grow border-b border-[#505050]"></div>
+				<div class="mx-4 h-[50%] flex-grow border-b border-[var(--muted-text)]"></div>
 				<div>Now</div>
 			</div>
 		</div>

@@ -51,7 +51,7 @@
 		margin: 0.9em 20px 0.6em;
 	}
 	.row {
-		border-radius: 3px;
+		border-radius: var(--radius-sm);
 		margin: 5px 0;
 		color: var(--light-background);
 		text-align: left;
@@ -71,7 +71,7 @@
 		flex-grow: 1;
 		z-index: 1;
 		pointer-events: none;
-		color: #505050;
+		color: var(--muted-text);
 		padding: 3px 12px;
 		overflow-wrap: break-word;
 	}
@@ -79,7 +79,7 @@
 		display: flex;
 	}
 	.background {
-		border-radius: 3px;
+		border-radius: var(--radius-sm);
 		background: var(--highlight);
 		text-align: left;
 		position: absolute;

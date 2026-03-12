@@ -88,7 +88,7 @@
 		color: var(--dim-text);
 		border: 1px solid var(--border);
 		display: flex;
-		border-radius: 3px;
+		border-radius: var(--radius-sm);
 	}
 	.item-text {
 		flex-grow: 1;

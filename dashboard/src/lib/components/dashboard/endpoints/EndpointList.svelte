@@ -42,7 +42,7 @@
 	}
 
 	.endpoint {
-		border-radius: 3px;
+		border-radius: var(--radius-sm);
 		margin: 5px 0;
 		color: var(--light-background);
 		text-align: left;
@@ -61,13 +61,13 @@
 		flex-grow: 1;
 		z-index: 1;
 		pointer-events: none;
-		color: #505050;
+		color: var(--muted-text);
 		padding: 3px 12px;
 		overflow-wrap: break-word;
 	}
 
 	.background {
-		border-radius: 3px;
+		border-radius: var(--radius-sm);
 		color: var(--light-background);
 		text-align: left;
 		position: relative;

@@ -206,7 +206,7 @@
 		cursor: pointer;
 	}
 	.dim-row {
-		color: #505050;
+		color: var(--muted-text);
 	}
 
 	.last-row {
@@ -228,7 +228,7 @@
 		border-radius: 4px;
 		padding: 0.4em 1em;
 		background: transparent;
-		color: #505050;
+		color: var(--muted-text);
 		color: var(--dim-text);
 		border: 1px solid var(--border);
 		font-size: 0.85em;
@@ -240,7 +240,7 @@
 
 	.no-results {
 		font-size: 0.85em;
-		color: #505050;
+		color: var(--muted-text);
 		padding: 0.8em 1.2em 0.4em;
 	}
 	.no-results-user {
@@ -256,7 +256,7 @@
 	}
 	.current-page {
 		place-self: center;
-		color: #505050;
+		color: var(--muted-text);
 		font-size: 0.85em;
 		margin-right: auto;
 	}
