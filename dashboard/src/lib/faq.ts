@@ -25,7 +25,7 @@ const faq: FAQItem[] = [
     },
     {
         question: 'How can I create an account?',
-        answer: 'Account creation is completely free and takes a second to do. Accounts are controlled entirely through a unique randomly-generated API key. Get your API key <a href="/generate">here</a>.',
+        answer: 'Account creation is completely free and takes a second to do. Accounts are controlled entirely through a unique randomly-generated API key. Get your API key <a href="/sign-up">here</a>.',
     },
     {
         question: 'Do you comply with GDPR?',

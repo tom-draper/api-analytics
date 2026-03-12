@@ -16,7 +16,7 @@
 {#if currentRoute !== '/explorer/[uuid]'}
 	<footer>
 		<Footer
-			generic={currentRoute !== '/generate' &&
+			generic={currentRoute !== '/sign-up' &&
 				currentRoute !== '/dashboard' &&
 				currentRoute !== '/monitor' &&
 				currentRoute !== '/explorer'}

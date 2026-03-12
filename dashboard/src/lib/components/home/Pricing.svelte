@@ -11,7 +11,7 @@
 		</div>
 		<h3>Hobby</h3>
 		<div class="price mb-[2rem]">Free</div>
-		<div class="mb-8"><a href="/generate">Get Started</a></div>
+		<div class="mb-8"><a href="/sign-up">Get Started</a></div>
 		<ul>
 			<li class="feature text-[#ededed]">50,000 request storage</li>
 			<li class="feature">Dashboard access</li>

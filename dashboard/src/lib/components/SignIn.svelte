@@ -95,7 +95,7 @@
 				{buttonLabels[type]}
 			{/if}
 		</button>
-		<a href="/generate" class="generate-link">Don't have an API key? Generate one →</a>
+		<a href="/sign-up" class="generate-link">Don't have an API key? Generate one →</a>
 	</div>
 </div>
 
