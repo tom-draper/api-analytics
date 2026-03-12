@@ -41,7 +41,7 @@
 	<link rel="icon" href="/images/logos/lightning-red.svg" />
 </svelte:head>
 
-<div class="generate">
+<div class="form-page">
 	<div class="content">
 		<div class="logo-icon">
 			<Lightning />
@@ -99,49 +99,9 @@
 	}
 	.logo-icon {
 		color: var(--red);
-		height: 36px;
-		margin: 0 auto 1em;
 	}
 	.title {
-		font-size: 2em;
-		font-weight: 700;
 		color: var(--red);
-		margin-bottom: 0.2em;
-	}
-	.subtitle {
-		font-size: 0.9em;
-		color: var(--dim-text);
-		margin-bottom: 2em;
-		padding: 0;
-	}
-	.input-label {
-		display: block;
-		text-align: left;
-		font-size: 0.8em;
-		color: var(--dim-text);
-		margin-bottom: 0.5em;
-	}
-	.arrow {
-		display: inline-block;
-		width: 12px;
-		height: 17px;
-		margin-left: 3px;
-		vertical-align: middle;
-	}
-	.form-btn {
-		font-size: 0.9em;
-		height: 40px;
-		border-radius: 4px;
-		padding: 0 20px;
-		border: none;
-		cursor: pointer;
-		width: auto;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-	}
-	input::placeholder {
-		color: #707070;
 	}
 	.delete-btn {
 		background: var(--red);
@@ -150,27 +110,14 @@
 		background: #c94f4f;
 	}
 	.status-msg {
-		font-size: 0.9em;
-		padding: 0.9em 1.2em;
-		border-radius: 4px;
 		text-align: center;
-		line-height: 1.5;
-		margin-bottom: 1.2em;
 	}
 	.status-msg.success {
 		background: #0d2b1a;
 		color: var(--highlight);
 		border: 1px solid #1a4a2e;
 	}
-	.status-msg.error {
-		background: #2b0d0d;
-		color: var(--red);
-		border: 1px solid #4a1a1a;
-	}
 	.loader {
-		border: 3px solid #343434;
-		border-top: 3px solid var(--red);
-		width: 1em;
-		height: 1em;
+		border-top-color: var(--red);
 	}
 </style>

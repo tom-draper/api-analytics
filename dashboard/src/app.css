@@ -12,8 +12,6 @@
 :root {
     --highlight: #3fcf8e;
     --red: #e46161;
-    --blue: #017ff7;
-    --blue: #2fa1ff;
     --blue: #2facff;
     --yellow: #ebeb81;
     --background: #1c1c1c;
@@ -102,8 +100,8 @@ p {
     cursor: default !important;
 }
 
-/* Form */
-.generate {
+/* Form pages */
+.form-page {
     display: grid;
     place-items: start center;
     flex: 1;
@@ -111,7 +109,6 @@ p {
 
 .content {
     width: fit-content;
-    background: #343434;
     background: var(--background);
     padding: 2.5em 3em 3em;
     border-radius: 9px;
@@ -119,8 +116,41 @@ p {
     box-shadow: 0 0 180px 2px var(--highlight);
 }
 
+.form-page .logo-icon {
+    height: 36px;
+    margin: 0 auto 1em;
+}
+
+.form-page .title {
+    font-size: 2em;
+    font-weight: 700;
+    margin-bottom: 0.2em;
+}
+
+.form-page .subtitle {
+    font-size: 0.9em;
+    color: var(--dim-text);
+    margin-bottom: 2em;
+    padding: 0;
+}
+
+.input-label {
+    display: block;
+    text-align: left;
+    font-size: 0.8em;
+    color: var(--dim-text);
+    margin-bottom: 0.5em;
+}
+
+.arrow {
+    display: inline-block;
+    width: 12px;
+    height: 17px;
+    margin-left: 3px;
+    vertical-align: middle;
+}
+
 input {
-    background: var(--background);
     background: #343434;
     border: none;
     padding: 0 20px;
@@ -131,7 +161,48 @@ input {
     border-radius: 4px;
     margin-bottom: 2.5em;
     color: white;
-    display: grid;
+    display: block;
+}
+
+input::placeholder {
+    color: #707070;
+}
+
+.form-btn {
+    font-size: 0.9em;
+    height: 40px;
+    border-radius: 4px;
+    padding: 0 20px;
+    border: none;
+    cursor: pointer;
+    width: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Sans', 'Geist' !important;
+    font-weight: 400;
+}
+
+.form-btn .loader {
+    border: 3px solid #343434;
+    border-top-color: var(--highlight);
+    width: 1em;
+    height: 1em;
+}
+
+.status-msg {
+    font-size: 0.9em;
+    padding: 0.9em 1.2em;
+    border-radius: 4px;
+    text-align: left;
+    line-height: 1.5;
+    margin-bottom: 1.2em;
+}
+
+.status-msg.error {
+    background: #2b0d0d;
+    color: var(--red);
+    border: 1px solid #4a1a1a;
 }
 
 code {
@@ -149,16 +220,6 @@ button {
         padding: 3em 5%;
         font-size: 0.8em;
     }
-}
-
-#formBtn {
-    height: 40px;
-    border-radius: 4px;
-    padding: 0 20px;
-    border: none;
-    cursor: pointer;
-    width: 100px;
-    background: #3fcf8e;
 }
 
 .highlight {

@@ -53,7 +53,7 @@
 	}
 </script>
 
-<div class="generate">
+<div class="form-page">
 	<div class="content">
 		<div class="logo-icon">
 			<Lightning />
@@ -100,39 +100,11 @@
 </div>
 
 <style scoped>
-	input::placeholder {
-		color: #707070;
-	}
 	.logo-icon {
 		color: var(--highlight);
-		height: 36px;
-		margin: 0 auto 1em;
 	}
 	.title {
-		font-size: 2em;
-		font-weight: 700;
 		color: var(--highlight);
-		margin-bottom: 0.2em;
-	}
-	.subtitle {
-		font-size: 0.9em;
-		color: var(--dim-text);
-		margin-bottom: 2em;
-		padding: 0;
-	}
-	.input-label {
-		display: block;
-		text-align: left;
-		font-size: 0.8em;
-		color: var(--dim-text);
-		margin-bottom: 0.5em;
-	}
-	.arrow {
-		display: inline-block;
-		width: 12px;
-		height: 17px;
-		margin-left: 3px;
-		vertical-align: middle;
 	}
 	.input-error {
 		outline: 1px solid var(--red) !important;
@@ -145,24 +117,9 @@
 		margin-bottom: 1.2em;
 		padding: 0;
 	}
-	.loader {
-		border: 3px solid #343434;
-		border-top: 3px solid var(--highlight);
-		width: 1em;
-		height: 1em;
-	}
 	.form-btn {
-		font-size: 0.9em;
-		height: 40px;
-		border-radius: 4px;
-		padding: 0 20px;
-		border: none;
-		cursor: pointer;
-		width: 100px;
 		background: var(--highlight);
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
+		width: 100px;
 	}
 	.generate-link {
 		display: block;

@@ -33,7 +33,7 @@
 	}
 </script>
 
-<div class="generate">
+<div class="form-page">
 	<div class="content">
 		<div class="logo-icon">
 			<Lightning />
@@ -88,67 +88,26 @@
 <style scoped>
 	.logo-icon {
 		color: var(--highlight);
-		height: 36px;
-		margin: 0 auto 1em;
 	}
 	.title {
-		font-size: 2em;
-		font-weight: 700;
 		color: var(--highlight);
-		margin-bottom: 0.2em;
-	}
-	.subtitle {
-		font-size: 0.9em;
-		color: var(--dim-text);
-		margin-bottom: 2em;
-		padding: 0;
 	}
 	.input-label {
-		display: block;
-		text-align: left;
-		font-size: 0.8em;
-		color: var(--dim-text);
-		margin-bottom: 0.5em;
 		opacity: 0;
 		transition: opacity 0.4s;
 	}
 	.label-ready {
 		opacity: 1;
 	}
-	.arrow {
-		display: inline-block;
-		width: 12px;
-		height: 17px;
-		margin-left: 3px;
-		vertical-align: middle;
-	}
 	.form-btn {
-		font-size: 0.9em;
-		height: 40px;
-		border-radius: 4px;
-		padding: 0 20px;
-		border: none;
-		cursor: pointer;
-		width: auto;
 		background: #3fcf8e;
-		font-family: 'Noto Sans', 'Geist' !important;
-		font-weight: 400;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
 	}
 	input {
 		color: #505050;
 		transition: color 0.2s;
 	}
-	input::placeholder {
-		color: #707070;
-	}
 	.input-ready {
 		color: white !important;
-	}
-	.copy-btn {
-		width: auto;
 	}
 	.copy-btn:hover {
 		background: #2ea872 !important;
@@ -174,11 +133,5 @@
 		max-height: 3em;
 		opacity: 1;
 		padding-top: 1.5em;
-	}
-	.loader {
-		border: 3px solid #343434;
-		border-top: 3px solid var(--highlight);
-		width: 1em;
-		height: 1em;
 	}
 </style>
