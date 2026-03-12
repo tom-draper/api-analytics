@@ -24,6 +24,9 @@
 	--white-green: #bee7c5;
 	--white-red: #ffc1c1;
     --white-yellow: #c0c0c0;
+    --border: #2e2e2e;
+    --fade-down: linear-gradient(transparent, #444);
+    --fade-right: linear-gradient(270deg, transparent, #444);
 }
 
 body {
@@ -78,7 +81,7 @@ p {
     color: var(--faded-text);
     width: 430px;
     border-radius: 6px;
-    border: 1px solid #2e2e2e;
+    border: 1px solid var(--border);
     margin: 2rem 0;
 }
 

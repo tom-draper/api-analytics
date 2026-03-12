@@ -163,7 +163,7 @@
 		background: var(--background);
 		border-radius: 6px;
 		width: 42em;
-		border: 1px solid #2e2e2e;
+		border: 1px solid var(--border);
 		color: var(--faded-text);
 		z-index: 20;
 		position: absolute;
@@ -256,7 +256,7 @@
 	.export-csv-btn {
 		background: var(--dark-background);
 		color: var(--dim-text);
-		border: 1px solid #2e2e2e;
+		border: 1px solid var(--border);
 		padding: 0.8em;
 		cursor: pointer;
 		border-radius: 4px;

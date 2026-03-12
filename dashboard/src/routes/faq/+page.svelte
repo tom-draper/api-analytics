@@ -67,7 +67,7 @@
 	.question-btn {
 		border-radius: 4px;
 		background: var(--light-background);
-		border: 1px solid #2e2e2e;
+		border: 1px solid var(--border);
 		color: #ededed;
 		padding: 1em 2rem;
 		font-size: 1em;

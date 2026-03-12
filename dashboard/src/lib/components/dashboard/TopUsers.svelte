@@ -173,7 +173,7 @@
 		flex: 1;
 	}
 	tr {
-		border-bottom: 1px solid #2e2e2e;
+		border-bottom: 1px solid var(--border);
 	}
 	.align-right {
 		text-align: right;
@@ -230,7 +230,7 @@
 		background: transparent;
 		color: #505050;
 		color: var(--dim-text);
-		border: 1px solid #2e2e2e;
+		border: 1px solid var(--border);
 		font-size: 0.85em;
 	}
 

@@ -86,7 +86,7 @@
 	.item {
 		background: var(--background);
 		color: var(--dim-text);
-		border: 1px solid #2e2e2e;
+		border: 1px solid var(--border);
 		display: flex;
 		border-radius: 3px;
 	}

@@ -59,7 +59,7 @@
 		letter-spacing: 0.06em;
 		color: var(--dim-text);
 		padding: 0 1em 0.8em;
-		border-bottom: 1px solid #2e2e2e;
+		border-bottom: 1px solid var(--border);
 	}
 	td {
 		padding: 1em;

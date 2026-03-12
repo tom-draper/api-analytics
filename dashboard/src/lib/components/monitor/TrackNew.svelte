@@ -96,7 +96,7 @@
 <style scoped>
 	.card {
 		width: min(100%, 1000px);
-		border: 1px solid #2e2e2e;
+		border: 1px solid var(--border);
 		margin: 2.2em auto 4em;
 	}
 	.card-text {

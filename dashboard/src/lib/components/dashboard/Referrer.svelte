@@ -55,10 +55,10 @@
 		cursor: pointer;
 	}
 	.endpoint:hover {
-		background: linear-gradient(270deg, transparent, #444);
+		background: var(--fade-right);
 	}
 	.selected {
-		background: linear-gradient(270deg, transparent, #444);
+		background: var(--fade-right);
 	}
 	.path {
 		position: relative;

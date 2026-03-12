@@ -92,7 +92,7 @@
 		border-radius: 3px 3px 0 0;
 	}
 	.bar:hover {
-		background: linear-gradient(transparent, #444);
+		background: var(--fade-down);
 	}
 
 	.bar-inner {

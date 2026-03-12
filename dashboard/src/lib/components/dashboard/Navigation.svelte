@@ -67,7 +67,7 @@
 			defaultOption={'All hostnames'}
 		/>
 	</div>
-	<div class="nav-btn time-period flex overflow-hidden rounded-[4px] border border-[#2e2e2e]">
+	<div class="nav-btn time-period flex overflow-hidden rounded-[4px] border border-[var(--border)]">
 		{#each timePeriods as period}
 			<button
 				class="time-period-btn cursor-pointer border-none bg-[var(--background)] px-[12px] py-[4px] text-[var(--dim-text)]"

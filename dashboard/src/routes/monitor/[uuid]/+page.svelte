@@ -301,7 +301,7 @@
 	}
 
 	.period-controls {
-		border: 1px solid #2e2e2e;
+		border: 1px solid var(--border);
 		width: fit-content;
 		border-radius: 4px;
 		overflow: hidden;
@@ -322,7 +322,7 @@
 	}
 
 	.add-new-btn {
-		border: 1px solid #2e2e2e;
+		border: 1px solid var(--border);
 		border-radius: 4px;
 		padding: 0;
 		display: flex;

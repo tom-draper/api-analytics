@@ -13,7 +13,7 @@
 	>
 		<div class="flex items-center gap-2">
 			<div
-				class="grid h-4 w-4 place-items-center rounded-[3px] border border-solid border-[#2e2e2e]"
+				class="grid h-4 w-4 place-items-center rounded-[3px] border border-solid border-[var(--border)]"
 				style={`${checked ? `background: ${color}` : ''}`}
 			>
 				{#if checked}

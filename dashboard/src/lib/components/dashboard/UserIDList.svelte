@@ -61,10 +61,10 @@
 		cursor: pointer;
 	}
 	.row:hover {
-		background: linear-gradient(270deg, transparent, #444);
+		background: var(--fade-right);
 	}
 	.selected {
-		background: linear-gradient(270deg, transparent, #444);
+		background: var(--fade-right);
 	}
 	.label {
 		position: relative;

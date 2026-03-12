@@ -177,7 +177,7 @@
 		flex-direction: column;
 	}
 	tr {
-		border-top: 1px solid #2e2e2e;
+		border-top: 1px solid var(--border);
 		border-left: 1px solid transparent;
 		border-right: 1px solid transparent;
 		border-radius: 4px;

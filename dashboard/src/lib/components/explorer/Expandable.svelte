@@ -47,7 +47,7 @@
 	</button>
 
 	<div class="pb-2 pt-1" class:no-display={hidden || !data}>
-		<div class="rounded border border-solid border-[#2e2e2e] text-[14px]">
+		<div class="rounded border border-solid border-[var(--border)] text-[14px]">
 			{#if content}
 				{@const Content = content}
 				<Content bind:filter={filter} bind:data={data} />

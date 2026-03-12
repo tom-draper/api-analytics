@@ -81,10 +81,10 @@
 		cursor: pointer;
 	}
 	.bar:hover {
-		background: linear-gradient(transparent, #444);
+		background: var(--fade-down);
 	}
 	.selected {
-		background: linear-gradient(transparent, #444);
+		background: var(--fade-down);
 	}
 	.bar-inner {
 		position: absolute;
