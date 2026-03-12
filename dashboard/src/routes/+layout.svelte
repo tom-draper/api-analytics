@@ -19,7 +19,9 @@
 			generic={currentRoute !== '/sign-up' &&
 				currentRoute !== '/dashboard' &&
 				currentRoute !== '/monitor' &&
-				currentRoute !== '/explorer'}
+				currentRoute !== '/explorer' &&
+				currentRoute !== '/regenerate' &&
+				currentRoute !== '/delete'}
 		/>
 	</footer>
 {/if}
