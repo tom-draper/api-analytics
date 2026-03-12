@@ -100,6 +100,15 @@ p {
     cursor: default !important;
 }
 
+#plotly {
+    position: absolute;
+    width: 110%;
+    bottom: 0;
+    overflow: hidden;
+    margin: 0 -5%;
+    z-index: 0;
+}
+
 /* Form pages */
 .form-page {
     display: grid;
@@ -165,7 +174,7 @@ input {
 }
 
 input::placeholder {
-    color: #707070;
+    color: var(--dim-text);
 }
 
 .form-btn {

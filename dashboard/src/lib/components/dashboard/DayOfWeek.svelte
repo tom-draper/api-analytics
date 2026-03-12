@@ -96,7 +96,7 @@
 	.label {
 		padding-top: 8px;
 		font-size: 0.8em;
-		color: #707070;
+		color: var(--dim-text);
 		text-align: center;
 	}
 </style>

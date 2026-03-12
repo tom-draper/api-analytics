@@ -1,7 +1,7 @@
 <div class="info-page-container text-center leading-snug text-[#c3c3c3]">
 	<h1>Privacy Policy</h1>
 
-	<div class="text-[#707070]">Last updated: 2025-01-28</div>
+	<div class="text-[var(--dim-text)]">Last updated: 2025-01-28</div>
 
 	<p>
 		API Analytics ("we," "us," or "our") is committed to protecting the privacy of our users. This

@@ -82,7 +82,7 @@
 	}
 	.no-locations-text {
 		margin-bottom: 25px;
-		color: #707070;
+		color: var(--dim-text);
 	}
 
 	.bar {

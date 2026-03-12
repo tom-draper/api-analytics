@@ -225,7 +225,7 @@
 	.setting-filters {
 		text-align: left;
 		font-size: 0.9em;
-		color: #707070;
+		color: var(--dim-text);
 		display: flex;
 		flex-wrap: wrap;
 		gap: 5px 10px;

@@ -52,14 +52,6 @@
 	.green {
 		color: var(--highlight);
 	}
-	#plotly {
-		position: absolute;
-		width: 110%;
-		bottom: 0;
-		overflow: hidden;
-		margin: 0 -5%;
-		z-index: 0;
-	}
 	@media screen and (max-width: 1070px) {
 		.card {
 			width: auto;

@@ -63,7 +63,7 @@
 				x: x,
 				y: requests,
 				type: 'bar',
-				marker: { color: '#707070' },
+				marker: { color: 'var(--dim-text)' },
 				fill: 'tonexty',
 				text: dates,
 				hovertemplate: `<b>%{y:.0f}ms</b><br>%{text|%d %b %Y %H:%M:%S}</b><extra></extra>`,

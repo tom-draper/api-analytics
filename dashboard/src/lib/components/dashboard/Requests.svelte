@@ -94,20 +94,11 @@
 	}
 	button {
 		font-size: unset;
-		font-family: unset;
-		font-family: 'Noto Sans' !important;
 	}
 	.arrow {
 		height: 11px;
 		align-self: center;
 		margin-right: 0.25em;
-	}
-	#plotly {
-		position: absolute;
-		width: 110%;
-		bottom: 0;
-		overflow: hidden;
-		margin: 0 -5%;
 	}
 	@media screen and (max-width: 1070px) {
 		.card {

@@ -186,7 +186,7 @@
 		font-size: 0.85em;
 	}
 	tbody {
-		color: #707070;
+		color: var(--dim-text);
 	}
 	td,
 	th {
@@ -194,7 +194,7 @@
 	}
 
 	.highlight-row:hover td {
-		color: #707070;
+		color: var(--dim-text);
 		color: #808080;
 	}
 
@@ -229,7 +229,7 @@
 		padding: 0.4em 1em;
 		background: transparent;
 		color: #505050;
-		color: #707070;
+		color: var(--dim-text);
 		border: 1px solid #2e2e2e;
 		font-size: 0.85em;
 	}
@@ -244,7 +244,7 @@
 		padding: 0.8em 1.2em 0.4em;
 	}
 	.no-results-user {
-		color: #707070;
+		color: var(--dim-text);
 	}
 	.no-results button {
 		color: var(--highlight);

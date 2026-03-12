@@ -97,7 +97,7 @@
 
 	.clear-btn {
 		font-size: 0.75em;
-		color: #707070;
+		color: var(--dim-text);
 		cursor: pointer;
 	}
 

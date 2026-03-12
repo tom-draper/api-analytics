@@ -74,7 +74,6 @@
 		color: #505050;
 		padding: 3px 12px;
 		overflow-wrap: break-word;
-		font-family: 'Noto Sans' !important;
 	}
 	.row-container {
 		display: flex;

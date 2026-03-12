@@ -108,7 +108,7 @@
 		background: #2b2b2b;
 	}
 	input::placeholder {
-		color: #707070;
+		color: var(--dim-text);
 	}
 	.remove-btn {
 		background: transparent;

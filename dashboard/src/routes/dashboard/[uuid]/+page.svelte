@@ -345,7 +345,7 @@
 		left: 0;
 		right: 0;
 		font-size: 14px;
-		color: #707070;
+		color: var(--dim-text);
 		opacity: 0;
 		/* Ensure each text sits on its own GPU layer */
 		will-change: opacity;
