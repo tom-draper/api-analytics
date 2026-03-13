@@ -122,14 +122,6 @@ p {
     cursor: default !important;
 }
 
-#plotly {
-    position: absolute;
-    width: 110%;
-    bottom: 0;
-    overflow: hidden;
-    margin: 0 -5%;
-    z-index: 0;
-}
 
 /* Form pages */
 .form-page {

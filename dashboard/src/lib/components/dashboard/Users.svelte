@@ -92,6 +92,14 @@
 		font-size: 0.8em;
 		margin-left: 4px;
 	}
+	#plotly {
+		position: absolute;
+		width: 110%;
+		bottom: 0;
+		overflow: hidden;
+		margin: 0 -5%;
+		z-index: 0;
+	}
 	button {
 		font-size: unset;
 	}
