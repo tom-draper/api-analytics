@@ -125,6 +125,9 @@ function modifyDateForPeriod(date: Date, days: number | null): void {
 		date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
 	} else if (days === 7) {
 		date.setMinutes(0, 0, 0);
+	} else if (days === 30) {
+		date.setMinutes(0, 0, 0);
+		date.setHours(Math.floor(date.getHours() / 6) * 6);
 	} else {
 		date.setHours(0, 0, 0, 0);
 	}
@@ -150,6 +153,14 @@ function initActivityMap(days: number | null): Map<number, ActivityEntry> {
 			date.setSeconds(0, 0);
 			date.setMinutes(0);
 			date.setHours(date.getHours() - i);
+			map.set(date.getTime(), newEntry());
+		}
+	} else if (days === 30) {
+		for (let i = 0; i < 120; i++) {
+			const date = new Date();
+			date.setSeconds(0, 0);
+			date.setMinutes(0);
+			date.setHours(Math.floor(date.getHours() / 6) * 6 - i * 6);
 			map.set(date.getTime(), newEntry());
 		}
 	} else {

@@ -101,6 +101,9 @@ export function bucketRange(date: Date, period: Period): string {
 		const end = new Date(date.getTime() + 60 * 60 * 1000);
 		const day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
 		return `${day} ${pad(date.getHours())}:00-${pad(end.getHours())}:00`;
+	} else if (period === 'month') {
+		const end = new Date(date.getTime() + 6 * 60 * 60 * 1000);
+		return `${date.toLocaleDateString([], { day: 'numeric', month: 'short' })} ${pad(date.getHours())}:00-${pad(end.getHours())}:00`;
 	} else {
 		return date.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
 	}

@@ -13,6 +13,10 @@
 		} else if (period === 'week') {
 			d.setSeconds(0, 0);
 			d.setMinutes(0);
+		} else if (period === 'month') {
+			d.setSeconds(0, 0);
+			d.setMinutes(0);
+			d.setHours(Math.floor(d.getHours() / 6) * 6);
 		} else {
 			d.setHours(0, 0, 0, 0);
 		}
@@ -33,6 +37,12 @@
 			const step = 60 * 60 * 1000;
 			return Array.from({ length: 168 }, (_, i) => {
 				const date = snap - (167 - i) * step;
+				return { value: bucketMap.get(date) ?? 0, date };
+			});
+		} else if (period === 'month') {
+			const step = 6 * 60 * 60 * 1000;
+			return Array.from({ length: 120 }, (_, i) => {
+				const date = snap - (119 - i) * step;
 				return { value: bucketMap.get(date) ?? 0, date };
 			});
 		} else {
