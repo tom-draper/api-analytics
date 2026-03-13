@@ -264,9 +264,9 @@
 			</div>
 			<div
 				class="text-[var(--dim-text)]"
-				class:!text-[#ffc1c1]={uptime !== null && uptime < 0.75}
-				class:!text-[#bee7c5]={uptime !== null && uptime > 0.95}
-				class:!text-[rgb(235,235,129)]={uptime !== null && uptime >= 0.75 && uptime <= 0.95}
+				class:!text-[var(--white-red)]={uptime !== null && uptime < 0.75}
+				class:!text-[var(--white-green)]={uptime !== null && uptime > 0.95}
+				class:!text-[var(--yellow)]={uptime !== null && uptime >= 0.75 && uptime <= 0.95}
 			>
 				{uptime === null ? 'Pending' : `${formatUptime(uptime)} uptime`}
 			</div>
@@ -380,7 +380,7 @@
 		cursor: pointer;
 		margin-left: auto;
 		padding: 2px 4px;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 	}
 	.delete:hover {
 		background: var(--red);

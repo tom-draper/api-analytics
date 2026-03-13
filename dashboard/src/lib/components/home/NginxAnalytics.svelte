@@ -29,7 +29,7 @@
 		align-items: center;
 		gap: 2em;
 		background-color: var(--dark-background);
-		border-radius: 10px;
+		border-radius: var(--radius-lg);
 		padding: 2em 2.5em;
 		max-width: 700px;
 		width: 100%;
@@ -73,7 +73,7 @@
 		background: var(--highlight);
 		color: black;
 		padding: 10px 20px;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		font-weight: 600;
 		font-size: 0.9em;
 	}

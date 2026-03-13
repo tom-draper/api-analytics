@@ -71,7 +71,7 @@
 		height: 28px;
 	}
 	.current {
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		background: var(--background);
 		color: var(--dim-text);
 		border: 1px solid var(--border);

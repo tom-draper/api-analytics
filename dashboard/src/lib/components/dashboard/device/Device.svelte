@@ -70,7 +70,7 @@
 		font-size: 0.85em;
 		color: #000;
 		border: none;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		background: rgb(68, 68, 68);
 		cursor: pointer;
 		padding: 0 6px;

@@ -8,7 +8,7 @@
 
 <div class="flex items-center gap-2 px-2 py-2">
 	<button
-		class="flex items-center gap-2 px-1 hover:text-[#ededed]"
+		class="flex items-center gap-2 px-1 hover:text-[var(--faded-text)]"
 		onclick={toggleChecked}
 	>
 		<div class="flex items-center gap-2">

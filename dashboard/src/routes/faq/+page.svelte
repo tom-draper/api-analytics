@@ -65,10 +65,10 @@
 	}
 
 	.question-btn {
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		background: var(--light-background);
 		border: 1px solid var(--border);
-		color: #ededed;
+		color: var(--faded-text);
 		padding: 1em 2rem;
 		font-size: 1em;
 		text-align: left;

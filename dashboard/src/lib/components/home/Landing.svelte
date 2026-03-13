@@ -102,7 +102,7 @@
 		background: var(--highlight);
 		color: black;
 		padding: 10px 20px;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 	}
 	.italic {
 		font-style: italic;

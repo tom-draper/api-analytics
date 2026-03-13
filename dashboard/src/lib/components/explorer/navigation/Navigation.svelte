@@ -23,7 +23,7 @@
 			<h2 class="text-left text-[var(--faded-text)]">Filters</h2>
 			{#if data && filteredRequests && data.requests.length !== filteredRequests.length}
 				<button
-					class="ml-auto flex items-center rounded border border-[var(--border)] px-2 text-xs text-[var(--faint-text)] hover:text-[#ededed]"
+					class="ml-auto flex items-center rounded border border-[var(--border)] px-2 text-xs text-[var(--faint-text)] hover:text-[var(--faded-text)]"
 					onclick={resetFilter}
 				>
 					<svg

@@ -13,8 +13,8 @@
 <div class="text-left text-[16px] text-[var(--faint-text)]">
 	<button
 		onclick={toggleHidden}
-		class="m-auto flex w-full px-2 py-2 text-[var(--faint-text)] hover:text-[#ededed] rounded"
-		class:!text-[#ededed]={!hidden}
+		class="m-auto flex w-full px-2 py-2 text-[var(--faint-text)] hover:text-[var(--faded-text)] rounded"
+		class:!text-[var(--faded-text)]={!hidden}
 	>
 		<div class="mr-auto">
 			{title}

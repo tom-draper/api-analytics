@@ -11,10 +11,14 @@
 
 :root {
     --highlight: #3fcf8e;
+    --highlight-rgb: 63, 207, 142;
     --red: #e46161;
+    --red-rgb: 228, 97, 97;
     --blue: #2facff;
     --yellow: #ebeb81;
+    --yellow-rgb: 235, 235, 129;
     --redirect-color: #5cadff;
+    --nav-link: #343434;
     --background: #1c1c1c;
     --light-background: #232323;
     --hover-bg: #161616;
@@ -54,7 +58,7 @@ body {
 }
 
 nav a {
-    color: #343434;
+    color: var(--nav-link);
     display: inline-block;
 }
 

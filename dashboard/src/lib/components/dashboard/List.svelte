@@ -94,7 +94,7 @@
 		flex-grow: 1;
 		text-align: left;
 		align-content: center;
-		color: #ededed !important;
+		color: var(--faded-text) !important;
 		margin: 4px 12px;
 		font-size: 0.85em;
 	}

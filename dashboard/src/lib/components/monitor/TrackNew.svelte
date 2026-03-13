@@ -104,7 +104,7 @@
 	}
 	input {
 		background: var(--background);
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		border: none;
 		margin: 0 10px 0 8px;
 		width: 100%;
@@ -128,7 +128,7 @@
 	}
 	button {
 		border: none;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		background: var(--light-background);
 		cursor: pointer;
 		font-size: 0.85em;
