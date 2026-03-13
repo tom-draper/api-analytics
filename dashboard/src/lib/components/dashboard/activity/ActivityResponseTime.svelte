@@ -11,7 +11,7 @@
 				y: buckets.map((b) => b.avgResponseTime),
 				customdata: dates.map((d) => bucketRange(d, period)),
 				type: 'bar',
-				marker: { color: 'var(--dim-text)' },
+				marker: { color: '#707070' },
 				hovertemplate: `<b>%{y:.1f}ms average</b><br>%{customdata}<extra></extra>`,
 				showlegend: false
 			}
