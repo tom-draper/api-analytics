@@ -255,23 +255,23 @@
 				<div class="measurement {sample.label}" title={getTitle(sample)}></div>
 			{/each}
 		</div>
-		<div class="mx-[2rem] mb-4 mt-3 flex text-[0.75em] !font-semibold text-[#505050]">
+		<div class="mx-[2rem] mb-4 mt-3 flex text-[0.75em] !font-semibold text-[var(--muted-text)]">
 			<div class="flex flex-1">
 				<div>
 					{periodTimespanLabel(period)}
 				</div>
-				<div class="mx-4 h-[50%] flex-grow border-b border-[#505050]"></div>
+				<div class="mx-4 h-[50%] flex-grow border-b border-[var(--muted-text)]"></div>
 			</div>
 			<div
 				class="text-[var(--dim-text)]"
-				class:!text-[#ffc1c1]={uptime !== null && uptime < 0.75}
-				class:!text-[#bee7c5]={uptime !== null && uptime > 0.95}
-				class:!text-[rgb(235,235,129)]={uptime !== null && uptime >= 0.75 && uptime <= 0.95}
+				class:!text-[var(--white-red)]={uptime !== null && uptime < 0.75}
+				class:!text-[var(--white-green)]={uptime !== null && uptime > 0.95}
+				class:!text-[var(--yellow)]={uptime !== null && uptime >= 0.75 && uptime <= 0.95}
 			>
 				{uptime === null ? 'Pending' : `${formatUptime(uptime)} uptime`}
 			</div>
 			<div class="flex flex-1">
-				<div class="mx-4 h-[50%] flex-grow border-b border-[#505050]"></div>
+				<div class="mx-4 h-[50%] flex-grow border-b border-[var(--muted-text)]"></div>
 				<div>Now</div>
 			</div>
 		</div>
@@ -286,7 +286,7 @@
 <style scoped>
 	.card {
 		width: min(100%, 1000px);
-		border: 1px solid #2e2e2e;
+		border: 1px solid var(--border);
 		margin: 2.2em auto;
 		padding-bottom: 1.5em;
 	}
@@ -380,7 +380,7 @@
 		cursor: pointer;
 		margin-left: auto;
 		padding: 2px 4px;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 	}
 	.delete:hover {
 		background: var(--red);

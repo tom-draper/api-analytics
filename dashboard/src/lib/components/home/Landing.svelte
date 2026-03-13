@@ -19,7 +19,7 @@
 			<h1 class="my-8 font-bold">API Analytics</h1>
 			<h2 class="font-bold">Monitoring and analytics for API frameworks.</h2>
 			<div class="links">
-				<a href={formatPath('/generate', params)} class="link">
+				<a href={formatPath('/sign-up', params)} class="link">
 					<div class="text">
 						Try now – it's <span class="italic">free</span>
 					</div>
@@ -86,7 +86,7 @@
 		font-size: 0.9;
 	}
 	.link:hover {
-		background: #31aa73;
+		background: var(--highlight-hover);
 	}
 
 	.secondary {
@@ -102,7 +102,7 @@
 		background: var(--highlight);
 		color: black;
 		padding: 10px 20px;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 	}
 	.italic {
 		font-style: italic;

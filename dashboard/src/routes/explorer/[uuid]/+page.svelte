@@ -5,6 +5,7 @@
 	import formatUUID from '$lib/uuid';
 	import { ColumnIndex, pageSize } from '$lib/consts';
 	import { getServerURL } from '$lib/url';
+	import { fetchPageRaw } from '$lib/fetchRequests';
 	import { dataStore } from '$lib/dataStore';
 	import Navigation from '$components/explorer/navigation/Navigation.svelte';
 	import Viewer from '$components/explorer/Viewer.svelte';
@@ -28,7 +29,6 @@
 			if (response.ok && response.status === 200) {
 				data = { requests: body.requests, userAgents: body.user_agents };
 				dataStore.set(data);
-				console.log(data);
 			}
 		} catch (e) {
 			console.log(e);
@@ -47,37 +47,15 @@
 	}
 
 	async function fetchAdditionalPage(page: number) {
-		const url = getServerURL();
+		const body = await fetchPageRaw(userID, page);
+		if (!body) return 0;
 
-		try {
-			const response = await fetch(`${url}/api/requests/${userID}/${page}`, {
-				signal: AbortSignal.timeout(250000),
-				keepalive: true
-			});
-			if (response.status !== 200) {
-				return 0;
-			}
-
-			const body = await response.json();
-			if (body.requests.length <= 0) {
-				return 0;
-			}
-
-			data.userAgents = { ...data.userAgents, ...body.user_agents };
-
-			parseDates(body.requests);
-			sortByTime(body.requests);
-
-			data.requests = data.requests.concat(body.requests);
-
-			dataStore.set(data);
-			console.log(data);
-
-			return body.requests.length;
-		} catch (e) {
-			console.log(e);
-			return 0;
-		}
+		data.userAgents = { ...data.userAgents, ...body.user_agents };
+		parseDates(body.requests);
+		sortByTime(body.requests);
+		data.requests = data.requests.concat(body.requests);
+		dataStore.set(data);
+		return body.requests.length;
 	}
 
 	function isDemo() {

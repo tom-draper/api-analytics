@@ -51,7 +51,7 @@
 		margin: 0.9em 20px 0.6em;
 	}
 	.row {
-		border-radius: 3px;
+		border-radius: var(--radius-sm);
 		margin: 5px 0;
 		color: var(--light-background);
 		text-align: left;
@@ -61,26 +61,25 @@
 		cursor: pointer;
 	}
 	.row:hover {
-		background: linear-gradient(270deg, transparent, #444);
+		background: var(--fade-right);
 	}
 	.selected {
-		background: linear-gradient(270deg, transparent, #444);
+		background: var(--fade-right);
 	}
 	.label {
 		position: relative;
 		flex-grow: 1;
 		z-index: 1;
 		pointer-events: none;
-		color: #505050;
+		color: var(--muted-text);
 		padding: 3px 12px;
 		overflow-wrap: break-word;
-		font-family: 'Noto Sans' !important;
 	}
 	.row-container {
 		display: flex;
 	}
 	.background {
-		border-radius: 3px;
+		border-radius: var(--radius-sm);
 		background: var(--highlight);
 		text-align: left;
 		position: absolute;

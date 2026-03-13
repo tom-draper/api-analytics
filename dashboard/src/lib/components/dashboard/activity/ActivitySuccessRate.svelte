@@ -13,6 +13,10 @@
 		} else if (period === 'week') {
 			d.setSeconds(0, 0);
 			d.setMinutes(0);
+		} else if (period === 'month') {
+			d.setSeconds(0, 0);
+			d.setMinutes(0);
+			d.setHours(Math.floor(d.getHours() / 6) * 6);
 		} else {
 			d.setHours(0, 0, 0, 0);
 		}
@@ -33,6 +37,12 @@
 			const step = 60 * 60 * 1000;
 			return Array.from({ length: 168 }, (_, i) => {
 				const date = snap - (167 - i) * step;
+				return { value: bucketMap.get(date) ?? 0, date };
+			});
+		} else if (period === 'month') {
+			const step = 6 * 60 * 60 * 1000;
+			return Array.from({ length: 120 }, (_, i) => {
+				const date = snap - (119 - i) * step;
 				return { value: bucketMap.get(date) ?? 0, date };
 			});
 		} else {
@@ -102,7 +112,7 @@
 		background: #282828;
 	}
 	.level-1 {
-		background: #e46161;
+		background: var(--red);
 	}
 	.level-2 {
 		background: #f18359;
@@ -114,7 +124,7 @@
 		background: #f3c966;
 	}
 	.level-5 {
-		background: #ebeb81;
+		background: var(--yellow);
 	}
 	.level-6 {
 		background: #c7e57d;
@@ -126,6 +136,6 @@
 		background: #77d884;
 	}
 	.level-9 {
-		background: #3fcf8e;
+		background: var(--highlight);
 	}
 </style>

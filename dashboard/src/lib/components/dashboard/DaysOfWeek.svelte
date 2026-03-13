@@ -81,22 +81,22 @@
 		cursor: pointer;
 	}
 	.bar:hover {
-		background: linear-gradient(transparent, #444);
+		background: var(--fade-down);
 	}
 	.selected {
-		background: linear-gradient(transparent, #444);
+		background: var(--fade-down);
 	}
 	.bar-inner {
 		position: absolute;
 		bottom: 0;
 		width: 100%;
 		background: var(--highlight);
-		border-radius: 3px;
+		border-radius: var(--radius-sm);
 	}
 	.label {
 		padding-top: 8px;
 		font-size: 0.8em;
-		color: #707070;
+		color: var(--dim-text);
 		text-align: center;
 	}
 </style>

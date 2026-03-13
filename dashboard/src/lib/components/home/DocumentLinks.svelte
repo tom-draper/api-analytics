@@ -1,19 +1,19 @@
 <div class="docs m-auto flex w-fit pb-16 pt-4">
 	<div class="doc-link-container flex-1 grid place-items-center">
-		<a class="doc-link flex-1 bg-[#181818] hover:bg-[#161616]" href="/faq">FAQ</a>
+		<a class="doc-link flex-1 bg-[#181818] hover:bg-[var(--hover-bg)]" href="/faq">FAQ</a>
 	</div>
 	<div class="doc-link-container flex-1 grid place-items-center">
-		<a class="doc-link flex-1 bg-[#181818] hover:bg-[#161616]" href="/privacy-policy">Privacy Policy</a>
+		<a class="doc-link flex-1 bg-[#181818] hover:bg-[var(--hover-bg)]" href="/privacy-policy">Privacy Policy</a>
 	</div>
 	<div class="doc-link-container flex-1 grid place-items-center">
-		<a class="doc-link flex-1 bg-[#181818] hover:bg-[#161616]" href="/outages">Outages</a>
+		<a class="doc-link flex-1 bg-[#181818] hover:bg-[var(--hover-bg)]" href="/outages">Outages</a>
 	</div>
 </div>
 
 <style scoped>
 	.doc-link {
 		color: #5f5f5f;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		min-width: 10em;
 		max-width: 15em;
 		margin: auto;

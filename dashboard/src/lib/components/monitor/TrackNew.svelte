@@ -96,7 +96,7 @@
 <style scoped>
 	.card {
 		width: min(100%, 1000px);
-		border: 1px solid #2e2e2e;
+		border: 1px solid var(--border);
 		margin: 2.2em auto 4em;
 	}
 	.card-text {
@@ -104,7 +104,7 @@
 	}
 	input {
 		background: var(--background);
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		border: none;
 		margin: 0 10px 0 8px;
 		width: 100%;
@@ -128,7 +128,7 @@
 	}
 	button {
 		border: none;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		background: var(--light-background);
 		cursor: pointer;
 		font-size: 0.85em;

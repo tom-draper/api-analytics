@@ -1,19 +1,11 @@
 <script lang="ts">
 	import type { DashboardSettings } from '$lib/settings';
 	import Dropdown from './Dropdown.svelte';
-	import type { Period } from '$lib/period';
+	import { type Period, periodDisplay } from '$lib/period';
 	import { setParam } from '$lib/params';
 
 	const timePeriods: Period[] = ['24 hours', 'week', 'month', '6 months', 'year', 'all time'];
 
-	const timePeriodsDisplay: Record<Period, string> = {
-		'24 hours': '24 hours',
-		week: 'Week',
-		month: 'Month',
-		'6 months': '6 months',
-		year: 'Year',
-		'all time': 'All time'
-	};
 
 	function setPeriodParam(period: Period) {
 		setParam('period', period);
@@ -75,7 +67,7 @@
 			defaultOption={'All hostnames'}
 		/>
 	</div>
-	<div class="nav-btn time-period flex overflow-hidden rounded-[4px] border border-[#2e2e2e]">
+	<div class="nav-btn time-period flex overflow-hidden rounded-[4px] border border-[var(--border)]">
 		{#each timePeriods as period}
 			<button
 				class="time-period-btn cursor-pointer border-none bg-[var(--background)] px-[12px] py-[4px] text-[var(--dim-text)]"
@@ -86,7 +78,7 @@
 					setPeriodParam(period);
 				}}
 			>
-				{timePeriodsDisplay[period]}
+				{periodDisplay[period]}
 			</button>
 		{/each}
 	</div>
@@ -97,7 +89,7 @@
 		margin: 2.5em 2rem 0;
 	}
 	.time-period-btn:hover {
-		background: #161616;
+		background: var(--hover-bg);
 	}
 	.time-period-btn-active:hover {
 		background: var(--highlight);

@@ -69,10 +69,10 @@
 		border-bottom: none;
 	}
 	.hanging-lightning-no-requests {
-		border-image: linear-gradient(#000, rgba(63, 207, 142, 0.7)) 30;
+		border-image: linear-gradient(#000, rgba(var(--highlight-rgb), 0.7)) 30;
 	}
 	.hanging-lightning-error {
-		border-image: linear-gradient(#000, rgba(228, 97, 97, 0.7)) 30;
+		border-image: linear-gradient(#000, rgba(var(--red-rgb), 0.7)) 30;
 	}
 
 	.lightning-container {
@@ -84,10 +84,10 @@
 		place-items: center;
 	}
 	.lightning-container-no-requests {
-		background: radial-gradient(rgba(63, 207, 142, 0.3), transparent, transparent);
+		background: radial-gradient(rgba(var(--highlight-rgb), 0.3), transparent, transparent);
 	}
 	.lightning-container-error {
-		background: radial-gradient(rgba(228, 97, 97, 0.3), transparent, transparent);
+		background: radial-gradient(rgba(var(--red-rgb), 0.3), transparent, transparent);
 	}
 
 	img {

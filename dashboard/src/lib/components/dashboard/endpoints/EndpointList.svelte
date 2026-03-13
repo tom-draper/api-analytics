@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Endpoint } from '$lib/endpoints';
+	import { statusSuccess, statusRedirect, statusBad, statusError } from '$lib/status';
 
 	function handleSelect(path: string, status: number): void {
 		selectEndpoint?.(path, status);
@@ -24,10 +25,10 @@
 				<div
 					class="background"
 					style="width: {(endpoint.count / maxCount) * 100}%"
-					class:success={endpoint.status >= 200 && endpoint.status <= 299}
-					class:redirect={endpoint.status >= 300 && endpoint.status <= 399}
-					class:bad={endpoint.status >= 400 && endpoint.status <= 499}
-					class:error={endpoint.status >= 500}
+					class:success={statusSuccess(endpoint.status)}
+					class:redirect={statusRedirect(endpoint.status)}
+					class:bad={statusBad(endpoint.status)}
+					class:error={statusError(endpoint.status)}
 					class:other={endpoint.status <= 100}
 				></div>
 			</button>
@@ -41,7 +42,7 @@
 	}
 
 	.endpoint {
-		border-radius: 3px;
+		border-radius: var(--radius-sm);
 		margin: 5px 0;
 		color: var(--light-background);
 		text-align: left;
@@ -52,7 +53,7 @@
 	}
 
 	.endpoint:hover {
-		background: linear-gradient(270deg, transparent, #444);
+		background: var(--fade-right);
 	}
 
 	.path {
@@ -60,14 +61,13 @@
 		flex-grow: 1;
 		z-index: 1;
 		pointer-events: none;
-		color: #505050;
+		color: var(--muted-text);
 		padding: 3px 12px;
 		overflow-wrap: break-word;
-		font-family: 'Noto Sans' !important;
 	}
 
 	.background {
-		border-radius: 3px;
+		border-radius: var(--radius-sm);
 		color: var(--light-background);
 		text-align: left;
 		position: relative;
@@ -82,11 +82,11 @@
 	}
 
 	.redirect {
-		background: #5cadff;
+		background: var(--redirect-color);
 	}
 
 	.bad {
-		background: rgb(235, 235, 129);
+		background: var(--yellow);
 	}
 
 	.error {

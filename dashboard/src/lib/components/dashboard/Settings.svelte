@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { DashboardSettings } from '$lib/settings';
+	import { periodDisplay } from '$lib/period';
+	import { formatDisplayUserID } from '$lib/user';
 	import List from './List.svelte';
 
 	function toggleDisable404() {
@@ -18,20 +20,6 @@
 		show = false;
 	}
 
-	function formatUserID(
-		targetUser: { ipAddress: string; userID: string; composite: boolean } | null
-	) {
-		if (!targetUser) {
-			return '';
-		}
-
-		if (targetUser.composite && targetUser.ipAddress && targetUser.userID) {
-			return `${targetUser.ipAddress} + ${targetUser.userID}`;
-		} else {
-			return targetUser.userID || targetUser.ipAddress || '';
-		}
-	}
-
 	function handleClick(e: MouseEvent) {
 		e.stopImmediatePropagation();
 	}
@@ -44,8 +32,8 @@
 	});
 </script>
 
-<div class="background" class:hidden={!show} onclick={hideSettings}>
-	<div class="container" onclick={handleClick}>
+<div class="background" class:hidden={!show} role="presentation" onclick={hideSettings} onkeydown={(e) => e.key === 'Escape' && hideSettings()}>
+	<div class="container" role="dialog" aria-modal="true" aria-label="Settings" tabindex="-1" onclick={handleClick} onkeydown={handleClick}>
 		<h2 class="title">Settings</h2>
 		<div class="setting mb-2">
 			<div class="setting-label">Exclude status 404</div>
@@ -92,7 +80,7 @@
 				Hostname: <span>{settings.hostname || 'None'}</span>
 			</div>
 			<div class="setting-filter" class:active={settings.period}>
-				Period: <span>{settings.period === 'All time' ? 'None' : settings.period}</span>
+				Period: <span>{periodDisplay[settings.period]}</span>
 			</div>
 			<div class="setting-filter" class:active={settings.targetEndpoint.path}>
 				Endpoint: <span>{settings.targetEndpoint.path || 'None'}</span>
@@ -104,7 +92,7 @@
 				Location: <span>{settings.targetLocation || 'None'}</span>
 			</div>
 			<div class="setting-filter" class:active={settings.targetUser}>
-				User: <span>{formatUserID(settings.targetUser) || 'None'}</span>
+				User: <span>{formatDisplayUserID(settings.targetUser) || 'None'}</span>
 			</div>
 			<div class="setting-filter" class:active={settings.targetVersion}>
 				Version: <span>{settings.targetVersion || 'None'}</span>
@@ -160,7 +148,7 @@
 		font-weight: 700;
 	}
 	.background {
-		background: rgba(0, 0, 0, 0.7);
+		background: var(--modal-overlay);
 		backdrop-filter: blur(4px);
 		height: 100vh;
 		width: 100%;
@@ -175,7 +163,7 @@
 		background: var(--background);
 		border-radius: 6px;
 		width: 42em;
-		border: 1px solid #2e2e2e;
+		border: 1px solid var(--border);
 		color: var(--faded-text);
 		z-index: 20;
 		position: absolute;
@@ -237,16 +225,15 @@
 	.setting-filters {
 		text-align: left;
 		font-size: 0.9em;
-		color: #707070;
+		color: var(--dim-text);
 		display: flex;
 		flex-wrap: wrap;
 		gap: 5px 10px;
 	}
 	.setting-filter {
 		margin: 2px 0;
-		background: rgba(0, 0, 0, 0.7);
 		background: var(--dark-background);
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		padding: 5px 10px;
 	}
 	.active {
@@ -268,10 +255,10 @@
 	.export-csv-btn {
 		background: var(--dark-background);
 		color: var(--dim-text);
-		border: 1px solid #2e2e2e;
+		border: 1px solid var(--border);
 		padding: 0.8em;
 		cursor: pointer;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		font-size: 0.85em;
 	}
 	.export-csv-btn:hover {

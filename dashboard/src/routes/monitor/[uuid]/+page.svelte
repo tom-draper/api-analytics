@@ -158,9 +158,9 @@
 				</div>
 				<div
 					class="status-text"
-					class:text-[#bee7c5]={status === 'online'}
-					class:text-[#ffc1c1]={status === 'offline'}
-					class:text-[#c0c0c0]={status === 'setup' || status === 'pending'}
+					class:text-[var(--white-green)]={status === 'online'}
+					class:text-[var(--white-red)]={status === 'offline'}
+					class:text-[var(--white-yellow)]={status === 'setup' || status === 'pending'}
 				>
 					{statusTitle}
 				</div>
@@ -289,7 +289,7 @@
 
 	.add-new-btn:hover,
 	.period-btn:hover {
-		background: #161616;
+		background: var(--hover-bg);
 	}
 
 	.add-new-btn:hover {
@@ -301,9 +301,9 @@
 	}
 
 	.period-controls {
-		border: 1px solid #2e2e2e;
+		border: 1px solid var(--border);
 		width: fit-content;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		overflow: hidden;
 	}
 	.period-controls-container {
@@ -322,8 +322,8 @@
 	}
 
 	.add-new-btn {
-		border: 1px solid #2e2e2e;
-		border-radius: 4px;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-md);
 		padding: 0;
 		display: flex;
 		place-items: center;

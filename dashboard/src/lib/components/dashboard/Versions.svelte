@@ -11,14 +11,18 @@
 	} = $props();
 
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
+	const colorMap = new Map<string, string>();
 
 	function buildData(versions: string[], counts: number[]) {
+		for (const v of versions) {
+			if (!colorMap.has(v)) colorMap.set(v, graphColors[colorMap.size % graphColors.length]);
+		}
 		return [{
 			values: counts,
 			labels: versions,
 			type: 'pie',
 			hole: 0.6,
-			marker: { colors: graphColors },
+			marker: { colors: versions.map((v) => colorMap.get(v)!) },
 			pull: versions.map((v) => (targetVersion === v ? 0.08 : 0)),
 		}];
 	}
@@ -52,7 +56,7 @@
 		});
 
 		el.on?.('plotly_legendclick', (data: any) => {
-			const label = data.data?.[0]?.labels?.[data.expandedIndex];
+			const label = data.node?.querySelector?.('.legendtext')?.textContent?.trim();
 			if (label) selectVersion(label);
 			return false;
 		});

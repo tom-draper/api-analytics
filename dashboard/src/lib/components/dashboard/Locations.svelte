@@ -82,7 +82,7 @@
 	}
 	.no-locations-text {
 		margin-bottom: 25px;
-		color: #707070;
+		color: var(--dim-text);
 	}
 
 	.bar {
@@ -92,7 +92,7 @@
 		border-radius: 3px 3px 0 0;
 	}
 	.bar:hover {
-		background: linear-gradient(transparent, #444);
+		background: var(--fade-down);
 	}
 
 	.bar-inner {
@@ -100,7 +100,7 @@
 		bottom: 0;
 		width: 100%;
 		background: var(--highlight);
-		border-radius: 3px;
+		border-radius: var(--radius-sm);
 	}
 	.label {
 		padding-top: 8px;
@@ -110,7 +110,7 @@
 		top: 1.5em;
 		right: 2em;
 		font-size: 0.9em;
-		color: #505050;
+		color: var(--muted-text);
 	}
 
 	@media screen and (max-width: 1600px) {

@@ -1,18 +1,10 @@
 <script lang="ts">
-	import { replaceState } from '$app/navigation';
-	import { page } from '$app/state';
 	import { setParam } from '$lib/params';
 	import type { ReferrerBar } from '$lib/aggregate';
 
 	function setTargetReferrer(referrer: string) {
-		if (targetReferrer === referrer) {
-			targetReferrer = null;
-			page.url.searchParams.delete('referrer');
-			replaceState(page.url, page.state);
-		} else {
-			targetReferrer = referrer;
-			setParam('referrer', referrer);
-		}
+		targetReferrer = targetReferrer === referrer ? null : referrer;
+		setParam('referrer', targetReferrer);
 	}
 
 	let { referrerBars, targetReferrer = $bindable<string | null>(null) }: {
@@ -45,15 +37,15 @@
 
 <style scoped>
 	.card {
-		min-height: 361px;
+		min-height: 300px;
 		margin-top: 0;
 		margin-left: 2em;
 	}
 	.endpoints {
-		margin: 0.9em 20px 0.6em;
+		margin: 0.9em 20px 0.9em;
 	}
 	.endpoint {
-		border-radius: 3px;
+		border-radius: var(--radius-sm);
 		margin: 5px 0;
 		color: var(--light-background);
 		text-align: left;
@@ -63,26 +55,25 @@
 		cursor: pointer;
 	}
 	.endpoint:hover {
-		background: linear-gradient(270deg, transparent, #444);
+		background: var(--fade-right);
 	}
 	.selected {
-		background: linear-gradient(270deg, transparent, #444);
+		background: var(--fade-right);
 	}
 	.path {
 		position: relative;
 		flex-grow: 1;
 		z-index: 1;
 		pointer-events: none;
-		color: #505050;
+		color: var(--muted-text);
 		padding: 3px 12px;
 		overflow-wrap: break-word;
-		font-family: 'Noto Sans' !important;
 	}
 	.endpoint-container {
 		display: flex;
 	}
 	.background {
-		border-radius: 3px;
+		border-radius: var(--radius-sm);
 		background: var(--highlight);
 		text-align: left;
 		position: absolute;

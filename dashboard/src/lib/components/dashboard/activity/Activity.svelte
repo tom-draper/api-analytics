@@ -2,7 +2,7 @@
 	import type { Period } from '$lib/period';
 	import type { ActivityBucket } from '$lib/aggregate';
 	import ActivityRequests from './ActivityRequests.svelte';
-	import ActivityResponseTime from './ActivityResponseTime.svelte';
+	import ActivityResponseTimes from './ActivityResponseTimes.svelte';
 	import ActivitySuccessRate from './ActivitySuccessRate.svelte';
 
 	let { activityBuckets, period, firstRequestDate }: {
@@ -15,6 +15,6 @@
 <div class="card !m-0 !w-full">
 	<div class="card-title">Activity</div>
 	<ActivityRequests {activityBuckets} {period} />
-	<ActivityResponseTime {activityBuckets} {period} />
+	<ActivityResponseTimes {activityBuckets} {period} />
 	<ActivitySuccessRate {activityBuckets} {period} {firstRequestDate} />
 </div>

@@ -2,7 +2,7 @@
 	let { generic = false }: { generic: boolean } = $props();
 </script>
 
-<div class="footer grid place-items-center mt-[1.5em] mb-[3em]">
+<div class="footer grid place-items-center mt-[1.5em] mb-[4em]">
 	{#if generic}
 		<a
 			class="github-link"

@@ -6,17 +6,17 @@
 </script>
 
 <div class="flex flex-col text-[14px]">
-	<div class="flex items-center border-b border-solid border-[#2e2e2e]">
+	<div class="flex items-center border-b border-solid border-[var(--border)]">
 		{#if filter}
 			<Checkbox bind:checked={filter.status.success} label="Success" color="var(--highlight)" />
 		{/if}
 	</div>
-	<div class="flex items-center border-b border-solid border-[#2e2e2e]">
+	<div class="flex items-center border-b border-solid border-[var(--border)]">
 		{#if filter}
 			<Checkbox bind:checked={filter.status.redirect} label="Redirect" color="var(--blue)" />
 		{/if}
 	</div>
-	<div class="flex items-center border-b border-solid border-[#2e2e2e]">
+	<div class="flex items-center border-b border-solid border-[var(--border)]">
 		{#if filter}
 			<Checkbox bind:checked={filter.status.client} label="Client error" color="var(--yellow)" />
 		{/if}

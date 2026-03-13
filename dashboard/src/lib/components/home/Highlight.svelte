@@ -53,13 +53,13 @@
 		background: var(--highlight);
 		color: black;
 		padding: 10px 20px;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 	}
 
 	.dashboard {
 		border: 3px solid var(--highlight);
 		width: 80%;
-		border-radius: 10px;
+		border-radius: var(--radius-lg);
 		margin: auto;
 		margin-bottom: 8em;
 		overflow: hidden;
@@ -77,7 +77,7 @@
 	}
 	.dashboard-img {
 		width: 81%;
-		border-radius: 10px;
+		border-radius: var(--radius-lg);
 		box-shadow: 0px 24px 120px -25px var(--highlight);
 		margin-bottom: -1%;
 	}

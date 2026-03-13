@@ -1,7 +1,7 @@
 <div class="info-page-container text-center leading-snug text-[#c3c3c3]">
 	<h1>Privacy Policy</h1>
 
-	<div class="text-[#707070]">Last updated: 2025-01-28</div>
+	<div class="text-[var(--dim-text)]">Last updated: 2025-01-28</div>
 
 	<p>
 		API Analytics ("we," "us," or "our") is committed to protecting the privacy of our users. This
@@ -164,7 +164,7 @@
 	p {
 		margin: 0;
 		padding: 0.8em 0;
-		color: #c3c3c3;
+		color: var(--subtle-text);
 	}
 
 	ul {
@@ -174,7 +174,7 @@
 	}
 	li {
 		padding: 0.2em 0 0.2em 0.5em;
-		color: #c3c3c3;
+		color: var(--subtle-text);
 	}
 
 	h2 {
@@ -186,7 +186,7 @@
 		margin: 1.5em 0 0.5em !important;
 		font-size: 1.2em;
 		font-weight: 600;
-		color: #c3c3c3;
+		color: var(--subtle-text);
 	}
 
 	h4 {

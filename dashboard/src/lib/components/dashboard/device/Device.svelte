@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Client from './Client.svelte';
-	import OperatingSystem from './OperatingSystem.svelte';
-	import DeviceType from './DeviceType.svelte';
+	import Clients from './Clients.svelte';
+	import OperatingSystems from './OperatingSystems.svelte';
+	import DeviceTypes from './DeviceTypes.svelte';
 
 	type Tab = 'client' | 'os' | 'device';
 
@@ -36,13 +36,13 @@
 	</div>
 
 	<div class="tab" class:tab-active={activeBtn === 'client'}>
-		<Client {uaIdCount} {userAgents} bind:targetClient />
+		<Clients {uaIdCount} {userAgents} bind:targetClient />
 	</div>
 	<div class="tab" class:tab-active={activeBtn === 'os'}>
-		<OperatingSystem {uaIdCount} {userAgents} bind:targetOS />
+		<OperatingSystems {uaIdCount} {userAgents} bind:targetOS />
 	</div>
 	<div class="tab" class:tab-active={activeBtn === 'device'}>
-		<DeviceType {uaIdCount} {userAgents} bind:targetDeviceType />
+		<DeviceTypes {uaIdCount} {userAgents} bind:targetDeviceType />
 	</div>
 </div>
 
@@ -70,14 +70,14 @@
 		font-size: 0.85em;
 		color: #000;
 		border: none;
-		border-radius: 4px;
-		background: rgb(68, 68, 68);
+		border-radius: var(--radius-md);
+		background: var(--btn-bg);
 		cursor: pointer;
 		padding: 0 6px;
 		margin-left: 5px;
 	}
 	.toggle > button:hover {
-		background: rgb(88, 88, 88);
+		background: var(--btn-bg-hover);
 	}
 	.toggle > .active:hover {
 		background: var(--highlight);

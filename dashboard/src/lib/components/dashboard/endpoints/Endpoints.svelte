@@ -1,21 +1,10 @@
 <script lang="ts">
-	import { replaceState } from '$app/navigation';
-	import { page } from '$app/state';
 	import EndpointList from './EndpointList.svelte';
 	import EndpointFilter from './EndpointFilter.svelte';
-	import { type Endpoint, type EndpointFilterType } from '$lib/endpoints';
+	import { setParam, setParamNoReplace } from '$lib/params';
+	import { type Endpoint, type EndpointFilterType, statusMatchesFilter } from '$lib/endpoints';
 
 	type EndpointFreq = { [key: string]: { path: string; status: number; count: number } };
-
-	function statusMatchesFilter(status: number, activeFilter: EndpointFilterType): boolean {
-		return (
-			activeFilter === 'all' ||
-			(activeFilter === 'success' && status >= 200 && status <= 299) ||
-			(activeFilter === 'redirect' && status >= 300 && status <= 399) ||
-			(activeFilter === 'client' && status >= 400 && status <= 499) ||
-			(activeFilter === 'server' && status >= 500)
-		);
-	}
 
 	function getFilteredEndpoints(freq: EndpointFreq, activeFilter: EndpointFilterType) {
 		const endpoints: Endpoint[] = [];
@@ -31,17 +20,8 @@
 	}
 
 	function updateUrlParams(path: string | null, status: number | null): void {
-		if (path === null) {
-			page.url.searchParams.delete('path');
-		} else {
-			page.url.searchParams.set('path', path);
-		}
-		if (status === null) {
-			page.url.searchParams.delete('status');
-		} else {
-			page.url.searchParams.set('status', status.toString());
-		}
-		replaceState(page.url, page.state);
+		setParamNoReplace('path', path);
+		setParam('status', status !== null ? status.toString() : null);
 	}
 
 	function handleEndpointSelection(path: string | null, status: number | null): void {
@@ -117,12 +97,12 @@
 
 	.clear-btn {
 		font-size: 0.75em;
-		color: #707070;
+		color: var(--dim-text);
 		cursor: pointer;
 	}
 
 	.clear-btn:hover {
-		color: #ededed;
+		color: var(--faded-text);
 	}
 
 	@media screen and (max-width: 470px) {

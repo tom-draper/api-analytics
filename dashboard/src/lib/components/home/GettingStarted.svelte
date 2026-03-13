@@ -177,7 +177,7 @@
 		font-size: 0.9;
 	}
 	.link:hover {
-		background: #31aa73;
+		background: var(--highlight-hover);
 	}
 
 	.secondary {
@@ -204,7 +204,7 @@
 	.dashboard {
 		border: 3px solid var(--highlight);
 		width: 80%;
-		border-radius: 10px;
+		border-radius: var(--radius-lg);
 		margin: auto;
 		margin-bottom: 8em;
 		overflow: hidden;
@@ -220,7 +220,7 @@
 	}
 	.dashboard-img {
 		width: 81%;
-		border-radius: 10px;
+		border-radius: var(--radius-lg);
 		box-shadow: 0px 24px 120px -25px var(--highlight);
 		margin-bottom: -1%;
 	}
@@ -272,7 +272,7 @@
 		height: auto;
 		width: auto;
 		border: 3px solid transparent;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 	}
 	.framework:hover {
 		color: white;

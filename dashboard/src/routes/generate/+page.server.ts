@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
 
 export function load() {
-    throw redirect(302, '/monitor');
+    redirect(301, '/sign-up');
 }

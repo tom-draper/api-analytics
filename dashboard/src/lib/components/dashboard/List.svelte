@@ -86,15 +86,15 @@
 	.item {
 		background: var(--background);
 		color: var(--dim-text);
-		border: 1px solid #2e2e2e;
+		border: 1px solid var(--border);
 		display: flex;
-		border-radius: 3px;
+		border-radius: var(--radius-sm);
 	}
 	.item-text {
 		flex-grow: 1;
 		text-align: left;
 		align-content: center;
-		color: #ededed !important;
+		color: var(--faded-text) !important;
 		margin: 4px 12px;
 		font-size: 0.85em;
 	}
@@ -108,7 +108,7 @@
 		background: #2b2b2b;
 	}
 	input::placeholder {
-		color: #707070;
+		color: var(--dim-text);
 	}
 	.remove-btn {
 		background: transparent;

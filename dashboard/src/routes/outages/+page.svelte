@@ -1,12 +1,11 @@
-<div class="info-page-container mx-auto min-h-[75vh] !max-w-[80%] pb-20">
+<div class="info-page-container">
 	<h1>Outages</h1>
-
-	<p class="max-w-full px-0 pb-12">
-		Outages may be reflected in your dashboard. Make sure to check this page if you see unexpected
-		downtime.
+	<p class="subtitle">
+		Outages may be reflected in your dashboard. Check this page if you notice unexpected gaps in
+		your data.
 	</p>
 
-	<table class="w-full border-collapse">
+	<table>
 		<thead>
 			<tr>
 				<th>Start</th>
@@ -16,18 +15,18 @@
 		</thead>
 		<tbody>
 			<tr>
-				<td>2024-11-12 01:10:00 UTC</td>
-				<td>2024-11-11 07:35:00 UTC</td>
-				<td>Server resource limit exceeded.</td>
-			</tr>
-			<tr>
-				<td>2024-09-17 20:30:00 UTC</td>
-				<td>2024-09-18 09:30:00 UTC</td>
+				<td>2024-09-17 20:30 UTC</td>
+				<td>2024-09-18 09:30 UTC</td>
 				<td>Emergency maintenance by hosting provider.</td>
 			</tr>
 			<tr>
-				<td>2025-08-12 11:05:00 UTC</td>
-				<td>2025-08-12 01:30:00 UTC</td>
+				<td>2024-11-12 01:10 UTC</td>
+				<td>2024-11-12 07:35 UTC</td>
+				<td>Server resource limit exceeded.</td>
+			</tr>
+			<tr>
+				<td>2025-08-12 01:30 UTC</td>
+				<td>2025-08-12 11:05 UTC</td>
 				<td>Server resource limit exceeded.</td>
 			</tr>
 		</tbody>
@@ -35,21 +34,47 @@
 </div>
 
 <style scoped>
+	.info-page-container {
+		padding-bottom: 6em;
+	}
 	h1 {
 		font-size: 2em;
 		font-weight: 700;
-		margin: 1.5em 0 0.5em !important;
+		margin: 1.2em 0 0.4em;
 	}
-
-	th {
-		background: var(--background);
+	.subtitle {
+		color: var(--dim-text);
+		font-size: 0.95em;
+		padding: 0;
+		margin-bottom: 2.5em;
 	}
-	td,
+	table {
+		width: 100%;
+		border-collapse: collapse;
+	}
 	th {
-		border: 1px solid #2e2e2e;
-		padding: 0.3em 0.5em;
+		text-align: left;
+		font-size: 0.78em;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--dim-text);
+		padding: 0 1em 0.8em;
+		border-bottom: 1px solid var(--border);
 	}
 	td {
-		color: #c3c3c3;
+		padding: 1em;
+		font-size: 0.9em;
+		color: var(--subtle-text);
+		border-bottom: 1px solid #2a2a2a;
+	}
+	tr:last-child td {
+		border-bottom: none;
+	}
+	td:first-child,
+	td:nth-child(2) {
+		color: var(--faded-text);
+		font-family: 'Geist Mono', monospace;
+		font-size: 0.82em;
+		white-space: nowrap;
 	}
 </style>

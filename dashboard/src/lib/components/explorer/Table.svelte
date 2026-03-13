@@ -85,7 +85,7 @@
 										statusSuccess(request[ColumnIndex.Status])}
 									class:bg-[var(--red)]={request[ColumnIndex.Status] &&
 										statusError(request[ColumnIndex.Status])}
-									class:bg-[rgb(235,235,129)]={request[ColumnIndex.Status] &&
+									class:bg-[var(--yellow)]={request[ColumnIndex.Status] &&
 										statusBad(request[ColumnIndex.Status])}
 								></div>
 							</div>
@@ -101,7 +101,7 @@
 								statusSuccess(request[ColumnIndex.Status])}
 							class:text-[var(--red)]={request[ColumnIndex.Status] &&
 								statusError(request[ColumnIndex.Status])}
-							class:text-[rgb(235,235,129)]={request[ColumnIndex.Status] &&
+							class:text-[var(--yellow)]={request[ColumnIndex.Status] &&
 								statusBad(request[ColumnIndex.Status])}>{request[ColumnIndex.Status]}</td
 						>
 						<td class="text-[var(--faint-text)] flex-1 flex items-center justify-start">{request[ColumnIndex.Hostname]}</td>
@@ -126,7 +126,7 @@
 					Page {pageNumber} of {data ? Math.ceil(data.length / pageSize).toLocaleString() : 0}
 				</div>
 				<button
-					class="px-1 py-2 hover:text-[#ededed] disabled:text-[var(--dim-text)]"
+					class="px-1 py-2 hover:text-[var(--faded-text)] disabled:text-[var(--dim-text)]"
 					onclick={prevPage}
 					aria-label="Previous page"
 					disabled={pageNumber === 1}
@@ -146,7 +146,7 @@
 					</svg>
 				</button>
 				<button
-					class="px-1 py-2 hover:text-[#ededed] disabled:text-[var(--dim-text)]"
+					class="px-1 py-2 hover:text-[var(--faded-text)] disabled:text-[var(--dim-text)]"
 					onclick={nextPage}
 					aria-label="Next page"
 					disabled={pageNumber === (data ? Math.ceil(data.length / pageSize) : 0)}
@@ -177,10 +177,10 @@
 		flex-direction: column;
 	}
 	tr {
-		border-top: 1px solid #2e2e2e;
+		border-top: 1px solid var(--border);
 		border-left: 1px solid transparent;
 		border-right: 1px solid transparent;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 	}
 	tbody {
 		display: flex;
@@ -209,13 +209,13 @@
 		text-align: left;
 	}
 	.success-border:hover {
-		border: 1px solid rgba(63, 207, 142, 0.5) !important;
+		border: 1px solid rgba(var(--highlight-rgb), 0.5) !important;
 	}
 	.warn-border:hover {
-		border: 1px solid rgba(235, 235, 129, 0.5) !important;
+		border: 1px solid rgba(var(--yellow-rgb), 0.5) !important;
 	}
 	.error-border:hover {
-		border: 1px solid rgba(228, 97, 97, 0.5) !important;
+		border: 1px solid rgba(var(--red-rgb), 0.5) !important;
 	}
 	.success-bg,
 	.warn-bg,
@@ -223,12 +223,12 @@
 		cursor: pointer;
 	}
 	.success-bg {
-		background: radial-gradient(rgba(63, 207, 142, 0.03), rgba(63, 207, 142, 0.05));
+		background: radial-gradient(rgba(var(--highlight-rgb), 0.03), rgba(var(--highlight-rgb), 0.05));
 	}
 	.warn-bg {
-		background: radial-gradient(rgba(235, 235, 129, 0.14), rgba(235, 235, 129, 0.18));
+		background: radial-gradient(rgba(var(--yellow-rgb), 0.14), rgba(var(--yellow-rgb), 0.18));
 	}
 	.error-bg {
-		background: radial-gradient(rgba(228, 97, 97, 0.14), rgba(228, 97, 97, 0.18));
+		background: radial-gradient(rgba(var(--red-rgb), 0.14), rgba(var(--red-rgb), 0.18));
 	}
 </style>

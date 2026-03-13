@@ -59,7 +59,7 @@
 		name=""
 		id=""
 		placeholder={getPlaceholder()}
-		class="m-auto h-[36px] w-full border border-solid border-[#2e2e2e] text-[14px] bg-[var(--background)] pl-10 text-left"
+		class="m-auto h-[36px] w-full border border-solid border-[var(--border)] text-[14px] bg-[var(--background)] pl-10 text-left"
 	/>
 </div>
 

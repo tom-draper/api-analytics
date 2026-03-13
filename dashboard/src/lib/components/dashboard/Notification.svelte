@@ -40,12 +40,12 @@
 	}
 
 	.error {
-		background: rgba(228, 97, 97, 0.8);
+		background: var(--error-bg);
 	}
 	.warn {
-		background: rgba(235, 235, 129, 0.8);
+		background: var(--warn-bg);
 	}
 	.success {
-		background: rgba(63, 207, 142, 0.8);
+		background: var(--success-bg);
 	}
 </style>

@@ -1,4 +1,4 @@
-import { ColumnIndex, methodMap } from '$lib/consts';
+import { ColumnIndex, methodMap, topListLimit } from '$lib/consts';
 import { periodToDays, type Period } from '$lib/period';
 import { statusSuccessful } from '$lib/status';
 import type { DashboardSettings } from '$lib/settings';
@@ -83,17 +83,41 @@ export type AggregatedData = {
 
 const TOP_USERS_LIMIT = 1000;
 
-function quantile(sortedArr: number[], q: number): number {
-	if (sortedArr.length === 0) return 0;
-	const pos = (sortedArr.length - 1) * q;
+function buildBars<T>(
+	counts: { [key: string]: number },
+	mapper: (key: string, count: number, height: number) => T,
+	limit?: number
+): T[] {
+	let max = 0;
+	const entries = Object.entries(counts);
+	for (const [, count] of entries) {
+		if (count > max) max = count;
+	}
+	const bars = entries
+		.sort((a, b) => b[1] - a[1])
+		.map(([key, count]) => mapper(key, count, max > 0 ? count / max : 0));
+	return limit !== undefined ? bars.slice(0, limit) : bars;
+}
+
+function quantileFromFreq(times: number[], counts: number[], total: number, q: number): number {
+	if (total === 0) return 0;
+	const pos = (total - 1) * q;
 	const base = Math.floor(pos);
 	const rest = pos - base;
-	if (sortedArr[base + 1] !== undefined) {
-		return sortedArr[base] + rest * (sortedArr[base + 1] - sortedArr[base]);
-	} else if (sortedArr[base] !== undefined) {
-		return sortedArr[base];
+	let cumulative = 0;
+	let valAtBase: number | undefined;
+	let valAtBaseP1: number | undefined;
+	for (let i = 0; i < times.length; i++) {
+		cumulative += counts[i];
+		if (valAtBase === undefined && cumulative > base) valAtBase = times[i];
+		if (valAtBaseP1 === undefined && cumulative > base + 1) {
+			valAtBaseP1 = times[i];
+			break;
+		}
 	}
-	return 0;
+	if (valAtBase === undefined) return 0;
+	if (valAtBaseP1 === undefined) return valAtBase;
+	return valAtBase + rest * (valAtBaseP1 - valAtBase);
 }
 
 function modifyDateForPeriod(date: Date, days: number | null): void {
@@ -101,6 +125,9 @@ function modifyDateForPeriod(date: Date, days: number | null): void {
 		date.setMinutes(Math.floor(date.getMinutes() / 5) * 5, 0, 0);
 	} else if (days === 7) {
 		date.setMinutes(0, 0, 0);
+	} else if (days === 30) {
+		date.setMinutes(0, 0, 0);
+		date.setHours(Math.floor(date.getHours() / 6) * 6);
 	} else {
 		date.setHours(0, 0, 0, 0);
 	}
@@ -126,6 +153,14 @@ function initActivityMap(days: number | null): Map<number, ActivityEntry> {
 			date.setSeconds(0, 0);
 			date.setMinutes(0);
 			date.setHours(date.getHours() - i);
+			map.set(date.getTime(), newEntry());
+		}
+	} else if (days === 30) {
+		for (let i = 0; i < 120; i++) {
+			const date = new Date();
+			date.setSeconds(0, 0);
+			date.setMinutes(0);
+			date.setHours(Math.floor(date.getHours() / 6) * 6 - i * 6);
 			map.set(date.getTime(), newEntry());
 		}
 	} else {
@@ -206,7 +241,6 @@ export function aggregate(
 
 	const activityMap = initActivityMap(days);
 
-	const responseTimes = new Array<number>(n);
 	const rtFreq: { [rt: number]: number } = {};
 
 	const versionCount: { [v: string]: number } = {};
@@ -278,8 +312,7 @@ export function aggregate(
 		actEntry.totalRT += responseTime;
 		if (isSuccessful) actEntry.successCount++;
 
-		// 5. Response times
-		responseTimes[i] = responseTime;
+		// 5. Response time frequency
 		const rtRounded = Math.round(responseTime) || 0;
 		rtFreq[rtRounded] = (rtFreq[rtRounded] ?? 0) + 1;
 
@@ -352,15 +385,12 @@ export function aggregate(
 		}
 	}
 
-	// Sort response times and compute quartiles
-	responseTimes.sort((a, b) => a - b);
-	const rtLQ = quantile(responseTimes, 0.25);
-	const rtMedian = quantile(responseTimes, 0.5);
-	const rtUQ = quantile(responseTimes, 0.75);
-
-	// Build sparse response time frequency histogram (only non-zero entries)
+	// Build sparse response time frequency histogram and compute quartiles from it
 	const rtFreqTimes = Object.keys(rtFreq).map(Number).sort((a, b) => a - b);
 	const rtFreqCounts = rtFreqTimes.map((t) => rtFreq[t]);
+	const rtLQ = quantileFromFreq(rtFreqTimes, rtFreqCounts, n, 0.25);
+	const rtMedian = quantileFromFreq(rtFreqTimes, rtFreqCounts, n, 0.5);
+	const rtUQ = quantileFromFreq(rtFreqTimes, rtFreqCounts, n, 0.75);
 
 	// Build activity buckets (sorted ascending by date)
 	const activityBuckets: ActivityBucket[] = Array.from(activityMap, ([date, entry]) => ({
@@ -371,46 +401,10 @@ export function aggregate(
 		successRate: entry.requestCount > 0 ? entry.successCount / entry.requestCount : 0,
 	})).sort((a, b) => a.date - b.date);
 
-	// Build location bars (sorted by frequency, heights normalized)
-	let locationMax = 0;
-	for (const count of Object.values(locationCount)) {
-		if (count > locationMax) locationMax = count;
-	}
-	const locationBars: LocationBar[] = Object.entries(locationCount)
-		.map(([location, frequency]) => ({
-			location,
-			frequency,
-			height: locationMax > 0 ? frequency / locationMax : 0,
-		}))
-		.sort((a, b) => b.frequency - a.frequency);
-
-	// Build referrer bars (sorted by count, heights normalized, top 50)
-	let referrerMax = 0;
-	for (const count of Object.values(referrerCount)) {
-		if (count > referrerMax) referrerMax = count;
-	}
-	const referrerBars: ReferrerBar[] = Object.entries(referrerCount)
-		.map(([referrer, count]) => ({
-			referrer,
-			count,
-			height: referrerMax > 0 ? count / referrerMax : 0,
-		}))
-		.sort((a, b) => b.count - a.count)
-		.slice(0, 50);
-
-	// Build user ID bars (sorted by count, heights normalized, top 50)
-	let userIDMax = 0;
-	for (const count of Object.values(userIDCount)) {
-		if (count > userIDMax) userIDMax = count;
-	}
-	const userIDBars: UserIDBar[] = Object.entries(userIDCount)
-		.map(([userID, count]) => ({
-			userID,
-			count,
-			height: userIDMax > 0 ? count / userIDMax : 0,
-		}))
-		.sort((a, b) => b.count - a.count)
-		.slice(0, 50);
+	// Build location, referrer, and user ID bars (sorted by count, heights normalized)
+	const locationBars: LocationBar[] = buildBars(locationCount, (location, frequency, height) => ({ location, frequency, height }));
+	const referrerBars: ReferrerBar[] = buildBars(referrerCount, (referrer, count, height) => ({ referrer, count, height }), topListLimit);
+	const userIDBars: UserIDBar[] = buildBars(userIDCount, (userID, count, height) => ({ userID, count, height }), topListLimit);
 
 	// Build top users
 	const userValues = Object.values(users);

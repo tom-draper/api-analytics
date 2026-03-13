@@ -1,75 +1,123 @@
 <script lang="ts">
 	import { getServerURL } from '$lib/url';
+	import Lightning from '$components/Lightning.svelte';
 
-	type State = 'delete' | 'loading' | 'deleted' | 'error';
+	type State = 'idle' | 'loading' | 'deleted' | 'error';
 
-	let state: State = 'delete';
-	let apiKey = '';
+	let state: State = $state('idle');
+	let apiKey = $state('');
+
 	async function submit() {
-		setState('loading');
+		if (!apiKey) return;
+
+		state = 'loading';
 
 		try {
 			const url = getServerURL();
 			const response = await fetch(`${url}/api/delete/${apiKey}`);
-
 			if (response.status === 200) {
-				setState('deleted');
+				apiKey = '';
+				state = 'deleted';
 			} else {
-				setState('error');
+				state = 'error';
 			}
 		} catch (e) {
 			console.log(e);
-			setState('error');
+			state = 'error';
 		}
 	}
 
 	function enter(e: KeyboardEvent) {
-		if (e.key === 'Enter') {
-			submit();
-		}
+		if (e.key === 'Enter') submit();
 	}
 
-	function setState(value: State) {
-		state = value;
+	function reset() {
+		state = 'idle';
+		apiKey = '';
 	}
 </script>
 
-<div class="generate">
+<svelte:head>
+	<link rel="icon" href="/images/logos/lightning-red.svg" />
+</svelte:head>
+
+<div class="form-page">
 	<div class="content">
-		<h2 class="font-bold">Delete Account</h2>
-		<input type="text" bind:value={apiKey} placeholder="Enter API key" on:keydown={enter} />
-		<button id="formBtn" on:click={submit} class="text-sm" class:no-display={state != 'delete'}
-			>Delete</button
-		>
-		<button id="formBtn" class="text-sm" class:no-display={state != 'loading'}>
-			<div class="spinner">
-				<div class="loader" />
+		<div class="logo-icon">
+			<Lightning />
+		</div>
+		<h2 class="title">Delete Account</h2>
+		<p class="subtitle">Permanently delete all data associated with your<br>API key.</p>
+
+		<label class="input-label" for="api-key">
+			Enter API Key
+			<svg class="arrow" viewBox="240 170 320 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<g stroke-width="31" stroke="currentColor" stroke-linecap="square" transform="matrix(1,0,0,1,-4,0)">
+					<path d="M250 256.4Q413 180.4 550 556.4" marker-end="url(#arrowhead-del)"/>
+				</g>
+				<defs>
+					<marker markerWidth="6" markerHeight="6" refX="3" refY="3" viewBox="0 0 6 6" orient="auto" id="arrowhead-del">
+						<polygon points="0,6 0,0 6,3" fill="currentColor"/>
+					</marker>
+				</defs>
+			</svg>
+		</label>
+		<input
+			id="api-key"
+			type="text"
+			bind:value={apiKey}
+			placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+			onkeydown={enter}
+			disabled={state === 'loading' || state === 'deleted'}
+		/>
+
+		{#if state === 'deleted'}
+			<div class="status-msg success">
+				Your account and all associated data has been deleted.
 			</div>
-		</button>
-		<button id="formBtn" class="copied-btn text-sm" class:no-display={state != 'deleted'}
-			>Deleted</button
-		>
-		<button id="formBtn" class="text-sm" class:no-display={state != 'error'}>Error</button>
+		{:else if state === 'error'}
+			<div class="status-msg error">
+				Something went wrong. Please check your API key and try again.
+			</div>
+			<button class="form-btn delete-btn" onclick={reset}>Try again</button>
+		{:else}
+			<button class="form-btn delete-btn" onclick={submit} disabled={state === 'loading'}>
+				{#if state === 'loading'}
+					<div class="loader"></div>
+				{:else}
+					Delete
+				{/if}
+			</button>
+		{/if}
 	</div>
 </div>
 
 <style scoped>
-	.spinner {
-		height: auto;
+	.content {
+		box-shadow: 0 0 180px 2px var(--red);
+		max-width: calc(40ch + 6em);
 	}
-	.loader {
-		border: 3px solid #343434;
-		border-top: 3px solid var(--highlight);
-		height: 10px;
-		width: 10px;
+	.logo-icon {
+		color: var(--red);
 	}
-	h2 {
-		font-size: 2em;
+	.title {
+		color: var(--red);
+	}
+	.delete-btn {
+		background: var(--red);
+	}
+	.delete-btn:hover:not(:disabled) {
+		background: #c94f4f;
+	}
+	.status-msg {
+		text-align: center;
+	}
+	.status-msg.success {
+		background: #0d2b1a;
 		color: var(--highlight);
-		margin-bottom: 1em;
+		border: 1px solid #1a4a2e;
 	}
 	.loader {
-		border: 3px solid #343434;
-		border-top: 3px solid var(--highlight);
+		border-top-color: var(--red);
 	}
 </style>

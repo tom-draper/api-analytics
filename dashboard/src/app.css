@@ -11,13 +11,26 @@
 
 :root {
     --highlight: #3fcf8e;
+    --highlight-rgb: 63, 207, 142;
     --red: #e46161;
-    --blue: #017ff7;
-    --blue: #2fa1ff;
+    --red-rgb: 228, 97, 97;
     --blue: #2facff;
     --yellow: #ebeb81;
+    --yellow-rgb: 235, 235, 129;
+    --redirect-color: #5cadff;
+    --highlight-hover: #31aa73;
+    --nav-link: #343434;
+    --subtle-text: #c3c3c3;
+    --btn-bg: rgb(68, 68, 68);
+    --btn-bg-hover: rgb(88, 88, 88);
     --background: #1c1c1c;
     --light-background: #232323;
+    --hover-bg: #161616;
+    --input-bg: #343434;
+    --modal-overlay: rgba(0, 0, 0, 0.7);
+    --error-bg: rgba(228, 97, 97, 0.8);
+    --warn-bg: rgba(235, 235, 129, 0.8);
+    --success-bg: rgba(63, 207, 142, 0.8);
     --faded-text: #ededed;
     --dim-text: #707070;
     --faint-text: #919191;
@@ -26,6 +39,13 @@
 	--white-green: #bee7c5;
 	--white-red: #ffc1c1;
     --white-yellow: #c0c0c0;
+    --border: #2e2e2e;
+    --muted-text: #505050;
+    --radius-sm: 3px;
+    --radius-md: 4px;
+    --radius-lg: 10px;
+    --fade-down: linear-gradient(transparent, #444);
+    --fade-right: linear-gradient(270deg, transparent, #444);
 }
 
 body {
@@ -36,16 +56,19 @@ body {
     padding: 0;
     text-align: center;
     background-color: var(--background);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 nav a {
-    color: #343434;
+    color: var(--nav-link);
     display: inline-block;
 }
 
 a.active,
 h1 {
-    color: #3fcf8e;
+    color: var(--highlight);
 }
 
 h2 {
@@ -69,7 +92,7 @@ p {
     max-width: 768px;
     margin: 0 auto;
     color: white;
-    padding: 1em;
+    padding: 0;
 }
 
 .card {
@@ -77,7 +100,7 @@ p {
     color: var(--faded-text);
     width: 430px;
     border-radius: 6px;
-    border: 1px solid #2e2e2e;
+    border: 1px solid var(--border);
     margin: 2rem 0;
 }
 
@@ -99,35 +122,110 @@ p {
     cursor: default !important;
 }
 
-/* Form */
-.generate {
+
+/* Form pages */
+.form-page {
     display: grid;
-    place-items: center;
+    place-items: start center;
+    flex: 1;
 }
 
 .content {
     width: fit-content;
-    background: #343434;
     background: var(--background);
-    padding: 3.5em 4em 4em;
+    padding: 2.5em 3em 3em;
     border-radius: 9px;
-    margin: 20vh 0;
+    margin-top: 18vh;
     box-shadow: 0 0 180px 2px var(--highlight);
 }
 
+.form-page .logo-icon {
+    height: 36px;
+    margin: 0 auto 1em;
+}
+
+.form-page .title {
+    font-size: 2em;
+    font-weight: 700;
+    margin-bottom: 0.2em;
+}
+
+.form-page .subtitle {
+    font-size: 0.9em;
+    color: var(--dim-text);
+    margin-bottom: 2em;
+    padding: 0;
+}
+
+.input-label {
+    display: block;
+    text-align: left;
+    font-size: 0.8em;
+    color: var(--dim-text);
+    margin-bottom: 0.5em;
+}
+
+.arrow {
+    display: inline-block;
+    width: 12px;
+    height: 17px;
+    margin-left: 3px;
+    vertical-align: middle;
+}
+
 input {
-    background: var(--background);
-    background: #343434;
+    background: var(--input-bg);
     border: none;
     padding: 0 20px;
     width: 40ch;
     font-size: 1em;
     text-align: center;
     height: 40px;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     margin-bottom: 2.5em;
     color: white;
-    display: grid;
+    display: block;
+}
+
+input::placeholder {
+    color: var(--dim-text);
+}
+
+.form-btn {
+    font-size: 0.9em;
+    height: 40px;
+    border-radius: var(--radius-md);
+    padding: 0 20px;
+    border: none;
+    cursor: pointer;
+    width: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Sans', 'Geist' !important;
+    font-weight: 400;
+}
+
+.form-btn .loader {
+    border: 3px solid var(--input-bg);
+    border-top-color: var(--highlight);
+    width: 1em;
+    height: 1em;
+}
+
+.status-msg {
+    font-size: 0.9em;
+    padding: 0.9em 1.2em;
+    border-radius: var(--radius-md);
+    text-align: left;
+    line-height: 1.5;
+    margin-bottom: 1.2em;
+}
+
+.status-msg.error {
+    background: #2b0d0d;
+    color: var(--red);
+    border: 1px solid #4a1a1a;
 }
 
 code {
@@ -147,18 +245,8 @@ button {
     }
 }
 
-#formBtn {
-    height: 40px;
-    border-radius: 4px;
-    padding: 0 20px;
-    border: none;
-    cursor: pointer;
-    width: 100px;
-    background: #3fcf8e;
-}
-
 .highlight {
-    color: #3fcf8e;
+    color: var(--highlight);
 }
 
 .details {
@@ -194,7 +282,7 @@ button {
 }
 
 .loader {
-    border: 6px solid #343434;
+    border: 6px solid var(--input-bg);
     border-top: 6px solid var(--highlight);
     border-radius: 50%;
     width: 30px;

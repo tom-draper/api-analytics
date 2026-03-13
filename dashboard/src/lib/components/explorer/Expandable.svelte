@@ -13,8 +13,8 @@
 <div class="text-left text-[16px] text-[var(--faint-text)]">
 	<button
 		onclick={toggleHidden}
-		class="m-auto flex w-full px-2 py-2 text-[var(--faint-text)] hover:text-[#ededed] rounded"
-		class:!text-[#ededed]={!hidden}
+		class="m-auto flex w-full px-2 py-2 text-[var(--faint-text)] hover:text-[var(--faded-text)] rounded"
+		class:!text-[var(--faded-text)]={!hidden}
 	>
 		<div class="mr-auto">
 			{title}
@@ -47,7 +47,7 @@
 	</button>
 
 	<div class="pb-2 pt-1" class:no-display={hidden || !data}>
-		<div class="rounded border border-solid border-[#2e2e2e] text-[14px]">
+		<div class="rounded border border-solid border-[var(--border)] text-[14px]">
 			{#if content}
 				{@const Content = content}
 				<Content bind:filter={filter} bind:data={data} />

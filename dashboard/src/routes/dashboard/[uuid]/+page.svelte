@@ -8,16 +8,16 @@
 	import Endpoints from '$components/dashboard/endpoints/Endpoints.svelte';
 	import SuccessRate from '$components/dashboard/SuccessRate.svelte';
 	import Activity from '$components/dashboard/activity/Activity.svelte';
-	import Version from '$components/dashboard/Version.svelte';
+	import Versions from '$components/dashboard/Versions.svelte';
 	import UsageTime from '$components/dashboard/UsageTime.svelte';
-	import DayOfWeek from '$components/dashboard/DayOfWeek.svelte';
-	import Location from '$components/dashboard/Location.svelte';
+	import DaysOfWeek from '$components/dashboard/DaysOfWeek.svelte';
+	import Locations from '$components/dashboard/Locations.svelte';
 	import Device from '$components/dashboard/device/Device.svelte';
-	import { dateInPeriod, isPeriod } from '$lib/period';
+	import { dateInPeriod } from '$lib/period';
 	import generateDemoData from '$lib/demo';
 	import formatUUID from '$lib/uuid';
 	import Settings from '$components/dashboard/Settings.svelte';
-	import { initSettings, type DashboardSettings } from '$lib/settings';
+	import { initSettings, parseSettingsFromURL, type DashboardSettings } from '$lib/settings';
 	import type { NotificationState } from '$lib/notification';
 	import Notification from '$components/dashboard/Notification.svelte';
 	import exportCSV from '$lib/exportData';
@@ -25,9 +25,10 @@
 	import Error from '$components/Error.svelte';
 	import TopUsers from '$components/dashboard/TopUsers.svelte';
 	import { getServerURL } from '$lib/url';
+	import { fetchPageRaw } from '$lib/fetchRequests';
 	import Navigation from '$components/dashboard/Navigation.svelte';
 	import { dataStore } from '$lib/dataStore';
-	import Referrer from '$components/dashboard/Referrer.svelte';
+	import Referrers from '$components/dashboard/Referrers.svelte';
 	import UserIDList from '$components/dashboard/UserIDList.svelte';
 	import Loading from '$components/Loading.svelte';
 	import { get } from 'svelte/store';
@@ -80,40 +81,22 @@
 	}
 
 	async function fetchAdditionalPage(page: number) {
-		const url = getServerURL();
+		const body = await fetchPageRaw(userID, page);
+		if (!body) return 0;
 
-		try {
-			const response = await fetch(`${url}/api/requests/${userID}/${page}`, {
-				signal: AbortSignal.timeout(250000),
-				keepalive: true
-			});
-			if (response.status !== 200) {
-				return 0;
-			}
+		Object.assign(data.userAgents, body.user_agents);
 
-			const body = await response.json();
-			if (body.requests.length <= 0) {
-				return 0;
-			}
-
-			Object.assign(data.userAgents, body.user_agents);
-
-			const mostRecent = new Date(body.requests[body.requests.length - 1][ColumnIndex.CreatedAt]);
-			if (dateInPeriod(mostRecent, settings.period)) {
-				// Trigger dashboard re-render
-				data = { ...data, requests: data.requests.concat(body.requests) };
-			} else {
-				// Avoid triggering dashboard re-render
-				data.requests.push(...body.requests);
-			}
-
-			dataStore.set(data);
-
-			return body.requests.length;
-		} catch (e) {
-			console.log(e);
-			return 0;
+		const mostRecent = new Date(body.requests[body.requests.length - 1][ColumnIndex.CreatedAt]);
+		if (dateInPeriod(mostRecent, settings.period)) {
+			// Trigger dashboard re-render
+			data = { ...data, requests: data.requests.concat(body.requests) };
+		} else {
+			// Avoid triggering dashboard re-render
+			data.requests.push(...body.requests);
 		}
+
+		dataStore.set(data);
+		return body.requests.length;
 	}
 
 	function isDemo() {
@@ -137,73 +120,8 @@
 		});
 	}
 
-function getSettings() {
-		const settings = initSettings();
-
-		const period = page.url.searchParams.get('period');
-		if (period && isPeriod(period)) {
-			settings.period = period;
-		}
-		const hostname = page.url.searchParams.get('hostname');
-		if (hostname) {
-			settings.hostname = hostname;
-		}
-		const location = page.url.searchParams.get('location');
-		if (location) {
-			settings.targetLocation = location;
-		}
-		const path = page.url.searchParams.get('path');
-		if (path) {
-			settings.targetEndpoint.path = path;
-		}
-		const status = page.url.searchParams.get('status');
-		if (status) {
-			settings.targetEndpoint.status = parseInt(status);
-		}
-		const userID = page.url.searchParams.get('userID');
-		if (userID) {
-			if (settings.targetUser === null) {
-				settings.targetUser = {
-					ipAddress: '',
-					userID: '',
-					composite: false
-				};
-			}
-			settings.targetUser.userID = userID;
-		}
-
-		const ipAddress = page.url.searchParams.get('ipAddress');
-		if (ipAddress) {
-			if (settings.targetUser === null) {
-				settings.targetUser = {
-					ipAddress: '',
-					userID: '',
-					composite: false
-				};
-			}
-			settings.targetUser.ipAddress = ipAddress;
-		}
-
-		const weekday = page.url.searchParams.get('weekday');
-		if (weekday !== null) {
-			const parsed = parseInt(weekday);
-			if (parsed >= 0 && parsed <= 6) settings.targetWeekday = parsed;
-		}
-
-		const hour = page.url.searchParams.get('hour');
-		if (hour !== null) {
-			const parsed = parseInt(hour);
-			if (parsed >= 0 && parsed <= 23) settings.targetHour = parsed;
-		}
-
-		const version = page.url.searchParams.get('version');
-		if (version) settings.targetVersion = version;
-
-		return settings;
-	}
-
 	let data = $state.raw<DashboardData | undefined>(undefined);
-	let settings = $state(getSettings());
+	let settings = $state(parseSettingsFromURL(page.url.searchParams));
 	let showSettings = $state(false);
 	let hostnames = $state<string[]>([]);
 	let notification = $state<NotificationState>({
@@ -318,7 +236,7 @@ function getSettings() {
 					bind:targetPath={settings.targetEndpoint.path}
 					bind:targetStatus={settings.targetEndpoint.status}
 				/>
-				<Version versionCount={aggregated.versionCount} hasMultiple={aggregated.versionHasMultiple} bind:targetVersion={settings.targetVersion} />
+				<Versions versionCount={aggregated.versionCount} hasMultiple={aggregated.versionHasMultiple} bind:targetVersion={settings.targetVersion} />
 			</div>
 			<div class="right">
 				<Activity
@@ -327,13 +245,13 @@ function getSettings() {
 					firstRequestDate={aggregated.firstRequestDate}
 				/>
 				<div class="grid-row">
-					<Location locationBars={aggregated.locationBars} bind:targetLocation={settings.targetLocation} />
+					<Locations locationBars={aggregated.locationBars} bind:targetLocation={settings.targetLocation} />
 					<Device uaIdCount={aggregated.uaIdCount} userAgents={data.userAgents} bind:targetClient={settings.targetClient} bind:targetDeviceType={settings.targetDeviceType} bind:targetOS={settings.targetOS} />
 				</div>
 				<div class="flex chart-row">
 					<div class="flex-grow">
 						<UsageTime hourlyBuckets={aggregated.hourlyBuckets} bind:targetHour={settings.targetHour} />
-						<DayOfWeek weekdayBuckets={aggregated.weekdayBuckets} bind:targetWeekday={settings.targetWeekday} />
+						<DaysOfWeek weekdayBuckets={aggregated.weekdayBuckets} bind:targetWeekday={settings.targetWeekday} />
 						<TopUsers
 							users={aggregated.topUsers}
 							userIDActive={aggregated.topUserIDActive}
@@ -343,7 +261,7 @@ function getSettings() {
 					</div>
 					<div class="referrer-col">
 						{#if aggregated.referrerAvailable}
-							<Referrer referrerBars={aggregated.referrerBars} bind:targetReferrer={settings.targetReferrer} />
+							<Referrers referrerBars={aggregated.referrerBars} bind:targetReferrer={settings.targetReferrer} />
 						{/if}
 					</div>
 				</div>
@@ -427,7 +345,7 @@ function getSettings() {
 		left: 0;
 		right: 0;
 		font-size: 14px;
-		color: #707070;
+		color: var(--dim-text);
 		opacity: 0;
 		/* Ensure each text sits on its own GPU layer */
 		will-change: opacity;

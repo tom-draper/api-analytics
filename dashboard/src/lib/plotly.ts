@@ -53,15 +53,11 @@ export function donutLayout(width?: number) {
 		paper_bgcolor: 'transparent',
 		height: 196,
 		...(width !== undefined ? { width } : {}),
+		legend: { itemclick: false, itemdoubleclick: false },
 		yaxis: { title: { text: 'Requests' }, gridcolor: 'gray', showgrid: false, fixedrange: true },
 		xaxis: { visible: false },
 		dragmode: false,
 	};
-}
-
-/** Data trace for donut/pie charts */
-export function donutData(labels: string[], values: number[], colors: string[]) {
-	return [{ values, labels, type: 'pie', hole: 0.6, marker: { colors } }];
 }
 
 /** Build donut chart data by aggregating UA IDs through a getter function */
@@ -70,7 +66,8 @@ export function buildDonutData(
 	userAgents: UserAgents,
 	getter: (ua: string) => string,
 	colors: string[],
-	selectedLabel?: string | null
+	selectedLabel?: string | null,
+	colorMap?: Map<string, string>
 ): object[] {
 	const count: { [key: string]: number } = {};
 	for (const [uaId, c] of Object.entries(uaIdCount)) {
@@ -81,8 +78,17 @@ export function buildDonutData(
 	const dataPoints = Object.entries(count).sort((a, b) => b[1] - a[1]);
 	const labels = dataPoints.map(([k]) => k);
 	const values = dataPoints.map(([, v]) => v);
+	let markerColors: string[];
+	if (colorMap) {
+		for (const label of labels) {
+			if (!colorMap.has(label)) colorMap.set(label, colors[colorMap.size % colors.length]);
+		}
+		markerColors = labels.map((l) => colorMap.get(l)!);
+	} else {
+		markerColors = colors;
+	}
 	const pull = selectedLabel != null ? labels.map((l) => (l === selectedLabel ? 0.08 : 0)) : undefined;
-	return [{ values, labels, type: 'pie', hole: 0.6, marker: { colors }, ...(pull ? { pull } : {}) }];
+	return [{ values, labels, type: 'pie', hole: 0.6, marker: { colors: markerColors }, ...(pull ? { pull } : {}) }];
 }
 
 /** Format a bucket start date as a time range label based on period bucket size */
@@ -95,6 +101,9 @@ export function bucketRange(date: Date, period: Period): string {
 		const end = new Date(date.getTime() + 60 * 60 * 1000);
 		const day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
 		return `${day} ${pad(date.getHours())}:00-${pad(end.getHours())}:00`;
+	} else if (period === 'month') {
+		const end = new Date(date.getTime() + 6 * 60 * 60 * 1000);
+		return `${date.toLocaleDateString([], { day: 'numeric', month: 'short' })} ${pad(date.getHours())}:00-${pad(end.getHours())}:00`;
 	} else {
 		return date.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
 	}
@@ -114,7 +123,7 @@ export function activityLayout(period: Period, yAxisTitle: string, barmode?: str
 		height: 159,
 		...(barmode ? { barmode } : {}),
 		yaxis: { title: { text: yAxisTitle }, gridcolor: 'gray', showgrid: false, fixedrange: true },
-		xaxis: { title: { text: 'Date' }, showgrid: false, fixedrange: true, range: [periodAgo, new Date()], visible: false },
+		xaxis: { title: { text: 'Date' }, showgrid: false, fixedrange: true, ...(periodAgo !== null ? { range: [periodAgo, new Date()] } : {}), visible: false },
 		dragmode: false,
 	};
 }

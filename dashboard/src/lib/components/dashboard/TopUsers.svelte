@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { formatUserID, formatDisplayUserID } from '$lib/user';
+	import { formatUserID, formatDisplayUserID, userTargeted } from '$lib/user';
 	import { setParam, setParamNoReplace } from '$lib/params';
 	import type { TopUserData } from '$lib/aggregate';
 
@@ -71,15 +71,6 @@
 		return false;
 	}
 
-	function userTargeted(ipAddress: string, userID: string) {
-		if (!targetUser) return false;
-		if (targetUser.composite) {
-			return formatUserID(ipAddress, userID) === formatUserID(targetUser.ipAddress, targetUser.userID);
-		} else {
-			return targetUser.userID === userID;
-		}
-	}
-
 	type TargetUser = { ipAddress: string; userID: string; composite: boolean };
 
 	let { users, userIDActive, locationsActive, targetUser = $bindable<TargetUser | null>(null) }: {
@@ -125,8 +116,8 @@
 					{#each dataPage as { ipAddress, customUserID, requests, locations, lastRequested }, i}
 						<tr
 							class="highlight-row"
-							class:highlighted-row={targetUser !== null && userTargeted(ipAddress, customUserID)}
-							class:dim-row={targetUser !== null && !userTargeted(ipAddress, customUserID)}
+							class:highlighted-row={targetUser !== null && userTargeted(targetUser, ipAddress, customUserID)}
+							class:dim-row={targetUser !== null && !userTargeted(targetUser, ipAddress, customUserID)}
 							class:last-row={i === dataPage.length - 1}
 						>
 							<td onclick={() => selectUser(ipAddress, customUserID)}>{ipAddress}</td>
@@ -182,7 +173,7 @@
 		flex: 1;
 	}
 	tr {
-		border-bottom: 1px solid #2e2e2e;
+		border-bottom: 1px solid var(--border);
 	}
 	.align-right {
 		text-align: right;
@@ -195,7 +186,7 @@
 		font-size: 0.85em;
 	}
 	tbody {
-		color: #707070;
+		color: var(--dim-text);
 	}
 	td,
 	th {
@@ -203,19 +194,18 @@
 	}
 
 	.highlight-row:hover td {
-		color: #707070;
 		color: #808080;
 	}
 
 	.highlighted-row td {
-		color: #ededed !important;
+		color: var(--faded-text) !important;
 	}
 
 	.highlight-row td {
 		cursor: pointer;
 	}
 	.dim-row {
-		color: #505050;
+		color: var(--muted-text);
 	}
 
 	.last-row {
@@ -234,26 +224,25 @@
 
 	.buttons button {
 		cursor: pointer;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		padding: 0.4em 1em;
 		background: transparent;
-		color: #505050;
-		color: #707070;
-		border: 1px solid #2e2e2e;
+		color: var(--dim-text);
+		border: 1px solid var(--border);
 		font-size: 0.85em;
 	}
 
 	.buttons button:hover {
-		color: #ededed;
+		color: var(--faded-text);
 	}
 
 	.no-results {
 		font-size: 0.85em;
-		color: #505050;
+		color: var(--muted-text);
 		padding: 0.8em 1.2em 0.4em;
 	}
 	.no-results-user {
-		color: #707070;
+		color: var(--dim-text);
 	}
 	.no-results button {
 		color: var(--highlight);
@@ -265,7 +254,7 @@
 	}
 	.current-page {
 		place-self: center;
-		color: #505050;
+		color: var(--muted-text);
 		font-size: 0.85em;
 		margin-right: auto;
 	}

@@ -32,15 +32,15 @@
 		font-size: 13.333px;
 		color: #000;
 		border: none;
-		border-radius: 4px;
-		background: rgb(68, 68, 68);
+		border-radius: var(--radius-md);
+		background: var(--btn-bg);
 		cursor: pointer;
 		padding: 1px 6px 0;
 		margin-left: 5px;
 	}
 
 	.toggle > button:hover {
-		background: rgb(88, 88, 88);
+		background: var(--btn-bg-hover);
 	}
 
 	.toggle > .active,
@@ -50,12 +50,12 @@
 
 	.toggle > .redirect-active,
 	.toggle > .redirect-active:hover {
-		background: #5cadff;
+		background: var(--redirect-color);
 	}
 
 	.toggle > .bad-active,
 	.toggle > .bad-active:hover {
-		background: rgb(235, 235, 129);
+		background: var(--yellow);
 	}
 
 	.toggle > .error-active,

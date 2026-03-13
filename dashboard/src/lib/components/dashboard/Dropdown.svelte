@@ -71,10 +71,10 @@
 		height: 28px;
 	}
 	.current {
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		background: var(--background);
 		color: var(--dim-text);
-		border: 1px solid #2e2e2e;
+		border: 1px solid var(--border);
 		padding: 4px 15px 4px 9px;
 		cursor: pointer;
 		display: flex;
@@ -94,7 +94,7 @@
 	.option {
 		background: var(--background);
 		color: var(--dim-text);
-		border: 1px solid #2e2e2e;
+		border: 1px solid var(--border);
 		border-top: none;
 		padding: 5px 15px 5px 31px;
 		text-align: left;
@@ -102,7 +102,7 @@
 	}
 	.option:hover,
 	.current:hover {
-		background: #161616;
+		background: var(--hover-bg);
 	}
 	.current:hover svg {
 		transform: translateY(1px); /* Moves icon 3px down */

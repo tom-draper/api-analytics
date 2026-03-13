@@ -1,41 +1,35 @@
 <script lang="ts">
 	import { graphColors } from '$lib/consts';
-	import { cachedFunction } from '$lib/cache';
-	import { matchCandidate } from '$lib/candidates';
-	import { clientCandidates } from '$lib/device';
 	import { renderPlot, donutLayout, buildDonutData } from '$lib/plotly';
 	import { setParam } from '$lib/params';
 	import { untrack } from 'svelte';
 
-	function getClient(userAgent: string | null): string {
-		return matchCandidate(userAgent, clientCandidates);
-	}
-
-	const clientGetter = cachedFunction(getClient);
-
-	function selectLabel(label: string) {
-		const current = untrack(() => targetClient);
-		if (current === label) {
-			targetClient = null;
-			setParam('client', null);
-		} else {
-			targetClient = label;
-			setParam('client', label);
-		}
-	}
-
-	let { uaIdCount, userAgents, targetClient = $bindable<string | null>(null) }: {
+	let { uaIdCount, userAgents, getter, paramKey, target = $bindable<string | null>(null) }: {
 		uaIdCount: { [id: number]: number };
 		userAgents: UserAgents;
-		targetClient: string | null;
+		getter: (userAgent: string | null) => string;
+		paramKey: string;
+		target: string | null;
 	} = $props();
 
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
+	const colorMap = new Map<string, string>();
+
+	function selectLabel(label: string) {
+		const current = untrack(() => target);
+		if (current === label) {
+			target = null;
+			setParam(paramKey, null);
+		} else {
+			target = label;
+			setParam(paramKey, label);
+		}
+	}
 
 	$effect(() => {
 		if (!plotDiv || !uaIdCount) return;
 
-		renderPlot(plotDiv, buildDonutData(uaIdCount, userAgents, clientGetter, graphColors, targetClient), donutLayout(411));
+		renderPlot(plotDiv, buildDonutData(uaIdCount, userAgents, getter, graphColors, target, colorMap), donutLayout(411));
 		window?.dispatchEvent(new Event('resize'));
 
 		const el = plotDiv as any;
@@ -47,7 +41,7 @@
 			if (label) selectLabel(label);
 		});
 		el.on?.('plotly_legendclick', (data: any) => {
-			const label = data.data?.[0]?.labels?.[data.expandedIndex];
+			const label = data.node?.querySelector?.('.legendtext')?.textContent?.trim();
 			if (label) selectLabel(label);
 			return false;
 		});

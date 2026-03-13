@@ -16,14 +16,14 @@
 </script>
 
 <nav
-	class="fixed flex h-full w-[20em] flex-col border-r border-[#2e2e2e] bg-[var(--light-background)] overflow-y-auto"
+	class="fixed flex h-full w-[20em] flex-col border-r border-[var(--border)] bg-[var(--light-background)] overflow-y-auto"
 >
 	<div class="flex-grow p-2">
 		<div class="flex px-2 pb-4 pt-2">
 			<h2 class="text-left text-[var(--faded-text)]">Filters</h2>
 			{#if data && filteredRequests && data.requests.length !== filteredRequests.length}
 				<button
-					class="ml-auto flex items-center rounded border border-[#2e2e2e] px-2 text-xs text-[var(--faint-text)] hover:text-[#ededed]"
+					class="ml-auto flex items-center rounded border border-[var(--border)] px-2 text-xs text-[var(--faint-text)] hover:text-[var(--faded-text)]"
 					onclick={resetFilter}
 				>
 					<svg
