@@ -8,10 +8,10 @@
 	import Endpoints from '$components/dashboard/endpoints/Endpoints.svelte';
 	import SuccessRate from '$components/dashboard/SuccessRate.svelte';
 	import Activity from '$components/dashboard/activity/Activity.svelte';
-	import Version from '$components/dashboard/Version.svelte';
+	import Versions from '$components/dashboard/Versions.svelte';
 	import UsageTime from '$components/dashboard/UsageTime.svelte';
-	import DayOfWeek from '$components/dashboard/DayOfWeek.svelte';
-	import Location from '$components/dashboard/Location.svelte';
+	import DaysOfWeek from '$components/dashboard/DaysOfWeek.svelte';
+	import Locations from '$components/dashboard/Locations.svelte';
 	import Device from '$components/dashboard/device/Device.svelte';
 	import { dateInPeriod } from '$lib/period';
 	import generateDemoData from '$lib/demo';
@@ -28,7 +28,7 @@
 	import { fetchPageRaw } from '$lib/fetchRequests';
 	import Navigation from '$components/dashboard/Navigation.svelte';
 	import { dataStore } from '$lib/dataStore';
-	import Referrer from '$components/dashboard/Referrer.svelte';
+	import Referrers from '$components/dashboard/Referrers.svelte';
 	import UserIDList from '$components/dashboard/UserIDList.svelte';
 	import Loading from '$components/Loading.svelte';
 	import { get } from 'svelte/store';
@@ -236,7 +236,7 @@
 					bind:targetPath={settings.targetEndpoint.path}
 					bind:targetStatus={settings.targetEndpoint.status}
 				/>
-				<Version versionCount={aggregated.versionCount} hasMultiple={aggregated.versionHasMultiple} bind:targetVersion={settings.targetVersion} />
+				<Versions versionCount={aggregated.versionCount} hasMultiple={aggregated.versionHasMultiple} bind:targetVersion={settings.targetVersion} />
 			</div>
 			<div class="right">
 				<Activity
@@ -245,13 +245,13 @@
 					firstRequestDate={aggregated.firstRequestDate}
 				/>
 				<div class="grid-row">
-					<Location locationBars={aggregated.locationBars} bind:targetLocation={settings.targetLocation} />
+					<Locations locationBars={aggregated.locationBars} bind:targetLocation={settings.targetLocation} />
 					<Device uaIdCount={aggregated.uaIdCount} userAgents={data.userAgents} bind:targetClient={settings.targetClient} bind:targetDeviceType={settings.targetDeviceType} bind:targetOS={settings.targetOS} />
 				</div>
 				<div class="flex chart-row">
 					<div class="flex-grow">
 						<UsageTime hourlyBuckets={aggregated.hourlyBuckets} bind:targetHour={settings.targetHour} />
-						<DayOfWeek weekdayBuckets={aggregated.weekdayBuckets} bind:targetWeekday={settings.targetWeekday} />
+						<DaysOfWeek weekdayBuckets={aggregated.weekdayBuckets} bind:targetWeekday={settings.targetWeekday} />
 						<TopUsers
 							users={aggregated.topUsers}
 							userIDActive={aggregated.topUserIDActive}
@@ -261,7 +261,7 @@
 					</div>
 					<div class="referrer-col">
 						{#if aggregated.referrerAvailable}
-							<Referrer referrerBars={aggregated.referrerBars} bind:targetReferrer={settings.targetReferrer} />
+							<Referrers referrerBars={aggregated.referrerBars} bind:targetReferrer={settings.targetReferrer} />
 						{/if}
 					</div>
 				</div>
