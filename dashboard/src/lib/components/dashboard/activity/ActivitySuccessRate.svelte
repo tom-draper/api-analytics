@@ -102,7 +102,7 @@
 		background: #282828;
 	}
 	.level-1 {
-		background: #e46161;
+		background: var(--red);
 	}
 	.level-2 {
 		background: #f18359;
@@ -114,7 +114,7 @@
 		background: #f3c966;
 	}
 	.level-5 {
-		background: #ebeb81;
+		background: var(--yellow);
 	}
 	.level-6 {
 		background: #c7e57d;
@@ -126,6 +126,6 @@
 		background: #77d884;
 	}
 	.level-9 {
-		background: #3fcf8e;
+		background: var(--highlight);
 	}
 </style>

@@ -33,14 +33,14 @@
 		color: #000;
 		border: none;
 		border-radius: var(--radius-md);
-		background: rgb(68, 68, 68);
+		background: var(--btn-bg);
 		cursor: pointer;
 		padding: 1px 6px 0;
 		margin-left: 5px;
 	}
 
 	.toggle > button:hover {
-		background: rgb(88, 88, 88);
+		background: var(--btn-bg-hover);
 	}
 
 	.toggle > .active,

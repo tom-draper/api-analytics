@@ -64,7 +64,7 @@
 	td {
 		padding: 1em;
 		font-size: 0.9em;
-		color: #c3c3c3;
+		color: var(--subtle-text);
 		border-bottom: 1px solid #2a2a2a;
 	}
 	tr:last-child td {

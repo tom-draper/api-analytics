@@ -82,7 +82,7 @@
 	}
 	.answer {
 		padding: 2em 3rem;
-		color: #c3c3c3;
+		color: var(--subtle-text);
 		font-size: 0.95em;
 		overflow-wrap: break-word;
 		overflow: hidden;

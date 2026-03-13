@@ -71,13 +71,13 @@
 		color: #000;
 		border: none;
 		border-radius: var(--radius-md);
-		background: rgb(68, 68, 68);
+		background: var(--btn-bg);
 		cursor: pointer;
 		padding: 0 6px;
 		margin-left: 5px;
 	}
 	.toggle > button:hover {
-		background: rgb(88, 88, 88);
+		background: var(--btn-bg-hover);
 	}
 	.toggle > .active:hover {
 		background: var(--highlight);

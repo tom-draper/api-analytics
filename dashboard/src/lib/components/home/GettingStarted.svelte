@@ -177,7 +177,7 @@
 		font-size: 0.9;
 	}
 	.link:hover {
-		background: #31aa73;
+		background: var(--highlight-hover);
 	}
 
 	.secondary {

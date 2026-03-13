@@ -18,7 +18,11 @@
     --yellow: #ebeb81;
     --yellow-rgb: 235, 235, 129;
     --redirect-color: #5cadff;
+    --highlight-hover: #31aa73;
     --nav-link: #343434;
+    --subtle-text: #c3c3c3;
+    --btn-bg: rgb(68, 68, 68);
+    --btn-bg-hover: rgb(88, 88, 88);
     --background: #1c1c1c;
     --light-background: #232323;
     --hover-bg: #161616;

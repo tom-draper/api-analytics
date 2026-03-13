@@ -79,7 +79,7 @@
 	}
 
 	.get-started:hover {
-		background: #31aa73;
+		background: var(--highlight-hover);
 	}
 
 	@media screen and (max-width: 700px) {
