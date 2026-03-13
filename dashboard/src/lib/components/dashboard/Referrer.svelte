@@ -37,7 +37,7 @@
 
 <style scoped>
 	.card {
-		min-height: 361px;
+		min-height: 300px;
 		margin-top: 0;
 		margin-left: 2em;
 	}
