@@ -47,7 +47,7 @@
 			<Lightning />
 		</div>
 		<h2 class="title">Delete Account</h2>
-		<p class="subtitle">Permanently delete all data associated with your API key.</p>
+		<p class="subtitle">Permanently delete all data associated with your<br>API key.</p>
 
 		<label class="input-label" for="api-key">
 			Enter API Key
