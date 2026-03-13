@@ -82,11 +82,11 @@
 	}
 
 	.redirect {
-		background: #5cadff;
+		background: var(--redirect-color);
 	}
 
 	.bad {
-		background: rgb(235, 235, 129);
+		background: var(--yellow);
 	}
 
 	.error {

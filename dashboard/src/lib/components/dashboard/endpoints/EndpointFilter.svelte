@@ -32,7 +32,7 @@
 		font-size: 13.333px;
 		color: #000;
 		border: none;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		background: rgb(68, 68, 68);
 		cursor: pointer;
 		padding: 1px 6px 0;
@@ -50,12 +50,12 @@
 
 	.toggle > .redirect-active,
 	.toggle > .redirect-active:hover {
-		background: #5cadff;
+		background: var(--redirect-color);
 	}
 
 	.toggle > .bad-active,
 	.toggle > .bad-active:hover {
-		background: rgb(235, 235, 129);
+		background: var(--yellow);
 	}
 
 	.toggle > .error-active,

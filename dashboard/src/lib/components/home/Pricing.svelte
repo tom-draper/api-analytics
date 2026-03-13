@@ -13,7 +13,7 @@
 		<div class="price mb-[2rem]">Free</div>
 		<div class="mb-8"><a href="/sign-up">Get Started</a></div>
 		<ul>
-			<li class="feature text-[#ededed]">50,000 request storage</li>
+			<li class="feature text-[var(--faded-text)]">50,000 request storage</li>
 			<li class="feature">Dashboard access</li>
 			<li class="feature">Raw data access</li>
 			<li class="feature">Up to 3 monitors</li>
@@ -28,7 +28,7 @@
 		<div class=" mb-[1rem] text-xs">Cancel anytime</div>
 		<div class="mb-8"><button>Upgrade</button></div>
 		<ul>
-			<li class="feature text-[#ededed]">2 million request storage</li>
+			<li class="feature text-[var(--faded-text)]">2 million request storage</li>
 			<li class="feature">Dashboard access</li>
 			<li class="feature">Explorer access</li>
 			<li class="feature">Raw data access</li>
@@ -43,20 +43,19 @@
 		color: var(--faint-text);
 		z-index: 50;
 		border: 3px solid var(--dark-background);
-		border-radius: 10px;
+		border-radius: var(--radius-lg);
 		text-align: left;
 		padding: 1.4em 2em;
 		width: 320px;
 		padding-bottom: 10em;
-		box-shadow: 0px 24px 120px -25px var(--highlight);
 		box-shadow: 0px 20px 140px -25px var(--highlight);
 	}
 	.pro {
 		border: 3px solid var(--highlight);
-		border-radius: 10px;
+		border-radius: var(--radius-lg);
 	}
 	h3 {
-		color: #ededed;
+		color: var(--faded-text);
 		font-size: 1.5em;
 	}
 	.price {
@@ -64,16 +63,11 @@
 		font-weight: 600;
 		color: var(--highlight);
 	}
-	.feature {
-		font-size: 0.85em;
-		margin-bottom: 0.5em;
-	}
-
 	a,
 	button {
 		background-color: var(--highlight);
 		color: var(--dark-background);
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		padding: 0.4em 1em;
 		font-size: 0.9em;
 		font-weight: 600;

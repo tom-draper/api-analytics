@@ -102,7 +102,7 @@
 	}
 	.option:hover,
 	.current:hover {
-		background: #161616;
+		background: var(--hover-bg);
 	}
 	.current:hover svg {
 		transform: translateY(1px); /* Moves icon 3px down */

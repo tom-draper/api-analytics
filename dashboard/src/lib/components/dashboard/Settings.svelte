@@ -148,7 +148,7 @@
 		font-weight: 700;
 	}
 	.background {
-		background: rgba(0, 0, 0, 0.7);
+		background: var(--modal-overlay);
 		backdrop-filter: blur(4px);
 		height: 100vh;
 		width: 100%;
@@ -232,9 +232,8 @@
 	}
 	.setting-filter {
 		margin: 2px 0;
-		background: rgba(0, 0, 0, 0.7);
 		background: var(--dark-background);
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		padding: 5px 10px;
 	}
 	.active {
@@ -259,7 +258,7 @@
 		border: 1px solid var(--border);
 		padding: 0.8em;
 		cursor: pointer;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		font-size: 0.85em;
 	}
 	.export-csv-btn:hover {

@@ -194,12 +194,11 @@
 	}
 
 	.highlight-row:hover td {
-		color: var(--dim-text);
 		color: #808080;
 	}
 
 	.highlighted-row td {
-		color: #ededed !important;
+		color: var(--faded-text) !important;
 	}
 
 	.highlight-row td {
@@ -225,17 +224,16 @@
 
 	.buttons button {
 		cursor: pointer;
-		border-radius: 4px;
+		border-radius: var(--radius-md);
 		padding: 0.4em 1em;
 		background: transparent;
-		color: var(--muted-text);
 		color: var(--dim-text);
 		border: 1px solid var(--border);
 		font-size: 0.85em;
 	}
 
 	.buttons button:hover {
-		color: #ededed;
+		color: var(--faded-text);
 	}
 
 	.no-results {

@@ -14,8 +14,15 @@
     --red: #e46161;
     --blue: #2facff;
     --yellow: #ebeb81;
+    --redirect-color: #5cadff;
     --background: #1c1c1c;
     --light-background: #232323;
+    --hover-bg: #161616;
+    --input-bg: #343434;
+    --modal-overlay: rgba(0, 0, 0, 0.7);
+    --error-bg: rgba(228, 97, 97, 0.8);
+    --warn-bg: rgba(235, 235, 129, 0.8);
+    --success-bg: rgba(63, 207, 142, 0.8);
     --faded-text: #ededed;
     --dim-text: #707070;
     --faint-text: #919191;
@@ -27,6 +34,8 @@
     --border: #2e2e2e;
     --muted-text: #505050;
     --radius-sm: 3px;
+    --radius-md: 4px;
+    --radius-lg: 10px;
     --fade-down: linear-gradient(transparent, #444);
     --fade-right: linear-gradient(270deg, transparent, #444);
 }
@@ -51,7 +60,7 @@ nav a {
 
 a.active,
 h1 {
-    color: #3fcf8e;
+    color: var(--highlight);
 }
 
 h2 {
@@ -165,14 +174,14 @@ p {
 }
 
 input {
-    background: #343434;
+    background: var(--input-bg);
     border: none;
     padding: 0 20px;
     width: 40ch;
     font-size: 1em;
     text-align: center;
     height: 40px;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     margin-bottom: 2.5em;
     color: white;
     display: block;
@@ -185,7 +194,7 @@ input::placeholder {
 .form-btn {
     font-size: 0.9em;
     height: 40px;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     padding: 0 20px;
     border: none;
     cursor: pointer;
@@ -198,7 +207,7 @@ input::placeholder {
 }
 
 .form-btn .loader {
-    border: 3px solid #343434;
+    border: 3px solid var(--input-bg);
     border-top-color: var(--highlight);
     width: 1em;
     height: 1em;
@@ -207,7 +216,7 @@ input::placeholder {
 .status-msg {
     font-size: 0.9em;
     padding: 0.9em 1.2em;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     text-align: left;
     line-height: 1.5;
     margin-bottom: 1.2em;
@@ -237,7 +246,7 @@ button {
 }
 
 .highlight {
-    color: #3fcf8e;
+    color: var(--highlight);
 }
 
 .details {
@@ -273,7 +282,7 @@ button {
 }
 
 .loader {
-    border: 6px solid #343434;
+    border: 6px solid var(--input-bg);
     border-top: 6px solid var(--highlight);
     border-radius: 50%;
     width: 30px;

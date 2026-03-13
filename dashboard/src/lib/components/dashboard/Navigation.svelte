@@ -89,7 +89,7 @@
 		margin: 2.5em 2rem 0;
 	}
 	.time-period-btn:hover {
-		background: #161616;
+		background: var(--hover-bg);
 	}
 	.time-period-btn-active:hover {
 		background: var(--highlight);

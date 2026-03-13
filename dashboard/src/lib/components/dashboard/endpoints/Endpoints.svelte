@@ -102,7 +102,7 @@
 	}
 
 	.clear-btn:hover {
-		color: #ededed;
+		color: var(--faded-text);
 	}
 
 	@media screen and (max-width: 470px) {
