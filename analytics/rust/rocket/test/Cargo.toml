@@ -10,4 +10,3 @@ dotenv = "0.15.0"
 rocket = { version = "0.5", features = ["json"] }
 rocket-analytics = { path = "../analytics" }
 serde = { version = "1.0", features = ["derive"] }
-tokio = { version = "1", features = ["rt"] }
