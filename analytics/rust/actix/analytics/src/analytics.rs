@@ -1,5 +1,5 @@
-use actix_rt::spawn;
 use actix_web::{
+    rt::spawn,
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
     http::header::{HeaderValue, HOST, USER_AGENT},
     Error,
