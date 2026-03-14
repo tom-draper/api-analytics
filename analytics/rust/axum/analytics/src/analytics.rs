@@ -1,6 +1,6 @@
 use axum::{body::Body, extract::ConnectInfo, http::Request, response::Response};
 use chrono::Utc;
-use futures::Future;
+use std::future::Future;
 use http::{
     header::{HeaderValue, HOST, USER_AGENT},
     Extensions, HeaderMap,
