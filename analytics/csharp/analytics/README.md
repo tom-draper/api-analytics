@@ -19,14 +19,14 @@ dotnet add package APIAnalytics.AspNetCore
 ```
 
 ```cs
-using analytics;
+using Analytics;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var app = builder.Build();
 
-app.UseAnalytics(<API-KEY>); // Add middleware
+app.UseAnalytics("YOUR-API-KEY"); // Add middleware
 
 app.MapGet("/", () =>
 {
@@ -63,7 +63,7 @@ Logged data for all requests can be accessed via our REST API. Simply send a GET
 import requests
 
 headers = {
- "X-AUTH-TOKEN": <API-KEY>
+ "X-AUTH-TOKEN": "YOUR-API-KEY"
 }
 
 response = requests.get("https://apianalytics-server.com/api/data", headers=headers)
@@ -74,7 +74,7 @@ print(response.json())
 
 ```js
 fetch("https://apianalytics-server.com/api/data", {
-  headers: { "X-AUTH-TOKEN": <API-KEY> },
+  headers: { "X-AUTH-TOKEN": "YOUR-API-KEY" },
 })
   .then((response) => {
     return response.json();
@@ -87,7 +87,7 @@ fetch("https://apianalytics-server.com/api/data", {
 ##### cURL
 
 ```bash
-curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
+curl --header "X-AUTH-TOKEN: YOUR-API-KEY" https://apianalytics-server.com/api/data
 ```
 
 ##### Parameters
@@ -102,12 +102,12 @@ You can filter your data by providing URL parameters in your request.
 - `ipAddress` - the IP address of the client
 - `status` - the status code of the response
 - `location` - a two-character location code of the client
-- `user_id` - a custom user identifier (only relevant if a `GetUserID` mapper function has been set)
+- `userId` - a custom user identifier (only relevant if a `GetUserID` mapper function has been set)
 
 Example:
 
 ```bash
-curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&user_id=b56cbd92-1168-4d7b-8d94-0418da207908
+curl --header "X-AUTH-TOKEN: YOUR-API-KEY" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&userId=b56cbd92-1168-4d7b-8d94-0418da207908
 ```
 
 ## Customisation
@@ -115,7 +115,7 @@ curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
 Custom mapping functions can be assigned to override the default behaviour and define how values are extracted from each incoming request to better suit your specific API.
 
 ```cs
-using analytics;
+using Analytics;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -124,12 +124,12 @@ var app = builder.Build();
 
 var config = new Config();
 config.GetUserID = (HttpContext context) => {
-    if (context.user.Identity.IsAuthenticated)
-        return context.user.Identity.Name
+    if (context.User.Identity.IsAuthenticated)
+        return context.User.Identity.Name;
     return "";
 };
 
-app.UseAnalytics(<API-KEY>, config); // Add middleware
+app.UseAnalytics("YOUR-API-KEY", config); // Add middleware
 
 app.MapGet("/", () =>
 {
@@ -158,7 +158,7 @@ var config = new Config{ PrivacyLevel = 2 }; // Disable IP storing and location 
 With any of these privacy levels, there is the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user. In the dashboard, this custom user ID will identify the user in conjunction with the IP address or as an alternative.
 
 ```cs
-var config = new Config()
+var config = new Config();
 config.GetIPAddress = (HttpContext context) => {
     if (context.Request.Headers.TryGetValue("X-Forwarded-For", out var ipAddress))
         return ipAddress.ToString();
@@ -194,7 +194,7 @@ Data collected is only ever used to populate your analytics dashboard. All store
 
 At any time you can delete all stored data associated with your API key by going to [apianalytics.dev/delete](https://apianalytics.dev/delete) and entering your API key.
 
-API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity.
+API keys and their associated logged request data are scheduled to be deleted after 6 months of dashboard inactivity, or if 3 months have elapsed without logging a request.
 
 ### Self-Hosting
 
@@ -202,7 +202,7 @@ If you are self-hosting the server, provide the url of your server to the middle
 
 ```cs
 var config = new Config{ ServerUrl = "https://your-server.com"};
-app.UseAnalytics("<API-KEY>", config);
+app.UseAnalytics("YOUR-API-KEY", config);
 ```
 
 ## Monitoring

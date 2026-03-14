@@ -24,7 +24,7 @@ import { h3Analytics } from '@api-analytics/h3';
 
 const app = createApp();
 
-app.use(h3Analytics('<API-KEY>'));  // Add middleware
+app.use(h3Analytics('YOUR-API-KEY'));  // Add middleware
 
 const router = createRouter();
 router.get('/', defineEventHandler(() => ({ message: 'Hello World!' })));
@@ -58,7 +58,7 @@ Logged data for all requests can be accessed via our REST API. Simply send a GET
 import requests
 
 headers = {
-    "X-AUTH-TOKEN": "<API-KEY>"
+    "X-AUTH-TOKEN": "YOUR-API-KEY"
 }
 
 response = requests.get("https://apianalytics-server.com/api/data", headers=headers)
@@ -69,7 +69,7 @@ print(response.json())
 
 ```js
 fetch("https://apianalytics-server.com/api/data", {
-    headers: { "X-AUTH-TOKEN": "<API-KEY>" },
+    headers: { "X-AUTH-TOKEN": "YOUR-API-KEY" },
 })
     .then((response) => response.json())
     .then((data) => console.log(data));
@@ -78,7 +78,7 @@ fetch("https://apianalytics-server.com/api/data", {
 ##### cURL
 
 ```bash
-curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
+curl --header "X-AUTH-TOKEN: YOUR-API-KEY" https://apianalytics-server.com/api/data
 ```
 
 ##### Parameters
@@ -93,12 +93,12 @@ You can filter your data by providing URL parameters in your request.
 - `ipAddress` - the IP address of the client
 - `status` - the status code of the response
 - `location` - a two-character location code of the client
-- `user_id` - a custom user identifier (only relevant if a `getUserID` mapper function has been set)
+- `userId` - a custom user identifier (only relevant if a `getUserID` mapper function has been set)
 
 Example:
 
 ```bash
-curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&user_id=b56cbd92-1168-4d7b-8d94-0418da207908
+curl --header "X-AUTH-TOKEN: YOUR-API-KEY" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&userId=b56cbd92-1168-4d7b-8d94-0418da207908
 ```
 
 ## Customisation
@@ -116,7 +116,7 @@ config.getUserID = (req) => req.headers['x-auth-token'] ?? null;
 
 const app = createApp();
 
-app.use(h3Analytics('<API-KEY>', config));  // Add middleware
+app.use(h3Analytics('YOUR-API-KEY', config));  // Add middleware
 ```
 
 ## Client ID and Privacy
@@ -166,7 +166,7 @@ Data collected is only ever used to populate your analytics dashboard. All store
 
 At any time you can delete all stored data associated with your API key by going to [apianalytics.dev/delete](https://apianalytics.dev/delete) and entering your API key.
 
-API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity.
+API keys and their associated logged request data are scheduled to be deleted after 6 months of dashboard inactivity, or if 3 months have elapsed without logging a request.
 
 ## Monitoring
 
