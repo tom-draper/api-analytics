@@ -6,7 +6,7 @@ keywords = ["api", "analytics", "rocket", "dashboard", "middleware"]
 license = "MIT"
 name = "rocket-analytics"
 repository = "https://github.com/tom-draper/api-analytics"
-version = "1.2.0"
+version = "1.2.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
