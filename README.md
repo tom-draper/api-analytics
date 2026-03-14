@@ -18,7 +18,7 @@ Currently compatible with:
 
 ### 1. Generate an API key
 
-Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It will be required when accessing your API Analytics dashboard and logged data.
+Head to [apianalytics.dev/sign-up](https://apianalytics.dev/sign-up) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It will be required when accessing your API Analytics dashboard and logged data.
 
 ### 2. Add middleware to your API
 
@@ -38,7 +38,7 @@ from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
 
 app = FastAPI()
-app.add_middleware(Analytics, api_key=<API-KEY>)  # Add middleware
+app.add_middleware(Analytics, api_key="YOUR-API-KEY")  # Add middleware
 
 @app.get('/')
 async def root():
@@ -61,7 +61,7 @@ from flask import Flask
 from api_analytics.flask import add_middleware
 
 app = Flask(__name__)
-add_middleware(app, <API-KEY>)  # Add middleware
+add_middleware(app, "YOUR-API-KEY")  # Add middleware
 
 @app.get('/')
 def root():
@@ -82,7 +82,7 @@ pip install api-analytics[django]
 Assign your API key to `ANALYTICS_API_KEY` in `settings.py` and add the `Analytics` middleware to the top of your middleware stack.
 
 ```py
-ANALYTICS_API_KEY = <API-KEY>
+ANALYTICS_API_KEY = "YOUR-API-KEY"
 
 MIDDLEWARE = [
     'api_analytics.django.Analytics',  # Add middleware
@@ -92,19 +92,19 @@ MIDDLEWARE = [
 
 #### Express
 
-[![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://www.npmjs.com/package/node-api-analytics)
+[![Npm package version](https://img.shields.io/npm/v/@api-analytics/express)](https://www.npmjs.com/package/@api-analytics/express)
 
 ```bash
-npm install node-api-analytics
+npm install @api-analytics/express
 ```
 
 ```js
 import express from 'express';
-import { expressAnalytics } from 'node-api-analytics';
+import { expressAnalytics } from '@api-analytics/express';
 
 const app = express();
 
-app.use(expressAnalytics(<API-KEY>)); // Add middleware
+app.use(expressAnalytics("YOUR-API-KEY")); // Add middleware
 
 app.get('/', (req, res) => {
     res.send({ message: 'Hello, World!' });
@@ -117,20 +117,20 @@ app.listen(8080, () => {
 
 #### Hono
 
-[![Npm package version](https://img.shields.io/npm/v/node-api-analytics)](https://www.npmjs.com/package/node-api-analytics)
+[![Npm package version](https://img.shields.io/npm/v/@api-analytics/hono)](https://www.npmjs.com/package/@api-analytics/hono)
 
 ```bash
-npm install node-api-analytics
+npm install @api-analytics/hono
 ```
 
 ```js
 import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
-import { honoAnalytics } from 'node-api-analytics';
+import { honoAnalytics } from '@api-analytics/hono';
 
 const app = new Hono();
 
-app.use('*', honoAnalytics(<API-KEY>));
+app.use('*', honoAnalytics("YOUR-API-KEY"));
 
 app.get('/', (c) => c.text('Hello, world!'));
 
@@ -166,7 +166,7 @@ func root(c * gin.Context) {
 func main() {
     r := gin.Default()
     
-    r.Use(analytics.Analytics(<API-KEY>)) // Add middleware
+    r.Use(analytics.Analytics("YOUR-API-KEY")) // Add middleware
 
     r.GET("/", root)
     r.Run(":8080")
@@ -199,7 +199,7 @@ func root(c *fiber.Ctx) error {
 func main() {
     app := fiber.New()
 
-    app.Use(analytics.Analytics(<API-KEY>)) // Add middleware
+    app.Use(analytics.Analytics("YOUR-API-KEY")) // Add middleware
 
     app.Get("/", root)
     app.Listen(":8080")
@@ -236,7 +236,7 @@ async fn index() -> Result<impl Responder> {
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
-            .wrap(Analytics::new(<API-KEY>))  // Add middleware
+            .wrap(Analytics::new("YOUR-API-KEY"))  // Add middleware
             .service(index)
     })
     .bind(("127.0.0.1", 8080))?
@@ -275,7 +275,7 @@ async fn root() -> Json<JsonData> {
 async fn main() {
     let app = Router::new()
         .route("/", get(root))
-        .layer(Analytics::new(<API-KEY>));
+        .layer(Analytics::new("YOUR-API-KEY"));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
@@ -305,7 +305,7 @@ module RailsMiddleware
     config.load_defaults 6.1
     config.api_only = true
 
-    config.middleware.use ::Analytics::Rails, <API-KEY>  # Add middleware
+    config.middleware.use ::Analytics::Rails, "YOUR-API-KEY"  # Add middleware
   end
 end
 ```
@@ -322,7 +322,7 @@ gem install api_analytics
 require 'sinatra'
 require 'api_analytics'
 
-use Analytics::Sinatra, <API-KEY>  # Add middleware
+use Analytics::Sinatra, "YOUR-API-KEY"  # Add middleware
 
 before do
     content_type 'application/json'
@@ -344,7 +344,7 @@ composer require api-analytics/laravel
 Add your API key to `.env`:
 
 ```env
-API_ANALYTICS_KEY=<API-KEY>
+API_ANALYTICS_KEY=YOUR-API-KEY
 ```
 
 Register the middleware in `app/Http/Kernel.php`:
@@ -370,12 +370,20 @@ using Analytics;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-app.UseAnalytics("API-KEY"); // Add middleware
+app.UseAnalytics("YOUR-API-KEY"); // Add middleware
 
 app.MapGet("/", () => new { message = "Hello, World!" });
 
 app.Run();
 ```
+
+#### Other Frameworks
+
+- **Python**: [Tornado](./analytics/python/tornado/README.md)
+- **JavaScript**: [Fastify](./analytics/javascript/fastify/README.md), [Koa](./analytics/javascript/koa/README.md), [Elysia](./analytics/javascript/elysia/README.md), [Bun](./analytics/javascript/bun/README.md), [NestJS](./analytics/javascript/nestjs/README.md), [Oak](./analytics/javascript/oak/README.md), [H3](./analytics/javascript/h3/README.md)
+- **Go**: [Echo](./analytics/go/echo/README.md), [Chi](./analytics/go/chi/README.md)
+- **Rust**: [Rocket](./analytics/rust/rocket/analytics/README.md)
+- **PHP**: [PHP](./analytics/php/php/README.md)
 
 ### 3. View your analytics
 
@@ -404,7 +412,7 @@ Raw logged request data can be fetched from the data API. Simply send a GET requ
 import requests
 
 response = requests.get("https://apianalytics-server.com/api/data", headers={
-    "X-AUTH-TOKEN": <API-KEY>
+    "X-AUTH-TOKEN": "YOUR-API-KEY"
 })
 print(response.json())
 ```
@@ -413,7 +421,7 @@ print(response.json())
 
 ```js
 fetch("https://apianalytics-server.com/api/data", {
-    headers: { "X-AUTH-TOKEN": <API-KEY> },
+    headers: { "X-AUTH-TOKEN": "YOUR-API-KEY" },
 })
     .then((response) => {
         return response.json();
@@ -426,7 +434,7 @@ fetch("https://apianalytics-server.com/api/data", {
 ##### cURL
 
 ```bash
-curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
+curl --header "X-AUTH-TOKEN: YOUR-API-KEY" https://apianalytics-server.com/api/data
 ```
 
 ##### Parameters
@@ -441,12 +449,12 @@ You can filter your data by providing URL parameters in your request.
 - `ipAddress` - the IP address of the client
 - `status` - the status code of the response
 - `location` - a two-character location code of the client
-- `user_id` - a custom user identifier (only relevant if a `get_user_id` mapper function has been set within config)
+- `userId` - a custom user identifier (only relevant if a `get_user_id` mapper function has been set within config)
 
 Example:
 
 ```bash
-curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&user_id=b56cbd92-1168-4d7b-8d94-0418da207908
+curl --header "X-AUTH-TOKEN: YOUR-API-KEY" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&userId=b56cbd92-1168-4d7b-8d94-0418da207908
 ```
 
 ## Client ID and Privacy
@@ -468,7 +476,7 @@ from api_analytics.fastapi import Analytics, Config
 config = Config(privacy_level=2)  # Disable IP storing and location inference
 
 app = FastAPI()
-app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
+app.add_middleware(Analytics, api_key="YOUR-API-KEY", config=config)  # Add middleware
 ```
 
 With any of these privacy levels, you have the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key held in the `X-AUTH-TOKEN` header field which is used to identify a user of your service. In the dashboard, this custom user ID will identify the user in conjunction with the IP address or as an alternative depending on the privacy level set.
@@ -482,7 +490,7 @@ config = Config(
 )
 
 app = FastAPI()
-app.add_middleware(Analytics, api_key=<API-KEY>, config=config)  # Add middleware
+app.add_middleware(Analytics, api_key="YOUR-API-KEY", config=config)  # Add middleware
 ```
 
 ## Data and Security
@@ -509,7 +517,7 @@ View our full <a href="https://www.apianalytics.dev/privacy-policy">privacy poli
 
 At any time, you can delete all stored data associated with your API key by going to [apianalytics.dev/delete](https://apianalytics.dev/delete) and entering your API key.
 
-API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity, or if 3 months have elapsed without logging a request.
+API keys and their associated logged request data are scheduled to be deleted after 6 months of dashboard inactivity, or if 3 months have elapsed without logging a request.
 
 ## Active Monitoring
 

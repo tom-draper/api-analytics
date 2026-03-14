@@ -37,7 +37,7 @@ func root(c echo.Context) error {
 func main() {
 	e := echo.New()
 
-	e.Use(analytics.Analytics(<API-KEY>))
+	e.Use(analytics.Analytics("YOUR-API-KEY"))
 
 	e.GET("/", root)
 	e.Start(":8080")
@@ -71,7 +71,7 @@ Raw logged request data can be fetched from the data API. Simply send a GET requ
 import requests
 
 headers = {
-    "X-AUTH-TOKEN": <API-KEY>
+    "X-AUTH-TOKEN": "YOUR-API-KEY"
 }
 
 response = requests.get("https://apianalytics-server.com/api/data", headers=headers)
@@ -82,7 +82,7 @@ print(response.json())
 
 ```js
 fetch("https://apianalytics-server.com/api/data", {
-    headers: { "X-AUTH-TOKEN": <API-KEY> },
+    headers: { "X-AUTH-TOKEN": "YOUR-API-KEY" },
 })
     .then((response) => {
         return response.json();
@@ -95,7 +95,7 @@ fetch("https://apianalytics-server.com/api/data", {
 ##### cURL
 
 ```bash
-curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
+curl --header "X-AUTH-TOKEN: YOUR-API-KEY" https://apianalytics-server.com/api/data
 ```
 
 ##### Parameters
@@ -110,12 +110,12 @@ You can filter your data by providing URL parameters in your request.
 - `ipAddress` - the IP address of the client
 - `status` - the status code of the response
 - `location` - a two-character location code of the client
-- `user_id` - a custom user identifier (only relevant if a `GetUserID` mapper function has been set within config)
+- `userId` - a custom user identifier (only relevant if a `GetUserID` mapper function has been set within config)
 
 Example:
 
 ```bash
-curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&user_id=b56cbd92-1168-4d7b-8d94-0418da207908
+curl --header "X-AUTH-TOKEN: YOUR-API-KEY" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&userId=b56cbd92-1168-4d7b-8d94-0418da207908
 ```
 
 
@@ -141,7 +141,7 @@ func main() {
 	config.GetUserAgent = func(c echo.Context) string {
 		return c.Request().Header.Get("User-Agent")
 	}
-	e.Use(analytics.AnalyticsWithConfig(<API-KEY>, config))
+	e.Use(analytics.AnalyticsWithConfig("YOUR-API-KEY", config))
 
 	e.GET("/", root)
 	e.Start(":8080")
@@ -198,7 +198,7 @@ View our full <a href="https://www.apianalytics.dev/privacy-policy">privacy poli
 
 At any time, you can delete all stored data associated with your API key by going to [apianalytics.dev/delete](https://apianalytics.dev/delete) and entering your API key.
 
-API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity, or 3 months have elapsed without logging a request.
+API keys and their associated logged request data are scheduled to be deleted after 6 months of dashboard inactivity, or if 3 months have elapsed without logging a request.
 
 ## Monitoring
 
