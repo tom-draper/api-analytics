@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Title>ASP.NET Core Analytics</Title>
@@ -11,6 +11,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageProjectUrl>https://www.apianalytics.dev/</PackageProjectUrl>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
     <PackageId>APIAnalytics.AspNetCore</PackageId>
     <Product>API Analytics</Product>
     <Authors>Tom Draper</Authors>
@@ -25,14 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="LICENSE">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Update="README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
+    <None Include="LICENSE" Pack="True" PackagePath="" />
+    <None Include="README.md" Pack="True" PackagePath="" />
   </ItemGroup>
 
 </Project>
