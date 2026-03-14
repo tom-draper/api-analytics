@@ -42,7 +42,7 @@ npm run dev
 
 ## Reporting Issues
 
-Please use the [issue tracker](https://github.com/tom-draper/api-analytics/issues) and fill in the appropriate template. Include as much detail as possible — framework, package version, and steps to reproduce.
+Please use the [issue tracker](https://github.com/tom-draper/api-analytics/issues) and fill in the appropriate template. Include as much detail as possible - framework, package version, and steps to reproduce.
 
 ## Questions
 
