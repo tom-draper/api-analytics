@@ -36,7 +36,7 @@ func root(c *fiber.Ctx) error {
 func main() {
 	app := fiber.New()
 
-	app.Use(analytics.Analytics(<API-KEY>)) // Add middleware
+	app.Use(analytics.Analytics("YOUR-API-KEY")) // Add middleware
 
 	app.Get("/", root)
 	app.Listen(":8080")
@@ -70,7 +70,7 @@ Raw logged request data can be fetched from the data API. Simply send a GET requ
 import requests
 
 headers = {
-    "X-AUTH-TOKEN": <API-KEY>
+    "X-AUTH-TOKEN": "YOUR-API-KEY"
 }
 
 response = requests.get("https://apianalytics-server.com/api/data", headers=headers)
@@ -81,7 +81,7 @@ print(response.json())
 
 ```js
 fetch("https://apianalytics-server.com/api/data", {
-    headers: { "X-AUTH-TOKEN": <API-KEY> },
+    headers: { "X-AUTH-TOKEN": "YOUR-API-KEY" },
 })
     .then((response) => {
         return response.json();
@@ -94,7 +94,7 @@ fetch("https://apianalytics-server.com/api/data", {
 ##### cURL
 
 ```bash
-curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
+curl --header "X-AUTH-TOKEN: YOUR-API-KEY" https://apianalytics-server.com/api/data
 ```
 
 ##### Parameters
@@ -109,12 +109,12 @@ You can filter your data by providing URL parameters in your request.
 - `ipAddress` - the IP address of the client
 - `status` - the status code of the response
 - `location` - a two-character location code of the client
-- `user_id` - a custom user identifier (only relevant if a `GetUserID` mapper function has been set within config)
+- `userId` - a custom user identifier (only relevant if a `GetUserID` mapper function has been set within config)
 
 Example:
 
 ```bash
-curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&user_id=b56cbd92-1168-4d7b-8d94-0418da207908
+curl --header "X-AUTH-TOKEN: YOUR-API-KEY" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&userId=b56cbd92-1168-4d7b-8d94-0418da207908
 ```
 
 ## Customisation
@@ -139,7 +139,7 @@ func main() {
 	config.GetUserAgent = func(c *fiber.Ctx) string {
 		return string(c.Request().Header.UserAgent())
 	}
-	app.Use(analytics.AnalyticsWithConfig(<API-KEY>, config)) // Add middleware
+	app.Use(analytics.AnalyticsWithConfig("YOUR-API-KEY", config)) // Add middleware
 }
 ```
 
@@ -162,7 +162,7 @@ config.PrivacyLevel = 2 // Disable IP storing and location inference
 
 With any of these privacy levels, you have the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key held in the `X-AUTH-TOKEN` header field which is used to identify a user of your service. In the dashboard, this custom user ID will identify the user in conjunction with the IP address or as an alternative depending on the privacy level set.
 
-```py
+```go
 config := analytics.NewConfig()
 config.GetUserID = func(c *fiber.Ctx) string {
 	return c.Get("X-AUTH-TOKEN")
@@ -193,7 +193,7 @@ View our full <a href="https://www.apianalytics.dev/privacy-policy">privacy poli
 
 At any time, you can delete all stored data associated with your API key by going to [apianalytics.dev/delete](https://apianalytics.dev/delete) and entering your API key.
 
-API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity, or 3 months have elapsed without logging a request.
+API keys and their associated logged request data are scheduled to be deleted after 6 months of dashboard inactivity, or if 3 months have elapsed without logging a request.
 
 ## Monitoring
 

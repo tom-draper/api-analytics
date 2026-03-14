@@ -33,7 +33,7 @@ module RailsMiddleware
     config.load_defaults 6.1
     config.api_only = true
 
-    config.middleware.use ::Analytics::Rails, <API-KEY>  # Add middleware
+    config.middleware.use ::Analytics::Rails, "YOUR-API-KEY"  # Add middleware
   end
 end
 ```
@@ -44,7 +44,7 @@ end
 require 'sinatra'
 require 'api_analytics'
 
-use Analytics::Sinatra, <API-KEY>  # Add middleware
+use Analytics::Sinatra, "YOUR-API-KEY"  # Add middleware
 
 before do
     content_type 'application/json'
@@ -82,7 +82,7 @@ Logged data for all requests can be accessed via our REST API. Simply send a GET
 import requests
 
 headers = {
- "X-AUTH-TOKEN": <API-KEY>
+ "X-AUTH-TOKEN": "YOUR-API-KEY"
 }
 
 response = requests.get("https://apianalytics-server.com/api/data", headers=headers)
@@ -93,7 +93,7 @@ print(response.json())
 
 ```js
 fetch("https://apianalytics-server.com/api/data", {
-  headers: { "X-AUTH-TOKEN": <API-KEY> },
+  headers: { "X-AUTH-TOKEN": "YOUR-API-KEY" },
 })
   .then((response) => {
     return response.json();
@@ -106,7 +106,7 @@ fetch("https://apianalytics-server.com/api/data", {
 ##### cURL
 
 ```bash
-curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
+curl --header "X-AUTH-TOKEN: YOUR-API-KEY" https://apianalytics-server.com/api/data
 ```
 
 ##### Parameters
@@ -121,12 +121,81 @@ You can filter your data by providing URL parameters in your request.
 - `ipAddress` - the IP address of the client
 - `status` - the status code of the response
 - `location` - a two-character location code of the client
-- `user_id` - a custom user identifier (only relevant if a `get_user_id` mapper function has been set)
+- `userId` - a custom user identifier (only relevant if a `get_user_id` mapper function has been set)
 
 Example:
 
 ```bash
-curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&user_id=b56cbd92-1168-4d7b-8d94-0418da207908
+curl --header "X-AUTH-TOKEN: YOUR-API-KEY" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&userId=b56cbd92-1168-4d7b-8d94-0418da207908
+```
+
+## Customisation
+
+A config object can be passed to the middleware to override default behaviour.
+
+### Rails
+
+```ruby
+require 'rails'
+require 'api_analytics'
+
+Bundler.require(*Rails.groups)
+
+module RailsMiddleware
+  class Application < Rails::Application
+    config.load_defaults 6.1
+    config.api_only = true
+
+    analytics_config = Analytics::Config.new
+    analytics_config.get_user_id = ->(env) { env['HTTP_X_AUTH_TOKEN'] }
+
+    config.middleware.use ::Analytics::Rails, "YOUR-API-KEY", analytics_config  # Add middleware
+  end
+end
+```
+
+### Sinatra
+
+```ruby
+require 'sinatra'
+require 'api_analytics'
+
+analytics_config = Analytics::Config.new
+analytics_config.get_user_id = ->(env) { env['HTTP_X_AUTH_TOKEN'] }
+
+use Analytics::Sinatra, "YOUR-API-KEY", analytics_config  # Add middleware
+
+before do
+    content_type 'application/json'
+end
+
+get '/' do
+    {message: 'Hello World!'}.to_json
+end
+```
+
+## Client ID and Privacy
+
+By default, API Analytics logs and stores the client IP address of all incoming requests made to your API and infers a location (country) from each IP address if possible. The IP address is used as a form of client identification in the dashboard to estimate the number of users accessing your service.
+
+This behaviour can be controlled through a privacy level defined in the configuration of the API middleware. There are three privacy levels to choose from 0 (default) to a maximum of 2. A privacy level of 1 will disable IP address storing, and a value of 2 will also disable location inference.
+
+Privacy Levels:
+
+- `0` - The client IP address is used to infer a location and then stored for user identification. (default)
+- `1` - The client IP address is used to infer a location and then discarded.
+- `2` - The client IP address is never accessed and location is never inferred.
+
+```ruby
+analytics_config = Analytics::Config.new
+analytics_config.privacy_level = 2  # Disable IP storing and location inference
+```
+
+With any of these privacy levels, there is the option to define a custom user ID as a function of a request by providing a mapper function in the API middleware configuration. For example, your service may require an API key sent in the `X-AUTH-TOKEN` header field that can be used to identify a user. In the dashboard, this custom user ID will identify the user in conjunction with the IP address or as an alternative.
+
+```ruby
+analytics_config = Analytics::Config.new
+analytics_config.get_user_id = ->(env) { env['HTTP_X_AUTH_TOKEN'] }
 ```
 
 ## Data and Security
@@ -144,7 +213,7 @@ For any given request to your API, data recorded is limited to:
 - Status code
 - Response time
 - API hostname
-- API framework (FastAPI, Flask, Express etc.)
+- API framework (Rails, Sinatra)
 
 Data collected is only ever used to populate your analytics dashboard. All stored data is pseudo-anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
 
@@ -152,7 +221,7 @@ Data collected is only ever used to populate your analytics dashboard. All store
 
 At any time you can delete all stored data associated with your API key by going to [apianalytics.dev/delete](https://apianalytics.dev/delete) and entering your API key.
 
-API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity.
+API keys and their associated logged request data are scheduled to be deleted after 6 months of dashboard inactivity, or if 3 months have elapsed without logging a request.
 
 ## Monitoring
 

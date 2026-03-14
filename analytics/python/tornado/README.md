@@ -12,7 +12,7 @@ Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to genera
 
 Add our lightweight middleware to your API. Almost all processing is handled by our servers so there is minimal impact on the performance of your API.
 
-[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.com/project/api-analytics)
+[![PyPi version](https://badgen.net/pypi/v/api-analytics)](https://pypi.org/project/api-analytics)
 
 ```bash
 pip install tornado-analytics
@@ -21,14 +21,14 @@ pip install tornado-analytics
 Modify your handler to inherit from `Analytics`. Create a `__init__()` method, passing along the application and response along with your unique API key.
 
 ```py
-import asyncio
+from tornado.ioloop import IOLoop
 from tornado.web import Application
 from api_analytics.tornado import Analytics
 
 # Inherit from the Analytics middleware class
 class MainHandler(Analytics):
     def __init__(self, app, res):
-        super().__init__(app, res, <API-KEY>)  # Provide api key
+        super().__init__(app, res, "YOUR-API-KEY")  # Provide api key
     
     def get(self):
         self.write({'message': 'Hello World!'})
@@ -71,7 +71,7 @@ Logged data for all requests can be accessed via our REST API. Simply send a GET
 import requests
 
 headers = {
- "X-AUTH-TOKEN": <API-KEY>
+ "X-AUTH-TOKEN": "YOUR-API-KEY"
 }
 
 response = requests.get("https://apianalytics-server.com/api/data", headers=headers)
@@ -82,7 +82,7 @@ print(response.json())
 
 ```js
 fetch("https://apianalytics-server.com/api/data", {
-  headers: { "X-AUTH-TOKEN": <API-KEY> },
+  headers: { "X-AUTH-TOKEN": "YOUR-API-KEY" },
 })
   .then((response) => {
     return response.json();
@@ -95,7 +95,7 @@ fetch("https://apianalytics-server.com/api/data", {
 ##### cURL
 
 ```bash
-curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data
+curl --header "X-AUTH-TOKEN: YOUR-API-KEY" https://apianalytics-server.com/api/data
 ```
 
 ##### Parameters
@@ -110,12 +110,12 @@ You can filter your data by providing URL parameters in your request.
 - `ipAddress` - the IP address of the client
 - `status` - the status code of the response
 - `location` - a two-character location code of the client
-- `user_id` - a custom user identifier (only relevant if a `get_user_id` mapper function has been set)
+- `userId` - a custom user identifier (only relevant if a `get_user_id` mapper function has been set)
 
 Example:
 
 ```bash
-curl --header "X-AUTH-TOKEN: <API-KEY>" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&user_id=b56cbd92-1168-4d7b-8d94-0418da207908
+curl --header "X-AUTH-TOKEN: YOUR-API-KEY" https://apianalytics-server.com/api/data?page=3&dateFrom=2022-01-01&hostname=apianalytics.dev&status=200&userId=b56cbd92-1168-4d7b-8d94-0418da207908
 ```
 
 ## Customisation
@@ -130,7 +130,7 @@ class MainHandler(Analytics):
         config = Config()
         config.get_ip_address = lambda request: request.headers['X-Forwarded-For']
         config.get_user_agent = lambda request: request.headers['User-Agent']
-        super().__init__(app, res, <API-KEY>, config)  # Provide api key
+        super().__init__(app, res, "YOUR-API-KEY", config)  # Provide api key
 ```
 
 ## Client ID and Privacy
@@ -180,7 +180,7 @@ Data collected is only ever used to populate your analytics dashboard. All store
 
 At any time you can delete all stored data associated with your API key by going to [apianalytics.dev/delete](https://apianalytics.dev/delete) and entering your API key.
 
-API keys and their associated logged request data are scheduled to be deleted after 6 months of inactivity.
+API keys and their associated logged request data are scheduled to be deleted after 6 months of dashboard inactivity, or if 3 months have elapsed without logging a request.
 
 ## Monitoring
 
