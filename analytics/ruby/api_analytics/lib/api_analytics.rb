@@ -109,15 +109,15 @@ module Analytics
   end
 
   class Rails < Middleware
-    def initialize(app, api_key)
-      super(app, api_key)
+    def initialize(app, api_key, config = Config.new)
+      super(app, api_key, config)
       @framework = "Rails"
     end
   end
 
   class Sinatra < Middleware
-    def initialize(app, api_key)
-      super(app, api_key)
+    def initialize(app, api_key, config = Config.new)
+      super(app, api_key, config)
       @framework = "Sinatra"
     end
   end
