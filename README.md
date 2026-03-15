@@ -5,7 +5,7 @@ An effortless API analytics solution, complete with a dashboard.
 Currently compatible with:
 
 - Python: <b>FastAPI</b>, <b>Flask</b>, <b>Django</b> and <b>Tornado</b>
-- JavaScript: <b>Express</b>, <b>Fastify</b>, <b>Koa</b>, <b>Hono</b> and <b>Elysia</b>
+- JavaScript: <b>Express</b>, <b>NestJS</b>, <b>Hono</b>, <b>Fastify</b>, <b>Koa</b> and <b>Elysia</b>
 - Go: <b>Gin</b>, <b>Echo</b>, <b>Fiber</b> and <b>Chi</b>
 - Rust: <b>Actix</b>, <b>Axum</b> and <b>Rocket</b>
 - Ruby: <b>Rails</b> and <b>Sinatra</b>
