@@ -57,9 +57,27 @@
 		});
 	});
 
+	// Deep-track all nested filter mutations so the effect fires on any sidebar change.
+	// $state.snapshot() uses untrack internally, so it won't establish signal dependencies
+	// on nested properties — we must read them explicitly here first.
+	const filterSnapshot = $derived.by(() => {
+		if (!filter) return null;
+		void filter.timespan[0]; void filter.timespan[1];
+		void filter.status.success; void filter.status.redirect;
+		void filter.status.client; void filter.status.server;
+		void filter.responseTime[0]; void filter.responseTime[1];
+		for (const k in filter.methods) void filter.methods[k];
+		for (const k in filter.hostnames) void filter.hostnames[k];
+		for (const k in filter.locations) void filter.locations[k];
+		for (const k in filter.referrers) void filter.referrers[k];
+		void filter.paths.size;
+		return $state.snapshot(filter);
+	});
+
 	// When filter changes: re-filter using cached requests in worker
 	$effect(() => {
-		const f = $state.snapshot(filter);
+		const f = filterSnapshot;
+		console.log('[Page] filter effect fired, filterSnapshot:', f?.timespan);
 		const w = untrack(() => worker);
 		if (!w || !f || !untrack(() => data)) return;
 		searching = true;

@@ -41,7 +41,9 @@
 			first={true}
 			pushy={true}
 			onstop={(e) => {
-				filter.responseTime[e.detail.activeHandle] = e.detail.value;
+				const next: [number, number] = [filter.responseTime[0], filter.responseTime[1]];
+				next[e.detail.activeHandle] = e.detail.value;
+				filter.responseTime = next;
 			}}
 		/>
 		<div class="flex flex-col justify-between">

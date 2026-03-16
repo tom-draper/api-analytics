@@ -16,8 +16,7 @@
 		let accTime = 0;
 		let flashT = 0;
 		let wasFocused = false;
-		let streakAlpha = 0;
-		let streakPos = 0;
+		let loadT = 0;
 
 		// Read highlight colour from CSS custom property so it stays theme-aware
 		const cssRgb = canvasEl?.parentElement
@@ -33,8 +32,11 @@
 			if (!ctx) return;
 
 			const dt = lastTs > 0 ? (ts - lastTs) * 0.001 : 0;
-			const speed = focused ? 0.55 : 0.32;
-			accTime += dt * speed;
+			// Loading surges the animation speed; loadT fades in/out smoothly
+			if (loading) loadT = Math.min(1, loadT + dt * 4);
+			else loadT = Math.max(0, loadT - dt * 3);
+			const baseSpeed = focused ? 0.55 : 0.32;
+			accTime += dt * (baseSpeed + loadT * 2.4);
 			lastTs = ts;
 			const t = accTime;
 
@@ -42,12 +44,7 @@
 			if (focused && !wasFocused) flashT = 1.0;
 			wasFocused = focused;
 			flashT *= 0.92;
-			const brightBoost = 1 + flashT * 0.8;
-
-			// Loading comet: left-to-right chevron with trailing tail
-			if (loading) streakAlpha = Math.min(1, streakAlpha + dt * 5);
-			else streakAlpha = Math.max(0, streakAlpha - dt * 4);
-			streakPos = (streakPos + dt * 0.9) % 1.0; // always left to right
+			const brightBoost = 1 + flashT * 0.8 + loadT * 0.7;
 
 			const img = ctx.createImageData(W, H);
 			const d = img.data;
@@ -57,8 +54,8 @@
 			const cx2 = 0.68 + Math.cos(t * 0.29) * 0.20 + Math.cos(t * 0.13) * 0.07;
 			const cx3 = 0.45 + Math.sin(t * 0.19 + 1.2) * 0.14;
 
-			// Global slow breath
-			const breath = 0.78 + Math.sin(t * 0.22) * 0.22;
+			// Global slow breath; loading adds fast shimmer on top
+			const breath = (0.78 + Math.sin(t * 0.22) * 0.22) * (1 + loadT * 0.4 * Math.sin(t * 6.0));
 
 			// Chromatic aberration: R/B planar waves slightly offset in x
 			const ca = 0.03;
@@ -88,26 +85,12 @@
 					const bR = Math.pow(Math.max(0, radial + pR + 0.08), 2) * breath * brightBoost;
 					const bB = Math.pow(Math.max(0, radial + pB + 0.08), 2) * breath * brightBoost;
 
-					// Loading comet: asymmetric chevron, sharp leading edge + long trailing tail
-					let streak = 0;
-					if (streakAlpha > 0) {
-						// Chevron: tip at centre, wings trail back toward edges
-						const chevronX = streakPos - Math.abs(ny - 0.5) * 0.7;
-						// Also check wrapped position so tail shows when head just crossed 0
-						function cometAt(cx: number) {
-							const rel = nx - cx; // negative = behind (tail), positive = ahead
-							if (rel <= 0) return Math.exp(rel / 0.18);        // long exponential tail
-							else         return Math.exp(-(rel * rel) / 0.002); // sharp leading edge
-						}
-						streak = Math.max(cometAt(chevronX), cometAt(chevronX - 1)) * streakAlpha * 0.85;
-					}
-
 					const i = (y * W + x) * 4;
 					// Colour: highlight hue with subtle R/B fringing at caustic edges
 					d[i]     = Math.min(255, Math.max(0, Math.round(hlR + (bR - bG) * 160)));
 					d[i + 1] = hlG;
 					d[i + 2] = Math.min(255, Math.max(0, Math.round(hlB + (bB - bG) * 160)));
-					d[i + 3] = Math.min(255, Math.round((bG + streak) * 260));
+					d[i + 3] = Math.min(255, Math.round(bG * 260));
 				}
 			}
 

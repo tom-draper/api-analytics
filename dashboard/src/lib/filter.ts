@@ -65,8 +65,8 @@ export function applyFilter(data: RequestsData, filter: Filter): RequestsData {
 			(row[ColumnIndex.CreatedAt] as Date) <= endDate &&
 			filter.methods[row[ColumnIndex.Method] as number] &&
 			filter.hostnames[row[ColumnIndex.Hostname] as string] &&
-			(!hasLocationFilter || filter.locations[row[ColumnIndex.Location] as string]) &&
-			(!hasReferrerFilter || filter.referrers[row[ColumnIndex.Referrer] as string]) &&
+			(!hasLocationFilter || !row[ColumnIndex.Location] || filter.locations[row[ColumnIndex.Location] as string]) &&
+			(!hasReferrerFilter || !row[ColumnIndex.Referrer] || filter.referrers[row[ColumnIndex.Referrer] as string]) &&
 			(row[ColumnIndex.ResponseTime] as number) >= filter.responseTime[0] &&
 			(row[ColumnIndex.ResponseTime] as number) <= filter.responseTime[1] &&
 			(!hasPathFilter || filter.paths.has(row[ColumnIndex.Path] as string))
