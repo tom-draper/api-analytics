@@ -4,6 +4,8 @@
 	import Timespan from './filters/Timespan.svelte';
 	import Method from './filters/Method.svelte';
 	import Hostname from './filters/Hostname.svelte';
+	import Location from './filters/Location.svelte';
+	import Referrer from './filters/Referrer.svelte';
 	import ResponseTime from './filters/ResponseTime.svelte';
 
 	type FilterBounds = { timespan: [number, number]; rt: [number, number] };
@@ -24,7 +26,7 @@
 </script>
 
 <nav
-	class="fixed top-[52px] flex h-[calc(100vh-52px)] w-[20em] flex-col overflow-y-auto border-r border-[var(--border)] bg-[var(--light-background)]"
+	class="thin-scroll fixed top-[52px] flex h-[calc(100vh-52px)] w-[20em] flex-col overflow-y-auto border-r border-[var(--border)] bg-[var(--light-background)]"
 >
 	<div class="flex-1 p-3">
 		<div class="mb-4 flex items-center justify-between px-1 text-left">
@@ -77,6 +79,24 @@
 				<div class="section-label">Hostname</div>
 				<div class="rounded border border-[var(--border)]">
 					<Hostname bind:filter />
+				</div>
+			</div>
+		{/if}
+
+		{#if filter && Object.keys(filter.locations).length > 0}
+			<div class="mb-4">
+				<div class="section-label">Location</div>
+				<div class="rounded border border-[var(--border)]">
+					<Location bind:filter />
+				</div>
+			</div>
+		{/if}
+
+		{#if filter && Object.keys(filter.referrers).length > 0}
+			<div class="mb-4">
+				<div class="section-label">Referrer</div>
+				<div class="rounded border border-[var(--border)]">
+					<Referrer bind:filter />
 				</div>
 			</div>
 		{/if}
