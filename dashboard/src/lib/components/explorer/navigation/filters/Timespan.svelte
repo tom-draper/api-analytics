@@ -1,30 +1,30 @@
 <script lang="ts">
-	import { ColumnIndex } from '$lib/consts';
 	import { daysBetween, toDay } from '$lib/date';
 	import { type Filter } from '$lib/filter';
 	import RangeSlider from 'svelte-range-slider-pips';
 
-	let { filter = $bindable(), data = $bindable() }: { filter: Filter; data: DashboardData } = $props();
+	let {
+		filter = $bindable(),
+		timespanBounds
+	}: {
+		filter: Filter;
+		timespanBounds: [number, number] | null;
+	} = $props();
 
 	let values = $state<[number, number]>([0, 0]);
-	let minDate = $state<Date | null>(null);
-	let maxDate = $state<Date | null>(null);
 
 	$effect(() => {
-		if (data && filter) {
-			minDate = data.requests[0][ColumnIndex.CreatedAt];
-			maxDate = data.requests[data.requests.length - 1][ColumnIndex.CreatedAt];
-
+		if (filter && timespanBounds) {
 			values = [filter.timespan[0], filter.timespan[1]];
 		}
 	});
 </script>
 
-{#if filter && minDate && maxDate}
+{#if filter && timespanBounds}
 	<div class="px-2 pb-3 pt-2">
 		<RangeSlider
-			min={minDate.getTime()}
-			max={maxDate.getTime()}
+			min={timespanBounds[0]}
+			max={timespanBounds[1]}
 			bind:values
 			pips={false}
 			first={true}
@@ -55,16 +55,16 @@
 <style>
 	:root {
 		--range-slider-color: var(--red);
-		--range-slider: var(--highlight); /* slider main background color */
+		--range-slider: var(--highlight);
 		--range-handle-inactive: var(--highlight);
 		--range-handle: var(--highlight);
 		--range-handle-focus: var(--highlight);
 		--range-handle-border: var(--highlight);
-		--range-range-inactive: var(--red); /* inactive range bar background color */
-		--range-range: var(--highlight); /* active range background color */
-		--range-float-inactive: var(--red); /* inactive floating label background color */
-		--range-float: var(--range-handle-focus); /* floating label background color */
-		--range-float-text: white; /* text color on floating label */
+		--range-range-inactive: var(--red);
+		--range-range: var(--highlight);
+		--range-float-inactive: var(--red);
+		--range-float: var(--range-handle-focus);
+		--range-float-text: white;
 	}
 	:global(.rangeHandle) {
 		cursor: pointer;

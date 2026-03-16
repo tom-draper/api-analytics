@@ -1,30 +1,60 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
-	import generateDemoData from '$lib/demo';
+	import { untrack } from 'svelte';
+	import { get } from 'svelte/store';
 	import formatUUID from '$lib/uuid';
-	import { ColumnIndex, pageSize } from '$lib/consts';
+	import { pageSize } from '$lib/consts';
 	import { getServerURL } from '$lib/url';
 	import { fetchPageRaw } from '$lib/fetchRequests';
 	import { dataStore } from '$lib/dataStore';
 	import Navigation from '$components/explorer/navigation/Navigation.svelte';
 	import Viewer from '$components/explorer/Viewer.svelte';
-	import { statusBad, statusError, statusRedirect, statusSuccess } from '$lib/status';
-	import { defaultFilter, type Filter } from '$lib/filter';
-	import { nextDay, toDay } from '$lib/date';
+	import { type Filter } from '$lib/filter';
 
 	const userID = formatUUID(page.params.uuid);
 
+	type FilterBounds = { timespan: [number, number]; rt: [number, number] };
+
+	let data = $state.raw<DashboardData | undefined>(undefined);
+	let filteredRequests = $state.raw<RequestsData>([]);
+	let filter = $state<Filter | undefined>(undefined);
+	let filterBounds = $state.raw<FilterBounds | null>(null);
+	let initialFilter = $state.raw<Filter | null>(null);
+	let worker = $state.raw<Worker | undefined>(undefined);
+
+	// When data changes: send full requests to worker for parse/sort/filter
+	$effect(() => {
+		if (!worker || !data) return;
+		worker.postMessage({
+			type: 'init',
+			requests: data.requests,
+			filter: untrack(() => (filter ? $state.snapshot(filter) : null))
+		});
+	});
+
+	// When filter changes: re-filter using cached requests in worker
+	$effect(() => {
+		const f = $state.snapshot(filter);
+		const w = untrack(() => worker);
+		if (!w || !f || !untrack(() => data)) return;
+		w.postMessage({ type: 'filter', filter: f });
+	});
+
+	function resetFilter() {
+		if (initialFilter) {
+			filter = structuredClone(initialFilter);
+		}
+	}
+
 	async function fetchData() {
 		const url = getServerURL();
-
 		let data: DashboardData = { requests: [], userAgents: {} };
 		try {
 			const response = await fetch(`${url}/api/requests/${userID}/1`, {
 				signal: AbortSignal.timeout(250000),
 				keepalive: true
 			});
-
 			const body = await response.json();
 			if (response.ok && response.status === 200) {
 				data = { requests: body.requests, userAgents: body.user_agents };
@@ -33,28 +63,25 @@
 		} catch (e) {
 			console.log(e);
 		}
-
 		return data;
 	}
 
 	async function fetchAdditionalPages() {
-		let page = 2;
-		let requests: number;
+		let pageNum = 2;
+		let count: number;
 		do {
-			requests = await fetchAdditionalPage(page);
-			page++;
-		} while (requests === pageSize);
+			count = await fetchAdditionalPage(pageNum);
+			pageNum++;
+		} while (count === pageSize);
 	}
 
-	async function fetchAdditionalPage(page: number) {
-		const body = await fetchPageRaw(userID, page);
+	async function fetchAdditionalPage(pageNum: number) {
+		const body = await fetchPageRaw(userID, pageNum);
 		if (!body) return 0;
-
-		data.userAgents = { ...data.userAgents, ...body.user_agents };
-		parseDates(body.requests);
-		sortByTime(body.requests);
-		data.requests = data.requests.concat(body.requests);
-		dataStore.set(data);
+		data = {
+			requests: data!.requests.concat(body.requests),
+			userAgents: { ...data!.userAgents, ...body.user_agents }
+		};
 		return body.requests.length;
 	}
 
@@ -63,111 +90,60 @@
 	}
 
 	async function getDashboardData() {
-		if (isDemo()) {
-			return await getDemoData();
-		}
-
+		if (isDemo()) return await getDemoData();
 		return await fetchData();
 	}
 
-	// async function getDemoData() {
-	// 	return new Promise<DashboardData>((resolve) => {
-	// 		const data = generateDemoData();
-	// 		setTimeout(() => {
-	// 			resolve(data);
-	// 		});
-	// 	});
-	// }
 	async function getDemoData() {
 		return new Promise<DashboardData>((resolve) => {
-			const worker = new Worker(new URL('$lib/worker.ts', import.meta.url), {
-				type: 'module'
-			});
-
-			worker.onmessage = (event) => {
+			const w = new Worker(new URL('$lib/worker.ts', import.meta.url), { type: 'module' });
+			w.onmessage = (event) => {
 				resolve(event.data);
-				worker.terminate(); // Cleanup worker after use
+				w.terminate();
 			};
-
-			worker.postMessage(null);
+			w.postMessage(null);
 		});
 	}
-
-	function parseDates(data: RequestsData) {
-		for (let i = 0; i < data.length; i++) {
-			data[i][ColumnIndex.CreatedAt] = new Date(data[i][ColumnIndex.CreatedAt]);
-		}
-	}
-
-	function sortByTime(data: RequestsData) {
-		data.sort((a, b) => {
-			return a[ColumnIndex.CreatedAt].getTime() - b[ColumnIndex.CreatedAt].getTime();
-		});
-	}
-
-	function applyFilter(data: RequestsData, filter: Filter) {
-		const filteredData: RequestsData = [];
-		const startDate = toDay(new Date(filter.timespan[0]));
-		const endDate = toDay(nextDay(new Date(filter.timespan[1])));
-		for (const row of data) {
-			const status = row[ColumnIndex.Status];
-			if (
-				((filter.status.success && statusSuccess(status)) ||
-					(filter.status.redirect && statusRedirect(status)) ||
-					(filter.status.client && statusBad(status)) ||
-					(filter.status.server && statusError(status))) &&
-				row[ColumnIndex.CreatedAt] >= startDate &&
-				row[ColumnIndex.CreatedAt] <= endDate &&
-				filter.methods[row[ColumnIndex.Method]] &&
-				filter.hostnames[row[ColumnIndex.Hostname]]
-			) {
-				filteredData.push(row);
-			}
-		}
-
-		return filteredData;
-	}
-
-	function resetFilter() {
-		filter = defaultFilter(data.requests);
-	}
-
-	let data = $state.raw<DashboardData | undefined>(undefined);
-	let filteredRequests = $state.raw<RequestsData>([]);
-	let filter = $state<Filter | undefined>(undefined);
-
-	$effect(() => {
-		if (data && filter) {
-			filteredRequests = applyFilter(data.requests, filter);
-		}
-	});
 
 	onMount(async () => {
-		dataStore.subscribe((value) => {
-			if (value) {
-				data = value;
+		const w = new Worker(new URL('$lib/explorerWorker.ts', import.meta.url), { type: 'module' });
+		w.onmessage = (e) => {
+			const msg = e.data;
+			if (msg.type === 'ready') {
+				initialFilter = msg.filter;
+				filterBounds = { timespan: msg.filter.timespan, rt: [msg.rtMin, msg.rtMax] };
+				filter = structuredClone(msg.filter);
+			} else if (msg.type === 'filtered') {
+				filteredRequests = msg.filtered;
 			}
-		});
+		};
+		worker = w;
 
-		if (!data) {
-			data = await getDashboardData();
-
-			if (data.requests.length === pageSize) {
-				// Fetch page 2 and onwards if initial fetch didn't get all data
+		const storeData = get(dataStore);
+		if (storeData && storeData.requests.length > 0) {
+			data = storeData;
+		} else {
+			const dashboardData = await getDashboardData();
+			if (dashboardData.requests.length === pageSize) {
 				fetchAdditionalPages();
 			}
-
-			parseDates(data.requests);
-			sortByTime(data.requests);
-
-			resetFilter();
+			data = dashboardData;
+			dataStore.set(dashboardData);
 		}
+
+		return () => w.terminate();
 	});
 </script>
 
 <main>
 	<div class="flex">
-		<Navigation bind:data bind:filteredRequests bind:filter />
-		<Viewer {data} filteredData={filteredRequests} />
+		<Navigation
+			bind:filter
+			{filteredRequests}
+			totalCount={data?.requests.length ?? 0}
+			{filterBounds}
+			{resetFilter}
+		/>
+		<Viewer {filteredRequests} totalCount={data?.requests.length ?? 0} />
 	</div>
 </main>
