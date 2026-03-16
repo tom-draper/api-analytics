@@ -71,7 +71,15 @@
 	}
 </script>
 
-<div class="relative flex h-full w-full items-center">
+<div class="relative flex h-full w-full items-center overflow-hidden">
+	<!-- Ambient animation layer -->
+	<div class="shimmer-layer" aria-hidden="true">
+		<div class="orb orb-a"></div>
+		<div class="orb orb-b"></div>
+		<div class="orb orb-c"></div>
+		<div class="orb orb-d"></div>
+	</div>
+
 	<div class="icon-wrap pointer-events-none absolute left-4 flex h-[18px] items-center text-[var(--highlight)]">
 		<Lightning />
 	</div>
@@ -84,7 +92,7 @@
 	/>
 </div>
 
-<style scoped>
+<style>
 	input::placeholder {
 		color: var(--muted-text);
 	}
@@ -97,4 +105,78 @@
 	div:focus-within .icon-wrap {
 		filter: drop-shadow(0 0 10px rgba(var(--highlight-rgb), 0.85));
 	}
+
+	/* Animation layer */
+	.shimmer-layer {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		overflow: hidden;
+	}
+
+	.orb {
+		position: absolute;
+		top: -80%;
+		height: 260%;
+		border-radius: 50%;
+		will-change: transform;
+	}
+
+	.orb-a {
+		width: 38%;
+		left: 5%;
+		background: radial-gradient(ellipse at center, rgba(var(--highlight-rgb), 0.09) 0%, transparent 65%);
+		filter: blur(18px);
+		animation: drift-a 26s ease-in-out infinite;
+	}
+
+	.orb-b {
+		width: 28%;
+		left: 30%;
+		background: radial-gradient(ellipse at center, rgba(var(--highlight-rgb), 0.06) 0%, transparent 60%);
+		filter: blur(22px);
+		animation: drift-b 34s ease-in-out infinite;
+		animation-delay: -8s;
+	}
+
+	.orb-c {
+		width: 42%;
+		left: 50%;
+		background: radial-gradient(ellipse at center, rgba(var(--highlight-rgb), 0.07) 0%, transparent 65%);
+		filter: blur(20px);
+		animation: drift-c 22s ease-in-out infinite;
+		animation-delay: -14s;
+	}
+
+	.orb-d {
+		width: 24%;
+		left: 75%;
+		background: radial-gradient(ellipse at center, rgba(var(--highlight-rgb), 0.05) 0%, transparent 60%);
+		filter: blur(16px);
+		animation: drift-a 40s ease-in-out infinite;
+		animation-delay: -20s;
+	}
+
+	@keyframes drift-a {
+		0%, 100% { transform: translateX(0%) scaleX(1); }
+		30%       { transform: translateX(18%) scaleX(1.08); }
+		60%       { transform: translateX(-8%) scaleX(0.95); }
+	}
+
+	@keyframes drift-b {
+		0%, 100% { transform: translateX(0%) scaleX(1); }
+		40%       { transform: translateX(-22%) scaleX(0.92); }
+		75%       { transform: translateX(14%) scaleX(1.06); }
+	}
+
+	@keyframes drift-c {
+		0%, 100% { transform: translateX(0%) scaleX(1); }
+		50%       { transform: translateX(-30%) scaleX(1.1); }
+	}
+
+	/* Breathe slightly more alive on focus */
+	div:focus-within .orb-a { animation-duration: 18s; }
+	div:focus-within .orb-b { animation-duration: 24s; }
+	div:focus-within .orb-c { animation-duration: 16s; }
+	div:focus-within .orb-d { animation-duration: 28s; }
 </style>
