@@ -61,8 +61,46 @@
 		return `color: rgb(${r}, ${g}, ${b})`;
 	}
 
+	type SortDir = 'asc' | 'desc';
+	let sortCol = $state<number | null>(null); // null = default newest-first
+	let sortDir = $state<SortDir>('asc');
+
+	function toggleSort(col: number) {
+		if (sortCol === col) {
+			sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+		} else {
+			sortCol = col;
+			sortDir = 'asc';
+		}
+		pageNumber = 1;
+	}
+
+	const sortedData = $derived.by((): RequestsData => {
+		if (!data || sortCol === null) return data;
+		const col = sortCol;
+		const copy = data.slice();
+		copy.sort((a, b) => {
+			const av = a[col], bv = b[col];
+			if (av == null && bv == null) return 0;
+			if (av == null) return 1;
+			if (bv == null) return -1;
+			let cmp: number;
+			if (col === ColumnIndex.Method) {
+				cmp = (methodMap[av as number] ?? '').localeCompare(methodMap[bv as number] ?? '');
+			} else if (av instanceof Date) {
+				cmp = (av as Date).getTime() - (bv as Date).getTime();
+			} else if (typeof av === 'number') {
+				cmp = (av as number) - (bv as number);
+			} else {
+				cmp = String(av).localeCompare(String(bv));
+			}
+			return sortDir === 'asc' ? cmp : -cmp;
+		});
+		return copy;
+	});
+
 	let pageNumber = $state(1);
-	const page = $derived(data ? getPage(data, pageNumber) : undefined);
+	const page = $derived(sortedData ? getPage(sortedData, pageNumber) : undefined);
 
 	$effect(() => {
 		data;
@@ -74,19 +112,24 @@
 	}
 
 	function nextPage() {
-		if (pageNumber < Math.ceil(data.length / pageSize)) pageNumber++;
+		if (pageNumber < Math.ceil(sortedData.length / pageSize)) pageNumber++;
 	}
 
 	function getPage(data: RequestsData, pageNumber: number) {
-		const total = data.length;
-		const startIdx = total - pageNumber * pageSize;
-		const endIdx = startIdx + pageSize;
-		const page: Page = data.slice(Math.max(0, startIdx), Math.max(0, endIdx)).reverse();
-		if (page.length < pageSize) {
-			const length = page.length;
-			for (let i = 0; i < pageSize - length; i++) {
-				page.push([null, null, null, null, null, null, null, null, null, null]);
-			}
+		let page: Page;
+		if (sortCol === null) {
+			// Default: newest first via reverse-slice
+			const total = data.length;
+			const startIdx = total - pageNumber * pageSize;
+			const endIdx = startIdx + pageSize;
+			page = data.slice(Math.max(0, startIdx), Math.max(0, endIdx)).reverse();
+		} else {
+			// Custom sort: forward pagination
+			const startIdx = (pageNumber - 1) * pageSize;
+			page = data.slice(startIdx, startIdx + pageSize) as Page;
+		}
+		while (page.length < pageSize) {
+			page.push([null, null, null, null, null, null, null, null, null, null]);
 		}
 		return page;
 	}
@@ -97,14 +140,34 @@
 		<thead bind:this={theadEl}>
 			<tr class="flex w-full text-[var(--faint-text)]">
 				<th class="w-6 flex-none"></th>
-				<th class="w-40 flex-none text-left">Timestamp</th>
-				<th class="w-14 flex-none text-left">Status</th>
-				<th class="w-16 flex-none text-left">Method</th>
-				<th class="min-w-0 flex-1 text-left">Hostname</th>
-				<th class="min-w-0 flex-[2] text-left">Path</th>
-				<th class="w-28 flex-none text-left">IP Address</th>
-				<th class="w-36 flex-none text-left">User ID</th>
-				<th class="w-20 flex-none text-left">Time (ms)</th>
+				{#each [
+					{ label: 'Timestamp',  col: ColumnIndex.CreatedAt,    cls: 'w-40 flex-none' },
+					{ label: 'Status',     col: ColumnIndex.Status,        cls: 'w-14 flex-none' },
+					{ label: 'Method',     col: ColumnIndex.Method,        cls: 'w-16 flex-none' },
+					{ label: 'Hostname',   col: ColumnIndex.Hostname,      cls: 'min-w-0 flex-1' },
+					{ label: 'Path',       col: ColumnIndex.Path,          cls: 'min-w-0 flex-[2]' },
+					{ label: 'IP Address', col: ColumnIndex.IPAddress,     cls: 'w-28 flex-none' },
+					{ label: 'User ID',    col: ColumnIndex.UserID,        cls: 'w-36 flex-none' },
+					{ label: 'Time (ms)',  col: ColumnIndex.ResponseTime,  cls: 'w-24 flex-none' },
+				] as col}
+					<th
+						class="{col.cls} cursor-pointer select-none text-left hover:text-[var(--faded-text)]"
+						onclick={() => toggleSort(col.col)}
+					>
+						<span class="inline-flex items-center gap-1">
+							{col.label}
+							{#if sortCol === col.col}
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="size-2.5">
+									{#if sortDir === 'asc'}
+										<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+									{:else}
+										<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
+									{/if}
+								</svg>
+							{/if}
+						</span>
+					</th>
+				{/each}
 			</tr>
 		</thead>
 		<tbody class="flex flex-col">
@@ -146,7 +209,7 @@
 						<td class="min-w-0 flex-[2] truncate text-[var(--faint-text)]">{request[ColumnIndex.Path] ?? ''}</td>
 						<td class="w-28 flex-none truncate">{request[ColumnIndex.IPAddress] ?? ''}</td>
 						<td class="w-36 flex-none truncate text-[var(--muted-text)]">{request[ColumnIndex.UserID] ?? ''}</td>
-						<td class="w-20 flex-none" style={rtColor(request[ColumnIndex.ResponseTime] as number | null)}>{request[ColumnIndex.ResponseTime] ?? ''}</td>
+						<td class="w-24 flex-none" style={rtColor(request[ColumnIndex.ResponseTime] as number | null)}>{request[ColumnIndex.ResponseTime] ?? ''}</td>
 					</tr>
 				{/each}
 			{/if}
@@ -155,7 +218,7 @@
 
 	<div bind:this={paginationEl} class="flex items-center justify-end gap-2 px-3 py-1 text-[12px] text-[var(--dim-text)]">
 		{#if data && data.length}
-			<span class="px-1">Page {pageNumber} of {Math.ceil(data.length / pageSize).toLocaleString()}</span>
+			<span class="px-1">Page {pageNumber} of {Math.ceil(sortedData.length / pageSize).toLocaleString()}</span>
 			<button
 				class="cursor-pointer p-1.5 hover:text-[var(--faded-text)] disabled:opacity-30 disabled:cursor-default"
 				onclick={prevPage}
@@ -170,7 +233,7 @@
 				class="cursor-pointer p-1.5 hover:text-[var(--faded-text)] disabled:opacity-30 disabled:cursor-default"
 				onclick={nextPage}
 				aria-label="Next page"
-				disabled={pageNumber === Math.ceil(data.length / pageSize)}
+				disabled={pageNumber === Math.ceil(sortedData.length / pageSize)}
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
