@@ -21,7 +21,7 @@
 </script>
 
 {#if filter && timespanBounds}
-	<div class="px-2 pb-3 pt-2">
+	<div class="px-2 pb-1 pt-2">
 		<RangeSlider
 			min={timespanBounds[0]}
 			max={timespanBounds[1]}
@@ -34,7 +34,7 @@
 			}}
 		/>
 		<div class="flex flex-col justify-between">
-			<div class="grid place-items-center pb-1 text-center text-[14px]">
+			<div class="grid place-items-center pb-1 text-center text-[14px] text-[var(--faint-text)]">
 				<div class="flex">
 					<div class="flex-grow">
 						{toDay(new Date(values[0])).toLocaleDateString()}
@@ -45,7 +45,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="text-center text-[13px]">
+			<div class="text-center text-[13px] text-[var(--dim-text)]">
 				{daysBetween(new Date(values[0]), new Date(values[1]))} days
 			</div>
 		</div>
@@ -65,6 +65,9 @@
 		--range-float-inactive: var(--red);
 		--range-float: var(--range-handle-focus);
 		--range-float-text: white;
+	}
+	:global(.rangeSlider) {
+		font-size: 10px !important;
 	}
 	:global(.rangeHandle) {
 		cursor: pointer;

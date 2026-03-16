@@ -97,7 +97,7 @@
 	});
 </script>
 
-<div id="plotly">
+<div id="plotly" class="relative z-0">
 	<div id="plotDiv" bind:this={plotDiv}>
 		<!-- Plotly chart will be drawn inside this DIV -->
 	</div>
@@ -107,5 +107,6 @@
 	#plotDiv {
 		overflow-x: auto;
 		height: 50px;
+		margin-top: 8px;
 	}
 </style>

@@ -22,6 +22,15 @@
 	});
 </script>
 
+<style>
+	:global(.rangeSlider) {
+		font-size: 10px !important;
+	}
+	:global(.rangeHandle) {
+		cursor: pointer;
+	}
+</style>
+
 {#if filter && rtBounds}
 	<div class="px-2 pb-3 pt-2">
 		<RangeSlider
@@ -36,7 +45,7 @@
 			}}
 		/>
 		<div class="flex flex-col justify-between">
-			<div class="grid place-items-center pb-1 text-center text-[14px]">
+			<div class="grid place-items-center pb-1 text-center text-[14px] text-[var(--faint-text)]">
 				<div class="flex w-full px-1">
 					<div class="flex-grow text-left">{values[0]} ms</div>
 					<div class="flex-grow text-right">{values[1]} ms</div>

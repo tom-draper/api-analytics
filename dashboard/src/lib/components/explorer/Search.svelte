@@ -1,5 +1,26 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import Lightning from '$components/Lightning.svelte';
+
+	let inputEl = $state<HTMLInputElement | undefined>(undefined);
+
+	onMount(() => {
+		function handleKeydown(e: KeyboardEvent) {
+			if (e.key === 'Escape') {
+				inputEl?.blur();
+				return;
+			}
+			if (document.activeElement === inputEl) return;
+			if (e.metaKey || e.ctrlKey || e.altKey) return;
+			if (e.key.length !== 1) return;
+			if (!inputEl) return;
+			inputEl.focus();
+			inputEl.value += e.key;
+			e.preventDefault();
+		}
+		window.addEventListener('keydown', handleKeydown);
+		return () => window.removeEventListener('keydown', handleKeydown);
+	});
 
 	const placeholderExamples = [
 		'status:200',
@@ -32,42 +53,36 @@
 		'response_time:>1000',
 		'response_time:<20',
 		'response_time:0',
-	]
+	];
 
 	function getPlaceholder() {
-		let placeholderExample = [];
 		const used = new Set<number>();
-		while (placeholderExample.length < 5) {
+		const examples: string[] = [];
+		while (examples.length < 5) {
 			const idx = Math.floor(Math.random() * placeholderExamples.length);
 			if (!used.has(idx)) {
-				placeholderExample.push(placeholderExamples[idx]);
+				examples.push(placeholderExamples[idx]);
 				used.add(idx);
 			}
 		}
-		return placeholderExample.join(' ');
+		return examples.join('  ');
 	}
 </script>
 
-<div class="p-4 pr-0 text-sm text-[var(--faded-text)]">
-	<div class="absolute grid h-[36px] place-items-center px-4">
-		<div class="h-[18px] text-[var(--highlight)]">
-			<Lightning />
-		</div>
+<div class="relative flex h-full w-full items-center">
+	<div class="pointer-events-none absolute left-4 flex h-[18px] items-center text-[var(--highlight)]">
+		<Lightning />
 	</div>
 	<input
+		bind:this={inputEl}
 		type="text"
-		name=""
-		id=""
 		placeholder={getPlaceholder()}
-		class="m-auto h-[36px] w-full border border-solid border-[var(--border)] text-[14px] bg-[var(--background)] pl-10 text-left"
+		class="!mb-0 !bg-transparent !w-full !text-left !text-[14px] !pl-10 !pr-6 h-full text-[var(--faded-text)] focus:outline-none"
 	/>
 </div>
 
 <style scoped>
-	input {
-		border-radius: 4px;
-	}
 	input::placeholder {
-		color: var(--dim-text) !important;
+		color: var(--dim-text);
 	}
 </style>
