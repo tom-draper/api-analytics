@@ -25,6 +25,7 @@
 	let worker = $state.raw<Worker | undefined>(undefined);
 	let searchQuery = $state('');
 	let searchTimeout: ReturnType<typeof setTimeout>;
+	let searching = $state(false);
 
 	const filtersActive = $derived(
 		filter !== undefined &&
@@ -61,6 +62,7 @@
 		const f = $state.snapshot(filter);
 		const w = untrack(() => worker);
 		if (!w || !f || !untrack(() => data)) return;
+		searching = true;
 		w.postMessage({ type: 'filter', filter: f, query: untrack(() => searchQuery) });
 	});
 
@@ -70,6 +72,7 @@
 		const w = untrack(() => worker);
 		if (!w || !untrack(() => data)) return;
 		clearTimeout(searchTimeout);
+		searching = true;
 		searchTimeout = setTimeout(() => w.postMessage({ type: 'search', query: q }), 50);
 	});
 
@@ -147,6 +150,7 @@
 				filter = structuredClone(msg.filter);
 			} else if (msg.type === 'filtered') {
 				filteredRequests = msg.filtered;
+				searching = false;
 			}
 		};
 		worker = w;
@@ -169,7 +173,7 @@
 
 <main>
 	<header class="fixed left-0 right-0 top-0 z-10 flex h-[52px] items-center border-b border-[var(--border)]">
-		<Search bind:value={searchQuery} />
+		<Search bind:value={searchQuery} loading={searching} />
 	</header>
 	<div class="flex mt-[52px] h-[calc(100vh-52px)] overflow-hidden">
 		<Navigation

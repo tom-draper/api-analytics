@@ -36,6 +36,7 @@
 				class:text-[var(--faint-text)]={filtersActive}
 				class:text-transparent={!filtersActive}
 				class:pointer-events-none={!filtersActive}
+				tabindex={filtersActive ? 0 : -1}
 				onclick={resetFilter}
 			>
 				<svg
