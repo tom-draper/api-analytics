@@ -10,6 +10,7 @@
 	import { dataStore } from '$lib/dataStore';
 	import Navigation from '$components/explorer/navigation/Navigation.svelte';
 	import Viewer from '$components/explorer/Viewer.svelte';
+	import Search from '$components/explorer/Search.svelte';
 	import { type Filter } from '$lib/filter';
 
 	const userID = formatUUID(page.params.uuid);
@@ -136,7 +137,10 @@
 </script>
 
 <main>
-	<div class="flex">
+	<header class="fixed left-0 right-0 top-0 z-10 flex h-[52px] items-center border-b border-[var(--border)]">
+		<Search />
+	</header>
+	<div class="flex pt-[52px]">
 		<Navigation
 			bind:filter
 			{filteredRequests}

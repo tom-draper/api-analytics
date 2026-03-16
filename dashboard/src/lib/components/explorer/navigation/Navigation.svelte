@@ -1,7 +1,5 @@
 <script lang="ts">
-	import Lightning from '$components/Lightning.svelte';
 	import { type Filter } from '$lib/filter';
-	import Expandable from '../Expandable.svelte';
 	import Status from './filters/Status.svelte';
 	import Timespan from './filters/Timespan.svelte';
 	import Method from './filters/Method.svelte';
@@ -26,14 +24,14 @@
 </script>
 
 <nav
-	class="fixed flex h-full w-[20em] flex-col overflow-y-auto border-r border-[var(--border)] bg-[var(--light-background)]"
+	class="fixed top-[52px] flex h-[calc(100vh-52px)] w-[20em] flex-col overflow-y-auto border-r border-[var(--border)] bg-[var(--light-background)]"
 >
-	<div class="flex-grow p-2">
-		<div class="flex px-2 pb-4 pt-2">
-			<h2 class="text-left text-[var(--faded-text)]">Filters</h2>
+	<div class="flex-1 p-3">
+		<div class="mb-4 flex items-center justify-between px-1 text-left">
+			<span class="text-[13px] font-semibold text-[var(--faded-text)]">Filters</span>
 			{#if filter && filteredRequests && totalCount !== filteredRequests.length}
 				<button
-					class="ml-auto flex items-center rounded border border-[var(--border)] px-2 text-xs text-[var(--faint-text)] hover:text-[var(--faded-text)]"
+					class="flex items-center gap-1 rounded border border-[var(--border)] px-2 py-0.5 text-[11px] text-[var(--faint-text)] hover:text-[var(--faded-text)]"
 					onclick={resetFilter}
 				>
 					<svg
@@ -42,34 +40,64 @@
 						viewBox="0 0 24 24"
 						stroke-width="1.5"
 						stroke="currentColor"
-						class="mr-1 size-3"
+						class="size-3"
 					>
 						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
 					</svg>
-					<div>Reset</div>
+					Reset
 				</button>
 			{/if}
 		</div>
-		<Expandable title="Timespan" {filter}>
-			<Timespan bind:filter timespanBounds={filterBounds?.timespan ?? null} />
-		</Expandable>
-		<Expandable title="Status" {filter}>
-			<Status bind:filter />
-		</Expandable>
-		<Expandable title="Method" {filter}>
-			<Method bind:filter />
-		</Expandable>
-		<Expandable title="Hostname" {filter}>
-			<Hostname bind:filter />
-		</Expandable>
-		<Expandable title="Response Time" {filter}>
-			<ResponseTime bind:filter rtBounds={filterBounds?.rt ?? null} />
-		</Expandable>
-	</div>
 
-	<div class="my-10 grid place-items-center">
-		<div class="h-[28px] text-[var(--highlight)]">
-			<Lightning />
+		<div class="mb-4">
+			<div class="section-label">Timespan</div>
+			{#if filterBounds}
+				<Timespan bind:filter timespanBounds={filterBounds.timespan} />
+			{/if}
+		</div>
+
+		<div class="mb-4">
+			<div class="section-label">Status</div>
+			<div class="rounded border border-[var(--border)]">
+				<Status bind:filter />
+			</div>
+		</div>
+
+		{#if filter && Object.keys(filter.methods).length > 0}
+			<div class="mb-4">
+				<div class="section-label">Method</div>
+				<div class="rounded border border-[var(--border)]">
+					<Method bind:filter />
+				</div>
+			</div>
+		{/if}
+
+		{#if filter && Object.keys(filter.hostnames).length > 1}
+			<div class="mb-4">
+				<div class="section-label">Hostname</div>
+				<div class="rounded border border-[var(--border)]">
+					<Hostname bind:filter />
+				</div>
+			</div>
+		{/if}
+
+		<div class="mb-2">
+			<div class="section-label">Response Time</div>
+			{#if filterBounds}
+				<ResponseTime bind:filter rtBounds={filterBounds.rt} />
+			{/if}
 		</div>
 	</div>
+
 </nav>
+
+<style scoped>
+	.section-label {
+		padding: 0 4px;
+		margin-bottom: 6px;
+		font-size: 13px;
+		font-weight: 500;
+		color: var(--faint-text);
+		text-align: left;
+	}
+</style>
