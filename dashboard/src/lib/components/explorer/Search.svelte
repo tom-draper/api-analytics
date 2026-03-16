@@ -5,6 +5,73 @@
 	let { value = $bindable('') }: { value?: string } = $props();
 
 	let inputEl = $state<HTMLInputElement | undefined>(undefined);
+	let canvasEl = $state<HTMLCanvasElement | undefined>(undefined);
+	let focused = $state(false);
+
+	// Canvas caustic animation — simulates light refracting through moving water
+	onMount(() => {
+		const W = 280, H = 10;
+		let rafId: number;
+		let lastTs = 0;
+		let accTime = 0;
+
+		function draw(ts: number) {
+			if (!canvasEl) return;
+			const ctx = canvasEl.getContext('2d');
+			if (!ctx) return;
+
+			const speed = focused ? 0.55 : 0.32;
+			if (lastTs > 0) accTime += (ts - lastTs) * 0.001 * speed;
+			lastTs = ts;
+			const t = accTime;
+
+			const img = ctx.createImageData(W, H);
+			const d = img.data;
+
+			// Two caustic epicentres drifting on slow Lissajous paths
+			const cx1 = 0.22 + Math.sin(t * 0.41) * 0.18 + Math.sin(t * 0.17) * 0.08;
+			const cx2 = 0.68 + Math.cos(t * 0.29) * 0.20 + Math.cos(t * 0.13) * 0.07;
+			const cx3 = 0.45 + Math.sin(t * 0.19 + 1.2) * 0.14;
+
+			// Global slow breath
+			const breath = 0.78 + Math.sin(t * 0.22) * 0.22;
+
+			for (let y = 0; y < H; y++) {
+				const ny = y / H;
+				for (let x = 0; x < W; x++) {
+					const nx = x / W;
+
+					const r1 = Math.sqrt((nx - cx1) ** 2 + (ny - 0.5) ** 2);
+					const r2 = Math.sqrt((nx - cx2) ** 2 + (ny - 0.5) ** 2);
+					const r3 = Math.sqrt((nx - cx3) ** 2 + (ny - 0.5) ** 2);
+
+					// Caustic interference: overlapping radial + planar waves
+					const v =
+						Math.sin(r1 * 22 - t * 1.1) * 0.32 +
+						Math.sin(r2 * 17 - t * 0.85) * 0.28 +
+						Math.sin(r3 * 14 - t * 0.70) * 0.18 +
+						Math.sin(nx * 11 + t * 0.55) * 0.14 +
+						Math.sin((nx * 0.6 - ny) * 13 + t * 0.45) * 0.08;
+
+					// Squaring creates the sharp-bright / dark-trough caustic look
+					const bright = Math.pow(Math.max(0, v + 0.08), 2) * breath;
+					const alpha = Math.min(255, bright * 260);
+
+					const i = (y * W + x) * 4;
+					d[i]     = 63;
+					d[i + 1] = 207;
+					d[i + 2] = 142;
+					d[i + 3] = alpha;
+				}
+			}
+
+			ctx.putImageData(img, 0, 0);
+			rafId = requestAnimationFrame(draw);
+		}
+
+		rafId = requestAnimationFrame(draw);
+		return () => cancelAnimationFrame(rafId);
+	});
 
 	onMount(() => {
 		function handleKeydown(e: KeyboardEvent) {
@@ -72,13 +139,14 @@
 </script>
 
 <div class="relative flex h-full w-full items-center overflow-hidden">
-	<!-- Ambient animation layer -->
-	<div class="shimmer-layer" aria-hidden="true">
-		<div class="orb orb-a"></div>
-		<div class="orb orb-b"></div>
-		<div class="orb orb-c"></div>
-		<div class="orb orb-d"></div>
-	</div>
+	<canvas
+		bind:this={canvasEl}
+		width={280}
+		height={10}
+		class="pointer-events-none absolute inset-0 h-full w-full"
+		style="filter: blur(11px); opacity: 0.85;"
+		aria-hidden="true"
+	></canvas>
 
 	<div class="icon-wrap pointer-events-none absolute left-4 flex h-[18px] items-center text-[var(--highlight)]">
 		<Lightning />
@@ -89,6 +157,8 @@
 		type="text"
 		placeholder={getPlaceholder()}
 		class="!mb-0 !bg-transparent !w-full !text-left !text-[14px] !pl-11 !pr-6 h-full text-[var(--faded-text)] focus:outline-none"
+		onfocus={() => (focused = true)}
+		onblur={() => (focused = false)}
 	/>
 </div>
 
@@ -105,78 +175,4 @@
 	div:focus-within .icon-wrap {
 		filter: drop-shadow(0 0 10px rgba(var(--highlight-rgb), 0.85));
 	}
-
-	/* Animation layer */
-	.shimmer-layer {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		overflow: hidden;
-	}
-
-	.orb {
-		position: absolute;
-		top: -80%;
-		height: 260%;
-		border-radius: 50%;
-		will-change: transform;
-	}
-
-	.orb-a {
-		width: 38%;
-		left: 5%;
-		background: radial-gradient(ellipse at center, rgba(var(--highlight-rgb), 0.09) 0%, transparent 65%);
-		filter: blur(18px);
-		animation: drift-a 26s ease-in-out infinite;
-	}
-
-	.orb-b {
-		width: 28%;
-		left: 30%;
-		background: radial-gradient(ellipse at center, rgba(var(--highlight-rgb), 0.06) 0%, transparent 60%);
-		filter: blur(22px);
-		animation: drift-b 34s ease-in-out infinite;
-		animation-delay: -8s;
-	}
-
-	.orb-c {
-		width: 42%;
-		left: 50%;
-		background: radial-gradient(ellipse at center, rgba(var(--highlight-rgb), 0.07) 0%, transparent 65%);
-		filter: blur(20px);
-		animation: drift-c 22s ease-in-out infinite;
-		animation-delay: -14s;
-	}
-
-	.orb-d {
-		width: 24%;
-		left: 75%;
-		background: radial-gradient(ellipse at center, rgba(var(--highlight-rgb), 0.05) 0%, transparent 60%);
-		filter: blur(16px);
-		animation: drift-a 40s ease-in-out infinite;
-		animation-delay: -20s;
-	}
-
-	@keyframes drift-a {
-		0%, 100% { transform: translateX(0%) scaleX(1); }
-		30%       { transform: translateX(18%) scaleX(1.08); }
-		60%       { transform: translateX(-8%) scaleX(0.95); }
-	}
-
-	@keyframes drift-b {
-		0%, 100% { transform: translateX(0%) scaleX(1); }
-		40%       { transform: translateX(-22%) scaleX(0.92); }
-		75%       { transform: translateX(14%) scaleX(1.06); }
-	}
-
-	@keyframes drift-c {
-		0%, 100% { transform: translateX(0%) scaleX(1); }
-		50%       { transform: translateX(-30%) scaleX(1.1); }
-	}
-
-	/* Breathe slightly more alive on focus */
-	div:focus-within .orb-a { animation-duration: 18s; }
-	div:focus-within .orb-b { animation-duration: 24s; }
-	div:focus-within .orb-c { animation-duration: 16s; }
-	div:focus-within .orb-d { animation-duration: 28s; }
 </style>
