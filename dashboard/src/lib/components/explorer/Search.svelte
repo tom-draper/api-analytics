@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import Lightning from '$components/Lightning.svelte';
 
-	let { value = $bindable('') }: { value?: string } = $props();
+	let { value = $bindable(''), loading = false }: { value?: string; loading?: boolean } = $props();
 
 	let inputEl = $state<HTMLInputElement | undefined>(undefined);
 	let canvasEl = $state<HTMLCanvasElement | undefined>(undefined);
@@ -10,31 +10,58 @@
 
 	// Canvas caustic animation — simulates light refracting through moving water
 	onMount(() => {
-		const W = 280, H = 10;
+		const W = 280, H = 20;
 		let rafId: number;
 		let lastTs = 0;
 		let accTime = 0;
+		let flashT = 0;
+		let wasFocused = false;
+		let streakAlpha = 0;
+		let streakPos = 0;
+
+		// Read highlight colour from CSS custom property so it stays theme-aware
+		const cssRgb = canvasEl?.parentElement
+			? getComputedStyle(canvasEl.parentElement).getPropertyValue('--highlight-rgb').trim().split(',').map(Number)
+			: [];
+		const hlR = cssRgb[0] ?? 63;
+		const hlG = cssRgb[1] ?? 207;
+		const hlB = cssRgb[2] ?? 142;
 
 		function draw(ts: number) {
 			if (!canvasEl) return;
 			const ctx = canvasEl.getContext('2d');
 			if (!ctx) return;
 
+			const dt = lastTs > 0 ? (ts - lastTs) * 0.001 : 0;
 			const speed = focused ? 0.55 : 0.32;
-			if (lastTs > 0) accTime += (ts - lastTs) * 0.001 * speed;
+			accTime += dt * speed;
 			lastTs = ts;
 			const t = accTime;
+
+			// Brief brightness burst when focus is gained
+			if (focused && !wasFocused) flashT = 1.0;
+			wasFocused = focused;
+			flashT *= 0.92;
+			const brightBoost = 1 + flashT * 0.8;
+
+			// Loading streak: fast scan line that fades in/out with loading state
+			if (loading) streakAlpha = Math.min(1, streakAlpha + dt * 5);
+			else streakAlpha = Math.max(0, streakAlpha - dt * 3);
+			streakPos = (streakPos + dt * 2.8) % 1.0;
 
 			const img = ctx.createImageData(W, H);
 			const d = img.data;
 
-			// Two caustic epicentres drifting on slow Lissajous paths
+			// Three caustic epicentres drifting on slow Lissajous paths
 			const cx1 = 0.22 + Math.sin(t * 0.41) * 0.18 + Math.sin(t * 0.17) * 0.08;
 			const cx2 = 0.68 + Math.cos(t * 0.29) * 0.20 + Math.cos(t * 0.13) * 0.07;
 			const cx3 = 0.45 + Math.sin(t * 0.19 + 1.2) * 0.14;
 
 			// Global slow breath
 			const breath = 0.78 + Math.sin(t * 0.22) * 0.22;
+
+			// Chromatic aberration: R/B planar waves slightly offset in x
+			const ca = 0.03;
 
 			for (let y = 0; y < H; y++) {
 				const ny = y / H;
@@ -45,23 +72,35 @@
 					const r2 = Math.sqrt((nx - cx2) ** 2 + (ny - 0.5) ** 2);
 					const r3 = Math.sqrt((nx - cx3) ** 2 + (ny - 0.5) ** 2);
 
-					// Caustic interference: overlapping radial + planar waves
-					const v =
+					// Shared radial caustic waves
+					const radial =
 						Math.sin(r1 * 22 - t * 1.1) * 0.32 +
 						Math.sin(r2 * 17 - t * 0.85) * 0.28 +
-						Math.sin(r3 * 14 - t * 0.70) * 0.18 +
-						Math.sin(nx * 11 + t * 0.55) * 0.14 +
-						Math.sin((nx * 0.6 - ny) * 13 + t * 0.45) * 0.08;
+						Math.sin(r3 * 14 - t * 0.70) * 0.18;
+
+					// Per-channel planar waves with spatial offset (chromatic aberration)
+					const pG = Math.sin(nx * 11 + t * 0.55) * 0.14 + Math.sin((nx * 0.6 - ny) * 13 + t * 0.45) * 0.08;
+					const pR = Math.sin((nx + ca) * 11 + t * 0.55) * 0.14 + Math.sin(((nx + ca) * 0.6 - ny) * 13 + t * 0.45) * 0.08;
+					const pB = Math.sin((nx - ca) * 11 + t * 0.55) * 0.14 + Math.sin(((nx - ca) * 0.6 - ny) * 13 + t * 0.45) * 0.08;
 
 					// Squaring creates the sharp-bright / dark-trough caustic look
-					const bright = Math.pow(Math.max(0, v + 0.08), 2) * breath;
-					const alpha = Math.min(255, bright * 260);
+					const bG = Math.pow(Math.max(0, radial + pG + 0.08), 2) * breath * brightBoost;
+					const bR = Math.pow(Math.max(0, radial + pR + 0.08), 2) * breath * brightBoost;
+					const bB = Math.pow(Math.max(0, radial + pB + 0.08), 2) * breath * brightBoost;
+
+					// Loading streak: narrow Gaussian column racing left to right
+					let streak = 0;
+					if (streakAlpha > 0) {
+						const dist = Math.min(Math.abs(nx - streakPos), 1 - Math.abs(nx - streakPos));
+						streak = Math.exp(-(dist * dist) / 0.0008) * streakAlpha * 0.6;
+					}
 
 					const i = (y * W + x) * 4;
-					d[i]     = 63;
-					d[i + 1] = 207;
-					d[i + 2] = 142;
-					d[i + 3] = alpha;
+					// Colour: highlight hue with subtle R/B fringing at caustic edges
+					d[i]     = Math.min(255, Math.max(0, Math.round(hlR + (bR - bG) * 160)));
+					d[i + 1] = hlG;
+					d[i + 2] = Math.min(255, Math.max(0, Math.round(hlB + (bB - bG) * 160)));
+					d[i + 3] = Math.min(255, Math.round((bG + streak) * 260));
 				}
 			}
 
@@ -75,6 +114,12 @@
 
 	onMount(() => {
 		function handleKeydown(e: KeyboardEvent) {
+			if (e.key === 'Tab') {
+				e.preventDefault();
+				if (document.activeElement === inputEl) inputEl?.blur();
+				else inputEl?.focus();
+				return;
+			}
 			if (e.key === 'Escape') {
 				inputEl?.blur();
 				return;
@@ -142,9 +187,9 @@
 	<canvas
 		bind:this={canvasEl}
 		width={280}
-		height={10}
+		height={20}
 		class="pointer-events-none absolute inset-0 h-full w-full"
-		style="filter: blur(11px); opacity: 0.85;"
+		style="filter: blur(8px); opacity: 0.85;"
 		aria-hidden="true"
 	></canvas>
 
@@ -173,6 +218,6 @@
 	}
 
 	div:focus-within .icon-wrap {
-		filter: drop-shadow(0 0 10px rgba(var(--highlight-rgb), 0.85));
+		filter: drop-shadow(0 0 14px rgba(var(--highlight-rgb), 0.95));
 	}
 </style>
