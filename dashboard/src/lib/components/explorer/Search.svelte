@@ -44,10 +44,10 @@
 			flashT *= 0.92;
 			const brightBoost = 1 + flashT * 0.8;
 
-			// Loading streak: fast scan line that fades in/out with loading state
+			// Loading comet: left-to-right chevron with trailing tail
 			if (loading) streakAlpha = Math.min(1, streakAlpha + dt * 5);
-			else streakAlpha = Math.max(0, streakAlpha - dt * 3);
-			streakPos = (streakPos + dt * 2.8) % 1.0;
+			else streakAlpha = Math.max(0, streakAlpha - dt * 4);
+			streakPos = (streakPos + dt * 0.9) % 1.0; // always left to right
 
 			const img = ctx.createImageData(W, H);
 			const d = img.data;
@@ -88,11 +88,18 @@
 					const bR = Math.pow(Math.max(0, radial + pR + 0.08), 2) * breath * brightBoost;
 					const bB = Math.pow(Math.max(0, radial + pB + 0.08), 2) * breath * brightBoost;
 
-					// Loading streak: narrow Gaussian column racing left to right
+					// Loading comet: asymmetric chevron, sharp leading edge + long trailing tail
 					let streak = 0;
 					if (streakAlpha > 0) {
-						const dist = Math.min(Math.abs(nx - streakPos), 1 - Math.abs(nx - streakPos));
-						streak = Math.exp(-(dist * dist) / 0.0008) * streakAlpha * 0.6;
+						// Chevron: tip at centre, wings trail back toward edges
+						const chevronX = streakPos - Math.abs(ny - 0.5) * 0.7;
+						// Also check wrapped position so tail shows when head just crossed 0
+						function cometAt(cx: number) {
+							const rel = nx - cx; // negative = behind (tail), positive = ahead
+							if (rel <= 0) return Math.exp(rel / 0.18);        // long exponential tail
+							else         return Math.exp(-(rel * rel) / 0.002); // sharp leading edge
+						}
+						streak = Math.max(cometAt(chevronX), cometAt(chevronX - 1)) * streakAlpha * 0.85;
 					}
 
 					const i = (y * W + x) * 4;
@@ -146,12 +153,12 @@
 		'method:POST',
 		'method:PUT',
 		'method:DELETE',
-		'user_agent:Chrome*',
-		'user_agent:Mozilla*',
-		'user_agent:*Macintosh*',
-		'user_agent:"*Windows NT 10.0*"',
-		'user_agent:*iPhone*',
-		'user_agent:*Googlebot*',
+		'userAgent:Chrome*',
+		'userAgent:Mozilla*',
+		'userAgent:*Macintosh*',
+		'userAgent:"*Windows NT 10.0*"',
+		'userAgent:*iPhone*',
+		'userAgent:*Googlebot*',
 		'hostname:example.com',
 		'hostname:example2.com',
 		'hostname:example3.com',
@@ -160,13 +167,13 @@
 		'location:UK',
 		'location:AU',
 		'location:IN',
-		'user_id:72fd8db2-a64d-40a2-9bf7-1149ad0feea7',
-		'user_id:560b1dc3-b2e2-4919-80f6-776418a1b14d',
-		'user_id:5a56556c-ee93-4503-82b6-2cdd41206108',
-		'user_id:2345678901',
-		'response_time:>1000',
-		'response_time:<20',
-		'response_time:0',
+		'userId:72fd8db2-a64d-40a2-9bf7-1149ad0feea7',
+		'userId:560b1dc3-b2e2-4919-80f6-776418a1b14d',
+		'userId:5a56556c-ee93-4503-82b6-2cdd41206108',
+		'userId:2345678901',
+		'responseTime:>1000',
+		'responseTime:<20',
+		'responseTime:0',
 	];
 
 	function getPlaceholder() {

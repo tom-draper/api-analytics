@@ -150,7 +150,7 @@
 				filter = structuredClone(msg.filter);
 			} else if (msg.type === 'filtered') {
 				filteredRequests = msg.filtered;
-				searching = false;
+				requestAnimationFrame(() => { searching = false; });
 			}
 		};
 		worker = w;
