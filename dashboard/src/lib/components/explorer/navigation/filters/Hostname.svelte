@@ -8,7 +8,7 @@
 <div class="flex flex-col">
 	{#if filter}
 		{#each Object.keys(filter.hostnames) as hostname}
-			<div class="flex items-center border-b border-solid border-[var(--border)] text-[14px]">
+			<div class="flex items-center border-b border-solid border-[var(--border)] text-[14px] last:border-b-0">
 				<Checkbox
 					bind:checked={filter.hostnames[hostname]}
 					label={hostname}

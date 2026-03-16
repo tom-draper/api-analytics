@@ -1,46 +1,32 @@
 <script lang="ts">
-	import { ColumnIndex } from '$lib/consts';
 	import { type Filter } from '$lib/filter';
 	import RangeSlider from 'svelte-range-slider-pips';
 
-	let { filter = $bindable(), data = $bindable() }: { filter: Filter; data: DashboardData } = $props();
+	let {
+		filter = $bindable(),
+		rtBounds
+	}: {
+		filter: Filter;
+		rtBounds: [number, number] | null;
+	} = $props();
 
 	let values = $state<[number, number]>([0, 0]);
-	let minResponseTime = $state<number | null>(null);
-	let maxResponseTime = $state<number | null>(null);
-
-	function responseTimeRange(data: DashboardData) {
-		let min = Infinity;
-		let max = 0;
-		for (const row of data.requests) {
-			const responseTime = row[ColumnIndex.ResponseTime];
-			if (responseTime < min) {
-				min = responseTime;
-			}
-			if (responseTime > max) {
-				max = responseTime;
-			}
-		}
-
-		return {min, max}
-	}
 
 	$effect(() => {
-		if (data && filter) {
-			const range = responseTimeRange(data)
-			minResponseTime = range.min;
-			maxResponseTime = range.max;
-
-			values = [filter.responseTime[0], filter.responseTime[1]];
+		if (filter && rtBounds) {
+			values = [
+				filter.responseTime[0] === 0 ? rtBounds[0] : filter.responseTime[0],
+				filter.responseTime[1] === Infinity ? rtBounds[1] : filter.responseTime[1]
+			];
 		}
 	});
 </script>
 
-{#if filter && minResponseTime && maxResponseTime}
+{#if filter && rtBounds}
 	<div class="px-2 pb-3 pt-2">
 		<RangeSlider
-			min={minResponseTime}
-			max={maxResponseTime}
+			min={rtBounds[0]}
+			max={rtBounds[1]}
 			bind:values
 			pips={false}
 			first={true}
@@ -52,12 +38,8 @@
 		<div class="flex flex-col justify-between">
 			<div class="grid place-items-center pb-1 text-center text-[14px]">
 				<div class="flex w-full px-1">
-					<div class="flex-grow text-left">
-						{minResponseTime} ms
-					</div>
-					<div class="flex-grow text-right">
-						{maxResponseTime} ms
-					</div>
+					<div class="flex-grow text-left">{values[0]} ms</div>
+					<div class="flex-grow text-right">{values[1]} ms</div>
 				</div>
 			</div>
 		</div>

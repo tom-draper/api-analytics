@@ -3,25 +3,25 @@
 	import Search from './Search.svelte';
 	import Table from './Table.svelte';
 
-	let { data, filteredData }: { data: DashboardData; filteredData: RequestsData } = $props();
+	let { filteredRequests, totalCount }: { filteredRequests: RequestsData; totalCount: number } = $props();
 </script>
 
 <div class="ml-[20em] w-[100%] text-[var(--faded-text)]">
 	<Search />
 
 	<div class="mx-4 h-[16px] text-left text-xs text-[var(--dim-text)]">
-		{#if data && filteredData && data.requests.length !== filteredData.length}
-			Showing {filteredData.length.toLocaleString()} out of {data.requests.length.toLocaleString()} rows
+		{#if filteredRequests && totalCount && totalCount !== filteredRequests.length}
+			Showing {filteredRequests.length.toLocaleString()} out of {totalCount.toLocaleString()} rows
 		{/if}
 	</div>
 
 	<div>
-		{#if data}
-			<Graph data={filteredData} />
+		{#if filteredRequests.length > 0}
+			<Graph data={filteredRequests} />
 		{/if}
 	</div>
 
 	<div class="min-h-[70vh]">
-		<Table data={filteredData} />
+		<Table data={filteredRequests} />
 	</div>
 </div>

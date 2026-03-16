@@ -10,6 +10,11 @@
 	let pageNumber = $state(1);
 	const page = $derived(data ? getPage(data, pageNumber) : undefined);
 
+	$effect(() => {
+		data;  // track data changes
+		pageNumber = 1;
+	});
+
 	function prevPage() {
 		if (pageNumber > 1) {
 			pageNumber--;

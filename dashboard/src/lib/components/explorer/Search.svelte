@@ -65,8 +65,7 @@
 
 <style scoped>
 	input {
-		border-right: none;
-		border-radius: 4px 0 0 4px;
+		border-radius: 4px;
 	}
 	input::placeholder {
 		color: var(--dim-text) !important;
