@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	import Lightning from '$components/Lightning.svelte';
 
+	let { value = $bindable('') }: { value?: string } = $props();
+
 	let inputEl = $state<HTMLInputElement | undefined>(undefined);
 
 	onMount(() => {
@@ -15,7 +17,7 @@
 			if (e.key.length !== 1) return;
 			if (!inputEl) return;
 			inputEl.focus();
-			inputEl.value += e.key;
+			value += e.key;
 			e.preventDefault();
 		}
 		window.addEventListener('keydown', handleKeydown);
@@ -70,19 +72,29 @@
 </script>
 
 <div class="relative flex h-full w-full items-center">
-	<div class="pointer-events-none absolute left-4 flex h-[18px] items-center text-[var(--highlight)]">
+	<div class="icon-wrap pointer-events-none absolute left-4 flex h-[18px] items-center text-[var(--highlight)]">
 		<Lightning />
 	</div>
 	<input
 		bind:this={inputEl}
+		bind:value
 		type="text"
 		placeholder={getPlaceholder()}
-		class="!mb-0 !bg-transparent !w-full !text-left !text-[14px] !pl-10 !pr-6 h-full text-[var(--faded-text)] focus:outline-none"
+		class="!mb-0 !bg-transparent !w-full !text-left !text-[14px] !pl-11 !pr-6 h-full text-[var(--faded-text)] focus:outline-none"
 	/>
 </div>
 
 <style scoped>
 	input::placeholder {
-		color: var(--dim-text);
+		color: var(--muted-text);
+	}
+
+	.icon-wrap {
+		filter: drop-shadow(0 0 4px rgba(var(--highlight-rgb), 0.4));
+		transition: filter 0.2s ease;
+	}
+
+	div:focus-within .icon-wrap {
+		filter: drop-shadow(0 0 10px rgba(var(--highlight-rgb), 0.85));
 	}
 </style>

@@ -6,7 +6,32 @@
 	type Page = Nullable<RequestsData[number]>[];
 
 	let { data }: { data: RequestsData } = $props();
-	const pageSize = 18;
+
+	const ROW_HEIGHT = 36;
+
+	let containerEl = $state<HTMLDivElement | undefined>(undefined);
+	let theadEl = $state<HTMLElement | undefined>(undefined);
+	let paginationEl = $state<HTMLDivElement | undefined>(undefined);
+	let containerHeight = $state(0);
+	let theadHeight = $state(0);
+	let paginationHeight = $state(0);
+
+	const pageSize = $derived(
+		containerHeight > 0
+			? Math.max(1, Math.floor((containerHeight - theadHeight - paginationHeight) / ROW_HEIGHT))
+			: 20
+	);
+
+	function observeHeight(el: HTMLElement, set: (h: number) => void) {
+		const ro = new ResizeObserver(() => set(el.clientHeight));
+		ro.observe(el);
+		return () => ro.disconnect();
+	}
+
+	$effect(() => { if (containerEl) return observeHeight(containerEl, h => (containerHeight = h)); });
+	$effect(() => { if (theadEl) return observeHeight(theadEl, h => (theadHeight = h)); });
+	$effect(() => { if (paginationEl) return observeHeight(paginationEl, h => (paginationHeight = h)); });
+
 	let pageNumber = $state(1);
 	const page = $derived(data ? getPage(data, pageNumber) : undefined);
 
@@ -38,9 +63,9 @@
 	}
 </script>
 
-<div class="min-h-[inherit] flex flex-col">
-	<table class="w-full flex flex-col flex-1 text-[13px] text-[var(--dim-text)]">
-		<thead>
+<div bind:this={containerEl} class="flex h-full flex-col">
+	<table class="w-full flex flex-col text-[13px] text-[var(--dim-text)]">
+		<thead bind:this={theadEl}>
 			<tr class="flex w-full text-[var(--faint-text)]">
 				<th class="w-6 flex-none"></th>
 				<th class="w-40 flex-none text-left">Timestamp</th>
@@ -53,11 +78,11 @@
 				<th class="w-20 flex-none text-left">Time (ms)</th>
 			</tr>
 		</thead>
-		<tbody class="flex flex-col flex-1">
+		<tbody class="flex flex-col">
 			{#if page}
 				{#each page as request, i}
 					<tr
-						class="flex w-full flex-1"
+						class="flex w-full"
 						class:success-bg={request[ColumnIndex.Status] && statusSuccess(request[ColumnIndex.Status])}
 						class:success-border={request[ColumnIndex.Status] && statusSuccess(request[ColumnIndex.Status])}
 						class:warn-bg={request[ColumnIndex.Status] && statusBad(request[ColumnIndex.Status])}
@@ -95,7 +120,7 @@
 		</tbody>
 	</table>
 
-	<div class="flex items-center justify-end gap-2 px-3 py-1 text-[12px] text-[var(--dim-text)]">
+	<div bind:this={paginationEl} class="flex items-center justify-end gap-2 px-3 py-1 text-[12px] text-[var(--dim-text)]">
 		{#if data && data.length}
 			<span class="px-1">Page {pageNumber} of {Math.ceil(data.length / pageSize).toLocaleString()}</span>
 			<button
@@ -124,7 +149,6 @@
 
 <style scoped>
 	table {
-		min-height: inherit;
 		display: flex;
 		flex-direction: column;
 	}
@@ -134,15 +158,9 @@
 		border-right: 1px solid transparent;
 		border-radius: var(--radius-md);
 	}
-	tbody {
-		display: flex;
-		flex-direction: column;
-		flex: 1;
-	}
 	tbody tr {
 		display: flex;
-		flex: 1;
-		min-height: 0;
+		height: 36px;
 		overflow: hidden;
 		align-items: center;
 	}
@@ -160,13 +178,16 @@
 		text-align: left;
 	}
 	.success-border:hover {
-		border: 1px solid rgba(var(--highlight-rgb), 0.5) !important;
+		outline: 1px solid rgba(var(--highlight-rgb), 0.5);
+		outline-offset: -1px;
 	}
 	.warn-border:hover {
-		border: 1px solid rgba(var(--yellow-rgb), 0.5) !important;
+		outline: 1px solid rgba(var(--yellow-rgb), 0.5);
+		outline-offset: -1px;
 	}
 	.error-border:hover {
-		border: 1px solid rgba(var(--red-rgb), 0.5) !important;
+		outline: 1px solid rgba(var(--red-rgb), 0.5);
+		outline-offset: -1px;
 	}
 	.success-bg,
 	.warn-bg,

@@ -23,6 +23,8 @@
 	let filterBounds = $state.raw<FilterBounds | null>(null);
 	let initialFilter = $state.raw<Filter | null>(null);
 	let worker = $state.raw<Worker | undefined>(undefined);
+	let searchQuery = $state('');
+	let searchTimeout: ReturnType<typeof setTimeout>;
 
 	// When data changes: send full requests to worker for parse/sort/filter
 	$effect(() => {
@@ -30,7 +32,9 @@
 		worker.postMessage({
 			type: 'init',
 			requests: data.requests,
-			filter: untrack(() => (filter ? $state.snapshot(filter) : null))
+			userAgents: data.userAgents,
+			filter: untrack(() => (filter ? $state.snapshot(filter) : null)),
+			query: untrack(() => searchQuery)
 		});
 	});
 
@@ -39,7 +43,16 @@
 		const f = $state.snapshot(filter);
 		const w = untrack(() => worker);
 		if (!w || !f || !untrack(() => data)) return;
-		w.postMessage({ type: 'filter', filter: f });
+		w.postMessage({ type: 'filter', filter: f, query: untrack(() => searchQuery) });
+	});
+
+	// When search query changes: debounce then send to worker
+	$effect(() => {
+		const q = searchQuery;
+		const w = untrack(() => worker);
+		if (!w || !untrack(() => data)) return;
+		clearTimeout(searchTimeout);
+		searchTimeout = setTimeout(() => w.postMessage({ type: 'search', query: q }), 150);
 	});
 
 	function resetFilter() {
@@ -138,9 +151,9 @@
 
 <main>
 	<header class="fixed left-0 right-0 top-0 z-10 flex h-[52px] items-center border-b border-[var(--border)]">
-		<Search />
+		<Search bind:value={searchQuery} />
 	</header>
-	<div class="flex pt-[52px]">
+	<div class="flex mt-[52px] h-[calc(100vh-52px)] overflow-hidden">
 		<Navigation
 			bind:filter
 			{filteredRequests}

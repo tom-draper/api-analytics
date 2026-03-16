@@ -5,8 +5,8 @@
 	let { filteredRequests, totalCount }: { filteredRequests: RequestsData; totalCount: number } = $props();
 </script>
 
-<div class="ml-[20em] flex w-full min-w-0 flex-col text-[var(--faded-text)]">
-	<div class="relative">
+<div class="ml-[20em] flex h-full w-full min-w-0 flex-col overflow-hidden text-[var(--faded-text)]">
+	<div class="relative flex-none">
 		{#if filteredRequests.length > 0}
 			<Graph data={filteredRequests} />
 		{:else}
@@ -23,7 +23,7 @@
 		</div>
 	</div>
 
-	<div class="min-h-[70vh]">
+	<div class="min-h-0 flex-1 overflow-hidden">
 		<Table data={filteredRequests} />
 	</div>
 </div>
