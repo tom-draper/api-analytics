@@ -26,6 +26,24 @@
 	let searchQuery = $state('');
 	let searchTimeout: ReturnType<typeof setTimeout>;
 
+	const filtersActive = $derived(
+		filter !== undefined &&
+			initialFilter !== null &&
+			(filter.timespan[0] !== initialFilter.timespan[0] ||
+				filter.timespan[1] !== initialFilter.timespan[1] ||
+				!filter.status.success ||
+				!filter.status.redirect ||
+				!filter.status.client ||
+				!filter.status.server ||
+				Object.values(filter.methods).some((v) => !v) ||
+				Object.values(filter.hostnames).some((v) => !v) ||
+				Object.values(filter.locations).some((v) => !v) ||
+				Object.values(filter.referrers).some((v) => !v) ||
+				filter.responseTime[0] !== 0 ||
+				filter.responseTime[1] !== Infinity ||
+				filter.paths.size > 0)
+	);
+
 	// When data changes: send full requests to worker for parse/sort/filter
 	$effect(() => {
 		if (!worker || !data) return;
@@ -52,7 +70,7 @@
 		const w = untrack(() => worker);
 		if (!w || !untrack(() => data)) return;
 		clearTimeout(searchTimeout);
-		searchTimeout = setTimeout(() => w.postMessage({ type: 'search', query: q }), 150);
+		searchTimeout = setTimeout(() => w.postMessage({ type: 'search', query: q }), 50);
 	});
 
 	function resetFilter() {
@@ -156,8 +174,7 @@
 	<div class="flex mt-[52px] h-[calc(100vh-52px)] overflow-hidden">
 		<Navigation
 			bind:filter
-			{filteredRequests}
-			totalCount={data?.requests.length ?? 0}
+			{filtersActive}
 			{filterBounds}
 			{resetFilter}
 		/>

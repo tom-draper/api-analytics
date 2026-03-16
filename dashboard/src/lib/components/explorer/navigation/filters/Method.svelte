@@ -9,7 +9,7 @@
 <div class="flex flex-col">
 	{#if filter}
 		{#each Object.keys(filter.methods) as method}
-			<div class="flex items-center border-b border-solid border-[var(--border)] text-[14px] last:border-b-0">
+			<div class="flex items-center border-b border-solid border-[var(--border)] text-[13px] last:border-b-0">
 				<Checkbox
 					bind:checked={filter.methods[method]}
 					label={methodMap[parseInt(method)]}

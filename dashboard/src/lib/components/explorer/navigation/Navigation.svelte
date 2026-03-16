@@ -12,14 +12,12 @@
 
 	let {
 		filter = $bindable(),
-		filteredRequests,
-		totalCount,
+		filtersActive,
 		filterBounds,
 		resetFilter
 	}: {
 		filter: Filter;
-		filteredRequests: RequestsData;
-		totalCount: number;
+		filtersActive: boolean;
 		filterBounds: FilterBounds | null;
 		resetFilter: () => void;
 	} = $props();
@@ -31,24 +29,27 @@
 	<div class="flex-1 p-3">
 		<div class="mb-4 flex items-center justify-between px-1 text-left">
 			<span class="text-[13px] font-semibold text-[var(--faded-text)]">Filters</span>
-			{#if filter && filteredRequests && totalCount !== filteredRequests.length}
-				<button
-					class="flex items-center gap-1 rounded border border-[var(--border)] px-2 py-0.5 text-[11px] text-[var(--faint-text)] hover:text-[var(--faded-text)]"
-					onclick={resetFilter}
+			<button
+				class="flex cursor-pointer items-center gap-1 rounded border px-2 py-0.5 text-[11px] transition-opacity"
+				class:border-[var(--border)]={filtersActive}
+				class:border-transparent={!filtersActive}
+				class:text-[var(--faint-text)]={filtersActive}
+				class:text-transparent={!filtersActive}
+				class:pointer-events-none={!filtersActive}
+				onclick={resetFilter}
+			>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+					stroke="currentColor"
+					class="size-3"
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="size-3"
-					>
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-					</svg>
-					Reset
-				</button>
-			{/if}
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+				</svg>
+				Reset
+			</button>
 		</div>
 
 		<div class="mb-4">

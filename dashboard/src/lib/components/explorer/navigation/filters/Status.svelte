@@ -5,7 +5,7 @@
 	let { filter = $bindable() }: { filter: Filter } = $props();
 </script>
 
-<div class="flex flex-col text-[14px]">
+<div class="flex flex-col text-[13px]">
 	<div class="flex items-center border-b border-solid border-[var(--border)]">
 		{#if filter}
 			<Checkbox bind:checked={filter.status.success} label="Success" color="var(--highlight)" />
