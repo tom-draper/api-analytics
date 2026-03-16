@@ -11,6 +11,8 @@ type WorkerMessage =
 let cachedRequests: RequestsData = [];
 let cachedUserAgents: Record<number, string> = {};
 let sidebarFiltered: RequestsData = [];
+let lastQuery = '';
+let lastSearchResult: RequestsData = [];
 
 function getResponseTimeRange(data: RequestsData): [number, number] {
 	let min = Infinity;
@@ -23,9 +25,29 @@ function getResponseTimeRange(data: RequestsData): [number, number] {
 	return [min === Infinity ? 0 : min, max];
 }
 
+function search(query: string): RequestsData {
+	if (!query) {
+		lastQuery = '';
+		lastSearchResult = sidebarFiltered;
+		return sidebarFiltered;
+	}
+	// If the new query extends the previous one, the result can only be a subset —
+	// search within the cached result instead of the full sidebarFiltered set.
+	const base = lastQuery.length > 0 && query.startsWith(lastQuery)
+		? lastSearchResult
+		: sidebarFiltered;
+	const result = applySearch(base, query, cachedUserAgents);
+	lastQuery = query;
+	lastSearchResult = result;
+	return result;
+}
+
 function filterAndSearch(filter: Filter, query: string): RequestsData {
 	sidebarFiltered = applyFilter(cachedRequests, filter);
-	return query ? applySearch(sidebarFiltered, query, cachedUserAgents) : sidebarFiltered;
+	// Sidebar changed — incremental cache is no longer valid.
+	lastQuery = '';
+	lastSearchResult = [];
+	return search(query);
 }
 
 self.onmessage = (e: MessageEvent<WorkerMessage>) => {
@@ -55,9 +77,7 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
 		const filtered = filterAndSearch(msg.filter, msg.query);
 		self.postMessage({ type: 'filtered', filtered });
 	} else if (msg.type === 'search') {
-		const filtered = msg.query
-			? applySearch(sidebarFiltered, msg.query, cachedUserAgents)
-			: sidebarFiltered;
+		const filtered = search(msg.query);
 		self.postMessage({ type: 'filtered', filtered });
 	}
 };

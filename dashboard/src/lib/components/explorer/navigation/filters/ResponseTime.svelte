@@ -45,7 +45,7 @@
 			}}
 		/>
 		<div class="flex flex-col justify-between">
-			<div class="grid place-items-center pb-1 text-center text-[14px] text-[var(--faint-text)]">
+			<div class="grid place-items-center pb-1 text-center text-[13px] text-[var(--faint-text)]">
 				<div class="flex w-full px-1">
 					<div class="flex-grow text-left">{values[0]} ms</div>
 					<div class="flex-grow text-right">{values[1]} ms</div>
