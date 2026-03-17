@@ -33,7 +33,7 @@
 		bind:values
 		onstop={(handle, value) => { filter.timespan[handle] = value; }}
 	/>
-	<div class="flex items-center justify-between px-3 pb-1 text-[13px]">
+	<div class="flex items-center justify-between px-3 text-[13px]">
 		<span class="text-[var(--faint-text)]">{toDay(new Date(values[0])).toLocaleDateString()}</span>
 		<span class="text-[var(--muted-text)]">{daysBetween(new Date(values[0]), new Date(values[1]))} days</span>
 		<span class="text-[var(--faint-text)]">{toDay(new Date(values[1])).toLocaleDateString()}</span>

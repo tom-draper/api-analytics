@@ -39,86 +39,86 @@
 	<div class="flex-1 p-3">
 		<div class="mb-4 flex items-center justify-between px-1 text-left">
 			<span class="text-[13px] font-semibold text-[var(--faded-text)]">Filters</span>
-			<button
-				class="flex cursor-pointer items-center gap-1 rounded border px-2 py-0.5 text-[11px] transition-opacity"
-				class:border-[var(--border)]={filtersActive}
-				class:border-transparent={!filtersActive}
-				class:text-[var(--faint-text)]={filtersActive}
-				class:text-transparent={!filtersActive}
-				class:pointer-events-none={!filtersActive}
-				tabindex={filtersActive ? 0 : -1}
-				onclick={resetFilter}
-			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke-width="1.5"
-					stroke="currentColor"
-					class="size-3"
+			{#if filterBounds}
+				<button
+					class="flex cursor-pointer items-center gap-1 rounded border px-2 py-0.5 text-[11px] transition-opacity"
+					class:border-[var(--border)]={filtersActive}
+					class:border-transparent={!filtersActive}
+					class:text-[var(--faint-text)]={filtersActive}
+					class:text-transparent={!filtersActive}
+					class:pointer-events-none={!filtersActive}
+					tabindex={filtersActive ? 0 : -1}
+					onclick={resetFilter}
 				>
-					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-				</svg>
-				Reset
-			</button>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="currentColor"
+						class="size-3"
+					>
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+					</svg>
+					Reset
+				</button>
+			{/if}
 		</div>
 
-		<div class="mb-4">
-			<div class="section-label">Timespan</div>
-			{#if filterBounds}
+		{#if filterBounds && filter}
+			<div class="mb-4">
+				<div class="section-label">Timespan</div>
 				<Timespan bind:filter timespanBounds={filterBounds.timespan} timespanBuckets={filterBounds.timespanBuckets} />
+			</div>
+
+			<div class="mb-4">
+				<div class="section-label">Status</div>
+				<div class="rounded border border-[var(--border)]">
+					<Status bind:filter counts={counts?.status} />
+				</div>
+			</div>
+
+			{#if Object.keys(filter.methods).length > 0}
+				<div class="mb-4">
+					<div class="section-label">Method</div>
+					<div class="rounded border border-[var(--border)]">
+						<Method bind:filter counts={counts?.methods} />
+					</div>
+				</div>
 			{/if}
-		</div>
 
-		<div class="mb-4">
-			<div class="section-label">Status</div>
-			<div class="rounded border border-[var(--border)]">
-				<Status bind:filter counts={counts?.status} />
-			</div>
-		</div>
-
-		{#if filter && Object.keys(filter.methods).length > 0}
-			<div class="mb-4">
-				<div class="section-label">Method</div>
-				<div class="rounded border border-[var(--border)]">
-					<Method bind:filter counts={counts?.methods} />
+			{#if Object.keys(filter.hostnames).length > 1}
+				<div class="mb-4">
+					<div class="section-label">Hostname</div>
+					<div class="rounded border border-[var(--border)]">
+						<Hostname bind:filter counts={counts?.hostnames} />
+					</div>
 				</div>
-			</div>
-		{/if}
+			{/if}
 
-		{#if filter && Object.keys(filter.hostnames).length > 1}
-			<div class="mb-4">
-				<div class="section-label">Hostname</div>
-				<div class="rounded border border-[var(--border)]">
-					<Hostname bind:filter counts={counts?.hostnames} />
+			{#if Object.keys(filter.locations).length > 0}
+				<div class="mb-4">
+					<div class="section-label">Location</div>
+					<div class="rounded border border-[var(--border)]">
+						<Location bind:filter counts={counts?.locations} />
+					</div>
 				</div>
-			</div>
-		{/if}
+			{/if}
 
-		{#if filter && Object.keys(filter.locations).length > 0}
-			<div class="mb-4">
-				<div class="section-label">Location</div>
-				<div class="rounded border border-[var(--border)]">
-					<Location bind:filter counts={counts?.locations} />
+			{#if Object.keys(filter.referrers).length > 0}
+				<div class="mb-4">
+					<div class="section-label">Referrer</div>
+					<div class="rounded border border-[var(--border)]">
+						<Referrer bind:filter counts={counts?.referrers} />
+					</div>
 				</div>
-			</div>
-		{/if}
+			{/if}
 
-		{#if filter && Object.keys(filter.referrers).length > 0}
-			<div class="mb-4">
-				<div class="section-label">Referrer</div>
-				<div class="rounded border border-[var(--border)]">
-					<Referrer bind:filter counts={counts?.referrers} />
-				</div>
-			</div>
-		{/if}
-
-		<div class="mb-2">
-			<div class="section-label">Response Time</div>
-			{#if filterBounds}
+			<div class="mb-2">
+				<div class="section-label">Response Time</div>
 				<ResponseTime bind:filter rtBounds={filterBounds.rt} rtBuckets={filterBounds.rtBuckets} />
-			{/if}
-		</div>
+			</div>
+		{/if}
 	</div>
 
 </nav>

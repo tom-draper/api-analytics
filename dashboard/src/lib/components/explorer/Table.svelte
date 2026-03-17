@@ -128,8 +128,10 @@
 			const startIdx = (pageNumber - 1) * pageSize;
 			page = data.slice(startIdx, startIdx + pageSize) as Page;
 		}
-		while (page.length < pageSize) {
-			page.push([null, null, null, null, null, null, null, null, null, null]);
+		if (data.length > 0) {
+			while (page.length < pageSize) {
+				page.push([null, null, null, null, null, null, null, null, null, null]);
+			}
 		}
 		return page;
 	}

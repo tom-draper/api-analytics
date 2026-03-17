@@ -12,8 +12,6 @@ type WorkerMessage =
 let cachedRequests: RequestsData = [];
 let cachedUserAgents: Record<number, string> = {};
 let sidebarFiltered: RequestsData = [];
-let lastQuery = '';
-let lastSearchResult: RequestsData = [];
 
 type Bucket = { center: number; count: number };
 
@@ -67,28 +65,14 @@ function getResponseTimeRange(data: RequestsData): [number, number] {
 }
 
 function search(query: string): RequestsData {
-	if (!query) {
-		lastQuery = '';
-		lastSearchResult = sidebarFiltered;
-		return sidebarFiltered;
-	}
-	// If the new query extends the previous one, the result can only be a subset —
-	// search within the cached result instead of the full sidebarFiltered set.
-	const base = lastQuery.length > 0 && query.startsWith(lastQuery)
-		? lastSearchResult
-		: sidebarFiltered;
-	const result = applySearch(base, query, cachedUserAgents);
-	lastQuery = query;
-	lastSearchResult = result;
-	return result;
+	if (!query) return sidebarFiltered;
+	return applySearch(sidebarFiltered, query, cachedUserAgents);
 }
 
 function filterAndSearch(filter: Filter, query: string): { filtered: RequestsData; counts: ReturnType<typeof computeCounts> } {
 	sidebarFiltered = applyFilter(cachedRequests, filter);
-	// Sidebar changed — incremental cache is no longer valid.
-	lastQuery = '';
-	lastSearchResult = [];
-	return { filtered: search(query), counts: computeCounts(sidebarFiltered) };
+	const filtered = search(query);
+	return { filtered, counts: computeCounts(filtered) };
 }
 
 self.onmessage = (e: MessageEvent<WorkerMessage>) => {
@@ -123,6 +107,6 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
 		self.postMessage({ type: 'filtered', filtered, counts });
 	} else if (msg.type === 'search') {
 		const filtered = search(msg.query);
-		self.postMessage({ type: 'filtered', filtered, counts: computeCounts(sidebarFiltered) });
+		self.postMessage({ type: 'filtered', filtered, counts: computeCounts(filtered) });
 	}
 };
