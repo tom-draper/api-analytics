@@ -10,16 +10,25 @@
 
 	type Bucket = { center: number; count: number };
 	type FilterBounds = { timespan: [number, number]; rt: [number, number]; timespanBuckets: Bucket[]; rtBuckets: Bucket[] };
+	type FilterCounts = {
+		status: { success: number; redirect: number; client: number; server: number };
+		methods: Record<number, number>;
+		hostnames: Record<string, number>;
+		locations: Record<string, number>;
+		referrers: Record<string, number>;
+	};
 
 	let {
 		filter = $bindable(),
 		filtersActive,
 		filterBounds,
+		counts,
 		resetFilter
 	}: {
 		filter: Filter;
 		filtersActive: boolean;
 		filterBounds: FilterBounds | null;
+		counts: FilterCounts | null;
 		resetFilter: () => void;
 	} = $props();
 </script>
@@ -64,7 +73,7 @@
 		<div class="mb-4">
 			<div class="section-label">Status</div>
 			<div class="rounded border border-[var(--border)]">
-				<Status bind:filter />
+				<Status bind:filter counts={counts?.status} />
 			</div>
 		</div>
 
@@ -72,7 +81,7 @@
 			<div class="mb-4">
 				<div class="section-label">Method</div>
 				<div class="rounded border border-[var(--border)]">
-					<Method bind:filter />
+					<Method bind:filter counts={counts?.methods} />
 				</div>
 			</div>
 		{/if}
@@ -81,7 +90,7 @@
 			<div class="mb-4">
 				<div class="section-label">Hostname</div>
 				<div class="rounded border border-[var(--border)]">
-					<Hostname bind:filter />
+					<Hostname bind:filter counts={counts?.hostnames} />
 				</div>
 			</div>
 		{/if}
@@ -90,7 +99,7 @@
 			<div class="mb-4">
 				<div class="section-label">Location</div>
 				<div class="rounded border border-[var(--border)]">
-					<Location bind:filter />
+					<Location bind:filter counts={counts?.locations} />
 				</div>
 			</div>
 		{/if}
@@ -99,7 +108,7 @@
 			<div class="mb-4">
 				<div class="section-label">Referrer</div>
 				<div class="rounded border border-[var(--border)]">
-					<Referrer bind:filter />
+					<Referrer bind:filter counts={counts?.referrers} />
 				</div>
 			</div>
 		{/if}

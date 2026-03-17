@@ -2,6 +2,7 @@
 import { ColumnIndex } from '$lib/consts';
 import { defaultFilter, applyFilter, type Filter } from '$lib/filter';
 import { applySearch } from '$lib/search';
+import { statusBad, statusError, statusRedirect, statusSuccess } from '$lib/status';
 
 type WorkerMessage =
 	| { type: 'init'; requests: RequestsData; userAgents: Record<number, string>; filter: Filter | null; query: string }
@@ -28,6 +29,30 @@ function computeHistogram(data: RequestsData, min: number, max: number, col: num
 		counts[Math.min(n - 1, Math.floor((v - min) / range * n))]++;
 	}
 	return counts.map((count, i) => ({ center: min + (i + 0.5) / n * range, count }));
+}
+
+function computeCounts(data: RequestsData) {
+	const methods: Record<number, number> = {};
+	const hostnames: Record<string, number> = {};
+	const locations: Record<string, number> = {};
+	const referrers: Record<string, number> = {};
+	let success = 0, redirect = 0, client = 0, server = 0;
+	for (const row of data) {
+		const status = row[ColumnIndex.Status] as number;
+		if (statusSuccess(status)) success++;
+		else if (statusRedirect(status)) redirect++;
+		else if (statusBad(status)) client++;
+		else if (statusError(status)) server++;
+		const method = row[ColumnIndex.Method] as number;
+		if (method != null) methods[method] = (methods[method] ?? 0) + 1;
+		const hostname = row[ColumnIndex.Hostname] as string;
+		if (hostname) hostnames[hostname] = (hostnames[hostname] ?? 0) + 1;
+		const location = row[ColumnIndex.Location] as string;
+		if (location) locations[location] = (locations[location] ?? 0) + 1;
+		const referrer = row[ColumnIndex.Referrer] as string;
+		if (referrer) referrers[referrer] = (referrers[referrer] ?? 0) + 1;
+	}
+	return { status: { success, redirect, client, server }, methods, hostnames, locations, referrers };
 }
 
 function getResponseTimeRange(data: RequestsData): [number, number] {
@@ -58,12 +83,12 @@ function search(query: string): RequestsData {
 	return result;
 }
 
-function filterAndSearch(filter: Filter, query: string): RequestsData {
+function filterAndSearch(filter: Filter, query: string): { filtered: RequestsData; counts: ReturnType<typeof computeCounts> } {
 	sidebarFiltered = applyFilter(cachedRequests, filter);
 	// Sidebar changed — incremental cache is no longer valid.
 	lastQuery = '';
 	lastSearchResult = [];
-	return search(query);
+	return { filtered: search(query), counts: computeCounts(sidebarFiltered) };
 }
 
 self.onmessage = (e: MessageEvent<WorkerMessage>) => {
@@ -81,8 +106,8 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
 		cachedUserAgents = msg.userAgents;
 
 		if (msg.filter) {
-			const filtered = filterAndSearch(msg.filter, msg.query);
-			self.postMessage({ type: 'filtered', filtered });
+			const { filtered, counts } = filterAndSearch(msg.filter, msg.query);
+			self.postMessage({ type: 'filtered', filtered, counts });
 		} else {
 			sidebarFiltered = cachedRequests;
 			const filter = defaultFilter(cachedRequests);
@@ -90,13 +115,14 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
 			const N = 60;
 			const timespanBuckets = computeHistogram(cachedRequests, filter.timespan[0], filter.timespan[1], ColumnIndex.CreatedAt, N);
 			const rtBuckets = computeHistogram(cachedRequests, rtMin, rtMax, ColumnIndex.ResponseTime, N);
-			self.postMessage({ type: 'ready', filter, rtMin, rtMax, timespanBuckets, rtBuckets });
+			const counts = computeCounts(cachedRequests);
+			self.postMessage({ type: 'ready', filter, rtMin, rtMax, timespanBuckets, rtBuckets, counts });
 		}
 	} else if (msg.type === 'filter') {
-		const filtered = filterAndSearch(msg.filter, msg.query);
-		self.postMessage({ type: 'filtered', filtered });
+		const { filtered, counts } = filterAndSearch(msg.filter, msg.query);
+		self.postMessage({ type: 'filtered', filtered, counts });
 	} else if (msg.type === 'search') {
 		const filtered = search(msg.query);
-		self.postMessage({ type: 'filtered', filtered });
+		self.postMessage({ type: 'filtered', filtered, counts: computeCounts(sidebarFiltered) });
 	}
 };
