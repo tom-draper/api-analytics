@@ -56,7 +56,6 @@
 		const mean = sum / total;
 		const diffFromMean = rt - mean;
 
-		// Build histogram buckets
 		const N = 40;
 		const min = rts[0];
 		const max = rts[rts.length - 1];
@@ -97,8 +96,9 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <aside class="thin-scroll flex w-[300px] flex-none flex-col overflow-y-auto border-l border-[var(--border)] bg-[var(--light-background)]">
+
 	<div class="flex flex-none items-center justify-between border-b border-[var(--border)] px-3 py-2">
-		<span class="text-[12px] font-semibold text-[var(--faded-text)]">Request detail</span>
+		<span class="text-[13px] font-semibold text-[var(--faded-text)]">Request detail</span>
 		<button class="cursor-pointer text-[var(--faint-text)] hover:text-[var(--faded-text)]" onclick={onclose}>
 			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -106,57 +106,52 @@
 		</button>
 	</div>
 
-	<div class="flex flex-col gap-5 p-4 text-[13px]">
+	<div class="flex flex-col divide-y divide-[var(--border)] text-[13px]">
 
-		<!-- Status + method + timestamp -->
-		<div class="flex flex-col gap-1">
+		<!-- Overview -->
+		<div class="flex flex-col gap-1 px-3 py-3">
 			<div class="flex items-center gap-2">
 				{#if status != null}
-					<span class="text-[15px] font-semibold leading-none" style="color: {statusColor}">{status}</span>
+					<span class="font-semibold" style="color: {statusColor}">{status}</span>
 				{/if}
 				{#if method != null}
-					<span class="text-[var(--faded-text)] font-medium">{methodMap[method]}</span>
+					<span class="text-[var(--faded-text)]">{methodMap[method]}</span>
 				{/if}
 			</div>
 			{#if createdAt}
-				<span class="text-[12px] text-[var(--faint-text)]">{createdAt.toLocaleString()}</span>
+				<span class="text-[var(--faint-text)]">{createdAt.toLocaleString()}</span>
+			{/if}
+			{#if path}
+				<span class="break-all font-mono text-[12px] text-[var(--faint-text)] pt-1">{path}</span>
 			{/if}
 		</div>
 
-		<!-- Path -->
-		{#if path}
-			<div>
-				<div class="section-label">Path</div>
-				<span class="break-all font-mono text-[12px] text-[var(--faded-text)]">{path}</span>
-			</div>
-		{/if}
-
 		<!-- Network -->
-		<div>
+		<div class="flex flex-col px-3 py-3">
 			<div class="section-label">Network</div>
-			<div class="flex flex-col gap-2">
+			<div class="flex flex-col gap-1.5">
 				{#if hostname}
-					<div class="row">
-						<span class="key">Host</span>
-						<span class="val break-all">{hostname}</span>
+					<div class="kv-row">
+						<span class="kv-key">Host</span>
+						<span class="kv-val break-all">{hostname}</span>
 					</div>
 				{/if}
 				{#if ip}
-					<div class="row">
-						<span class="key">IP</span>
-						<span class="val">{ip}</span>
+					<div class="kv-row">
+						<span class="kv-key">IP</span>
+						<span class="kv-val">{ip}</span>
 					</div>
 				{/if}
 				{#if location}
-					<div class="row">
-						<span class="key">Location</span>
-						<span class="val">{location}</span>
+					<div class="kv-row">
+						<span class="kv-key">Location</span>
+						<span class="kv-val">{location}</span>
 					</div>
 				{/if}
 				{#if referrer}
-					<div class="row">
-						<span class="key">Referrer</span>
-						<span class="val break-all">{referrer}</span>
+					<div class="kv-row">
+						<span class="kv-key">Referrer</span>
+						<span class="kv-val break-all">{referrer}</span>
 					</div>
 				{/if}
 			</div>
@@ -164,19 +159,19 @@
 
 		<!-- Client -->
 		{#if userId || ua}
-			<div>
+			<div class="flex flex-col px-3 py-3">
 				<div class="section-label">Client</div>
-				<div class="flex flex-col gap-2">
+				<div class="flex flex-col gap-1.5">
 					{#if userId}
-						<div class="row">
-							<span class="key">User ID</span>
-							<span class="val break-all font-mono text-[11px]">{userId}</span>
+						<div class="kv-row">
+							<span class="kv-key">User ID</span>
+							<span class="kv-val break-all font-mono text-[11px]">{userId}</span>
 						</div>
 					{/if}
 					{#if ua}
-						<div class="row">
-							<span class="key">Agent</span>
-							<span class="val break-all text-[11px]">{ua}</span>
+						<div class="kv-row">
+							<span class="kv-key">Agent</span>
+							<span class="kv-val break-all text-[11px]">{ua}</span>
 						</div>
 					{/if}
 				</div>
@@ -185,19 +180,19 @@
 
 		<!-- Performance -->
 		{#if rt != null}
-			<div>
-				<div class="section-label">Performance</div>
+			<div class="flex flex-col px-3 py-3">
+				<div class="section-label">Response time</div>
 				<div class="flex flex-col gap-3">
 					<div class="flex items-baseline gap-2">
-						<span class="text-[15px] font-semibold leading-none text-[var(--faded-text)]">{rt}ms</span>
+						<span class="font-semibold text-[var(--faded-text)]">{rt}ms</span>
 						{#if rtStats}
-							<span class="text-[12px]" style="color: {percentileColor}">{ordinal(rtStats.percentile)} percentile</span>
+							<span class="text-[var(--faint-text)]">{ordinal(rtStats.percentile)} percentile</span>
 						{/if}
 					</div>
 
 					{#if rtStats}
 						<div class="flex flex-col gap-1">
-							<div class="flex h-12 items-end gap-[2px]">
+							<div class="flex h-10 items-end gap-[2px]">
 								{#each rtStats.buckets as bucket}
 									<div
 										class="min-w-0 flex-1 rounded-[1px]"
@@ -211,7 +206,7 @@
 							</div>
 						</div>
 
-						<div class="flex flex-col gap-1.5 rounded border border-[var(--border)] px-3 py-2">
+						<div class="flex flex-col gap-1.5 rounded border border-[var(--border)] px-3 py-2 text-[12px]">
 							<div class="stat-row">
 								<span>Mean</span>
 								<span>{Math.round(rtStats.mean)}ms</span>
@@ -230,9 +225,10 @@
 							</div>
 							<div class="stat-row border-t border-[var(--border)] pt-1.5">
 								<span>vs mean</span>
-								<span class:text-[var(--highlight)]={rtStats.diffFromMean <= 0} class:text-[var(--red)]={rtStats.diffFromMean > 0}>
-									{rtStats.diffFromMean > 0 ? '+' : ''}{Math.round(rtStats.diffFromMean)}ms
-								</span>
+								<span
+									class:text-[var(--highlight)]={rtStats.diffFromMean <= 0}
+									class:text-[var(--red)]={rtStats.diffFromMean > 0}
+								>{rtStats.diffFromMean > 0 ? '+' : ''}{Math.round(rtStats.diffFromMean)}ms</span>
 							</div>
 						</div>
 					{/if}
@@ -248,25 +244,24 @@
 		font-size: 13px;
 		font-weight: 500;
 		color: var(--faint-text);
-		margin-bottom: 6px;
+		margin-bottom: 8px;
 	}
-	.row {
+	.kv-row {
 		display: flex;
 		align-items: flex-start;
 		gap: 8px;
 	}
-	.key {
-		width: 56px;
+	.kv-key {
+		width: 52px;
 		flex-shrink: 0;
 		color: var(--faint-text);
 	}
-	.val {
+	.kv-val {
 		color: var(--faded-text);
 	}
 	.stat-row {
 		display: flex;
 		justify-content: space-between;
-		font-size: 12px;
 		color: var(--faint-text);
 	}
 	.stat-row span:last-child {
