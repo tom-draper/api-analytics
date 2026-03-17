@@ -36,6 +36,7 @@
 </script>
 
 <svelte:head>
+	<title>API Analytics - Regenerate</title>
 	<link rel="icon" href="/images/logos/lightning-blue.svg" />
 </svelte:head>
 

@@ -33,6 +33,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>API Analytics - Regenerate</title>
+</svelte:head>
+
 <div class="form-page">
 	<div class="content">
 		<div class="logo-icon">

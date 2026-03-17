@@ -188,6 +188,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>API Analytics - Dashboard</title>
+</svelte:head>
+
 <Settings
 	bind:show={showSettings}
 	bind:settings
