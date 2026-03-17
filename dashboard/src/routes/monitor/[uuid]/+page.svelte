@@ -144,6 +144,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>API Analytics - Monitor</title>
+</svelte:head>
+
 <div class="monitoring">
 	<div class="status min-h-[160px]">
 		{#if data}

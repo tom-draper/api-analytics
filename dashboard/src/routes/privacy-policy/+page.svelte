@@ -1,3 +1,7 @@
+<svelte:head>
+	<title>API Analytics - Privacy Policy</title>
+</svelte:head>
+
 <div class="info-page-container text-center leading-snug text-[#c3c3c3]">
 	<h1>Privacy Policy</h1>
 

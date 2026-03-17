@@ -33,6 +33,10 @@
 	</table>
 </div>
 
+<svelte:head>
+	<title>API Analytics - Outages</title>
+</svelte:head>
+
 <style scoped>
 	.info-page-container {
 		padding-bottom: 6em;
