@@ -29,12 +29,8 @@
 			pips={false}
 			first={true}
 			pushy={true}
-			onstop={(e) => {
-				const next: [number, number] = [filter.timespan[0], filter.timespan[1]];
-				next[e.detail.activeHandle] = e.detail.value;
-				console.log('[Timespan] onstop fired', { activeHandle: e.detail.activeHandle, value: e.detail.value, next });
-				filter.timespan = next;
-				console.log('[Timespan] filter.timespan after assign', filter.timespan);
+			on:stop={(e) => {
+				filter.timespan[e.detail.activeHandle] = e.detail.value;
 			}}
 		/>
 		<div class="flex flex-col justify-between">
