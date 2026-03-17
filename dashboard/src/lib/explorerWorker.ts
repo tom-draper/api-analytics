@@ -14,6 +14,22 @@ let sidebarFiltered: RequestsData = [];
 let lastQuery = '';
 let lastSearchResult: RequestsData = [];
 
+type Bucket = { center: number; count: number };
+
+function computeHistogram(data: RequestsData, min: number, max: number, col: number, n: number): Bucket[] {
+	const range = max - min;
+	if (range === 0) return [{ center: min, count: data.length }];
+	const counts = new Array<number>(n).fill(0);
+	for (const row of data) {
+		const v = col === ColumnIndex.CreatedAt
+			? (row[col] as Date).getTime()
+			: row[col] as number;
+		if (v == null) continue;
+		counts[Math.min(n - 1, Math.floor((v - min) / range * n))]++;
+	}
+	return counts.map((count, i) => ({ center: min + (i + 0.5) / n * range, count }));
+}
+
 function getResponseTimeRange(data: RequestsData): [number, number] {
 	let min = Infinity;
 	let max = 0;
@@ -71,7 +87,10 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
 			sidebarFiltered = cachedRequests;
 			const filter = defaultFilter(cachedRequests);
 			const [rtMin, rtMax] = getResponseTimeRange(cachedRequests);
-			self.postMessage({ type: 'ready', filter, rtMin, rtMax });
+			const N = 60;
+			const timespanBuckets = computeHistogram(cachedRequests, filter.timespan[0], filter.timespan[1], ColumnIndex.CreatedAt, N);
+			const rtBuckets = computeHistogram(cachedRequests, rtMin, rtMax, ColumnIndex.ResponseTime, N);
+			self.postMessage({ type: 'ready', filter, rtMin, rtMax, timespanBuckets, rtBuckets });
 		}
 	} else if (msg.type === 'filter') {
 		const filtered = filterAndSearch(msg.filter, msg.query);
