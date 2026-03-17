@@ -215,6 +215,6 @@
 			{counts}
 			{resetFilter}
 		/>
-		<Viewer {filteredRequests} totalCount={data?.requests.length ?? 0} />
+		<Viewer {filteredRequests} totalCount={data?.requests.length ?? 0} userAgents={data?.userAgents ?? {}} />
 	</div>
 </main>
