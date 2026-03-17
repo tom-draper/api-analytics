@@ -1,19 +1,35 @@
 <script lang="ts">
-	let { checked = $bindable(false), label, color }: { checked: boolean; label: string; color: string } = $props();
+	let {
+		checked = $bindable(false),
+		label,
+		color,
+		proportion
+	}: {
+		checked: boolean;
+		label: string;
+		color: string;
+		proportion?: number;
+	} = $props();
 
 	function toggleChecked() {
 		checked = !checked;
 	}
 </script>
 
-<div class="flex items-center gap-2 px-2 py-2">
+<div class="relative flex items-center gap-2 px-2 py-2">
+	{#if proportion !== undefined}
+		<div
+			class="pointer-events-none absolute inset-y-0 left-0 rounded-[var(--radius-sm)]"
+			style="width: {proportion * 100}%; background: rgba(var(--highlight-rgb), 0.09)"
+		></div>
+	{/if}
 	<button
-		class="flex cursor-pointer items-center gap-2 px-1 text-[var(--faint-text)] hover:text-[var(--faded-text)]"
+		class="relative flex cursor-pointer items-center gap-2 px-1 text-[var(--faint-text)] hover:text-[var(--faded-text)]"
 		onclick={toggleChecked}
 	>
 		<div class="flex items-center gap-2">
 			<div
-				class="grid h-4 w-4 place-items-center rounded-[3px] border border-solid border-[var(--border)]"
+				class="grid h-4 w-4 flex-none place-items-center rounded-[3px] border border-solid border-[var(--border)]"
 				style={`${checked ? `background: ${color}` : ''}`}
 			>
 				{#if checked}

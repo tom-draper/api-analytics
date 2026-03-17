@@ -2,7 +2,15 @@
 	import Checkbox from '$components/explorer/navigation/Checkbox.svelte';
 	import { type Filter } from '$lib/filter';
 
-	let { filter = $bindable() }: { filter: Filter } = $props();
+	let {
+		filter = $bindable(),
+		counts
+	}: {
+		filter: Filter;
+		counts?: Record<string, number>;
+	} = $props();
+
+	const max = $derived(counts ? Math.max(...Object.values(counts), 0) : 0);
 </script>
 
 <div class="thin-scroll flex max-h-[200px] flex-col overflow-y-auto">
@@ -13,6 +21,7 @@
 					bind:checked={filter.referrers[referrer]}
 					label={referrer}
 					color="var(--highlight)"
+					proportion={counts && max > 0 ? (counts[referrer] ?? 0) / max : undefined}
 				/>
 			</div>
 		{/each}

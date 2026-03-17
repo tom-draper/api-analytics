@@ -17,11 +17,19 @@
 
 	type Bucket = { center: number; count: number };
 	type FilterBounds = { timespan: [number, number]; rt: [number, number]; timespanBuckets: Bucket[]; rtBuckets: Bucket[] };
+	type FilterCounts = {
+		status: { success: number; redirect: number; client: number; server: number };
+		methods: Record<number, number>;
+		hostnames: Record<string, number>;
+		locations: Record<string, number>;
+		referrers: Record<string, number>;
+	};
 
 	let data = $state.raw<DashboardData | undefined>(undefined);
 	let filteredRequests = $state.raw<RequestsData>([]);
 	let filter = $state<Filter | undefined>(undefined);
 	let filterBounds = $state.raw<FilterBounds | null>(null);
+	let counts = $state.raw<FilterCounts | null>(null);
 	let initialFilter = $state.raw<Filter | null>(null);
 	let worker = $state.raw<Worker | undefined>(undefined);
 	let searchQuery = $state('');
@@ -166,8 +174,10 @@
 				initialFilter = msg.filter;
 				filterBounds = { timespan: msg.filter.timespan, rt: [msg.rtMin, msg.rtMax], timespanBuckets: msg.timespanBuckets, rtBuckets: msg.rtBuckets };
 				filter = structuredClone(msg.filter);
+				counts = msg.counts;
 			} else if (msg.type === 'filtered') {
 				filteredRequests = msg.filtered;
+				if (msg.counts) counts = msg.counts;
 				requestAnimationFrame(() => { searching = false; });
 			}
 		};
@@ -202,6 +212,7 @@
 			bind:filter
 			{filtersActive}
 			{filterBounds}
+			{counts}
 			{resetFilter}
 		/>
 		<Viewer {filteredRequests} totalCount={data?.requests.length ?? 0} />
