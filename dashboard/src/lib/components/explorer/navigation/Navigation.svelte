@@ -8,7 +8,8 @@
 	import Referrer from './filters/Referrer.svelte';
 	import ResponseTime from './filters/ResponseTime.svelte';
 
-	type FilterBounds = { timespan: [number, number]; rt: [number, number] };
+	type Bucket = { center: number; count: number };
+	type FilterBounds = { timespan: [number, number]; rt: [number, number]; timespanBuckets: Bucket[]; rtBuckets: Bucket[] };
 
 	let {
 		filter = $bindable(),
@@ -56,7 +57,7 @@
 		<div class="mb-4">
 			<div class="section-label">Timespan</div>
 			{#if filterBounds}
-				<Timespan bind:filter timespanBounds={filterBounds.timespan} />
+				<Timespan bind:filter timespanBounds={filterBounds.timespan} timespanBuckets={filterBounds.timespanBuckets} />
 			{/if}
 		</div>
 
@@ -106,7 +107,7 @@
 		<div class="mb-2">
 			<div class="section-label">Response Time</div>
 			{#if filterBounds}
-				<ResponseTime bind:filter rtBounds={filterBounds.rt} />
+				<ResponseTime bind:filter rtBounds={filterBounds.rt} rtBuckets={filterBounds.rtBuckets} />
 			{/if}
 		</div>
 	</div>

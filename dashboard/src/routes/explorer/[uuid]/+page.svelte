@@ -15,7 +15,8 @@
 
 	const userID = formatUUID(page.params.uuid);
 
-	type FilterBounds = { timespan: [number, number]; rt: [number, number] };
+	type Bucket = { center: number; count: number };
+	type FilterBounds = { timespan: [number, number]; rt: [number, number]; timespanBuckets: Bucket[]; rtBuckets: Bucket[] };
 
 	let data = $state.raw<DashboardData | undefined>(undefined);
 	let filteredRequests = $state.raw<RequestsData>([]);
@@ -163,7 +164,7 @@
 			const msg = e.data;
 			if (msg.type === 'ready') {
 				initialFilter = msg.filter;
-				filterBounds = { timespan: msg.filter.timespan, rt: [msg.rtMin, msg.rtMax] };
+				filterBounds = { timespan: msg.filter.timespan, rt: [msg.rtMin, msg.rtMax], timespanBuckets: msg.timespanBuckets, rtBuckets: msg.rtBuckets };
 				filter = structuredClone(msg.filter);
 			} else if (msg.type === 'filtered') {
 				filteredRequests = msg.filtered;
