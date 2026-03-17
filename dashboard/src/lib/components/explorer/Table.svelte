@@ -5,7 +5,15 @@
 	type Nullable<T extends any[]> = { [K in keyof T]: T[K] | null };
 	type Page = Nullable<RequestsData[number]>[];
 
-	let { data }: { data: RequestsData } = $props();
+	let {
+		data,
+		selectedRequest = null,
+		onselect
+	}: {
+		data: RequestsData;
+		selectedRequest?: RequestsData[number] | null;
+		onselect?: (row: RequestsData[number]) => void;
+	} = $props();
 
 	const ROW_HEIGHT = 36;
 
@@ -185,8 +193,11 @@
 						class:warn-border={request[ColumnIndex.Status] && statusBad(request[ColumnIndex.Status])}
 						class:error-bg={request[ColumnIndex.Status] && statusError(request[ColumnIndex.Status])}
 						class:error-border={request[ColumnIndex.Status] && statusError(request[ColumnIndex.Status])}
-						class:bottom-row={i === page.length - 1}
-					>
+						class:cursor-pointer={request[ColumnIndex.Status] != null}
+					class:selected={request === selectedRequest}
+					class:bottom-row={i === page.length - 1}
+					onclick={() => request[ColumnIndex.Status] != null && onselect?.(request)}
+				>
 						<td class="w-6 flex-none flex items-center !px-0">
 							<div
 								class="mx-auto h-1.5 w-1.5 rounded-sm"
@@ -264,6 +275,11 @@
 	}
 	.bottom-row {
 		border-bottom: 1px solid var(--background);
+	}
+	.selected {
+		background: rgba(var(--highlight-rgb), 0.07) !important;
+		outline: 1px solid rgba(var(--highlight-rgb), 0.3);
+		outline-offset: -1px;
 	}
 	th {
 		border: none;

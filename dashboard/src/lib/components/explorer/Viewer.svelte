@@ -1,8 +1,23 @@
 <script lang="ts">
 	import Graph from './Graph.svelte';
 	import Table from './Table.svelte';
+	import RequestDetail from './RequestDetail.svelte';
 
-	let { filteredRequests, totalCount }: { filteredRequests: RequestsData; totalCount: number } = $props();
+	let {
+		filteredRequests,
+		totalCount,
+		userAgents
+	}: {
+		filteredRequests: RequestsData;
+		totalCount: number;
+		userAgents: Record<number, string>;
+	} = $props();
+
+	let selectedRequest = $state<RequestsData[number] | null>(null);
+
+	function selectRequest(row: RequestsData[number]) {
+		selectedRequest = selectedRequest === row ? null : row;
+	}
 </script>
 
 <div class="ml-[20em] flex h-full w-full min-w-0 flex-col overflow-hidden text-[var(--faded-text)]">
@@ -23,7 +38,17 @@
 		</div>
 	</div>
 
-	<div class="min-h-0 flex-1 overflow-hidden">
-		<Table data={filteredRequests} />
+	<div class="min-h-0 flex-1 flex overflow-hidden">
+		<div class="min-w-0 flex-1 overflow-hidden">
+			<Table data={filteredRequests} {selectedRequest} onselect={selectRequest} />
+		</div>
+		{#if selectedRequest}
+			<RequestDetail
+				request={selectedRequest}
+				{userAgents}
+				data={filteredRequests}
+				onclose={() => (selectedRequest = null)}
+			/>
+		{/if}
 	</div>
 </div>
