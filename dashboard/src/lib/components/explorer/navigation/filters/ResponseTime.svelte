@@ -35,8 +35,9 @@
 		bind:values
 		onstop={(handle, value) => { filter.responseTime[handle] = value; }}
 	/>
-	<div class="flex px-3 pb-3 text-[13px] text-[var(--faint-text)]">
-		<div class="flex-grow">{Math.round(values[0])} ms</div>
-		<div class="flex-grow text-right">{Math.round(values[1])} ms</div>
+	<div class="flex items-center justify-center gap-1 px-3 pb-3 text-[13px]">
+		<span class="text-[var(--faint-text)]">{Math.round(values[0])} ms</span>
+		<span class="text-[var(--muted-text)]">–</span>
+		<span class="text-[var(--faint-text)]">{Math.round(values[1])} ms</span>
 	</div>
 {/if}
