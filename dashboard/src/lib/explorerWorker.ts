@@ -74,9 +74,7 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
 			self.postMessage({ type: 'ready', filter, rtMin, rtMax });
 		}
 	} else if (msg.type === 'filter') {
-		console.log('[Worker] filter message received, timespan:', msg.filter.timespan);
 		const filtered = filterAndSearch(msg.filter, msg.query);
-		console.log('[Worker] filtered count:', filtered.length);
 		self.postMessage({ type: 'filtered', filtered });
 	} else if (msg.type === 'search') {
 		const filtered = search(msg.query);

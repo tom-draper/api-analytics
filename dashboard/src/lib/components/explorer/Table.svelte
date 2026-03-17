@@ -296,15 +296,27 @@
 		cursor: pointer;
 	}
 	.success-bg {
-		background: radial-gradient(rgba(var(--highlight-rgb), 0.03), rgba(var(--highlight-rgb), 0.05));
+		background: linear-gradient(90deg, rgba(var(--highlight-rgb), 0.09) 0%, rgba(var(--highlight-rgb), 0.03) 45%, transparent);
 	}
 	.redirect-bg {
-		background: radial-gradient(rgba(var(--redirect-color-rgb), 0.06), rgba(var(--redirect-color-rgb), 0.1));
+		background: linear-gradient(90deg, rgba(var(--redirect-color-rgb), 0.14) 0%, rgba(var(--redirect-color-rgb), 0.04) 45%, transparent);
 	}
 	.warn-bg {
-		background: radial-gradient(rgba(var(--yellow-rgb), 0.14), rgba(var(--yellow-rgb), 0.18));
+		background: linear-gradient(90deg, rgba(var(--yellow-rgb), 0.22) 0%, rgba(var(--yellow-rgb), 0.06) 45%, transparent);
 	}
 	.error-bg {
-		background: radial-gradient(rgba(var(--red-rgb), 0.14), rgba(var(--red-rgb), 0.18));
+		background: linear-gradient(90deg, rgba(var(--red-rgb), 0.22) 0%, rgba(var(--red-rgb), 0.06) 45%, transparent);
+	}
+	.success-bg:hover {
+		background: linear-gradient(90deg, rgba(var(--highlight-rgb), 0.18) 0%, rgba(var(--highlight-rgb), 0.06) 45%, transparent);
+	}
+	.redirect-bg:hover {
+		background: linear-gradient(90deg, rgba(var(--redirect-color-rgb), 0.24) 0%, rgba(var(--redirect-color-rgb), 0.08) 45%, transparent);
+	}
+	.warn-bg:hover {
+		background: linear-gradient(90deg, rgba(var(--yellow-rgb), 0.35) 0%, rgba(var(--yellow-rgb), 0.1) 45%, transparent);
+	}
+	.error-bg:hover {
+		background: linear-gradient(90deg, rgba(var(--red-rgb), 0.35) 0%, rgba(var(--red-rgb), 0.1) 45%, transparent);
 	}
 </style>

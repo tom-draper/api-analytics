@@ -77,7 +77,6 @@
 	// When filter changes: re-filter using cached requests in worker
 	$effect(() => {
 		const f = filterSnapshot;
-		console.log('[Page] filter effect fired, filterSnapshot:', f?.timespan);
 		const w = untrack(() => worker);
 		if (!w || !f || !untrack(() => data)) return;
 		searching = true;
@@ -188,6 +187,10 @@
 		return () => w.terminate();
 	});
 </script>
+
+<svelte:head>
+	<title>API Analytics - Explorer</title>
+</svelte:head>
 
 <main>
 	<header class="fixed left-0 right-0 top-0 z-10 flex h-[52px] items-center border-b border-[var(--border)]">
