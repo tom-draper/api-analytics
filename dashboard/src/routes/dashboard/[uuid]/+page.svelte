@@ -75,7 +75,7 @@
 		do {
 			requests = await fetchAdditionalPage(page);
 			page++;
-		} while (requests === pageSize);
+		} while (requests >= pageSize);
 
 		loading = false;
 	}
@@ -174,7 +174,7 @@
 		} else {
 			const dashboardData = await getDashboardData();
 
-			if (dashboardData.requests.length === pageSize) {
+			if (dashboardData.requests.length >= pageSize) {
 				fetchAdditionalPages();
 			} else {
 				loading = false;

@@ -43,7 +43,7 @@
 		do {
 			requests = await fetchAdditionalPage(page);
 			page++;
-		} while (requests === pageSize);
+		} while (requests >= pageSize);
 	}
 
 	async function fetchAdditionalPage(page: number) {
@@ -152,7 +152,7 @@
 		if (!data) {
 			data = await getDashboardData();
 
-			if (data.requests.length === pageSize) {
+			if (data.requests.length >= pageSize) {
 				// Fetch page 2 and onwards if initial fetch didn't get all data
 				fetchAdditionalPages();
 			}
