@@ -83,7 +83,6 @@
 	.link {
 		width: fit-content;
 		margin-right: 20px;
-		font-size: 0.9;
 	}
 	.link:hover {
 		background: var(--highlight-hover);
