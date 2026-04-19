@@ -5,10 +5,9 @@
 	import ActivityResponseTimes from './ActivityResponseTimes.svelte';
 	import ActivitySuccessRate from './ActivitySuccessRate.svelte';
 
-	let { activityBuckets, period, firstRequestDate }: {
+	let { activityBuckets, period }: {
 		activityBuckets: ActivityBucket[];
 		period: Period;
-		firstRequestDate: Date | null;
 	} = $props();
 </script>
 
@@ -16,5 +15,5 @@
 	<div class="card-title">Activity</div>
 	<ActivityRequests {activityBuckets} {period} />
 	<ActivityResponseTimes {activityBuckets} {period} />
-	<ActivitySuccessRate {activityBuckets} {period} {firstRequestDate} />
+	<ActivitySuccessRate {activityBuckets} {period} />
 </div>

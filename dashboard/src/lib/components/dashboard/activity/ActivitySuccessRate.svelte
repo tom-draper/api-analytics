@@ -1,74 +1,20 @@
 <script lang="ts">
-	import { periodToDays, type Period } from '$lib/period';
+	import { type Period } from '$lib/period';
 	import type { ActivityBucket } from '$lib/aggregate';
 	import { bucketRange } from '$lib/plotly';
 
 	type Cell = { value: number; date: number };
 
-	function snapNow(period: Period): number {
-		const d = new Date();
-		if (period === '24 hours') {
-			d.setSeconds(0, 0);
-			d.setMinutes(Math.floor(d.getMinutes() / 5) * 5);
-		} else if (period === 'week') {
-			d.setSeconds(0, 0);
-			d.setMinutes(0);
-		} else if (period === 'month') {
-			d.setSeconds(0, 0);
-			d.setMinutes(0);
-			d.setHours(Math.floor(d.getHours() / 6) * 6);
-		} else {
-			d.setHours(0, 0, 0, 0);
-		}
-		return d.getTime();
+	function getSuccessRateArr(buckets: ActivityBucket[]): Cell[] {
+		return buckets.map((b) => ({ value: b.successRate, date: b.date }));
 	}
 
-	function getSuccessRateArr(buckets: ActivityBucket[], period: Period, firstRequestDate: Date | null): Cell[] {
-		const bucketMap = new Map<number, number>(buckets.map((b) => [b.date, b.successRate]));
-		const snap = snapNow(period);
-
-		if (period === '24 hours') {
-			const step = 5 * 60 * 1000;
-			return Array.from({ length: 288 }, (_, i) => {
-				const date = snap - (287 - i) * step;
-				return { value: bucketMap.get(date) ?? 0, date };
-			});
-		} else if (period === 'week') {
-			const step = 60 * 60 * 1000;
-			return Array.from({ length: 168 }, (_, i) => {
-				const date = snap - (167 - i) * step;
-				return { value: bucketMap.get(date) ?? 0, date };
-			});
-		} else if (period === 'month') {
-			const step = 6 * 60 * 60 * 1000;
-			return Array.from({ length: 120 }, (_, i) => {
-				const date = snap - (119 - i) * step;
-				return { value: bucketMap.get(date) ?? 0, date };
-			});
-		} else {
-			let days = period === 'all time'
-				? (firstRequestDate ? Math.floor((Date.now() - firstRequestDate.getTime()) / 86_400_000) : 0)
-				: (periodToDays(period) ?? 0);
-			days = Math.min(days, 500);
-			const base = new Date();
-			base.setHours(0, 0, 0, 0);
-			const baseDay = base.getDate();
-			return Array.from({ length: days }, (_, i) => {
-				const d = new Date(base);
-				d.setDate(baseDay - (days - 1 - i));
-				const date = d.getTime();
-				return { value: bucketMap.get(date) ?? 0, date };
-			});
-		}
-	}
-
-	let { activityBuckets, period, firstRequestDate }: {
+	let { activityBuckets, period }: {
 		activityBuckets: ActivityBucket[];
 		period: Period;
-		firstRequestDate: Date | null;
 	} = $props();
 
-	const successRate = $derived(getSuccessRateArr(activityBuckets, period, firstRequestDate));
+	const successRate = $derived(getSuccessRateArr(activityBuckets));
 </script>
 
 <div class="success-rate-container">
@@ -136,6 +82,9 @@
 		background: #77d884;
 	}
 	.level-9 {
+		background: var(--highlight);
+	}
+	.level-10 {
 		background: var(--highlight);
 	}
 </style>

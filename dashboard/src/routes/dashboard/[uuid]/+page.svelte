@@ -242,7 +242,6 @@
 				<Activity
 					activityBuckets={aggregated.activityBuckets}
 					period={aggregated.period}
-					firstRequestDate={aggregated.firstRequestDate}
 				/>
 				<div class="grid-row">
 					<Locations locationBars={aggregated.locationBars} bind:targetLocation={settings.targetLocation} />

@@ -229,10 +229,10 @@ export function aggregate(
 	if (n === 0) return emptyResult(previous, settings);
 
 	const days = periodToDays(settings.period);
-	const startMs = (current[0][ColumnIndex.CreatedAt] as Date).getTime();
-	const endMs = (current[n - 1][ColumnIndex.CreatedAt] as Date).getTime();
-	const range = endMs - startMs;
-	const bucketInterval = range > 0 ? range / 5 : 1;
+	const now = Date.now();
+	const periodMs = days ? days * 86400000 : (n > 0 ? (current[n - 1][ColumnIndex.CreatedAt] as Date).getTime() - (current[0][ColumnIndex.CreatedAt] as Date).getTime() : 0);
+	const startMs = days ? now - periodMs : (n > 0 ? (current[0][ColumnIndex.CreatedAt] as Date).getTime() : 0);
+	const bucketInterval = Math.max(periodMs / 5, 1);
 
 	const requestBuckets = [0, 0, 0, 0, 0];
 	const userSets: Set<string>[] = [new Set(), new Set(), new Set(), new Set(), new Set()];
@@ -291,10 +291,9 @@ export function aggregate(
 		// 2. User buckets (unique users per time bucket)
 		if (userID) userSets[bucketIdx].add(userID);
 
-		// 3. Success buckets (position-based) + total success rate
-		const posIdx = Math.min(Math.floor(i / (n / 5)), 4);
+		// 3. Success buckets (time-based) + total success rate
 		if (isSuccessful) {
-			successBuckets[posIdx]++;
+			successBuckets[bucketIdx]++;
 			successCount++;
 		}
 
