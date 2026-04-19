@@ -3,10 +3,10 @@
 	import type { ActivityBucket } from '$lib/aggregate';
 	import { bucketRange } from '$lib/plotly';
 
-	type Cell = { value: number; date: number };
+	type Cell = { value: number; date: number; requestCount: number };
 
 	function getSuccessRateArr(buckets: ActivityBucket[]): Cell[] {
-		return buckets.map((b) => ({ value: b.successRate, date: b.date }));
+		return buckets.map((b) => ({ value: b.successRate, date: b.date, requestCount: b.requestCount }));
 	}
 
 	let { activityBuckets, period }: {
@@ -15,21 +15,21 @@
 	} = $props();
 
 	const successRate = $derived(getSuccessRateArr(activityBuckets));
-</script>
+	</script>
 
-<div class="success-rate-container">
+	<div class="success-rate-container">
 	{#if successRate != undefined}
 		<div class="success-rate-title">Success rate</div>
 		<div class="errors">
-			{#each successRate as { value, date }}
+			{#each successRate as { value, date, requestCount }}
 				<div
-					class="error level-{Math.floor(value * 10)}"
-					title={value > 0 ? `${bucketRange(new Date(date), period)}\n${(value * 100).toFixed(1)}% success` : bucketRange(new Date(date), period)}
+					class="error level-{requestCount === 0 ? 0 : Math.max(1, Math.min(9, Math.floor(value * 10)))}"
+					title={requestCount > 0 ? `${bucketRange(new Date(date), period)}\n${(value * 100).toFixed(1)}% success` : bucketRange(new Date(date), period)}
 				></div>
 			{/each}
 		</div>
 	{/if}
-</div>
+	</div>
 
 <style>
 	.errors {
