@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.25-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 # Install necessary packages
 RUN apk add --no-cache git ca-certificates tzdata
@@ -7,15 +7,20 @@ RUN apk add --no-cache git ca-certificates tzdata
 # Create non-root user
 RUN adduser -D -s /bin/sh -u 1001 appuser
 
-# Copy go.mod and go.sum only
-COPY monitor/go.mod monitor/go.sum ./monitor/
+# Set working directory
+WORKDIR /build
 
+# Copy workspace files
+COPY go.work go.work.sum ./
+
+# Copy database module (required dependency)
+COPY database/ ./database/
+
+# Copy monitor module
+COPY monitor/ ./monitor/
+
+# Set working directory to monitor
 WORKDIR /build/monitor
-RUN go mod download && go mod verify
-
-# Now copy the rest of the source
-COPY database/ /build/database/
-COPY monitor/ /build/monitor/
 
 # Download dependencies (this layer will be cached if go.mod/go.sum don't change)
 RUN go mod download && go mod verify
@@ -26,7 +31,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     -o monitor ./cmd/monitor
 
 # Final stage - minimal runtime image
-FROM alpine:3.19
+FROM alpine:3.22
 
 # Install ca-certificates for HTTPS and create app user
 RUN apk --no-cache add ca-certificates tzdata && \

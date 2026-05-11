@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.25-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 # Install necessary packages
 RUN apk add --no-cache git ca-certificates tzdata
@@ -9,6 +9,9 @@ RUN adduser -D -s /bin/sh -u 1001 appuser
 
 # Set working directory
 WORKDIR /build
+
+# Copy workspace files
+COPY go.work go.work.sum ./
 
 # Copy database module (required dependency)
 COPY database/ ./database/
@@ -29,7 +32,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -o api ./cmd/api
 
 # Final stage - minimal runtime image
-FROM alpine:3.19
+FROM alpine:3.22
 
 # Install ca-certificates for HTTPS and create app user
 RUN apk --no-cache add ca-certificates tzdata && \

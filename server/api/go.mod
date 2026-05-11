@@ -1,6 +1,6 @@
 module github.com/tom-draper/api-analytics/server/api
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/JGLTechnologies/gin-rate-limit v1.5.8

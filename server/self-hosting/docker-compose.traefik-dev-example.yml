@@ -1,6 +1,6 @@
 services:
   api-analytics-traefik:
-    image: traefik:v3.5.0
+    image: traefik:v3.7.0
     container_name: api-analytics-traefik
     restart: unless-stopped
     ports:
@@ -100,8 +100,8 @@ services:
   api-analytics-api:
     container_name: api-analytics-api
     build:
-      context: ../api
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: api/Dockerfile
     ports:
       - "3124:3000"
     expose:
@@ -130,8 +130,8 @@ services:
   api-analytics-logger:
     container_name: api-analytics-logger
     build:
-      context: ../logger
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: logger/Dockerfile
     ports:
       - "3125:8000"
     expose:
@@ -158,8 +158,8 @@ services:
   api-analytics-monitor:
     container_name: api-analytics-monitor
     build:
-      context: ../monitor
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: monitor/Dockerfile
     depends_on:
       api-analytics-db:
         condition: service_healthy
@@ -167,7 +167,6 @@ services:
       POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@api-analytics-db:5432/${POSTGRES_DB}
     networks:
       - api-analytics-network
-    command: /bin/bash -c "printenv > /etc/environment && tail -f /dev/null"
 
 networks:
   api-analytics-network:
