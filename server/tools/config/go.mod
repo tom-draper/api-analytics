@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/joho/godotenv v1.5.1
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20260419093658-eae354e04032
+	github.com/tom-draper/api-analytics/server/database v0.0.0
 )
 
 require (
@@ -13,3 +13,5 @@ require (
 	github.com/jackc/pgx/v5 v5.9.2 // indirect
 	golang.org/x/text v0.37.0 // indirect
 )
+
+replace github.com/tom-draper/api-analytics/server/database => ../../database

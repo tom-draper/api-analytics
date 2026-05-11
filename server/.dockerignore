@@ -3,3 +3,5 @@
 **/testdata
 self-hosting/
 tools/
+go.work
+go.work.sum

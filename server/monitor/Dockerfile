@@ -6,7 +6,6 @@ RUN apk add --no-cache ca-certificates tzdata
 WORKDIR /build
 
 # Copy module files first for dependency caching
-COPY go.work go.work.sum ./
 COPY database/go.mod database/go.sum ./database/
 COPY monitor/go.mod monitor/go.sum ./monitor/
 

@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/fatih/color v1.19.0
 	github.com/joho/godotenv v1.5.1
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20260419093658-eae354e04032
+	github.com/tom-draper/api-analytics/server/database v0.0.0
 	golang.org/x/text v0.37.0
 )
 
@@ -17,3 +17,5 @@ require (
 	github.com/mattn/go-isatty v0.0.22 // indirect
 	golang.org/x/sys v0.44.0 // indirect
 )
+
+replace github.com/tom-draper/api-analytics/server/database => ../../database

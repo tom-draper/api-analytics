@@ -9,7 +9,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/oschwald/geoip2-golang v1.13.0
 	github.com/rs/zerolog v1.35.1
-	github.com/tom-draper/api-analytics/server/database v0.0.0-20260419093658-eae354e04032
+	github.com/tom-draper/api-analytics/server/database v0.0.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
@@ -48,3 +48,5 @@ require (
 	golang.org/x/text v0.37.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )
+
+replace github.com/tom-draper/api-analytics/server/database => ../database
