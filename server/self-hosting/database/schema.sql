@@ -67,7 +67,9 @@ CREATE TABLE public.requests (
     ip_address cidr,
     location character varying(2),
     user_id character varying(255),
-    user_agent_id integer
+    user_agent_id integer,
+    user_hash character varying(32),
+    referrer character varying(255)
 );
 
 

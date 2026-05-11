@@ -1,65 +1,50 @@
 # Build stage
 FROM golang:1.26-alpine AS builder
 
-# Install necessary packages
-RUN apk add --no-cache git ca-certificates tzdata
+RUN apk add --no-cache ca-certificates tzdata
 
-# Create non-root user
-RUN adduser -D -s /bin/sh -u 1001 appuser
-
-# Set working directory
 WORKDIR /build
 
-# Copy workspace files
+# Copy module files first for dependency caching
 COPY go.work go.work.sum ./
+COPY database/go.mod database/go.sum ./database/
+COPY monitor/go.mod monitor/go.sum ./monitor/
 
-# Copy database module (required dependency)
-COPY database/ ./database/
-
-# Copy monitor module
-COPY monitor/ ./monitor/
-
-# Set working directory to monitor
 WORKDIR /build/monitor
-
-# Download dependencies (this layer will be cached if go.mod/go.sum don't change)
 RUN go mod download && go mod verify
 
-# Build the application with optimizations
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -trimpath -ldflags="-s -w" \
+# Copy source
+WORKDIR /build
+COPY database/ ./database/
+COPY monitor/ ./monitor/
+
+WORKDIR /build/monitor
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -trimpath \
+    -ldflags="-s -w" \
     -o monitor ./cmd/monitor
 
-# Final stage - minimal runtime image
+# Final stage
 FROM alpine:3.22
 
-# Install ca-certificates for HTTPS and create app user
 RUN apk --no-cache add ca-certificates tzdata && \
     adduser -D -s /bin/sh -u 1001 appuser
 
-# Set working directory
 WORKDIR /app
 
-# Copy the binary from builder
 COPY --from=builder /build/monitor/monitor /app/monitor
 
-# Create logs directory and set permissions
 RUN mkdir -p /app/logs && \
     chown -R appuser:appuser /app
 
-# Switch to non-root user
 USER appuser
 
-# Expose port
 EXPOSE 8000
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:8000/api/health || exit 1
 
-# Set environment variables
 ENV GIN_MODE=release
 ENV LOG_LEVEL=info
 
-# Run the application
 CMD ["./monitor"]

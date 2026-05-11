@@ -54,7 +54,8 @@ services:
       retries: 5
 
   api:
-    container_name: api
+    container_name: api-analytics-api
+    image: api-analytics-api
     build:
       context: ..
       dockerfile: api/Dockerfile
@@ -75,7 +76,8 @@ services:
       retries: 3
 
   logger:
-    container_name: logger
+    container_name: api-analytics-logger
+    image: api-analytics-logger
     build:
       context: ..
       dockerfile: logger/Dockerfile
@@ -95,7 +97,8 @@ services:
       retries: 3
 
   monitor:
-    container_name: monitor
+    container_name: api-analytics-monitor
+    image: api-analytics-monitor
     build:
       context: ..
       dockerfile: monitor/Dockerfile

@@ -1,0 +1,5 @@
+**/.git
+**/*_test.go
+**/testdata
+self-hosting/
+tools/
