@@ -80,7 +80,7 @@ type ProcessedRequest struct {
 	Framework    int16
 	Location     string
 	UserID       string
-	CreatedAt    string
+	CreatedAt    time.Time
 	UserAgentID  int
 }
 
@@ -266,7 +266,7 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 			if len(request.UserID) > 255 {
 				request.UserID = request.UserID[:255]
 			}
-			if !database.ValidUserID(request.UserID) {
+			if request.UserID != "" && !database.ValidUserID(request.UserID) {
 				continue
 			}
 
@@ -305,6 +305,11 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 			location := getCountryCode(geoIPDB, cache, request.IPAddress)
 			userHash := getUserHash(request.IPAddress, request.UserAgent)
 
+			createdAt, err := time.Parse(time.RFC3339Nano, request.CreatedAt)
+			if err != nil {
+				createdAt = time.Now().UTC()
+			}
+
 			// Collect unique user agents
 			if !uniqueUserAgents[request.UserAgent] {
 				uniqueUserAgents[request.UserAgent] = true
@@ -324,7 +329,7 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 				Framework:    framework,
 				Location:     location,
 				UserID:       request.UserID,
-				CreatedAt:    request.CreatedAt,
+				CreatedAt:    createdAt,
 			})
 		}
 

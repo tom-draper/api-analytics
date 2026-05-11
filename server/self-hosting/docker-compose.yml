@@ -4,10 +4,10 @@ services:
     container_name: nginx
     restart: always
     volumes:
-      # Temporary non-SSL config to obtain the Certbot SSL certificate (comment out once SSL certificate is generated)
-      - ./nginx/nginx-certbot.conf.template:/etc/nginx/conf.d/nginx.conf.template
-      # For SSL-compatible production use (uncomment once SSL certificate is generated)
-      # - ./nginx/nginx.conf.template:/etc/nginx/conf.d/nginx.conf.template
+      # Temporary non-SSL config to obtain the Certbot SSL certificate (uncomment to generate SSL certificate with certbox)
+      # - ./nginx/nginx-certbot.conf.template:/etc/nginx/conf.d/nginx.conf.template
+      # For SSL-compatible production use (comment out while generating SSL certificate with certbot)
+      - ./nginx/nginx.conf.template:/etc/nginx/conf.d/nginx.conf.template
       - ./certbot/www:/var/www/certbot:ro
       - ./certbot/conf:/etc/letsencrypt:ro
     ports:
