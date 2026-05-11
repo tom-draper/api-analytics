@@ -6,13 +6,13 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/tom-draper/api-analytics/server/database"
 	"github.com/tom-draper/api-analytics/server/monitor/internal/config"
+	"github.com/tom-draper/api-analytics/server/monitor/internal/log"
 )
 
 type MonitorRow struct {
@@ -39,26 +39,23 @@ func main() {
 	// Load and validate configuration
 	cfg, err := config.Load()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Configuration error: %v\n", err)
-		os.Exit(1)
+		log.Fatal(fmt.Sprintf("Configuration error: %v", err))
 	}
 
 	// Initialize database connection pool
 	db, err := database.New(ctx, cfg.PostgresURL)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: Failed to create database connection pool: %v\n", err)
-		os.Exit(1)
+		log.Fatal(fmt.Sprintf("Failed to create database connection pool: %v", err))
 	}
 	defer db.Close()
-	fmt.Println("Database connection pool initialized")
+	log.Info("Database connection pool initialized")
 
 	monitored, err := getMonitoredURLs(ctx, db)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: Failed to fetch monitored URLs: %v\n", err)
-		os.Exit(1)
+		log.Fatal(fmt.Sprintf("Failed to fetch monitored URLs: %v", err))
 	}
 	if len(monitored) == 0 {
-		fmt.Println("No monitored URLs found")
+		log.Info("No monitored URLs found")
 		return
 	}
 
@@ -67,21 +64,19 @@ func main() {
 	shuffle(monitored)
 
 	pings := pingMonitored(monitored)
-	fmt.Printf("Completed %d pings\n", len(pings))
+	log.Info(fmt.Sprintf("Completed %d pings", len(pings)))
 
 	err = uploadPings(ctx, db, pings)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: Failed to upload pings: %v\n", err)
-		os.Exit(1)
+		log.Fatal(fmt.Sprintf("Failed to upload pings: %v", err))
 	}
-	fmt.Printf("Successfully uploaded %d pings\n", len(pings))
+	log.Info(fmt.Sprintf("Uploaded %d pings", len(pings)))
 
 	err = deleteExpiredPings(ctx, db)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: Failed to delete expired pings: %v\n", err)
-		os.Exit(1)
+		log.Fatal(fmt.Sprintf("Failed to delete expired pings: %v", err))
 	}
-	fmt.Println("Successfully cleaned up expired pings")
+	log.Info("Deleted expired pings")
 }
 
 func getMonitoredURLs(ctx context.Context, db *database.DB) ([]MonitorRow, error) {
@@ -169,7 +164,7 @@ func pingMonitored(monitored []MonitorRow) []PingsRow {
 
 			status, elapsed, err := ping(client, m.URL, m.Secure, m.Ping)
 			if err != nil {
-				fmt.Println(err)
+				log.Error(err.Error())
 				return
 			}
 

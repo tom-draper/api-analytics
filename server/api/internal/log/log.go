@@ -29,7 +29,17 @@ func Init() error {
 		TimeFormat: "2006-01-02 15:04:05",
 		NoColor:    true,
 		FormatLevel: func(i any) string {
-			return "" // Remove level prefix
+			switch v := i.(type) {
+			case string:
+				if v == "error" || v == "fatal" {
+					return "ERR"
+				}
+			case zerolog.Level:
+				if v >= zerolog.ErrorLevel {
+					return "ERR"
+				}
+			}
+			return ""
 		},
 	}).With().Timestamp().Logger()
 
@@ -44,6 +54,10 @@ func Close() error {
 
 func Info(msg string) {
 	Logger.Info().Msg(msg)
+}
+
+func Error(msg string) {
+	Logger.Error().Msg(msg)
 }
 
 func Fatal(msg string) {

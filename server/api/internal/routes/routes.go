@@ -25,7 +25,7 @@ func genAPIKey(db *database.DB) gin.HandlerFunc {
 
 		apiKey, err := db.CreateUser(ctx)
 		if err != nil {
-			log.Info(fmt.Sprintf("API key generation failed - %s", err.Error()))
+			log.Error(fmt.Sprintf("API key generation failed - %s", err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
 			return
 		}
@@ -154,7 +154,7 @@ func fetchAndFormatRequestsPage(ctx context.Context, db *database.DB, apiKey str
 func sendDashboardResponse(c *gin.Context, db *database.DB, ctx context.Context, apiKey string, requests [][12]any, userAgentIDs map[int]struct{}) error {
 	userAgents, err := db.GetUserAgents(ctx, userAgentIDs)
 	if err != nil {
-		log.Info(fmt.Sprintf("key=%s: User agent lookup failed - %s", apiKey, err.Error()))
+		log.Error(fmt.Sprintf("key=%s: User agent lookup failed - %s", apiKey, err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User agent lookup failed."})
 		return err
 	}
@@ -166,14 +166,14 @@ func sendDashboardResponse(c *gin.Context, db *database.DB, ctx context.Context,
 
 	gzipOutput, err := compressJSON(body)
 	if err != nil {
-		log.Info(fmt.Sprintf("key=%s: Compression failed - %s", apiKey, err.Error()))
+		log.Error(fmt.Sprintf("key=%s: Compression failed - %s", apiKey, err.Error()))
 		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Compression failed."})
 		return err
 	}
 
 	// Update last accessed
 	if err := db.UpdateLastAccessed(ctx, apiKey); err != nil {
-		log.Info(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
+		log.Error(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
 		// Don't return error to user, just log it
 	}
 
@@ -231,7 +231,7 @@ func getRequestsHandler(db *database.DB, cfg *config.Config) gin.HandlerFunc {
 		for {
 			pageRequests, pageUserAgentIDs, count, skipped, err := fetchAndFormatRequestsPage(ctx, db, apiKey, currentPage, cfg.PageSize)
 			if err != nil {
-				log.Info(fmt.Sprintf("key=%s: Failed to fetch requests - %s", apiKey, err.Error()))
+				log.Error(fmt.Sprintf("key=%s: Failed to fetch requests - %s", apiKey, err.Error()))
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Failed to fetch requests."})
 				return
 			}
@@ -298,7 +298,7 @@ func getPaginatedRequestsHandler(db *database.DB, cfg *config.Config) gin.Handle
 		// Fetch single page of requests
 		requests, userAgentIDs, _, _, err := fetchAndFormatRequestsPage(ctx, db, apiKey, page, cfg.PageSize)
 		if err != nil {
-			log.Info(fmt.Sprintf("key=%s: Failed to fetch requests - %s", apiKey, err.Error()))
+			log.Error(fmt.Sprintf("key=%s: Failed to fetch requests - %s", apiKey, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Failed to fetch requests."})
 			return
 		}
@@ -416,7 +416,7 @@ func getData(db *database.DB) gin.HandlerFunc {
 		query, arguments := buildDataFetchQuery(apiKey, queries)
 		rows, err := db.Pool.Query(ctx, query, arguments...)
 		if err != nil {
-			log.Info(fmt.Sprintf("key=%s: Queries failed - %s", apiKey, err.Error()))
+			log.Error(fmt.Sprintf("key=%s: Queries failed - %s", apiKey, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 			return
 		}
@@ -449,7 +449,7 @@ func getData(db *database.DB) gin.HandlerFunc {
 
 		err = db.UpdateLastAccessed(ctx, apiKey)
 		if err != nil {
-			log.Info(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
+			log.Error(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 			return
 		}
@@ -687,7 +687,7 @@ func deleteData(db *database.DB) gin.HandlerFunc {
 
 		err := db.DeleteUserAccount(ctx, apiKey)
 		if err != nil {
-			log.Info(fmt.Sprintf("key=%s: Data deletion failed - %s", apiKey, err.Error()))
+			log.Error(fmt.Sprintf("key=%s: Data deletion failed - %s", apiKey, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 			return
 		}
@@ -773,7 +773,7 @@ func addUserMonitor(db *database.DB) gin.HandlerFunc {
 		// Use a transaction to prevent race conditions
 		tx, err := db.Pool.Begin(ctx)
 		if err != nil {
-			log.Info(fmt.Sprintf("key=%s: Failed to start transaction - %s", apiKey, err.Error()))
+			log.Error(fmt.Sprintf("key=%s: Failed to start transaction - %s", apiKey, err.Error()))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
 			return
 		}
@@ -784,7 +784,7 @@ func addUserMonitor(db *database.DB) gin.HandlerFunc {
 		query := "SELECT count(*) FROM monitor WHERE api_key = $1 FOR UPDATE;"
 		err = tx.QueryRow(ctx, query, apiKey).Scan(&monitorCount)
 		if err != nil {
-			log.Info(fmt.Sprintf("key=%s: Failed to get monitor count - %s", apiKey, err.Error()))
+			log.Error(fmt.Sprintf("key=%s: Failed to get monitor count - %s", apiKey, err.Error()))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
 			return
 		}
@@ -805,14 +805,14 @@ func addUserMonitor(db *database.DB) gin.HandlerFunc {
 			return
 		}
 		if err != nil {
-			log.Info(fmt.Sprintf("key=%s: Failed to create new monitor - %s", apiKey, err.Error()))
+			log.Error(fmt.Sprintf("key=%s: Failed to create new monitor - %s", apiKey, err.Error()))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
 			return
 		}
 
 		// Commit transaction
 		if err = tx.Commit(ctx); err != nil {
-			log.Info(fmt.Sprintf("key=%s: Failed to commit transaction - %s", apiKey, err.Error()))
+			log.Error(fmt.Sprintf("key=%s: Failed to commit transaction - %s", apiKey, err.Error()))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
 			return
 		}
@@ -856,7 +856,7 @@ func deleteUserMonitor(db *database.DB) gin.HandlerFunc {
 		// Delete URL monitor
 		err = db.DeleteURLMonitor(ctx, apiKey, body.URL)
 		if err != nil {
-			log.Info(fmt.Sprintf("key=%s: Failed to delete monitor - %s", apiKey, err.Error()))
+			log.Error(fmt.Sprintf("key=%s: Failed to delete monitor - %s", apiKey, err.Error()))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
 			return
 		}
@@ -864,7 +864,7 @@ func deleteUserMonitor(db *database.DB) gin.HandlerFunc {
 		// Delete all pings associated with this URL
 		err = db.DeleteURLPings(ctx, apiKey, body.URL)
 		if err != nil {
-			log.Info(fmt.Sprintf("key=%s: Failed to delete pings - %s", apiKey, err.Error()))
+			log.Error(fmt.Sprintf("key=%s: Failed to delete pings - %s", apiKey, err.Error()))
 			// Continue even if ping deletion fails
 		}
 

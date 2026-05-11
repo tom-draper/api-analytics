@@ -372,7 +372,7 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 		)
 
 		if err != nil {
-			log.LogToFile(err.Error())
+			log.Error(err.Error())
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Database insert failed."})
 			return
 		}

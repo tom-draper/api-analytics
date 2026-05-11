@@ -29,7 +29,17 @@ func Init() error {
 		TimeFormat: "2006-01-02 15:04:05",
 		NoColor:    true,
 		FormatLevel: func(i any) string {
-			return "" // Remove level prefix
+			switch v := i.(type) {
+			case string:
+				if v == "error" || v == "fatal" {
+					return "ERR"
+				}
+			case zerolog.Level:
+				if v >= zerolog.ErrorLevel {
+					return "ERR"
+				}
+			}
+			return ""
 		},
 	}).With().Timestamp().Logger()
 
@@ -76,6 +86,11 @@ func LogRequestsToFile(apiKey string, inserted int, totalRequests int) {
 		Int("inserted", inserted).
 		Int("total_requests", totalRequests).
 		Msg("Requests logged")
+}
+
+// Error logs an error message
+func Error(msg string) {
+	Logger.Error().Msg(msg)
 }
 
 // LogToFile logs a message

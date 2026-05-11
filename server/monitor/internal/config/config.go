@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	"github.com/tom-draper/api-analytics/server/monitor/internal/log"
 )
 
 // Config holds validated configuration for the monitor service
@@ -16,7 +17,7 @@ type Config struct {
 func Load() (*Config, error) {
 	// Load .env file (non-fatal if missing)
 	if err := godotenv.Load(".env"); err != nil {
-		fmt.Println("Warning: could not load .env file")
+		log.Info("Could not load .env file, using environment variables")
 	}
 
 	cfg := &Config{
@@ -28,7 +29,7 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("POSTGRES_URL is required")
 	}
 
-	fmt.Println("Configuration loaded successfully")
+	log.Info("Configuration loaded successfully")
 
 	return cfg, nil
 }
