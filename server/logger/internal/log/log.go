@@ -32,11 +32,11 @@ func Init() error {
 			switch v := i.(type) {
 			case string:
 				if v == "error" || v == "fatal" {
-					return "ERR"
+					return "ERROR"
 				}
 			case zerolog.Level:
 				if v >= zerolog.ErrorLevel {
-					return "ERR"
+					return "ERROR"
 				}
 			}
 			return ""
@@ -85,7 +85,7 @@ func LogRequestsToFile(apiKey string, inserted int, totalRequests int) {
 		Str("api_key", apiKey).
 		Int("inserted", inserted).
 		Int("total_requests", totalRequests).
-		Msg("Requests logged")
+		Msg("requests logged")
 }
 
 // Error logs an error message

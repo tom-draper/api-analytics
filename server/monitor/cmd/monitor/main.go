@@ -36,26 +36,30 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	if err := log.Init(); err != nil {
+		log.Error(fmt.Sprintf("failed to initialize log file: %v", err))
+	}
+
 	// Load and validate configuration
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatal(fmt.Sprintf("Configuration error: %v", err))
+		log.Fatal(fmt.Sprintf("configuration error: %v", err))
 	}
 
 	// Initialize database connection pool
 	db, err := database.New(ctx, cfg.PostgresURL)
 	if err != nil {
-		log.Fatal(fmt.Sprintf("Failed to create database connection pool: %v", err))
+		log.Fatal(fmt.Sprintf("failed to create database connection pool: %v", err))
 	}
 	defer db.Close()
-	log.Info("Database connection pool initialized")
+	log.Info("database connection pool initialized")
 
 	monitored, err := getMonitoredURLs(ctx, db)
 	if err != nil {
-		log.Fatal(fmt.Sprintf("Failed to fetch monitored URLs: %v", err))
+		log.Fatal(fmt.Sprintf("failed to fetch monitored URLs: %v", err))
 	}
 	if len(monitored) == 0 {
-		log.Info("No monitored URLs found")
+		log.Info("no monitored URLs found")
 		return
 	}
 
@@ -64,19 +68,19 @@ func main() {
 	shuffle(monitored)
 
 	pings := pingMonitored(monitored)
-	log.Info(fmt.Sprintf("Completed %d pings", len(pings)))
+	log.Info(fmt.Sprintf("completed %d pings", len(pings)))
 
 	err = uploadPings(ctx, db, pings)
 	if err != nil {
-		log.Fatal(fmt.Sprintf("Failed to upload pings: %v", err))
+		log.Fatal(fmt.Sprintf("failed to upload pings: %v", err))
 	}
-	log.Info(fmt.Sprintf("Uploaded %d pings", len(pings)))
+	log.Info(fmt.Sprintf("uploaded %d pings", len(pings)))
 
 	err = deleteExpiredPings(ctx, db)
 	if err != nil {
-		log.Fatal(fmt.Sprintf("Failed to delete expired pings: %v", err))
+		log.Fatal(fmt.Sprintf("failed to delete expired pings: %v", err))
 	}
-	log.Info("Deleted expired pings")
+	log.Info("deleted expired pings")
 }
 
 func getMonitoredURLs(ctx context.Context, db *database.DB) ([]MonitorRow, error) {

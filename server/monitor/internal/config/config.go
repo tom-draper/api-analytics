@@ -17,7 +17,7 @@ type Config struct {
 func Load() (*Config, error) {
 	// Load .env file (non-fatal if missing)
 	if err := godotenv.Load(".env"); err != nil {
-		log.Info("Could not load .env file, using environment variables")
+		log.Info("could not load .env file, using environment variables")
 	}
 
 	cfg := &Config{
@@ -29,7 +29,7 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("POSTGRES_URL is required")
 	}
 
-	log.Info("Configuration loaded successfully")
+	log.Info("configuration loaded successfully")
 
 	return cfg, nil
 }

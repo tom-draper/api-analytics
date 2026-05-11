@@ -32,11 +32,11 @@ func Init() error {
 			switch v := i.(type) {
 			case string:
 				if v == "error" || v == "fatal" {
-					return "ERR"
+					return "ERROR"
 				}
 			case zerolog.Level:
 				if v >= zerolog.ErrorLevel {
-					return "ERR"
+					return "ERROR"
 				}
 			}
 			return ""

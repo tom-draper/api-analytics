@@ -25,7 +25,7 @@ func genAPIKey(db *database.DB) gin.HandlerFunc {
 
 		apiKey, err := db.CreateUser(ctx)
 		if err != nil {
-			log.Error(fmt.Sprintf("API key generation failed - %s", err.Error()))
+			log.Error(fmt.Sprintf("api key generation failed - %s", err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
 			return
 		}
@@ -190,7 +190,7 @@ func getRequestsHandler(db *database.DB, cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.Param("userID")
 		if userID == "" {
-			log.Info("User ID empty")
+			log.Info("user ID empty")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
@@ -201,7 +201,7 @@ func getRequestsHandler(db *database.DB, cfg *config.Config) gin.HandlerFunc {
 		if pageQuery != "" {
 			targetPage, err = strconv.Atoi(pageQuery)
 			if err != nil {
-				log.Info(fmt.Sprintf("Failed to parse page number '%s' from query", pageQuery))
+				log.Info(fmt.Sprintf("failed to parse page number '%s' from query", pageQuery))
 			}
 		}
 
@@ -272,14 +272,14 @@ func getPaginatedRequestsHandler(db *database.DB, cfg *config.Config) gin.Handle
 	return func(c *gin.Context) {
 		userID := c.Param("userID")
 		if userID == "" {
-			log.Info("User ID empty")
+			log.Info("user ID empty")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
 
 		page, err := strconv.Atoi(c.Param("page"))
 		if err != nil || page == 0 {
-			log.Info("Invalid page number")
+			log.Info("invalid page number")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid page number."})
 			return
 		}
@@ -395,12 +395,12 @@ func getData(db *database.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		apiKey := getAPIKeyFromHeader(c)
 		if apiKey == "" {
-			log.Info("API key missing")
+			log.Info("api key missing")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required in X-AUTH-TOKEN header."})
 			return
 		}
 		if !database.ValidAPIKey(apiKey) {
-			log.Info("API key invalid format")
+			log.Info("api key invalid format")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key format. Expected UUID format."})
 			return
 		}
@@ -748,13 +748,13 @@ func addUserMonitor(db *database.DB) gin.HandlerFunc {
 		var monitor Monitor
 		err := c.BindJSON(&monitor)
 		if err != nil {
-			log.Info("Invalid monitor to add")
+			log.Info("invalid monitor to add")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request body."})
 			return
 		}
 
 		if monitor.UserID == "" {
-			log.Info("User ID empty")
+			log.Info("user ID empty")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User ID required."})
 			return
 		}
@@ -830,13 +830,13 @@ func deleteUserMonitor(db *database.DB) gin.HandlerFunc {
 		}
 		err := c.BindJSON(&body)
 		if err != nil {
-			log.Info(fmt.Sprintf("Invalid monitor to delete - %s", err.Error()))
+			log.Info(fmt.Sprintf("invalid monitor to delete - %s", err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request body."})
 			return
 		}
 
 		if body.UserID == "" {
-			log.Info("User ID empty")
+			log.Info("user ID empty")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User ID required."})
 			return
 		}
@@ -891,7 +891,7 @@ func getUserPings(db *database.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var userID string = c.Param("userID")
 		if userID == "" {
-			log.Info("User ID empty")
+			log.Info("user ID empty")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
@@ -958,7 +958,7 @@ func checkHealth(db *database.DB) gin.HandlerFunc {
 		ctx := c.Request.Context()
 
 		if err := db.CheckConnection(ctx); err != nil {
-			log.Info(fmt.Sprintf("Health check failed: %v", err))
+			log.Info(fmt.Sprintf("health check failed: %v", err))
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"status": "unhealthy",
 				"error":  "Database connection failed",

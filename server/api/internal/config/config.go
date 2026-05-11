@@ -53,7 +53,7 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("API_MAX_LOAD (%d) must be >= API_PAGE_SIZE (%d)", cfg.MaxLoad, cfg.PageSize)
 	}
 
-	log.Info(fmt.Sprintf("Configuration loaded: Port=%d, RateLimit=%d, PageSize=%d, MaxLoad=%d",
+	log.Info(fmt.Sprintf("configuration loaded: port=%d, rate_limit=%d, page_size=%d, max_load=%d",
 		cfg.Port, cfg.RateLimit, cfg.PageSize, cfg.MaxLoad))
 
 	return cfg, nil
@@ -68,7 +68,7 @@ func getIntWithDefault(name string, defaultValue int) int {
 
 	value, err := strconv.Atoi(valueStr)
 	if err != nil {
-		log.Info(fmt.Sprintf("Invalid integer for %s, using default %d", name, defaultValue))
+		log.Info(fmt.Sprintf("invalid integer for %s, using default %d", name, defaultValue))
 		return defaultValue
 	}
 
@@ -84,7 +84,7 @@ func getIntWithFallback(primaryName, fallbackName string, defaultValue int) int 
 		if err == nil {
 			return value
 		}
-		log.Info(fmt.Sprintf("Invalid integer for %s, trying fallback", primaryName))
+		log.Info(fmt.Sprintf("invalid integer for %s, trying fallback", primaryName))
 	}
 
 	// Try fallback name for backwards compatibility
@@ -94,7 +94,7 @@ func getIntWithFallback(primaryName, fallbackName string, defaultValue int) int 
 		if err == nil {
 			return value
 		}
-		log.Info(fmt.Sprintf("Invalid integer for %s, using default", fallbackName))
+		log.Info(fmt.Sprintf("invalid integer for %s, using default", fallbackName))
 	}
 
 	// Use default
