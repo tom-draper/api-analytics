@@ -1,17 +1,23 @@
 services:
-  nginx:
-    image: nginx:1.28
-    container_name: nginx
+  caddy:
+    image: caddy:2
+    container_name: caddy
     restart: always
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy-data:/data
+      - caddy-config:/config
     ports:
       - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      ACME_EMAIL: ${ACME_EMAIL}
     depends_on:
       - api
       - logger
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/status"]
+      test: ["CMD", "caddy", "version"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -90,7 +96,8 @@ services:
         condition: service_healthy
     environment:
       POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-    # command: /bin/sh -c "printenv > /etc/environment && tail -f /dev/null"
 
 volumes:
   db-data:
+  caddy-data:
+  caddy-config:

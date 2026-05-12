@@ -1,0 +1,15 @@
+{$DOMAIN_NAME} {
+    @toLoggerDirect {
+        path /api/log-request
+    }
+    @toLoggerPost {
+        method POST
+        path /api/requests
+    }
+
+    reverse_proxy @toLoggerDirect logger:8000
+    reverse_proxy @toLoggerPost logger:8000
+    reverse_proxy /api/* api:3000
+
+    tls {$ACME_EMAIL}
+}

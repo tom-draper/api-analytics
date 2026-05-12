@@ -1,0 +1,141 @@
+services:
+  traefik:
+    image: traefik:v3.7.0
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-certs:/letsencrypt
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      - --global.sendanonymoususage=false
+    networks:
+      - proxy
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  db:
+    image: postgres:17
+    container_name: db
+    restart: unless-stopped
+    user: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    expose:
+      - 5432
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    container_name: api-analytics-api
+    image: api-analytics-api
+    build:
+      context: ..
+      dockerfile: api/Dockerfile
+    expose:
+      - 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      API_RATE_LIMIT: ${API_RATE_LIMIT:-100}
+      API_MAX_LOAD: ${API_MAX_LOAD:-1000000}
+      API_PAGE_SIZE: ${API_PAGE_SIZE:-250000}
+    networks:
+      - internal
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.api.rule=Host(`${DOMAIN_NAME}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.api.priority=1"
+      - "traefik.http.services.api.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  logger:
+    container_name: api-analytics-logger
+    image: api-analytics-logger
+    build:
+      context: ..
+      dockerfile: logger/Dockerfile
+    expose:
+      - 8000
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      LOGGER_RATE_LIMIT: ${LOGGER_RATE_LIMIT:-10}
+      LOGGER_MAX_INSERT: ${LOGGER_MAX_INSERT:-2000}
+    networks:
+      - internal
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.logger.rule=(Host(`${DOMAIN_NAME}`) && PathPrefix(`/api/log-request`)) || (Host(`${DOMAIN_NAME}`) && Path(`/api/requests`) && Method(`POST`))"
+      - "traefik.http.routers.logger.entrypoints=websecure"
+      - "traefik.http.routers.logger.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.logger.priority=2"
+      - "traefik.http.services.logger.loadbalancer.server.port=8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  monitor:
+    container_name: api-analytics-monitor
+    image: api-analytics-monitor
+    build:
+      context: ..
+      dockerfile: monitor/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+  proxy:
+    driver: bridge
+
+volumes:
+  db-data:
+  traefik-certs:
