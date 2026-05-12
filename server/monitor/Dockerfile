@@ -5,14 +5,12 @@ RUN apk add --no-cache ca-certificates tzdata
 
 WORKDIR /build
 
-# Copy module files first for dependency caching
 COPY database/go.mod database/go.sum ./database/
 COPY monitor/go.mod monitor/go.sum ./monitor/
 
 WORKDIR /build/monitor
 RUN go mod download && go mod verify
 
-# Copy source
 WORKDIR /build
 COPY database/ ./database/
 COPY monitor/ ./monitor/
@@ -37,13 +35,5 @@ RUN mkdir -p /app/logs && \
     chown -R appuser:appuser /app
 
 USER appuser
-
-EXPOSE 8000
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8000/api/health || exit 1
-
-ENV GIN_MODE=release
-ENV LOG_LEVEL=info
 
 CMD ["./monitor"]

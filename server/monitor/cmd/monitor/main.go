@@ -6,7 +6,10 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -32,71 +35,85 @@ type PingsRow struct {
 }
 
 func main() {
-	// Create context for graceful shutdown
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	if err := log.Init(); err != nil {
 		log.Error(fmt.Sprintf("failed to initialize log file: %v", err))
 	}
 
-	// Load and validate configuration
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatal(fmt.Sprintf("configuration error: %v", err))
 	}
 
-	// Initialize database connection pool
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	db, err := database.New(ctx, cfg.PostgresURL)
 	if err != nil {
-		log.Fatal(fmt.Sprintf("failed to create database connection pool: %v", err))
+		log.Fatal(fmt.Sprintf("failed to initialize database: %v", err))
 	}
 	defer db.Close()
 	log.Info("database connection pool initialized")
 
+	log.Info(fmt.Sprintf("monitor running every %d minutes", cfg.Interval))
+
+	ticker := time.NewTicker(time.Duration(cfg.Interval) * time.Minute)
+	defer ticker.Stop()
+
+	// Run immediately on startup, then on each interval
+	runCycle(ctx, db)
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	for {
+		select {
+		case <-ticker.C:
+			runCycle(ctx, db)
+		case <-quit:
+			log.Info("shutting down...")
+			return
+		}
+	}
+}
+
+func runCycle(ctx context.Context, db *database.DB) {
 	monitored, err := getMonitoredURLs(ctx, db)
 	if err != nil {
-		log.Fatal(fmt.Sprintf("failed to fetch monitored URLs: %v", err))
+		log.Error(fmt.Sprintf("failed to fetch monitored URLs: %v", err))
+		return
 	}
 	if len(monitored) == 0 {
 		log.Info("no monitored URLs found")
 		return
 	}
 
-	// Shuffle URLs to ping to avoid a page looking consistently slow or fast
-	// due to cold starts or caching
 	shuffle(monitored)
 
 	pings := pingMonitored(monitored)
 	log.Info(fmt.Sprintf("completed %d pings", len(pings)))
 
-	err = uploadPings(ctx, db, pings)
-	if err != nil {
-		log.Fatal(fmt.Sprintf("failed to upload pings: %v", err))
+	if err = uploadPings(ctx, db, pings); err != nil {
+		log.Error(fmt.Sprintf("failed to upload pings: %v", err))
+		return
 	}
 	log.Info(fmt.Sprintf("uploaded %d pings", len(pings)))
 
-	err = deleteExpiredPings(ctx, db)
-	if err != nil {
-		log.Fatal(fmt.Sprintf("failed to delete expired pings: %v", err))
+	if err = deleteExpiredPings(ctx, db); err != nil {
+		log.Error(fmt.Sprintf("failed to delete expired pings: %v", err))
 	}
-	log.Info("deleted expired pings")
 }
 
 func getMonitoredURLs(ctx context.Context, db *database.DB) ([]MonitorRow, error) {
-	query := "SELECT * FROM monitor;"
-	rows, err := db.Pool.Query(ctx, query)
+	rows, err := db.Pool.Query(ctx, "SELECT * FROM monitor;")
 	if err != nil {
 		return nil, fmt.Errorf("failed to query monitored URLs: %w", err)
 	}
 	defer rows.Close()
 
-	// Read monitors into list to return
 	monitors := make([]MonitorRow, 0)
 	for rows.Next() {
 		monitor := new(MonitorRow)
-		err := rows.Scan(&monitor.APIKey, &monitor.URL, &monitor.Secure, &monitor.Ping, &monitor.CreatedAt)
-		if err == nil {
+		if err := rows.Scan(&monitor.APIKey, &monitor.URL, &monitor.Secure, &monitor.Ping, &monitor.CreatedAt); err == nil {
 			monitors = append(monitors, *monitor)
 		} else {
 			log.Error(fmt.Sprintf("failed to scan monitor row: %v", err))
@@ -111,12 +128,10 @@ func getMonitoredURLs(ctx context.Context, db *database.DB) ([]MonitorRow, error
 }
 
 func uploadPings(ctx context.Context, db *database.DB, pings []PingsRow) error {
-	// Return early if there are no pings to insert
 	if len(pings) == 0 {
 		return nil
 	}
 
-	// Use COPY protocol for efficient bulk insert
 	_, err := db.Pool.CopyFrom(
 		ctx,
 		pgx.Identifier{"pings"},
@@ -141,18 +156,11 @@ func uploadPings(ctx context.Context, db *database.DB, pings []PingsRow) error {
 }
 
 func deleteExpiredPings(ctx context.Context, db *database.DB) error {
-	// Calculate the timestamp 60 days ago
 	expiryTime := time.Now().Add(-60 * 24 * time.Hour).UTC()
-
-	// Define the query with a parameter placeholder
-	query := "DELETE FROM pings WHERE created_at < $1;"
-
-	// Execute the query with the expiry time as the parameter
-	_, err := db.Pool.Exec(ctx, query, expiryTime)
+	_, err := db.Pool.Exec(ctx, "DELETE FROM pings WHERE created_at < $1;", expiryTime)
 	if err != nil {
 		return fmt.Errorf("failed to delete expired pings: %v", err)
 	}
-
 	return nil
 }
 
@@ -174,16 +182,14 @@ func pingMonitored(monitored []MonitorRow) []PingsRow {
 				return
 			}
 
-			pingResult := PingsRow{
+			mu.Lock()
+			pings = append(pings, PingsRow{
 				APIKey:       m.APIKey,
 				URL:          m.URL,
 				ResponseTime: int(elapsed.Milliseconds()),
 				Status:       status,
 				CreatedAt:    time.Now(),
-			}
-
-			mu.Lock()
-			pings = append(pings, pingResult)
+			})
 			mu.Unlock()
 		}(m)
 	}
@@ -193,30 +199,22 @@ func pingMonitored(monitored []MonitorRow) []PingsRow {
 }
 
 func ping(client http.Client, url string, secure bool, ping bool) (int, time.Duration, error) {
-	// Determine the method (HEAD, GET, etc.) based on whether 'ping' is true
 	method := getMethod(ping)
 
-	// Create a new HTTP request
 	request, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		return 0, 0, fmt.Errorf("failed to create request: %v", err)
 	}
 
-	// Start the timer before sending the request
 	start := time.Now()
-
-	// Send the HTTP request
 	response, err := client.Do(request)
 	elapsed := time.Since(start)
 
 	if err != nil {
 		return 0, elapsed, fmt.Errorf("failed to ping URL %s: %v", url, err)
 	}
-
-	// Ensure the response body is closed after reading the response
 	defer response.Body.Close()
 
-	// Return the status code, response time, and no error
 	return response.StatusCode, elapsed, nil
 }
 
@@ -229,12 +227,11 @@ func getMethod(ping bool) string {
 
 func getClient() http.Client {
 	dialer := net.Dialer{Timeout: 2 * time.Second}
-	var client = http.Client{
+	return http.Client{
 		Transport: &http.Transport{
 			Dial: dialer.Dial,
 		},
 	}
-	return client
 }
 
 func shuffle(monitored []MonitorRow) {
