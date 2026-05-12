@@ -18,7 +18,7 @@ if ! command -v openssl &>/dev/null; then
     exit 1
 fi
 
-password=$(openssl rand -base64 32)
+password=$(openssl rand -hex 32)
 
 sed "s|POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$password|" .env.example > .env
 
