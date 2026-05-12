@@ -37,9 +37,9 @@ func TestLoad(t *testing.T) {
 
 	t.Run("it validates port range", func(t *testing.T) {
 		os.Setenv("POSTGRES_URL", "postgresql://localhost/test")
-		os.Setenv("PORT", "70000")
+		os.Setenv("API_PORT", "70000")
 		defer os.Unsetenv("POSTGRES_URL")
-		defer os.Unsetenv("PORT")
+		defer os.Unsetenv("API_PORT")
 
 		_, err := Load()
 

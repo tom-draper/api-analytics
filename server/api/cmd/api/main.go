@@ -20,9 +20,8 @@ import (
 )
 
 func main() {
-	// Initialise logger first
 	if err := log.Init(); err != nil {
-		panic(fmt.Sprintf("Failed to initialize logger: %v", err))
+		panic(fmt.Sprintf("failed to initialize logger: %v", err))
 	}
 	defer log.Close()
 
@@ -48,32 +47,39 @@ func main() {
 		return
 	}
 	defer db.Close()
+	log.Info("database connection pool initialized")
 
 	app := setupRouter(db, cfg, startTime)
 
-	port := cfg.Port
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", port),
+		Addr:    fmt.Sprintf(":%d", cfg.Port),
 		Handler: app,
 	}
 
+	serverErr := make(chan error, 1)
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Error(fmt.Sprintf("server listen failed: %v", err))
-		}
+		log.Info(fmt.Sprintf("server listening on port %d", cfg.Port))
+		serverErr <- srv.ListenAndServe()
 	}()
-
-	log.Info(fmt.Sprintf("server listening on port %d", port))
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	log.Info("shutting down server...")
+
+	select {
+	case sig := <-quit:
+		log.Info(fmt.Sprintf("received signal: %v, shutting down...", sig))
+	case err := <-serverErr:
+		if err != nil && err != http.ErrServerClosed {
+			log.Error(fmt.Sprintf("server failed: %v", err))
+			return
+		}
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Error(fmt.Sprintf("server forced to shutdown: %v", err))
+		log.Error(fmt.Sprintf("server forced shutdown: %v", err))
+		return
 	}
 
 	log.Info("server exited")

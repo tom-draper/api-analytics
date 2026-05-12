@@ -27,8 +27,8 @@ func Load() (*Config, error) {
 		PostgresURL: os.Getenv("POSTGRES_URL"),
 		Port:        getIntWithDefault("API_PORT", 3000),
 		RateLimit:   uint(getIntWithDefault("API_RATE_LIMIT", 100)),
-		MaxLoad:     getIntWithFallback("API_MAX_LOAD", "MAX_LOAD", 1_000_000),
-		PageSize:    getIntWithFallback("API_PAGE_SIZE", "PAGE_SIZE", 250_000),
+		MaxLoad:     getIntWithDefault("API_MAX_LOAD", 1_000_000),
+		PageSize:    getIntWithDefault("API_PAGE_SIZE", 250_000),
 	}
 
 	// Validate required fields
@@ -75,28 +75,3 @@ func getIntWithDefault(name string, defaultValue int) int {
 	return value
 }
 
-// getIntWithFallback tries the primary name first, then falls back to legacy name for backwards compatibility
-func getIntWithFallback(primaryName, fallbackName string, defaultValue int) int {
-	// Try primary name first
-	valueStr := os.Getenv(primaryName)
-	if valueStr != "" {
-		value, err := strconv.Atoi(valueStr)
-		if err == nil {
-			return value
-		}
-		log.Info(fmt.Sprintf("invalid integer for %s, trying fallback", primaryName))
-	}
-
-	// Try fallback name for backwards compatibility
-	valueStr = os.Getenv(fallbackName)
-	if valueStr != "" {
-		value, err := strconv.Atoi(valueStr)
-		if err == nil {
-			return value
-		}
-		log.Info(fmt.Sprintf("invalid integer for %s, using default", fallbackName))
-	}
-
-	// Use default
-	return defaultValue
-}

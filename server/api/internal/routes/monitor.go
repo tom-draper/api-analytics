@@ -25,13 +25,6 @@ type Monitor struct {
 	Ping   bool   `json:"ping"`
 }
 
-type PingsRow struct {
-	URL          string    `json:"url"`
-	ResponseTime int       `json:"response_time"`
-	Status       int       `json:"status"`
-	CreatedAt    time.Time `json:"created_at"`
-}
-
 type MonitorPing struct {
 	ResponseTime int       `json:"response_time"`
 	Status       int       `json:"status"`

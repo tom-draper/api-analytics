@@ -8,22 +8,22 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-var Logger zerolog.Logger
+var (
+	Logger    zerolog.Logger
+	logWriter *lumberjack.Logger
+)
 
 func Init() error {
-	// Setup log rotation with lumberjack
-	fileWriter := &lumberjack.Logger{
+	logWriter = &lumberjack.Logger{
 		Filename:   "./api.log",
-		MaxSize:    100, // megabytes
+		MaxSize:    100,
 		MaxBackups: 3,
-		MaxAge:     28, // days
+		MaxAge:     28,
 		Compress:   true,
 	}
 
-	// Write to both file and console
-	multi := io.MultiWriter(os.Stdout, fileWriter)
+	multi := io.MultiWriter(os.Stdout, logWriter)
 
-	// Configure zerolog with ConsoleWriter for single-line format
 	Logger = zerolog.New(zerolog.ConsoleWriter{
 		Out:        multi,
 		TimeFormat: "2006-01-02 15:04:05",
@@ -49,6 +49,9 @@ func Init() error {
 }
 
 func Close() error {
+	if logWriter != nil {
+		return logWriter.Close()
+	}
 	return nil
 }
 
