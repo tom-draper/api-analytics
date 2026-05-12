@@ -16,7 +16,7 @@ import (
 	"github.com/oschwald/geoip2-golang"
 )
 
-const frameworkOther int16 = 19 // unknown/other framework
+const frameworkOther int16 = 255 // unknown/other framework
 
 var methodID = map[string]int16{
 	"GET": 0, "POST": 1, "PUT": 2, "PATCH": 3, "DELETE": 4,
