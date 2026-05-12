@@ -53,7 +53,7 @@ func getUserID(db *database.DB) gin.HandlerFunc {
 		// Get user ID associated with API key
 		userID, err := db.GetUserID(ctx, apiKey)
 		if err != nil {
-			log.Info(fmt.Sprintf("key=%s: User ID fetch failed - %s", apiKey, err.Error()))
+			log.Error(fmt.Sprintf("key=%s: user ID fetch failed - %s", apiKey, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 			return
 		}
@@ -231,9 +231,12 @@ func getRequestsHandler(db *database.DB, cfg *config.Config) gin.HandlerFunc {
 		for {
 			pageRequests, pageUserAgentIDs, count, skipped, err := fetchAndFormatRequestsPage(ctx, db, apiKey, currentPage, cfg.PageSize)
 			if err != nil {
-				log.Error(fmt.Sprintf("key=%s: Failed to fetch requests - %s", apiKey, err.Error()))
+				log.Error(fmt.Sprintf("key=%s: failed to fetch requests - %s", apiKey, err.Error()))
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Failed to fetch requests."})
 				return
+			}
+			if skipped > 0 {
+				log.Error(fmt.Sprintf("key=%s: skipped %d rows on page %d", apiKey, skipped, currentPage))
 			}
 
 			// Merge results
@@ -244,11 +247,12 @@ func getRequestsHandler(db *database.DB, cfg *config.Config) gin.HandlerFunc {
 
 			currentPage++
 
-			// Break conditions: specific page requested, page not full, or hit cfg.MaxLoad
-			if targetPage != 0 || count+skipped < cfg.PageSize || len(allRequests) >= cfg.MaxLoad {
+			// Break conditions: specific page requested or page not full
+			if targetPage != 0 || count+skipped < cfg.PageSize {
 				break
 			}
 			if len(allRequests) >= cfg.MaxLoad {
+				log.Info(fmt.Sprintf("key=%s: results capped at max load [%d]", apiKey, cfg.MaxLoad))
 				allRequests = allRequests[:cfg.MaxLoad]
 				break
 			}
@@ -296,11 +300,14 @@ func getPaginatedRequestsHandler(db *database.DB, cfg *config.Config) gin.Handle
 		}
 
 		// Fetch single page of requests
-		requests, userAgentIDs, _, _, err := fetchAndFormatRequestsPage(ctx, db, apiKey, page, cfg.PageSize)
+		requests, userAgentIDs, _, skipped, err := fetchAndFormatRequestsPage(ctx, db, apiKey, page, cfg.PageSize)
 		if err != nil {
-			log.Error(fmt.Sprintf("key=%s: Failed to fetch requests - %s", apiKey, err.Error()))
+			log.Error(fmt.Sprintf("key=%s: failed to fetch requests - %s", apiKey, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Failed to fetch requests."})
 			return
+		}
+		if skipped > 0 {
+			log.Error(fmt.Sprintf("key=%s: skipped %d rows on page %d", apiKey, skipped, page))
 		}
 
 		// Send response
@@ -339,9 +346,10 @@ func compressJSON(data any) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-func buildRequestDataCompact(rows pgx.Rows, cols [12]any) [][12]any {
+func buildRequestDataCompact(rows pgx.Rows, cols [12]any) ([][12]any, int) {
 	// First value in list holds column names
 	requests := [][12]any{cols}
+	skipped := 0
 	var request DashboardRequestRow
 	for rows.Next() {
 		err := rows.Scan(
@@ -373,9 +381,11 @@ func buildRequestDataCompact(rows pgx.Rows, cols [12]any) [][12]any {
 					request.Referrer,
 				},
 			)
+		} else {
+			skipped++
 		}
 	}
-	return requests
+	return requests, skipped
 }
 
 type DataFetchQueries struct {
@@ -405,7 +415,7 @@ func getData(db *database.DB) gin.HandlerFunc {
 			return
 		}
 
-		log.Info(fmt.Sprintf("key=%s: Data access", apiKey))
+		log.Info(fmt.Sprintf("key=%s: data access", apiKey))
 
 		// Get any queries from url
 		queries := getQueriesFromRequest(c)
@@ -416,7 +426,7 @@ func getData(db *database.DB) gin.HandlerFunc {
 		query, arguments := buildDataFetchQuery(apiKey, queries)
 		rows, err := db.Pool.Query(ctx, query, arguments...)
 		if err != nil {
-			log.Error(fmt.Sprintf("key=%s: Queries failed - %s", apiKey, err.Error()))
+			log.Error(fmt.Sprintf("key=%s: queries failed - %s", apiKey, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 			return
 		}
@@ -436,12 +446,18 @@ func getData(db *database.DB) gin.HandlerFunc {
 				"created_at",
 				"referrer",
 			}
-			requests := buildRequestDataCompact(rows, cols)
-			log.Info(fmt.Sprintf("key=%s: Data access successful [%d]", apiKey, len(requests)-1))
+			requests, skipped := buildRequestDataCompact(rows, cols)
+			if skipped > 0 {
+				log.Error(fmt.Sprintf("key=%s: skipped %d rows during data fetch", apiKey, skipped))
+			}
+			log.Info(fmt.Sprintf("key=%s: data access successful [%d]", apiKey, len(requests)-1))
 			c.JSON(http.StatusOK, requests)
 		} else {
-			requests := buildRequestData(rows)
-			log.Info(fmt.Sprintf("key=%s: Data access successful [%d]", apiKey, len(requests)))
+			requests, skipped := buildRequestData(rows)
+			if skipped > 0 {
+				log.Error(fmt.Sprintf("key=%s: skipped %d rows during data fetch", apiKey, skipped))
+			}
+			log.Info(fmt.Sprintf("key=%s: data access successful [%d]", apiKey, len(requests)))
 			c.JSON(http.StatusOK, requests)
 		}
 
@@ -449,9 +465,7 @@ func getData(db *database.DB) gin.HandlerFunc {
 
 		err = db.UpdateLastAccessed(ctx, apiKey)
 		if err != nil {
-			log.Error(fmt.Sprintf("key=%s: User last access update failed - %s", apiKey, err.Error()))
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
-			return
+			log.Error(fmt.Sprintf("key=%s: user last access update failed - %s", apiKey, err.Error()))
 		}
 	}
 }
@@ -625,8 +639,9 @@ type RequestRow struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
-func buildRequestData(rows pgx.Rows) []RequestData {
+func buildRequestData(rows pgx.Rows) ([]RequestData, int) {
 	requests := make([]RequestData, 0)
+	skipped := 0
 	var request RequestRow
 	for rows.Next() {
 		err := rows.Scan(
@@ -665,10 +680,12 @@ func buildRequestData(rows pgx.Rows) []RequestData {
 				UserID:       userID,
 				CreatedAt:    request.CreatedAt,
 			})
+		} else {
+			skipped++
 		}
 	}
 
-	return requests
+	return requests, skipped
 }
 
 func deleteData(db *database.DB) gin.HandlerFunc {
@@ -717,7 +734,8 @@ func getUserMonitor(db *database.DB) gin.HandlerFunc {
 		query := "SELECT url, secure, ping, monitor.created_at FROM monitor INNER JOIN users ON users.api_key = monitor.api_key WHERE users.user_id = $1;"
 		rows, err := db.Pool.Query(ctx, query, userID)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
+			log.Error(fmt.Sprintf("id=%s: failed to fetch monitors - %s", userID, err.Error()))
+			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Failed to fetch monitors."})
 			return
 		}
 		defer rows.Close()

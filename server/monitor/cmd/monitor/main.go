@@ -98,6 +98,8 @@ func getMonitoredURLs(ctx context.Context, db *database.DB) ([]MonitorRow, error
 		err := rows.Scan(&monitor.APIKey, &monitor.URL, &monitor.Secure, &monitor.Ping, &monitor.CreatedAt)
 		if err == nil {
 			monitors = append(monitors, *monitor)
+		} else {
+			log.Error(fmt.Sprintf("failed to scan monitor row: %v", err))
 		}
 	}
 

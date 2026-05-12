@@ -93,32 +93,33 @@ func main() {
 
 	defer func() {
 		if err := recover(); err != nil {
-			log.LogToFile(fmt.Sprintf("application crashed: %v", err))
+			log.Error(fmt.Sprintf("application crashed: %v", err))
 		}
 	}()
 
-	log.LogToFile("starting logger...")
+	log.Info("starting logger...")
 
 	// Load and validate configuration
 	cfg, err := config.Load()
 	if err != nil {
-		log.LogToFile(fmt.Sprintf("configuration error: %v", err))
+		log.Error(fmt.Sprintf("configuration error: %v", err))
 		return
 	}
 
 	// Initialize database connection pool
 	db, err := database.New(context.Background(), cfg.PostgresURL)
 	if err != nil {
-		log.LogToFile(fmt.Sprintf("failed to create database connection pool: %v", err))
+		log.Error(fmt.Sprintf("failed to create database connection pool: %v", err))
 		return
 	}
 	defer db.Close()
-	log.LogToFile("database connection pool initialized")
+	log.Info("database connection pool initialized")
 
 	// Initialize GeoIP database once
 	geoIPDB, err := geoip2.Open("GeoLite2-Country.mmdb")
 	if err != nil {
-		log.LogToFile(fmt.Sprintf("failed to open GeoLite2-Country.mmdb database: %v", err))
+		log.Error(fmt.Sprintf("failed to open GeoLite2-Country.mmdb: %v", err))
+		log.Error("location data will be unavailable for all requests")
 	}
 	defer func() {
 		if geoIPDB != nil {
@@ -136,7 +137,7 @@ func main() {
 	// Preload user agent cache
 	err = preloadUserAgentCache(context.Background(), db, cache)
 	if err != nil {
-		log.LogToFile(fmt.Sprintf("failed to preload user agent cache: %v", err))
+		log.Error(fmt.Sprintf("failed to preload user agent cache: %v", err))
 	}
 
 	gin.SetMode(gin.ReleaseMode)
@@ -150,8 +151,9 @@ func main() {
 	router.POST("/api/requests", handler) // Preferred
 	router.GET("/api/health", checkHealth(db))
 
+	log.Info("server listening on :8000")
 	if err := router.Run(":8000"); err != nil {
-		log.LogToFile(fmt.Sprintf("failed to run server: %v", err))
+		log.Error(fmt.Sprintf("server listen failed: %v", err))
 	}
 }
 
@@ -161,7 +163,7 @@ func checkHealth(db *database.DB) gin.HandlerFunc {
 
 		err := db.CheckConnection(ctx)
 		if err != nil {
-			log.LogToFile(fmt.Sprintf("health check failed: %v", err))
+			log.Error(fmt.Sprintf("health check failed: %v", err))
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"status": "unhealthy",
 				"error":  "Database connection failed",
@@ -195,7 +197,7 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 		err := c.BindJSON(&payload)
 		if err != nil {
 			msg := fmt.Sprintf("Invalid request data: %s", err.Error())
-			log.LogErrorToFile(c.ClientIP(), "", msg)
+			log.LogClientError(c.ClientIP(), "", msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
 		}
@@ -205,28 +207,28 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 
 		if payload.APIKey == "" {
 			msg := "API key required."
-			log.LogErrorToFile(c.ClientIP(), "", msg)
+			log.LogClientError(c.ClientIP(), "", msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
 		}
 
 		if !database.ValidAPIKey(payload.APIKey) {
 			msg := "Invalid API key format. Expected UUID format."
-			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
+			log.LogClientError(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
 		}
 
 		if rateLimiter.RateLimited(payload.APIKey) {
 			msg := "Too many requests."
-			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
+			log.LogClientError(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusTooManyRequests, gin.H{"status": http.StatusTooManyRequests, "message": msg})
 			return
 		}
 
 		if len(payload.Requests) == 0 {
 			msg := "Payload contains no logged requests."
-			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
+			log.LogClientError(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
 		}
@@ -234,7 +236,7 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 		framework, ok := frameworkID[payload.Framework]
 		if !ok {
 			msg := "Unsupported API framework."
-			log.LogErrorToFile(c.ClientIP(), payload.APIKey, msg)
+			log.LogClientError(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
 			return
 		}
@@ -334,7 +336,7 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 		}
 
 		if len(validRequests) == 0 {
-			log.LogToFile("no valid requests to insert")
+			log.Info(fmt.Sprintf("key=%s: no valid requests to insert (received %d)", payload.APIKey, len(payload.Requests)))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
 			return
 		}
@@ -344,7 +346,7 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 		// Get user agent IDs
 		userAgentIDs, err := ensureUserAgentIDs(ctx, db, cache, userAgents)
 		if err != nil {
-			log.LogToFile(fmt.Sprintf("failed to ensure user agent IDs: %v", err))
+			log.Error(fmt.Sprintf("key=%s: failed to ensure user agent IDs: %v", payload.APIKey, err))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
 			return
 		}
@@ -372,13 +374,13 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 		)
 
 		if err != nil {
-			log.Error(err.Error())
+			log.Error(fmt.Sprintf("key=%s: failed to insert %d requests: %v", payload.APIKey, len(validRequests), err))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Database insert failed."})
 			return
 		}
 
 		c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "API requests logged successfully."})
-		log.LogRequestsToFile(payload.APIKey, len(validRequests), len(payload.Requests))
+		log.LogRequestsInserted(payload.APIKey, len(validRequests), len(payload.Requests))
 	}
 }
 
@@ -447,7 +449,7 @@ func ensureUserAgentIDs(ctx context.Context, db *database.DB, cache *Cache, user
 				"INSERT INTO user_agents (user_agent) VALUES ($1) ON CONFLICT (user_agent) DO NOTHING",
 				ua)
 			if err != nil {
-				log.LogToFile(fmt.Sprintf("failed to insert user agent: %v", err))
+				log.Error(fmt.Sprintf("failed to insert user agent: %v", err))
 			}
 		}
 	}

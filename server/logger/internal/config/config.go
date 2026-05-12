@@ -20,7 +20,7 @@ type Config struct {
 func Load() (*Config, error) {
 	// Load .env file (non-fatal if missing)
 	if err := godotenv.Load(".env"); err != nil {
-		log.LogToFile("could not load .env file, using environment variables")
+		log.Info("could not load .env file, using environment variables")
 	}
 
 	cfg := &Config{
@@ -43,7 +43,7 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("LOGGER_MAX_INSERT must be between 1 and 10000, got %d", cfg.MaxInsert)
 	}
 
-	log.LogToFile(fmt.Sprintf("configuration loaded: rate_limit=%d, max_insert=%d", cfg.RateLimit, cfg.MaxInsert))
+	log.Info(fmt.Sprintf("configuration loaded: rate_limit=%d, max_insert=%d", cfg.RateLimit, cfg.MaxInsert))
 
 	return cfg, nil
 }
@@ -57,7 +57,7 @@ func getIntWithDefault(name string, defaultValue int) int {
 
 	value, err := strconv.Atoi(valueStr)
 	if err != nil {
-		log.LogToFile(fmt.Sprintf("invalid integer for %s, using default %d", name, defaultValue))
+		log.Info(fmt.Sprintf("invalid integer for %s, using default %d", name, defaultValue))
 		return defaultValue
 	}
 
@@ -73,7 +73,7 @@ func getIntWithFallback(primaryName, fallbackName string, defaultValue int) int 
 		if err == nil {
 			return value
 		}
-		log.LogToFile(fmt.Sprintf("invalid integer for %s, trying fallback", primaryName))
+		log.Info(fmt.Sprintf("invalid integer for %s, trying fallback", primaryName))
 	}
 
 	// Try fallback name for backwards compatibility
@@ -83,7 +83,7 @@ func getIntWithFallback(primaryName, fallbackName string, defaultValue int) int 
 		if err == nil {
 			return value
 		}
-		log.LogToFile(fmt.Sprintf("invalid integer for %s, using default", fallbackName))
+		log.Info(fmt.Sprintf("invalid integer for %s, using default", fallbackName))
 	}
 
 	// Use default

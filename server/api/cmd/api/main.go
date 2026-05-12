@@ -28,22 +28,22 @@ func main() {
 
 	defer func() {
 		if err := recover(); err != nil {
-			log.Info(fmt.Sprintf("Application crashed: %v", err))
+			log.Error(fmt.Sprintf("application crashed: %v", err))
 		}
 	}()
 
-	log.Info("Starting api...")
+	log.Info("starting api...")
 
 	// Load and validate configuration
 	cfg, err := config.Load()
 	if err != nil {
-		log.Info(fmt.Sprintf("Configuration error: %v", err))
+		log.Error(fmt.Sprintf("configuration error: %v", err))
 		return
 	}
 
 	db, err := database.New(context.Background(), cfg.PostgresURL)
 	if err != nil {
-		log.Info("Failed to initialize database: " + err.Error())
+		log.Error(fmt.Sprintf("failed to initialize database: %v", err))
 		return
 	}
 	defer db.Close()
@@ -58,22 +58,24 @@ func main() {
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Info(fmt.Sprintf("listen: %s\n", err))
+			log.Error(fmt.Sprintf("server listen failed: %v", err))
 		}
 	}()
+
+	log.Info(fmt.Sprintf("server listening on port %d", port))
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Info("Shutting down server...")
+	log.Info("shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Info(fmt.Sprintf("Server forced to shutdown: %v", err))
+		log.Error(fmt.Sprintf("server forced to shutdown: %v", err))
 	}
 
-	log.Info("Server exiting")
+	log.Info("server exited")
 }
 
 func setupRouter(db *database.DB, cfg *config.Config) *gin.Engine {

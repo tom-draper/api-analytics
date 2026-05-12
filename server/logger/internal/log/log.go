@@ -1,6 +1,7 @@
 package log
 
 import (
+	"fmt"
 	"io"
 	"os"
 
@@ -11,19 +12,16 @@ import (
 var Logger zerolog.Logger
 
 func Init() error {
-	// Setup log rotation with lumberjack
 	fileWriter := &lumberjack.Logger{
 		Filename:   "./logger.log",
-		MaxSize:    100, // megabytes
+		MaxSize:    100,
 		MaxBackups: 3,
-		MaxAge:     28, // days
+		MaxAge:     28,
 		Compress:   true,
 	}
 
-	// Write to both file and console
 	multi := io.MultiWriter(os.Stdout, fileWriter)
 
-	// Configure zerolog with ConsoleWriter for single-line format
 	Logger = zerolog.New(zerolog.ConsoleWriter{
 		Out:        multi,
 		TimeFormat: "2006-01-02 15:04:05",
@@ -52,48 +50,28 @@ func Close() error {
 	return nil
 }
 
-// Info logs an informational message
 func Info(msg string) {
 	Logger.Info().Msg(msg)
 }
 
-// Fatal logs a fatal error and exits
-func Fatal(msg string) {
-	Logger.Fatal().Msg(msg)
-}
-
-// InfoWithFields logs with structured fields
-func InfoWithFields(msg string, fields map[string]interface{}) {
-	event := Logger.Info()
-	for k, v := range fields {
-		event = event.Interface(k, v)
-	}
-	event.Msg(msg)
-}
-
-// LogErrorToFile logs error messages with context (structured)
-func LogErrorToFile(ipAddress string, apiKey string, msg string) {
-	Logger.Error().
-		Str("ip_address", ipAddress).
-		Str("api_key", apiKey).
-		Msg(msg)
-}
-
-// LogRequestsToFile logs request statistics (structured)
-func LogRequestsToFile(apiKey string, inserted int, totalRequests int) {
-	Logger.Info().
-		Str("api_key", apiKey).
-		Int("inserted", inserted).
-		Int("total_requests", totalRequests).
-		Msg("requests logged")
-}
-
-// Error logs an error message
 func Error(msg string) {
 	Logger.Error().Msg(msg)
 }
 
-// LogToFile logs a message
-func LogToFile(msg string) {
-	Logger.Info().Msg(msg)
+func Fatal(msg string) {
+	Logger.Fatal().Msg(msg)
+}
+
+// LogClientError logs a client-side rejection with IP and API key context at Info level.
+func LogClientError(ipAddress string, apiKey string, msg string) {
+	if apiKey != "" {
+		Logger.Info().Msg(fmt.Sprintf("ip=%s key=%s: %s", ipAddress, apiKey, msg))
+	} else {
+		Logger.Info().Msg(fmt.Sprintf("ip=%s: %s", ipAddress, msg))
+	}
+}
+
+// LogRequestsInserted logs the outcome of a batch insert.
+func LogRequestsInserted(apiKey string, inserted int, total int) {
+	Logger.Info().Msg(fmt.Sprintf("key=%s: requests logged [%d/%d]", apiKey, inserted, total))
 }
