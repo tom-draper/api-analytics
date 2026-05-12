@@ -62,11 +62,13 @@ cd api-analytics/server/self-hosting
 
 ### 2. Create a `.env` file
 
-Create a `.env` file using `.env.example` as a template. The following are required:
+Run the setup script to create a `.env` file with a randomly generated database password:
 
-- `POSTGRES_DB` - database name (e.g. `analytics`)
-- `POSTGRES_USERNAME` - database user (e.g. `postgres`)
-- `POSTGRES_PASSWORD` - database password
+```bash
+chmod +x setup.sh && ./setup.sh
+```
+
+Then open `.env` and fill in any remaining values. For SSL deployments you will also need to set `DOMAIN_NAME` and `ACME_EMAIL`.
 
 ### 3. Start the services
 
