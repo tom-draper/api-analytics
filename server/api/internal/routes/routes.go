@@ -41,7 +41,7 @@ func genAPIKey(db *database.DB) gin.HandlerFunc {
 		apiKey, err := db.CreateUser(ctx)
 		if err != nil {
 			log.Error(fmt.Sprintf("api key generation failed - %s", err.Error()))
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key generation failed."})
+			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "API key generation failed."})
 			return
 		}
 
@@ -63,8 +63,12 @@ func getUserID(db *database.DB) gin.HandlerFunc {
 		// Get user ID associated with API key
 		userID, err := db.GetUserID(ctx, apiKey)
 		if err != nil {
-			log.Error(fmt.Sprintf("key=%s: user ID fetch failed - %s", apiKey, err.Error()))
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
+			if err == pgx.ErrNoRows {
+				c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "API key not found."})
+			} else {
+				log.Error(fmt.Sprintf("key=%s: user ID fetch failed - %s", apiKey, err.Error()))
+				c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
+			}
 			return
 		}
 
@@ -165,7 +169,7 @@ func sendDashboardResponse(c *gin.Context, db *database.DB, ctx context.Context,
 	userAgents, err := db.GetUserAgents(ctx, userAgentIDs)
 	if err != nil {
 		log.Error(fmt.Sprintf("key=%s: user agent lookup failed - %s", apiKey, err.Error()))
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User agent lookup failed."})
+		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
 		return err
 	}
 
@@ -225,8 +229,12 @@ func getRequestsHandler(db *database.DB, cfg *config.Config) gin.HandlerFunc {
 		// Fetch API key corresponding with user ID
 		apiKey, err := db.GetAPIKey(ctx, userID)
 		if err != nil {
-			log.Info(fmt.Sprintf("id=%s: no API key associated with user ID - %s", userID, err.Error()))
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
+			if err == pgx.ErrNoRows {
+				c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "User ID not found."})
+			} else {
+				log.Error(fmt.Sprintf("id=%s: no API key associated with user ID - %s", userID, err.Error()))
+				c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
+			}
 			return
 		}
 
@@ -242,7 +250,7 @@ func getRequestsHandler(db *database.DB, cfg *config.Config) gin.HandlerFunc {
 			pageRequests, pageUserAgentIDs, count, skipped, err := fetchAndFormatRequestsPage(ctx, db, apiKey, currentPage, cfg.PageSize)
 			if err != nil {
 				log.Error(fmt.Sprintf("key=%s: failed to fetch requests - %s", apiKey, err.Error()))
-				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Failed to fetch requests."})
+				c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
 				return
 			}
 			if skipped > 0 {
@@ -304,8 +312,12 @@ func getPaginatedRequestsHandler(db *database.DB, cfg *config.Config) gin.Handle
 
 		apiKey, err := db.GetAPIKey(ctx, userID)
 		if err != nil {
-			log.Info(fmt.Sprintf("id=%s: no API key associated with user ID - %s", userID, err.Error()))
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
+			if err == pgx.ErrNoRows {
+				c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "User ID not found."})
+			} else {
+				log.Error(fmt.Sprintf("id=%s: no API key associated with user ID - %s", userID, err.Error()))
+				c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
+			}
 			return
 		}
 
@@ -313,7 +325,7 @@ func getPaginatedRequestsHandler(db *database.DB, cfg *config.Config) gin.Handle
 		requests, userAgentIDs, _, skipped, err := fetchAndFormatRequestsPage(ctx, db, apiKey, page, cfg.PageSize)
 		if err != nil {
 			log.Error(fmt.Sprintf("key=%s: failed to fetch requests - %s", apiKey, err.Error()))
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Failed to fetch requests."})
+			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
 			return
 		}
 		if skipped > 0 {
@@ -441,7 +453,7 @@ func getData(db *database.DB) gin.HandlerFunc {
 		rows, err := db.Pool.Query(ctx, query, arguments...)
 		if err != nil {
 			log.Error(fmt.Sprintf("key=%s: queries failed - %s", apiKey, err.Error()))
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
+			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
 			return
 		}
 		defer rows.Close()
@@ -715,7 +727,7 @@ func deleteData(db *database.DB) gin.HandlerFunc {
 		err := db.DeleteUserAccount(ctx, apiKey)
 		if err != nil {
 			log.Error(fmt.Sprintf("key=%s: data deletion failed - %s", apiKey, err.Error()))
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
+			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
 			return
 		}
 
