@@ -2,136 +2,106 @@ package ratelimit
 
 import (
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
-type RateLimiter struct {
-	mu                sync.RWMutex
-	users             map[string]*userRate
-	accessesPerMinute int
-}
-
 const (
-	cleanupInterval time.Duration = 5 * time.Minute
-	maxUsers        int           = 10000 // Prevent memory leaks
+	cleanupInterval = 5 * time.Minute
+	inactiveTimeout = time.Hour
+	maxKeys         = 10000
 )
 
-type userRate struct {
-	mu         sync.Mutex
-	timestamps []time.Time
-	lastAccess time.Time
+// RateLimiter enforces a per-key token bucket rate limit.
+type RateLimiter struct {
+	mu   sync.RWMutex
+	keys map[string]*tokenBucket
+	rate float64 // tokens per nanosecond
+	max  float64 // maximum token accumulation (burst = full per-minute quota)
 }
 
-// NewRateLimiter creates a new rate limiter with cleanup
-func NewRateLimiter(accessesPerMinute int) *RateLimiter {
+type tokenBucket struct {
+	mu         sync.Mutex
+	tokens     float64
+	lastRefill int64 // unix nanoseconds
+	lastAccess int64 // unix nanoseconds; accessed atomically for cleanup reads
+}
+
+// NewRateLimiter creates a rate limiter allowing requestsPerMinute calls per key.
+func NewRateLimiter(requestsPerMinute int) *RateLimiter {
 	rl := &RateLimiter{
-		users:             make(map[string]*userRate),
-		accessesPerMinute: accessesPerMinute,
+		keys: make(map[string]*tokenBucket),
+		rate: float64(requestsPerMinute) / float64(time.Minute),
+		max:  float64(requestsPerMinute),
 	}
-
-	// Start cleanup goroutine
 	go rl.cleanup()
-
 	return rl
 }
 
-// cleanup removes old users to prevent memory leaks
+// RateLimited returns true if the key has exceeded its rate limit.
+func (r *RateLimiter) RateLimited(key string) bool {
+	r.mu.RLock()
+	bucket, exists := r.keys[key]
+	r.mu.RUnlock()
+
+	if !exists {
+		r.mu.Lock()
+		bucket, exists = r.keys[key]
+		if !exists {
+			now := time.Now().UnixNano()
+			bucket = &tokenBucket{
+				tokens:     r.max,
+				lastRefill: now,
+				lastAccess: now,
+			}
+			r.keys[key] = bucket
+		}
+		r.mu.Unlock()
+	}
+
+	return bucket.consume(r.rate, r.max)
+}
+
+func (b *tokenBucket) consume(rate, max float64) bool {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	now := time.Now().UnixNano()
+	elapsed := float64(now - b.lastRefill)
+	b.tokens = min(b.tokens+elapsed*rate, max)
+	b.lastRefill = now
+	atomic.StoreInt64(&b.lastAccess, now)
+
+	if b.tokens < 1 {
+		return true
+	}
+	b.tokens--
+	return false
+}
+
 func (r *RateLimiter) cleanup() {
 	ticker := time.NewTicker(cleanupInterval)
 	defer ticker.Stop()
-	
+
 	for range ticker.C {
+		cutoff := time.Now().Add(-inactiveTimeout).UnixNano()
 		r.mu.Lock()
-		
-		// Remove users who haven't accessed in the last hour
-		cutoff := time.Now().Add(-time.Hour)
-		for apiKey, user := range r.users {
-			user.mu.Lock()
-			if user.lastAccess.Before(cutoff) {
-				delete(r.users, apiKey)
+		for key, bucket := range r.keys {
+			if atomic.LoadInt64(&bucket.lastAccess) < cutoff {
+				delete(r.keys, key)
 			}
-			user.mu.Unlock()
 		}
-		
-		// If still too many users, remove oldest half
-		if len(r.users) > maxUsers {
+		if len(r.keys) > maxKeys {
 			count := 0
-			target := len(r.users) / 2
-			for apiKey := range r.users {
-				delete(r.users, apiKey)
+			target := len(r.keys) / 2
+			for key := range r.keys {
+				delete(r.keys, key)
 				count++
 				if count >= target {
 					break
 				}
 			}
 		}
-		
 		r.mu.Unlock()
 	}
-}
-
-// RateLimited checks if the API key is rate limited
-func (r *RateLimiter) RateLimited(apiKey string) bool {
-	// Fast path: check if user exists with read lock
-	r.mu.RLock()
-	user, exists := r.users[apiKey]
-	limit := r.accessesPerMinute
-	r.mu.RUnlock()
-
-	if exists {
-		return user.isRateLimited(limit)
-	}
-
-	// Slow path: create new user with write lock
-	r.mu.Lock()
-	// Double-check in case another goroutine added it
-	user, exists = r.users[apiKey]
-	if !exists {
-		user = newUserRate()
-		r.users[apiKey] = user
-	}
-	limit = r.accessesPerMinute
-	r.mu.Unlock()
-
-	return user.isRateLimited(limit)
-}
-
-// newUserRate creates a new user rate tracker
-func newUserRate() *userRate {
-	now := time.Now()
-	return &userRate{
-		timestamps: []time.Time{now},
-		lastAccess: now,
-	}
-}
-
-// isRateLimited checks if this user is rate limited
-func (u *userRate) isRateLimited(accessesPerMinute int) bool {
-	u.mu.Lock()
-	defer u.mu.Unlock()
-
-	now := time.Now()
-	u.lastAccess = now
-
-	// Remove timestamps older than 1 minute
-	cutoff := now.Add(-time.Minute)
-	validCount := 0
-
-	// Count and keep only valid timestamps
-	for _, ts := range u.timestamps {
-		if ts.After(cutoff) {
-			u.timestamps[validCount] = ts
-			validCount++
-		}
-	}
-	u.timestamps = u.timestamps[:validCount]
-
-	// Check if rate limited
-	if len(u.timestamps) >= accessesPerMinute {
-		return true
-	}
-
-	// Add current timestamp
-	u.timestamps = append(u.timestamps, now)
-	return false
 }

@@ -9,10 +9,13 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-var Logger zerolog.Logger
+var (
+	Logger    zerolog.Logger
+	logWriter *lumberjack.Logger
+)
 
 func Init() error {
-	fileWriter := &lumberjack.Logger{
+	logWriter = &lumberjack.Logger{
 		Filename:   "./logger.log",
 		MaxSize:    100,
 		MaxBackups: 3,
@@ -20,7 +23,7 @@ func Init() error {
 		Compress:   true,
 	}
 
-	multi := io.MultiWriter(os.Stdout, fileWriter)
+	multi := io.MultiWriter(os.Stdout, logWriter)
 
 	Logger = zerolog.New(zerolog.ConsoleWriter{
 		Out:        multi,
@@ -47,6 +50,9 @@ func Init() error {
 }
 
 func Close() error {
+	if logWriter != nil {
+		return logWriter.Close()
+	}
 	return nil
 }
 
