@@ -1,4 +1,4 @@
-package main
+package routes
 
 import (
 	"context"
@@ -12,10 +12,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/oschwald/geoip2-golang"
 	"github.com/tom-draper/api-analytics/server/database"
 	"github.com/tom-draper/api-analytics/server/logger/internal/log"
-
-	"github.com/oschwald/geoip2-golang"
 )
 
 type Cache struct {
@@ -29,6 +28,14 @@ type Cache struct {
 type geoIPEntry struct {
 	countryCode string
 	lastAccess  int64 // unix nanoseconds; read/written atomically
+}
+
+func newCache(maxSize int) *Cache {
+	return &Cache{
+		userAgentMap: make(map[string]int),
+		geoIPMap:     make(map[string]*geoIPEntry),
+		maxSize:      maxSize,
+	}
 }
 
 func preloadUserAgentCache(ctx context.Context, db *database.DB, cache *Cache) (int, error) {
@@ -185,7 +192,6 @@ func evictLRUEntries(cache *Cache) {
 		delete(cache.geoIPMap, ip)
 	}
 
-	// If still over capacity, evict oldest 25%
 	if len(cache.geoIPMap) >= cache.maxSize {
 		type entry struct {
 			ip         string
@@ -216,10 +222,9 @@ func getUserHash(ipAddress, userAgent string) string {
 		return ""
 	}
 
-	combined := ipAddress + "|" + userAgent
 	h := hasherPool.Get().(hash.Hash)
 	h.Reset()
-	h.Write([]byte(combined))
+	h.Write([]byte(ipAddress + "|" + userAgent))
 	result := hex.EncodeToString(h.Sum(nil))[:32]
 	hasherPool.Put(h)
 	return result

@@ -9,59 +9,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/tom-draper/api-analytics/server/database"
-	"github.com/tom-draper/api-analytics/server/logger/internal/config"
-	"github.com/tom-draper/api-analytics/server/logger/internal/log"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/oschwald/geoip2-golang"
+	"github.com/tom-draper/api-analytics/server/database"
+	"github.com/tom-draper/api-analytics/server/logger/internal/config"
+	"github.com/tom-draper/api-analytics/server/logger/internal/log"
+	"github.com/tom-draper/api-analytics/server/logger/internal/routes"
 )
-
-const (
-	P1 PrivacyLevel = iota
-	P2
-	P3
-)
-
-type PrivacyLevel int
-
-type RequestData struct {
-	Path         string `json:"path"`
-	Hostname     string `json:"hostname"`
-	IPAddress    string `json:"ip_address"`
-	UserAgent    string `json:"user_agent"`
-	Method       string `json:"method"`
-	Status       int16  `json:"status"`
-	Referrer     string `json:"referrer"`
-	ResponseTime int16  `json:"response_time"`
-	UserID       string `json:"user_id"`
-	CreatedAt    string `json:"created_at"`
-}
-
-type Payload struct {
-	APIKey       string        `json:"api_key"`
-	Requests     []RequestData `json:"requests"`
-	Framework    string        `json:"framework"`
-	PrivacyLevel PrivacyLevel  `json:"privacy_level"`
-}
-
-type ProcessedRequest struct {
-	Path         string
-	Hostname     string
-	IPAddress    *string
-	UserHash     string
-	Referrer     string
-	Status       int16
-	ResponseTime int16
-	Method       int16
-	Framework    int16
-	Location     string
-	UserID       string
-	UserAgent    string
-	CreatedAt    time.Time
-	UserAgentID  int
-}
 
 func main() {
 	if err := log.Init(); err != nil {
@@ -103,31 +58,11 @@ func main() {
 		}
 	}()
 
-	cache := &Cache{
-		userAgentMap: make(map[string]int),
-		geoIPMap:     make(map[string]*geoIPEntry),
-		maxSize:      10000,
-	}
-
-	count, err := preloadUserAgentCache(context.Background(), db, cache)
-	if err != nil {
-		log.Error(fmt.Sprintf("failed to preload user agent cache: %v", err))
-	} else {
-		log.Info(fmt.Sprintf("user agent cache preloaded: %d entries", count))
-	}
-
-	gin.SetMode(gin.ReleaseMode)
-	router := gin.New()
-	router.Use(cors.Default())
-
-	handler := logRequestHandler(db, geoIPDB, cache, cfg.RateLimit, cfg.MaxInsert)
-	router.POST("/api/log-request", handler)
-	router.POST("/api/requests", handler)
-	router.GET("/api/health", checkHealth(db, startTime))
+	app := setupRouter(db, geoIPDB, cfg, startTime)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),
-		Handler: router,
+		Handler: app,
 	}
 
 	serverErr := make(chan error, 1)
@@ -160,25 +95,13 @@ func main() {
 	log.Info("server exited")
 }
 
-func checkHealth(db *database.DB, startTime time.Time) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ctx := c.Request.Context()
-		uptime := int(time.Since(startTime).Seconds())
+func setupRouter(db *database.DB, geoIPDB *geoip2.Reader, cfg *config.Config, startTime time.Time) *gin.Engine {
+	gin.SetMode(gin.ReleaseMode)
+	app := gin.New()
+	app.Use(cors.Default())
 
-		if err := db.CheckConnection(ctx); err != nil {
-			log.Error(fmt.Sprintf("health check failed: %v", err))
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"health":         "unhealthy",
-				"uptime_seconds": uptime,
-				"database":       "unreachable",
-			})
-			return
-		}
+	r := app.Group("/api")
+	routes.RegisterRouter(r, db, geoIPDB, cfg, startTime)
 
-		c.JSON(http.StatusOK, gin.H{
-			"health":         "healthy",
-			"uptime_seconds": uptime,
-			"database":       "connected",
-		})
-	}
+	return app
 }

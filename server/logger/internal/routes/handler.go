@@ -1,4 +1,4 @@
-package main
+package routes
 
 import (
 	"fmt"
@@ -6,17 +6,61 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tom-draper/api-analytics/server/database"
-	"github.com/tom-draper/api-analytics/server/logger/internal/log"
-	"github.com/tom-draper/api-analytics/server/logger/internal/ratelimit"
-
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/oschwald/geoip2-golang"
+	"github.com/tom-draper/api-analytics/server/database"
+	"github.com/tom-draper/api-analytics/server/logger/internal/log"
+	"github.com/tom-draper/api-analytics/server/logger/internal/ratelimit"
 )
 
-const frameworkOther int16 = 255 // unknown/other framework
+const (
+	P1 PrivacyLevel = iota
+	P2
+	P3
+)
+
+type PrivacyLevel int
+
+type RequestData struct {
+	Path         string `json:"path"`
+	Hostname     string `json:"hostname"`
+	IPAddress    string `json:"ip_address"`
+	UserAgent    string `json:"user_agent"`
+	Method       string `json:"method"`
+	Status       int16  `json:"status"`
+	Referrer     string `json:"referrer"`
+	ResponseTime int16  `json:"response_time"`
+	UserID       string `json:"user_id"`
+	CreatedAt    string `json:"created_at"`
+}
+
+type Payload struct {
+	APIKey       string        `json:"api_key"`
+	Requests     []RequestData `json:"requests"`
+	Framework    string        `json:"framework"`
+	PrivacyLevel PrivacyLevel  `json:"privacy_level"`
+}
+
+type ProcessedRequest struct {
+	Path         string
+	Hostname     string
+	IPAddress    *string
+	UserHash     string
+	Referrer     string
+	Status       int16
+	ResponseTime int16
+	Method       int16
+	Framework    int16
+	Location     string
+	UserID       string
+	UserAgent    string
+	CreatedAt    time.Time
+	UserAgentID  int
+}
+
+const frameworkOther int16 = 255
 
 var methodID = map[string]int16{
 	"GET": 0, "POST": 1, "PUT": 2, "PATCH": 3, "DELETE": 4,
@@ -62,8 +106,7 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 		ctx := c.Request.Context()
 
 		var exists bool
-		err := db.Pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM users WHERE api_key = $1)", payload.APIKey).Scan(&exists)
-		if err != nil {
+		if err := db.Pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM users WHERE api_key = $1)", payload.APIKey).Scan(&exists); err != nil {
 			log.Error(fmt.Sprintf("key=%s: failed to verify API key: %v", payload.APIKey, err))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
 			return
