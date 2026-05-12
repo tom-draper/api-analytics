@@ -19,6 +19,21 @@ import (
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
+// requireAPIKeyParam extracts and validates the :apiKey route param.
+// Returns the key and true on success, or writes a 400 response and returns false.
+func requireAPIKeyParam(c *gin.Context) (string, bool) {
+	apiKey := strings.TrimSpace(c.Param("apiKey"))
+	if apiKey == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
+		return "", false
+	}
+	if !database.ValidAPIKey(apiKey) {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key format. Expected UUID format."})
+		return "", false
+	}
+	return apiKey, true
+}
+
 func genAPIKey(db *database.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
@@ -38,13 +53,8 @@ func genAPIKey(db *database.DB) gin.HandlerFunc {
 
 func getUserID(db *database.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		apiKey := strings.TrimSpace(c.Param("apiKey"))
-		if apiKey == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
-			return
-		}
-		if !database.ValidAPIKey(apiKey) {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key format. Expected UUID format."})
+		apiKey, ok := requireAPIKeyParam(c)
+		if !ok {
 			return
 		}
 
@@ -366,9 +376,13 @@ func buildRequestDataCompact(rows pgx.Rows, cols [12]any) ([][12]any, int) {
 			&request.Referrer,
 		)
 		if err == nil {
+			var ipAddress string
+			if request.IPAddress.IPNet != nil {
+				ipAddress = request.IPAddress.IPNet.IP.String()
+			}
 			requests = append(
 				requests, [12]any{
-					request.IPAddress,
+					ipAddress,
 					request.Path,
 					request.Hostname,
 					request.UserAgent,
@@ -430,6 +444,7 @@ func getData(db *database.DB) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
 			return
 		}
+		defer rows.Close()
 
 		// Read data into list of objects to return
 		if queries.compact {
@@ -690,13 +705,8 @@ func buildRequestData(rows pgx.Rows) ([]RequestData, int) {
 
 func deleteData(db *database.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		apiKey := strings.TrimSpace(c.Param("apiKey"))
-		if apiKey == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
-			return
-		}
-		if !database.ValidAPIKey(apiKey) {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key format. Expected UUID format."})
+		apiKey, ok := requireAPIKeyParam(c)
+		if !ok {
 			return
 		}
 
@@ -914,7 +924,7 @@ func getUserPings(db *database.DB) gin.HandlerFunc {
 			return
 		}
 
-		log.Info(fmt.Sprintf("id=%s: Monitor access", userID))
+		log.Info(fmt.Sprintf("id=%s: monitor access", userID))
 
 		ctx := c.Request.Context()
 
@@ -922,7 +932,7 @@ func getUserPings(db *database.DB) gin.HandlerFunc {
 		query := "SELECT url FROM monitor INNER JOIN users ON users.api_key = monitor.api_key WHERE users.user_id = $1;"
 		rows, err := db.Pool.Query(ctx, query, userID)
 		if err != nil {
-			log.Info(fmt.Sprintf("id=%s: Monitor access failed - %s", userID, err.Error()))
+			log.Error(fmt.Sprintf("id=%s: monitor access failed - %s", userID, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
@@ -935,12 +945,13 @@ func getUserPings(db *database.DB) gin.HandlerFunc {
 				monitors[url] = make([]MonitorPing, 0)
 			}
 		}
+		rows.Close()
 
 		// Fetch user ID corresponding with API key
 		query = "SELECT url, response_time, status, pings.created_at FROM pings INNER JOIN users ON users.api_key = pings.api_key WHERE users.user_id = $1;"
 		rows, err = db.Pool.Query(ctx, query, userID)
 		if err != nil {
-			log.Info(fmt.Sprintf("id=%s: Ping access failed - %s", userID, err.Error()))
+			log.Error(fmt.Sprintf("id=%s: ping access failed - %s", userID, err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
 			return
 		}
@@ -958,14 +969,11 @@ func getUserPings(db *database.DB) gin.HandlerFunc {
 		}
 
 		// Record user pings access
-		err = db.UpdateLastAccessedByUserID(ctx, userID)
-		if err != nil {
-			log.Info(fmt.Sprintf("id=%s: User last access update failed - %s", userID, err.Error()))
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid user ID."})
-			return
+		if err = db.UpdateLastAccessedByUserID(ctx, userID); err != nil {
+			log.Error(fmt.Sprintf("id=%s: user last access update failed - %s", userID, err.Error()))
 		}
 
-		log.Info(fmt.Sprintf("id=%s: Monitor access successful [%d]", userID, len(monitors)))
+		log.Info(fmt.Sprintf("id=%s: monitor access successful [%d]", userID, len(monitors)))
 
 		c.JSON(http.StatusOK, monitors)
 	}
@@ -992,13 +1000,8 @@ func checkHealth(db *database.DB) gin.HandlerFunc {
 
 func regenerateUserID(db *database.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		apiKey := strings.TrimSpace(c.Param("apiKey"))
-		if apiKey == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
-			return
-		}
-		if !database.ValidAPIKey(apiKey) {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key format. Expected UUID format."})
+		apiKey, ok := requireAPIKeyParam(c)
+		if !ok {
 			return
 		}
 
