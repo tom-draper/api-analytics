@@ -80,6 +80,7 @@ type ProcessedRequest struct {
 	Framework    int16
 	Location     string
 	UserID       string
+	UserAgent    string
 	CreatedAt    time.Time
 	UserAgentID  int
 }
@@ -102,15 +103,13 @@ func main() {
 	// Load and validate configuration
 	cfg, err := config.Load()
 	if err != nil {
-		log.Error(fmt.Sprintf("configuration error: %v", err))
-		return
+		log.Fatal(fmt.Sprintf("configuration error: %v", err))
 	}
 
 	// Initialize database connection pool
 	db, err := database.New(context.Background(), cfg.PostgresURL)
 	if err != nil {
-		log.Error(fmt.Sprintf("failed to create database connection pool: %v", err))
-		return
+		log.Fatal(fmt.Sprintf("failed to create database connection pool: %v", err))
 	}
 	defer db.Close()
 	log.Info("database connection pool initialized")
@@ -135,9 +134,11 @@ func main() {
 	}
 
 	// Preload user agent cache
-	err = preloadUserAgentCache(context.Background(), db, cache)
+	count, err := preloadUserAgentCache(context.Background(), db, cache)
 	if err != nil {
 		log.Error(fmt.Sprintf("failed to preload user agent cache: %v", err))
+	} else {
+		log.Info(fmt.Sprintf("user agent cache preloaded: %d entries", count))
 	}
 
 	gin.SetMode(gin.ReleaseMode)
@@ -331,6 +332,7 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 				Framework:    framework,
 				Location:     location,
 				UserID:       request.UserID,
+				UserAgent:    request.UserAgent,
 				CreatedAt:    createdAt,
 			})
 		}
@@ -353,7 +355,7 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 
 		// Set user agent IDs
 		for i := range validRequests {
-			if id, exists := userAgentIDs[payload.Requests[i].UserAgent]; exists {
+			if id, exists := userAgentIDs[validRequests[i].UserAgent]; exists {
 				validRequests[i].UserAgentID = id
 			}
 		}
@@ -385,10 +387,10 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 }
 
 // Preload user agent cache at startup
-func preloadUserAgentCache(ctx context.Context, db *database.DB, cache *Cache) error {
+func preloadUserAgentCache(ctx context.Context, db *database.DB, cache *Cache) (int, error) {
 	rows, err := db.Pool.Query(ctx, "SELECT user_agent, id FROM user_agents LIMIT 50000")
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer rows.Close()
 
@@ -398,14 +400,13 @@ func preloadUserAgentCache(ctx context.Context, db *database.DB, cache *Cache) e
 	for rows.Next() {
 		var userAgent string
 		var id int
-		err := rows.Scan(&userAgent, &id)
-		if err != nil {
+		if err := rows.Scan(&userAgent, &id); err != nil {
 			continue
 		}
 		cache.userAgentMap[userAgent] = id
 	}
 
-	return rows.Err()
+	return len(cache.userAgentMap), rows.Err()
 }
 
 // Efficient batch user agent insertion and ID retrieval
@@ -478,6 +479,10 @@ func ensureUserAgentIDs(ctx context.Context, db *database.DB, cache *Cache, user
 			}
 		}
 		cache.userAgentMu.Unlock()
+
+		if err := rows.Err(); err != nil {
+			return result, err
+		}
 	}
 
 	return result, nil
