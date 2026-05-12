@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"hash"
 	"net"
 	"net/http"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -159,7 +161,6 @@ func main() {
 	router.POST("/api/requests", handler)
 	router.GET("/api/health", checkHealth(db, startTime))
 
-	// HTTP server (IMPORTANT CHANGE)
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),
 		Handler: router,
@@ -287,9 +288,9 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 		}
 
 		// Process and validate requests
-		var validRequests []ProcessedRequest
-		var userAgents []string
-		uniqueUserAgents := make(map[string]bool)
+		validRequests := make([]ProcessedRequest, 0, len(payload.Requests))
+		userAgents := make([]string, 0, len(payload.Requests))
+		uniqueUserAgents := make(map[string]struct{})
 
 		for _, request := range payload.Requests {
 			if len(validRequests) >= maxInsert {
@@ -358,8 +359,8 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 			}
 
 			// Collect unique user agents
-			if !uniqueUserAgents[request.UserAgent] {
-				uniqueUserAgents[request.UserAgent] = true
+			if _, seen := uniqueUserAgents[request.UserAgent]; !seen {
+				uniqueUserAgents[request.UserAgent] = struct{}{}
 				userAgents = append(userAgents, request.UserAgent)
 			}
 
@@ -425,16 +426,15 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 
 		if err != nil {
 			log.Error(fmt.Sprintf(
-				"COPY FAILED: api_key=%s request_count=%d error=%v",
+				"copy failed: api_key=%s request_count=%d error=%v",
 				payload.APIKey,
 				len(validRequests),
 				err,
 			))
 
-			// Classify likely COPY vs DB failure
 			if pgErr, ok := err.(*pgconn.PgError); ok {
 				log.Error(fmt.Sprintf(
-					"POSTGRES ERROR DETAIL: code=%s message=%s detail=%s hint=%s",
+					"postgres error: code=%s message=%s detail=%s hint=%s",
 					pgErr.Code,
 					pgErr.Message,
 					pgErr.Detail,
@@ -463,19 +463,29 @@ func preloadUserAgentCache(ctx context.Context, db *database.DB, cache *Cache) (
 	}
 	defer rows.Close()
 
-	cache.userAgentMu.Lock()
-	defer cache.userAgentMu.Unlock()
-
+	type entry struct {
+		ua string
+		id int
+	}
+	entries := make([]entry, 0, 50000)
 	for rows.Next() {
-		var userAgent string
-		var id int
-		if err := rows.Scan(&userAgent, &id); err != nil {
+		var e entry
+		if err := rows.Scan(&e.ua, &e.id); err != nil {
 			continue
 		}
-		cache.userAgentMap[userAgent] = id
+		entries = append(entries, e)
+	}
+	if err := rows.Err(); err != nil {
+		return 0, err
 	}
 
-	return len(cache.userAgentMap), rows.Err()
+	cache.userAgentMu.Lock()
+	for _, e := range entries {
+		cache.userAgentMap[e.ua] = e.id
+	}
+	cache.userAgentMu.Unlock()
+
+	return len(entries), nil
 }
 
 // Efficient batch user agent insertion and ID retrieval
@@ -484,8 +494,8 @@ func ensureUserAgentIDs(ctx context.Context, db *database.DB, cache *Cache, user
 		return make(map[string]int), nil
 	}
 
-	result := make(map[string]int)
-	newUserAgents := make([]string, 0)
+	result := make(map[string]int, len(userAgents))
+	newUserAgents := make([]string, 0, len(userAgents))
 
 	// Check cache first
 	cache.userAgentMu.RLock()
@@ -502,56 +512,42 @@ func ensureUserAgentIDs(ctx context.Context, db *database.DB, cache *Cache, user
 		return result, nil
 	}
 
-	// Use COPY for bulk insert of new user agents
-	// First, try to insert new user agents using COPY
-	_, err := db.Pool.CopyFrom(
-		ctx,
-		pgx.Identifier{"user_agents"},
-		[]string{"user_agent"},
-		pgx.CopyFromSlice(len(newUserAgents), func(i int) ([]any, error) {
-			return []any{newUserAgents[i]}, nil
-		}),
+	// Bulk insert with ON CONFLICT handles concurrent inserts correctly.
+	// COPY does not support ON CONFLICT, so we use unnest() instead.
+	_, err := db.Pool.Exec(ctx,
+		"INSERT INTO user_agents (user_agent) SELECT unnest($1::text[]) ON CONFLICT (user_agent) DO NOTHING",
+		newUserAgents,
 	)
 	if err != nil {
-		// Fallback to individual inserts with ON CONFLICT
-		for _, ua := range newUserAgents {
-			_, err := db.Pool.Exec(ctx,
-				"INSERT INTO user_agents (user_agent) VALUES ($1) ON CONFLICT (user_agent) DO NOTHING",
-				ua)
-			if err != nil {
-				log.Error(fmt.Sprintf("failed to insert user agent: %v", err))
-			}
-		}
+		log.Error(fmt.Sprintf("failed to insert user agents: %v", err))
 	}
 
-	// Get IDs for new user agents
-	if len(newUserAgents) > 0 {
-		query := "SELECT user_agent, id FROM user_agents WHERE user_agent = ANY($1)"
-		rows, err := db.Pool.Query(ctx, query, newUserAgents)
-		if err != nil {
-			return result, err
-		}
-		defer rows.Close()
+	// Fetch IDs for all newly inserted (and any that already existed)
+	rows, err := db.Pool.Query(ctx,
+		"SELECT user_agent, id FROM user_agents WHERE user_agent = ANY($1)",
+		newUserAgents,
+	)
+	if err != nil {
+		return result, err
+	}
+	defer rows.Close()
 
-		cache.userAgentMu.Lock()
-		for rows.Next() {
-			var userAgent string
-			var id int
-			err := rows.Scan(&userAgent, &id)
-			if err != nil {
-				continue
-			}
-			result[userAgent] = id
-			// Update cache
-			if len(cache.userAgentMap) < cache.maxSize {
-				cache.userAgentMap[userAgent] = id
-			}
+	cache.userAgentMu.Lock()
+	for rows.Next() {
+		var userAgent string
+		var id int
+		if err := rows.Scan(&userAgent, &id); err != nil {
+			continue
 		}
-		cache.userAgentMu.Unlock()
+		result[userAgent] = id
+		if len(cache.userAgentMap) < cache.maxSize {
+			cache.userAgentMap[userAgent] = id
+		}
+	}
+	cache.userAgentMu.Unlock()
 
-		if err := rows.Err(); err != nil {
-			return result, err
-		}
+	if err := rows.Err(); err != nil {
+		return result, err
 	}
 
 	return result, nil
@@ -565,15 +561,14 @@ func getCountryCode(geoIPDB *geoip2.Reader, cache *Cache, ipAddress string) stri
 
 	now := time.Now().Unix()
 
-	// Check cache first (read lock)
-	cache.geoIPMu.Lock()
+	cache.geoIPMu.RLock()
 	if entry, exists := cache.geoIPMap[ipAddress]; exists {
-		entry.lastAccess = now
+		atomic.StoreInt64(&entry.lastAccess, now)
 		countryCode := entry.countryCode
-		cache.geoIPMu.Unlock()
+		cache.geoIPMu.RUnlock()
 		return countryCode
 	}
-	cache.geoIPMu.Unlock()
+	cache.geoIPMu.RUnlock()
 
 	ip := net.ParseIP(ipAddress)
 	if ip == nil {
@@ -587,75 +582,74 @@ func getCountryCode(geoIPDB *geoip2.Reader, cache *Cache, ipAddress string) stri
 
 	countryCode := record.Country.IsoCode
 
-	// Cache the result with LRU eviction
 	cache.geoIPMu.Lock()
-	if len(cache.geoIPMap) >= cache.maxSize {
-		// LRU eviction: remove least recently used entries
-		evictLRUEntries(cache)
-	}
-	cache.geoIPMap[ipAddress] = &geoIPEntry{
-		countryCode: countryCode,
-		lastAccess:  now,
+	// Double-check: another goroutine may have inserted while we did the lookup
+	if _, exists := cache.geoIPMap[ipAddress]; !exists {
+		if len(cache.geoIPMap) >= cache.maxSize {
+			evictLRUEntries(cache)
+		}
+		cache.geoIPMap[ipAddress] = &geoIPEntry{
+			countryCode: countryCode,
+			lastAccess:  now,
+		}
 	}
 	cache.geoIPMu.Unlock()
 
 	return countryCode
 }
 
-// evictLRUEntries removes the least recently used entries from the GeoIP cache
-// Caller must hold cache.geoIPMu write lock
+// evictLRUEntries removes the least recently used entries from the GeoIP cache.
+// Caller must hold cache.geoIPMu write lock.
 func evictLRUEntries(cache *Cache) {
-	// Find entries older than 1 hour
 	cutoff := time.Now().Unix() - 3600
 	var toDelete []string
 
 	for ip, entry := range cache.geoIPMap {
-		if entry.lastAccess < cutoff {
+		if atomic.LoadInt64(&entry.lastAccess) < cutoff {
 			toDelete = append(toDelete, ip)
 		}
 	}
 
-	// If we found old entries, delete them
-	if len(toDelete) > 0 {
-		for _, ip := range toDelete {
-			delete(cache.geoIPMap, ip)
-		}
+	for _, ip := range toDelete {
+		delete(cache.geoIPMap, ip)
 	}
 
-	// If still over capacity after removing old entries, remove oldest entries
+	// If still over capacity, evict oldest 25%
 	if len(cache.geoIPMap) >= cache.maxSize {
-		// Build slice of entries with their IPs for sorting
 		type entry struct {
 			ip         string
 			lastAccess int64
 		}
 		entries := make([]entry, 0, len(cache.geoIPMap))
 		for ip, e := range cache.geoIPMap {
-			entries = append(entries, entry{ip: ip, lastAccess: e.lastAccess})
+			entries = append(entries, entry{ip: ip, lastAccess: atomic.LoadInt64(&e.lastAccess)})
 		}
 
-		// Sort by access time (oldest first)
 		sort.Slice(entries, func(i, j int) bool {
 			return entries[i].lastAccess < entries[j].lastAccess
 		})
 
-		// Remove oldest 25% of entries
 		removeCount := max(len(entries)/4, 1)
-
-		for i := 0; i < removeCount && i < len(entries); i++ {
+		for i := 0; i < removeCount; i++ {
 			delete(cache.geoIPMap, entries[i].ip)
 		}
 	}
 }
 
-func getUserHash(ipAddress string, userAgent string) string {
+var hasherPool = sync.Pool{
+	New: func() any { return sha256.New() },
+}
+
+func getUserHash(ipAddress, userAgent string) string {
 	if ipAddress == "" && userAgent == "" {
 		return ""
 	}
 
 	combined := strings.TrimSpace(ipAddress) + "|" + strings.TrimSpace(userAgent)
-	hasher := sha256.New()
-	hasher.Write([]byte(combined))
-	hashBytes := hasher.Sum(nil)
-	return hex.EncodeToString(hashBytes)[:32]
+	h := hasherPool.Get().(hash.Hash)
+	h.Reset()
+	h.Write([]byte(combined))
+	result := hex.EncodeToString(h.Sum(nil))[:32]
+	hasherPool.Put(h)
+	return result
 }
