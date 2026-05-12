@@ -84,17 +84,13 @@ Confirm all services are running:
 docker ps
 ```
 
-Test that the internal services are working:
+Run the test scripts to verify everything is working:
 
 ```bash
-curl -X GET http://localhost:3000/api/generate
-```
+chmod +x tests/test-internal.sh tests/test.sh
 
-For a more comprehensive test, run the test scripts:
-
-```bash
-chmod +x tests/test-internal.sh && ./tests/test-internal.sh
-chmod +x tests/test-nginx.sh && ./tests/test-nginx.sh
+./tests/test-internal.sh   # tests API and logger directly (ports 3000, 8000)
+./tests/test.sh            # tests via the nginx proxy (port 80)
 ```
 
 ---
@@ -129,13 +125,10 @@ docker logs caddy
 ### 4. Test
 
 ```bash
-curl -X GET https://your-domain.com/api/generate
-```
+chmod +x tests/test-internal.sh tests/test.sh
 
-For a comprehensive external test:
-
-```bash
-chmod +x tests/test-external.sh && ./tests/test-external.sh your-domain.com
+./tests/test-internal.sh                        # verify core services
+./tests/test.sh https://your-domain.com         # verify proxy + SSL
 ```
 
 Finally, confirm the dashboard can connect to your server:
