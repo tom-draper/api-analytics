@@ -990,10 +990,37 @@ func checkHealth(db *database.DB) gin.HandlerFunc {
 	}
 }
 
+func regenerateUserID(db *database.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		apiKey := strings.TrimSpace(c.Param("apiKey"))
+		if apiKey == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
+			return
+		}
+		if !database.ValidAPIKey(apiKey) {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key format. Expected UUID format."})
+			return
+		}
+
+		ctx := c.Request.Context()
+
+		userID, err := db.RegenerateUserID(ctx, apiKey)
+		if err != nil {
+			log.Error(fmt.Sprintf("key=%s: user ID regeneration failed - %s", apiKey, err.Error()))
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key."})
+			return
+		}
+
+		log.Info(fmt.Sprintf("key=%s: user ID regenerated successfully", apiKey))
+		c.JSON(http.StatusOK, userID)
+	}
+}
+
 func RegisterRouter(r *gin.RouterGroup, db *database.DB, cfg *config.Config) {
 	r.GET("/generate", genAPIKey(db))
 	r.GET("/generate-api-key", genAPIKey(db))
 	r.GET("/user-id/:apiKey", getUserID(db))
+	r.GET("/reset-user-id/:apiKey", regenerateUserID(db))
 	r.GET("/requests/:userID", getRequestsHandler(db, cfg))
 	r.GET("/requests/:userID/:page", getPaginatedRequestsHandler(db, cfg))
 	r.GET("/delete/:apiKey", deleteData(db))

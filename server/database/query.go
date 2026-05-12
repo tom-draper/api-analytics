@@ -20,6 +20,16 @@ func (db *DB) CreateUser(ctx context.Context) (string, error) {
 	return apiKey, nil
 }
 
+func (db *DB) RegenerateUserID(ctx context.Context, apiKey string) (string, error) {
+	var userID string
+	query := "UPDATE users SET user_id = gen_random_uuid() WHERE api_key = $1 RETURNING user_id"
+	err := db.Pool.QueryRow(ctx, query, apiKey).Scan(&userID)
+	if err != nil {
+		return "", err
+	}
+	return userID, nil
+}
+
 func (db *DB) GetUserID(ctx context.Context, apiKey string) (string, error) {
 	var userID string
 	query := "SELECT user_id FROM users WHERE api_key = $1"
