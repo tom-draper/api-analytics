@@ -109,7 +109,7 @@ Create an A record pointing your domain to your server's IP address.
 
 ```
 DOMAIN_NAME=your-domain.com
-ACME_EMAIL=your-email@example.com
+SSL_EMAIL=your-email@example.com
 ```
 
 ### 3. Start with Caddy
@@ -284,7 +284,7 @@ If you prefer Traefik as your reverse proxy, `docker-compose.traefik.yml` provid
 
 ```
 DOMAIN_NAME=your-domain.com
-ACME_EMAIL=your-email@example.com
+SSL_EMAIL=your-email@example.com
 ```
 
 ### 2. Start with Traefik

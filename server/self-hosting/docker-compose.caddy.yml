@@ -12,7 +12,7 @@ services:
       - "443:443"
     environment:
       DOMAIN_NAME: ${DOMAIN_NAME}
-      ACME_EMAIL: ${ACME_EMAIL}
+      SSL_EMAIL: ${SSL_EMAIL}
     depends_on:
       - api
       - logger
