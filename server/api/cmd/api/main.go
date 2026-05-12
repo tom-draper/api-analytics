@@ -32,6 +32,7 @@ func main() {
 		}
 	}()
 
+	startTime := time.Now()
 	log.Info("starting api...")
 
 	// Load and validate configuration
@@ -48,7 +49,7 @@ func main() {
 	}
 	defer db.Close()
 
-	app := setupRouter(db, cfg)
+	app := setupRouter(db, cfg, startTime)
 
 	port := cfg.Port
 	srv := &http.Server{
@@ -78,7 +79,7 @@ func main() {
 	log.Info("server exited")
 }
 
-func setupRouter(db *database.DB, cfg *config.Config) *gin.Engine {
+func setupRouter(db *database.DB, cfg *config.Config, startTime time.Time) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
 
@@ -97,7 +98,7 @@ func setupRouter(db *database.DB, cfg *config.Config) *gin.Engine {
 	})
 	app.Use(ratelimiter)
 
-	routes.RegisterRouter(r, db, cfg)
+	routes.RegisterRouter(r, db, cfg, startTime)
 
 	return app
 }

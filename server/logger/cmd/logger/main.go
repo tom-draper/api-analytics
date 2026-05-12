@@ -102,6 +102,7 @@ func main() {
 		}
 	}()
 
+	startTime := time.Now()
 	log.Info("starting logger...")
 
 	// Load config
@@ -156,7 +157,7 @@ func main() {
 
 	router.POST("/api/log-request", handler)
 	router.POST("/api/requests", handler)
-	router.GET("/api/health", checkHealth(db))
+	router.GET("/api/health", checkHealth(db, startTime))
 
 	// HTTP server (IMPORTANT CHANGE)
 	srv := &http.Server{
@@ -198,22 +199,25 @@ func main() {
 	log.Info("server exited")
 }
 
-func checkHealth(db *database.DB) gin.HandlerFunc {
+func checkHealth(db *database.DB, startTime time.Time) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
+		uptime := int(time.Since(startTime).Seconds())
 
-		err := db.CheckConnection(ctx)
-		if err != nil {
+		if err := db.CheckConnection(ctx); err != nil {
 			log.Error(fmt.Sprintf("health check failed: %v", err))
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"status": "unhealthy",
-				"error":  "Database connection failed",
+				"health":         "unhealthy",
+				"uptime_seconds": uptime,
+				"database":       "unreachable",
 			})
 			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"status": "healthy",
+			"health":         "healthy",
+			"uptime_seconds": uptime,
+			"database":       "connected",
 		})
 	}
 }
