@@ -7,9 +7,12 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
 	"sort"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/tom-draper/api-analytics/server/database"
@@ -20,6 +23,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/oschwald/geoip2-golang"
 )
 
@@ -88,37 +92,39 @@ type ProcessedRequest struct {
 func main() {
 	// Initialize logging first
 	if err := log.Init(); err != nil {
-		panic(fmt.Sprintf("Failed to initialize logger: %v", err))
+		panic(fmt.Sprintf("failed to initialize logger: %v", err))
 	}
 	defer log.Close()
 
 	defer func() {
-		if err := recover(); err != nil {
-			log.Error(fmt.Sprintf("application crashed: %v", err))
+		if r := recover(); r != nil {
+			log.Error(fmt.Sprintf("application crashed: %v", r))
 		}
 	}()
 
 	log.Info("starting logger...")
 
-	// Load and validate configuration
+	// Load config
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatal(fmt.Sprintf("configuration error: %v", err))
+		log.Error(fmt.Sprintf("configuration error: %v", err))
+		return
 	}
 
-	// Initialize database connection pool
+	// DB init
 	db, err := database.New(context.Background(), cfg.PostgresURL)
 	if err != nil {
-		log.Fatal(fmt.Sprintf("failed to create database connection pool: %v", err))
+		log.Error(fmt.Sprintf("failed to initialize database: %v", err))
+		return
 	}
 	defer db.Close()
 	log.Info("database connection pool initialized")
 
-	// Initialize GeoIP database once
+	// GeoIP
 	geoIPDB, err := geoip2.Open("GeoLite2-Country.mmdb")
 	if err != nil {
-		log.Error(fmt.Sprintf("failed to open GeoLite2-Country.mmdb: %v", err))
-		log.Error("location data will be unavailable for all requests")
+		log.Error(fmt.Sprintf("failed to open GeoIP db: %v", err))
+		log.Error("location data will be unavailable")
 	}
 	defer func() {
 		if geoIPDB != nil {
@@ -126,14 +132,14 @@ func main() {
 		}
 	}()
 
-	// Create shared cache
+	// Cache
 	cache := &Cache{
 		userAgentMap: make(map[string]int),
 		geoIPMap:     make(map[string]*geoIPEntry),
 		maxSize:      10000,
 	}
 
-	// Preload user agent cache
+	// Preload cache
 	count, err := preloadUserAgentCache(context.Background(), db, cache)
 	if err != nil {
 		log.Error(fmt.Sprintf("failed to preload user agent cache: %v", err))
@@ -141,21 +147,55 @@ func main() {
 		log.Info(fmt.Sprintf("user agent cache preloaded: %d entries", count))
 	}
 
+	// Router
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
-
 	router.Use(cors.Default())
 
-	// Pass dependencies to handler factories
 	handler := logRequestHandler(db, geoIPDB, cache, cfg.RateLimit, cfg.MaxInsert)
+
 	router.POST("/api/log-request", handler)
-	router.POST("/api/requests", handler) // Preferred
+	router.POST("/api/requests", handler)
 	router.GET("/api/health", checkHealth(db))
 
-	log.Info("server listening on :8000")
-	if err := router.Run(":8000"); err != nil {
-		log.Error(fmt.Sprintf("server listen failed: %v", err))
+	// HTTP server (IMPORTANT CHANGE)
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%d", cfg.Port),
+		Handler: router,
 	}
+
+	// Start server async
+	serverErr := make(chan error, 1)
+	go func() {
+		log.Info(fmt.Sprintf("server listening on port %d", cfg.Port))
+		serverErr <- srv.ListenAndServe()
+	}()
+
+	// Signal handling
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	select {
+	case sig := <-quit:
+		log.Info(fmt.Sprintf("received signal: %v, shutting down...", sig))
+
+	case err := <-serverErr:
+		if err != nil && err != http.ErrServerClosed {
+			log.Error(fmt.Sprintf("server failed: %v", err))
+			return
+		}
+	}
+
+	// Graceful shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Error(fmt.Sprintf("server forced shutdown: %v", err))
+		return
+	}
+
+	log.Info("server exited")
 }
 
 func checkHealth(db *database.DB) gin.HandlerFunc {
@@ -364,7 +404,11 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 		_, err = db.Pool.CopyFrom(
 			ctx,
 			pgx.Identifier{"requests"},
-			[]string{"api_key", "path", "hostname", "ip_address", "user_hash", "referrer", "status", "response_time", "method", "framework", "location", "user_id", "created_at", "user_agent_id"},
+			[]string{
+				"api_key", "path", "hostname", "ip_address", "user_hash",
+				"referrer", "status", "response_time", "method", "framework",
+				"location", "user_id", "created_at", "user_agent_id",
+			},
 			pgx.CopyFromSlice(len(validRequests), func(i int) ([]any, error) {
 				req := validRequests[i]
 				return []any{
@@ -376,8 +420,29 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 		)
 
 		if err != nil {
-			log.Error(fmt.Sprintf("key=%s: failed to insert %d requests: %v", payload.APIKey, len(validRequests), err))
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Database insert failed."})
+			log.Error(fmt.Sprintf(
+				"COPY FAILED: api_key=%s request_count=%d error=%v",
+				payload.APIKey,
+				len(validRequests),
+				err,
+			))
+
+			// Classify likely COPY vs DB failure
+			if pgErr, ok := err.(*pgconn.PgError); ok {
+				log.Error(fmt.Sprintf(
+					"POSTGRES ERROR DETAIL: code=%s message=%s detail=%s hint=%s",
+					pgErr.Code,
+					pgErr.Message,
+					pgErr.Detail,
+					pgErr.Hint,
+				))
+			}
+
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status":  http.StatusInternalServerError,
+				"message": "Database insert failed.",
+			})
+
 			return
 		}
 
@@ -497,19 +562,14 @@ func getCountryCode(geoIPDB *geoip2.Reader, cache *Cache, ipAddress string) stri
 	now := time.Now().Unix()
 
 	// Check cache first (read lock)
-	cache.geoIPMu.RLock()
+	cache.geoIPMu.Lock()
 	if entry, exists := cache.geoIPMap[ipAddress]; exists {
-		countryCode := entry.countryCode
-		cache.geoIPMu.RUnlock()
-
-		// Update access time (write lock)
-		cache.geoIPMu.Lock()
 		entry.lastAccess = now
+		countryCode := entry.countryCode
 		cache.geoIPMu.Unlock()
-
 		return countryCode
 	}
-	cache.geoIPMu.RUnlock()
+	cache.geoIPMu.Unlock()
 
 	ip := net.ParseIP(ipAddress)
 	if ip == nil {

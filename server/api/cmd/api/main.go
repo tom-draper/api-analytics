@@ -27,8 +27,8 @@ func main() {
 	defer log.Close()
 
 	defer func() {
-		if err := recover(); err != nil {
-			log.Error(fmt.Sprintf("application crashed: %v", err))
+		if r := recover(); r != nil {
+			log.Error(fmt.Sprintf("application crashed: %v", r))
 		}
 	}()
 

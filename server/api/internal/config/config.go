@@ -25,7 +25,7 @@ func Load() (*Config, error) {
 
 	cfg := &Config{
 		PostgresURL: os.Getenv("POSTGRES_URL"),
-		Port:        getIntWithDefault("PORT", 3000),
+		Port:        getIntWithDefault("API_PORT", 3000),
 		RateLimit:   uint(getIntWithDefault("API_RATE_LIMIT", 100)),
 		MaxLoad:     getIntWithFallback("API_MAX_LOAD", "MAX_LOAD", 1_000_000),
 		PageSize:    getIntWithFallback("API_PAGE_SIZE", "PAGE_SIZE", 250_000),
@@ -38,7 +38,7 @@ func Load() (*Config, error) {
 
 	// Validate ranges
 	if cfg.Port < 1 || cfg.Port > 65535 {
-		return nil, fmt.Errorf("PORT must be between 1 and 65535, got %d", cfg.Port)
+		return nil, fmt.Errorf("API_PORT must be between 1 and 65535, got %d", cfg.Port)
 	}
 
 	if cfg.RateLimit < 1 || cfg.RateLimit > 10000 {

@@ -12,6 +12,7 @@ import (
 // Config holds validated configuration for the logger service
 type Config struct {
 	PostgresURL string
+	Port        int
 	RateLimit   int
 	MaxInsert   int
 }
@@ -25,6 +26,7 @@ func Load() (*Config, error) {
 
 	cfg := &Config{
 		PostgresURL: os.Getenv("POSTGRES_URL"),
+		Port: 		 getIntWithDefault("LOGGER_PORT", 8000),
 		RateLimit:   getIntWithDefault("LOGGER_RATE_LIMIT", 10),
 		MaxInsert:   getIntWithFallback("LOGGER_MAX_INSERT", "MAX_INSERT", 2000),
 	}
@@ -32,6 +34,11 @@ func Load() (*Config, error) {
 	// Validate required fields
 	if cfg.PostgresURL == "" {
 		return nil, fmt.Errorf("POSTGRES_URL is required")
+	}
+
+	// Validate ranges
+	if cfg.Port < 1 || cfg.Port > 65535 {
+		return nil, fmt.Errorf("LOGGER_PORT must be between 1 and 65535, got %d", cfg.Port)
 	}
 
 	// Validate ranges
@@ -43,7 +50,7 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("LOGGER_MAX_INSERT must be between 1 and 10000, got %d", cfg.MaxInsert)
 	}
 
-	log.Info(fmt.Sprintf("configuration loaded: rate_limit=%d, max_insert=%d", cfg.RateLimit, cfg.MaxInsert))
+	log.Info(fmt.Sprintf("configuration loaded: port=%d, rate_limit=%d, max_insert=%d", cfg.Port, cfg.RateLimit, cfg.MaxInsert))
 
 	return cfg, nil
 }
