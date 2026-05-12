@@ -74,7 +74,6 @@ type Payload struct {
 
 // Processed request for batch insertion
 type ProcessedRequest struct {
-	APIKey       string
 	Path         string
 	Hostname     string
 	IPAddress    *string
@@ -240,8 +239,7 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 
 	return func(c *gin.Context) {
 		var payload Payload
-		err := c.BindJSON(&payload)
-		if err != nil {
+		if err := c.ShouldBindJSON(&payload); err != nil {
 			msg := fmt.Sprintf("Invalid request data: %s", err.Error())
 			log.LogClientError(c.ClientIP(), "", msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
@@ -262,6 +260,22 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 			msg := "Invalid API key format. Expected UUID format."
 			log.LogClientError(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": msg})
+			return
+		}
+
+		ctx := c.Request.Context()
+
+		var exists bool
+		err := db.Pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM users WHERE api_key = $1)", payload.APIKey).Scan(&exists)
+		if err != nil {
+			log.Error(fmt.Sprintf("key=%s: failed to verify API key: %v", payload.APIKey, err))
+			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
+			return
+		}
+		if !exists {
+			msg := "API key not found."
+			log.LogClientError(c.ClientIP(), payload.APIKey, msg)
+			c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": msg})
 			return
 		}
 
@@ -365,7 +379,6 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 			}
 
 			validRequests = append(validRequests, ProcessedRequest{
-				APIKey:       payload.APIKey,
 				Path:         request.Path,
 				Hostname:     request.Hostname,
 				IPAddress:    ipAddress,
@@ -387,8 +400,6 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request data."})
 			return
 		}
-
-		ctx := c.Request.Context()
 
 		// Get user agent IDs
 		userAgentIDs, err := ensureUserAgentIDs(ctx, db, cache, userAgents)
@@ -417,7 +428,7 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 			pgx.CopyFromSlice(len(validRequests), func(i int) ([]any, error) {
 				req := validRequests[i]
 				return []any{
-					req.APIKey, req.Path, req.Hostname, req.IPAddress, req.UserHash,
+					payload.APIKey, req.Path, req.Hostname, req.IPAddress, req.UserHash,
 					req.Referrer, req.Status, req.ResponseTime, req.Method, req.Framework,
 					req.Location, req.UserID, req.CreatedAt, req.UserAgentID,
 				}, nil
