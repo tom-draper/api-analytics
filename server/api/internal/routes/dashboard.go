@@ -284,49 +284,6 @@ func getPaginatedRequestsHandler(db *database.DB, cfg *config.Config) gin.Handle
 	}
 }
 
-func buildRequestDataCompact(rows pgx.Rows, cols [12]any) ([][12]any, int) {
-	requests := [][12]any{cols}
-	skipped := 0
-	var request DashboardRequestRow
-	for rows.Next() {
-		err := rows.Scan(
-			&request.IPAddress,
-			&request.Path,
-			&request.Hostname,
-			&request.UserAgent,
-			&request.Method,
-			&request.ResponseTime,
-			&request.Status,
-			&request.Location,
-			&request.UserID,
-			&request.CreatedAt,
-			&request.Referrer,
-		)
-		if err == nil {
-			var ipAddress string
-			if request.IPAddress.IPNet != nil {
-				ipAddress = request.IPAddress.IPNet.IP.String()
-			}
-			requests = append(requests, [12]any{
-				ipAddress,
-				request.Path,
-				request.Hostname,
-				request.UserAgent,
-				request.Method,
-				request.ResponseTime,
-				request.Status,
-				request.Location,
-				request.UserID,
-				request.CreatedAt,
-				request.Referrer,
-			})
-		} else {
-			skipped++
-		}
-	}
-	return requests, skipped
-}
-
 func buildRequestData(rows pgx.Rows) ([]RequestData, int) {
 	requests := make([]RequestData, 0)
 	skipped := 0

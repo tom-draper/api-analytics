@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/tom-draper/api-analytics/server/api/internal/log"
 	"github.com/tom-draper/api-analytics/server/database"
 )
@@ -59,22 +60,31 @@ func getData(db *database.DB) gin.HandlerFunc {
 				"response_time", "status", "location", "user_id", "created_at", "referrer",
 			}
 			requests, skipped := buildRequestDataCompact(rows, cols)
+			rows.Close()
 			if skipped > 0 {
 				log.Error(fmt.Sprintf("key=%s: skipped %d rows during data fetch", apiKey, skipped))
+			}
+			if err := rows.Err(); err != nil {
+				log.Error(fmt.Sprintf("key=%s: rows error during data fetch - %s", apiKey, err.Error()))
+				c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
+				return
 			}
 			log.Info(fmt.Sprintf("key=%s: data access successful [%d]", apiKey, len(requests)-1))
 			c.JSON(http.StatusOK, requests)
 		} else {
 			requests, skipped := buildRequestData(rows)
+			rows.Close()
 			if skipped > 0 {
 				log.Error(fmt.Sprintf("key=%s: skipped %d rows during data fetch", apiKey, skipped))
+			}
+			if err := rows.Err(); err != nil {
+				log.Error(fmt.Sprintf("key=%s: rows error during data fetch - %s", apiKey, err.Error()))
+				c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
+				return
 			}
 			log.Info(fmt.Sprintf("key=%s: data access successful [%d]", apiKey, len(requests)))
 			c.JSON(http.StatusOK, requests)
 		}
-
-		// Close rows explicitly to release the connection before UpdateLastAccessed
-		rows.Close()
 
 		if err := db.UpdateLastAccessed(ctx, apiKey); err != nil {
 			log.Error(fmt.Sprintf("key=%s: user last access update failed - %s", apiKey, err.Error()))
@@ -170,4 +180,47 @@ func parseQueryDate(date string) time.Time {
 		return d
 	}
 	return time.Time{}
+}
+
+func buildRequestDataCompact(rows pgx.Rows, cols [12]any) ([][12]any, int) {
+	requests := [][12]any{cols}
+	skipped := 0
+	var request DashboardRequestRow
+	for rows.Next() {
+		err := rows.Scan(
+			&request.IPAddress,
+			&request.Path,
+			&request.Hostname,
+			&request.UserAgent,
+			&request.Method,
+			&request.ResponseTime,
+			&request.Status,
+			&request.Location,
+			&request.UserID,
+			&request.CreatedAt,
+			&request.Referrer,
+		)
+		if err == nil {
+			var ipAddress string
+			if request.IPAddress.IPNet != nil {
+				ipAddress = request.IPAddress.IPNet.IP.String()
+			}
+			requests = append(requests, [12]any{
+				ipAddress,
+				request.Path,
+				request.Hostname,
+				request.UserAgent,
+				request.Method,
+				request.ResponseTime,
+				request.Status,
+				request.Location,
+				request.UserID,
+				request.CreatedAt,
+				request.Referrer,
+			})
+		} else {
+			skipped++
+		}
+	}
+	return requests, skipped
 }
