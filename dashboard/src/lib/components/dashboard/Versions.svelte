@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { graphColors } from '$lib/consts';
-	import { renderPlot, donutLayout } from '$lib/plotly';
+	import { renderPlot, donutLayout, attachSelectHandlers } from '$lib/plotly';
 	import { setParam } from '$lib/params';
 	import { untrack } from 'svelte';
 
@@ -46,20 +46,7 @@
 		renderPlot(plotDiv, buildData(versions, counts), donutLayout());
 		window?.dispatchEvent(new Event('resize'));
 
-		const el = plotDiv as any;
-		el.removeAllListeners?.('plotly_click');
-		el.removeAllListeners?.('plotly_legendclick');
-
-		el.on?.('plotly_click', (data: any) => {
-			const label = data.points[0]?.label;
-			if (label) selectVersion(label);
-		});
-
-		el.on?.('plotly_legendclick', (data: any) => {
-			const label = data.node?.querySelector?.('.legendtext')?.textContent?.trim();
-			if (label) selectVersion(label);
-			return false;
-		});
+		attachSelectHandlers(plotDiv, selectVersion);
 	});
 </script>
 

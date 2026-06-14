@@ -12,6 +12,27 @@ export function renderPlot(plotDiv: HTMLElement & { data?: unknown }, data: obje
 	}
 }
 
+/**
+ * Wires plotly_click and plotly_legendclick handlers on a chart so clicking a
+ * slice or its legend entry invokes onSelect with the slice label. Removes any
+ * previously attached listeners first so it is safe to call on every re-render.
+ */
+export function attachSelectHandlers(plotDiv: HTMLElement, onSelect: (label: string) => void): void {
+	const el = plotDiv as any;
+	el.removeAllListeners?.('plotly_click');
+	el.removeAllListeners?.('plotly_legendclick');
+
+	el.on?.('plotly_click', (data: any) => {
+		const label = data.points[0]?.label;
+		if (label) onSelect(label);
+	});
+	el.on?.('plotly_legendclick', (data: any) => {
+		const label = data.node?.querySelector?.('.legendtext')?.textContent?.trim();
+		if (label) onSelect(label);
+		return false;
+	});
+}
+
 /** Layout for Requests / Users / SuccessRate sparklines */
 export function sparklineLayout() {
 	return {

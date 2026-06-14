@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { graphColors } from '$lib/consts';
-	import { renderPlot, donutLayout, buildDonutData } from '$lib/plotly';
+	import { renderPlot, donutLayout, buildDonutData, attachSelectHandlers } from '$lib/plotly';
 	import { setParam } from '$lib/params';
 	import { untrack } from 'svelte';
 
@@ -32,19 +32,7 @@
 		renderPlot(plotDiv, buildDonutData(uaIdCount, userAgents, getter, graphColors, target, colorMap), donutLayout(411));
 		window?.dispatchEvent(new Event('resize'));
 
-		const el = plotDiv as any;
-		el.removeAllListeners?.('plotly_click');
-		el.removeAllListeners?.('plotly_legendclick');
-
-		el.on?.('plotly_click', (data: any) => {
-			const label = data.points[0]?.label;
-			if (label) selectLabel(label);
-		});
-		el.on?.('plotly_legendclick', (data: any) => {
-			const label = data.node?.querySelector?.('.legendtext')?.textContent?.trim();
-			if (label) selectLabel(label);
-			return false;
-		});
+		attachSelectHandlers(plotDiv, selectLabel);
 	});
 </script>
 
