@@ -24,8 +24,7 @@
 	import { ColumnIndex, columns, loadingMessages, pageSize } from '$lib/consts';
 	import Error from '$components/Error.svelte';
 	import TopUsers from '$components/dashboard/TopUsers.svelte';
-	import { getServerURL } from '$lib/url';
-	import { fetchPageRaw } from '$lib/fetchRequests';
+	import { fetchPage, fetchPageRaw } from '$lib/fetchRequests';
 	import Navigation from '$components/dashboard/Navigation.svelte';
 	import { dataStore } from '$lib/dataStore';
 	import Referrers from '$components/dashboard/Referrers.svelte';
@@ -38,34 +37,14 @@
 	const userID = formatUUID(page.params.uuid);
 
 	async function fetchData() {
-		const url = getServerURL();
-
 		let data: DashboardData = { requests: [], userAgents: {} };
-		try {
-			const response = await fetch(`${url}/api/requests/${userID}/1`, {
-				signal: AbortSignal.timeout(250000),
-				keepalive: true
-			});
-
-			const body = await response.json();
-			if (response.ok && response.status === 200) {
-				data = { requests: body.requests, userAgents: body.user_agents };
-				dataStore.set(data);
-			} else {
-				fetchStatus = {
-					failed: true,
-					message: body.message || '',
-					status: body.status || null
-				};
-			}
-		} catch (e) {
-			fetchStatus = {
-				failed: true,
-				message: 'Internal server error.',
-				status: 500
-			};
+		const result = await fetchPage(userID, 1);
+		if (result.ok) {
+			data = { requests: result.body.requests, userAgents: result.body.user_agents };
+			dataStore.set(data);
+		} else {
+			fetchStatus = { failed: true, message: result.message, status: result.status };
 		}
-
 		return data;
 	}
 
@@ -131,7 +110,7 @@
 	});
 	let aggregated = $state.raw<AggregatedData | undefined>(undefined);
 	let loading = $state(true);
-	let fetchStatus = $state<{ failed: boolean; status: number; message: string } | undefined>(undefined);
+	let fetchStatus = $state<{ failed: boolean; status: number | null; message: string } | undefined>(undefined);
 	let worker = $state.raw<Worker | undefined>(undefined);
 
 	// When data changes: send full requests + userAgents to worker cache, then filter
