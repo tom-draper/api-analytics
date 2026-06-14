@@ -84,8 +84,8 @@
 
 <div class="card">
 	<div class="card-title">Usage time</div>
-	<div id="plotly">
-		<div id="plotDiv" bind:this={plotDiv}>
+	<div class="plot-wrapper">
+		<div class="plot-div" bind:this={plotDiv}>
 			<!-- Plotly chart will be drawn inside this DIV -->
 		</div>
 	</div>

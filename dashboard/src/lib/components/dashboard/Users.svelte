@@ -51,8 +51,8 @@
 		<div class="card-title">Users</div>
 		<div class="value">{count.toLocaleString()}</div>
 	{/if}
-	<div id="plotly">
-		<div id="plotDiv" bind:this={plotDiv}>
+	<div class="plot-wrapper">
+		<div class="plot-div" bind:this={plotDiv}>
 			<!-- Plotly chart will be drawn inside this DIV -->
 		</div>
 	</div>
@@ -92,7 +92,7 @@
 		font-size: 0.8em;
 		margin-left: 4px;
 	}
-	#plotly {
+	.plot-wrapper {
 		position: absolute;
 		width: 110%;
 		bottom: 0;

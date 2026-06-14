@@ -65,8 +65,8 @@
 
 <div class="card flex-1" class:hidden={!hasMultiple && targetVersion === null}>
 	<div class="card-title">Version</div>
-	<div id="plotly">
-		<div id="plotDiv" class="mr-[20px]" bind:this={plotDiv}>
+	<div class="plot-wrapper">
+		<div class="plot-div mr-[20px]" bind:this={plotDiv}>
 			<!-- Plotly chart will be drawn inside this DIV -->
 		</div>
 	</div>
@@ -80,7 +80,7 @@
 	.hidden {
 		display: none;
 	}
-	#plotDiv {
+	.plot-div {
 		padding-right: 20px;
 	}
 	@media screen and (max-width: 1070px) {

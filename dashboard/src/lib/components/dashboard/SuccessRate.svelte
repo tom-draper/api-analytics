@@ -19,8 +19,8 @@
 	>
 		{rate !== null ? `${rate.toFixed(1)}%` : 'N/A'}
 	</div>
-	<div id="plotly">
-		<div id="plotDiv" bind:this={plotDiv}>
+	<div class="plot-wrapper">
+		<div class="plot-div" bind:this={plotDiv}>
 			<!-- Plotly chart will be drawn inside this DIV -->
 		</div>
 	</div>
@@ -52,7 +52,7 @@
 	.green {
 		color: var(--highlight);
 	}
-	#plotly {
+	.plot-wrapper {
 		position: absolute;
 		width: 110%;
 		bottom: 0;

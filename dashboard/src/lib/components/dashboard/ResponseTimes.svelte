@@ -79,8 +79,8 @@
 		<div class="label">UQ</div>
 	</div>
 	<div class="distribution">
-		<div id="plotly">
-			<div id="plotDiv" bind:this={plotDiv}>
+		<div class="plot-wrapper">
+			<div class="plot-div" bind:this={plotDiv}>
 				<!-- Plotly chart will be drawn inside this DIV -->
 			</div>
 		</div>
@@ -115,7 +115,7 @@
 		flex: 1;
 	}
 
-	#plotly {
+	.plot-wrapper {
 		min-height: 50px;
 	}
 
