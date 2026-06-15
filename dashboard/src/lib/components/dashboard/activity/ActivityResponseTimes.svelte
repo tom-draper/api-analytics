@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { type Period } from '$lib/period';
 	import type { ActivityBucket } from '$lib/aggregate';
-	import { renderPlot, activityLayout, bucketRange } from '$lib/plotly';
+	import { activityLayout, bucketRange } from '$lib/plotly';
+	import PlotChart from '../PlotChart.svelte';
 
 	function bars(buckets: ActivityBucket[], period: Period) {
 		const dates = buckets.map((b) => new Date(b.date));
@@ -19,17 +20,9 @@
 	}
 
 	let { activityBuckets, period }: { activityBuckets: ActivityBucket[]; period: Period } = $props();
-	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 
-	$effect(() => {
-		if (plotDiv) {
-			renderPlot(plotDiv, bars(activityBuckets, period), activityLayout(period, 'Response time (ms)'));
-		}
-	});
+	const data = $derived(bars(activityBuckets, period));
+	const layout = $derived(activityLayout(period, 'Response time (ms)'));
 </script>
 
-<div class="plot-wrapper">
-	<div class="plot-div" bind:this={plotDiv}>
-		<!-- Plotly chart will be drawn inside this DIV -->
-	</div>
-</div>
+<PlotChart {data} {layout} />

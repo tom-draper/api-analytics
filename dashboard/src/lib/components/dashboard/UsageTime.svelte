@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { renderPlot, type PlotlyDiv } from '$lib/plotly';
-	import { setParam } from '$lib/params';
+	import { toggleParam } from '$lib/params';
 	import { untrack } from 'svelte';
 
 	function getPlotLayout() {
@@ -45,13 +45,7 @@
 	}
 
 	function selectHour(hour: number) {
-		if (untrack(() => targetHour) === hour) {
-			targetHour = null;
-			setParam('hour', null);
-		} else {
-			targetHour = hour;
-			setParam('hour', String(hour));
-		}
+		toggleParam('hour', hour, untrack(() => targetHour), (v) => (targetHour = v));
 	}
 
 	let { hourlyBuckets, targetHour = $bindable<number | null>(null) }: {

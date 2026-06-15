@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setParam } from '$lib/params';
+	import { toggleParam } from '$lib/params';
 
 	// getDay() order: 0=Sun, 1=Mon, ..., 6=Sat
 	// Display order: Mon–Sun
@@ -27,13 +27,7 @@
 	});
 
 	function selectDay(dayIdx: number) {
-		if (targetWeekday === dayIdx) {
-			targetWeekday = null;
-			setParam('weekday', null);
-		} else {
-			targetWeekday = dayIdx;
-			setParam('weekday', String(dayIdx));
-		}
+		toggleParam('weekday', dayIdx, targetWeekday, (v) => (targetWeekday = v));
 	}
 </script>
 

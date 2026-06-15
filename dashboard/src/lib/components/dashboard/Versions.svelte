@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { graphColors } from '$lib/consts';
-	import { renderPlot, donutLayout, attachSelectHandlers } from '$lib/plotly';
-	import { setParam } from '$lib/params';
+	import { renderDonut, type PlotlyDiv } from '$lib/plotly';
+	import { toggleParam } from '$lib/params';
 	import { untrack } from 'svelte';
 
 	let { versionCount, hasMultiple, targetVersion = $bindable<string | null>(null) }: {
@@ -10,7 +10,7 @@
 		targetVersion: string | null;
 	} = $props();
 
-	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
+	let plotDiv = $state<PlotlyDiv | undefined>(undefined);
 	const colorMap = new Map<string, string>();
 
 	function buildData(versions: string[], counts: number[]) {
@@ -28,14 +28,7 @@
 	}
 
 	function selectVersion(label: string) {
-		const current = untrack(() => targetVersion);
-		if (current === label) {
-			targetVersion = null;
-			setParam('version', null);
-		} else {
-			targetVersion = label;
-			setParam('version', label);
-		}
+		toggleParam('version', label, untrack(() => targetVersion), (v) => (targetVersion = v));
 	}
 
 	$effect(() => {
@@ -43,10 +36,7 @@
 
 		const versions = Object.keys(versionCount);
 		const counts = Object.values(versionCount);
-		renderPlot(plotDiv, buildData(versions, counts), donutLayout());
-		window?.dispatchEvent(new Event('resize'));
-
-		attachSelectHandlers(plotDiv, selectVersion);
+		renderDonut(plotDiv, buildData(versions, counts), undefined, selectVersion);
 	});
 </script>
 

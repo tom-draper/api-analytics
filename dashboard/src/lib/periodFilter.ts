@@ -42,6 +42,39 @@ function wildCardMatch(endpoint: string, hiddenEndpoints: Set<string>): boolean 
 
 const botPattern = /bot|crawl|spider|scraper|slurp|curl|wget|python|java(?!script)|ruby|php|perl|go-http|okhttp|libwww|httpclient|axios|requests|puppeteer|playwright|selenium|headless/i;
 
+// User-agent classification only depends on the userAgents map, which is stable
+// between data appends. Memoise the derived id sets keyed by the map reference so
+// they aren't rebuilt on every settings change (filter). The worker hands a fresh
+// userAgents object on each append, which invalidates these caches.
+let botCache: { ua: UserAgents; set: Set<number> } | null = null;
+function botUASet(userAgents: UserAgents): Set<number> {
+	if (botCache && botCache.ua === userAgents) return botCache.set;
+	const set = new Set<number>();
+	for (const [id, ua] of Object.entries(userAgents)) {
+		if (botPattern.test(ua)) set.add(Number(id));
+	}
+	botCache = { ua: userAgents, set };
+	return set;
+}
+
+const labelCache = new Map<string, { ua: UserAgents; set: Set<number> }>();
+function labelUASet(
+	userAgents: UserAgents,
+	group: string,
+	label: string,
+	candidates: typeof clientCandidates
+): Set<number> {
+	const key = `${group}:${label}`;
+	const cached = labelCache.get(key);
+	if (cached && cached.ua === userAgents) return cached.set;
+	const set = new Set<number>();
+	for (const [id, ua] of Object.entries(userAgents)) {
+		if (matchLabel(ua, candidates) === label) set.add(Number(id));
+	}
+	labelCache.set(key, { ua: userAgents, set });
+	return set;
+}
+
 export function getPeriodData(
 	data: RequestsData,
 	settings: DashboardSettings,
@@ -52,25 +85,10 @@ export function getPeriodData(
 	const allTime = settings.period === 'all time';
 	const pathVersionCache = new Map<string, string | null>();
 
-	let botUAIds: Set<number> | null = null;
-	if (settings.ignoreBots) {
-		botUAIds = new Set();
-		for (const [id, ua] of Object.entries(userAgents)) {
-			if (botPattern.test(ua)) botUAIds.add(Number(id));
-		}
-	}
-
-	function buildUASet(label: string, candidates: typeof clientCandidates): Set<number> {
-		const set = new Set<number>();
-		for (const [id, ua] of Object.entries(userAgents)) {
-			if (matchLabel(ua, candidates) === label) set.add(Number(id));
-		}
-		return set;
-	}
-
-	const clientUAIds = settings.targetClient !== null ? buildUASet(settings.targetClient, clientCandidates) : null;
-	const deviceUAIds = settings.targetDeviceType !== null ? buildUASet(settings.targetDeviceType, deviceCandidates) : null;
-	const osUAIds = settings.targetOS !== null ? buildUASet(settings.targetOS, osCandidates) : null;
+	const botUAIds = settings.ignoreBots ? botUASet(userAgents) : null;
+	const clientUAIds = settings.targetClient !== null ? labelUASet(userAgents, 'client', settings.targetClient, clientCandidates) : null;
+	const deviceUAIds = settings.targetDeviceType !== null ? labelUASet(userAgents, 'device', settings.targetDeviceType, deviceCandidates) : null;
+	const osUAIds = settings.targetOS !== null ? labelUASet(userAgents, 'os', settings.targetOS, osCandidates) : null;
 
 	const current: RequestsData = [];
 	const previous: RequestsData = [];

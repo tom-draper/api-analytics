@@ -38,6 +38,22 @@ export function attachSelectHandlers(plotDiv: PlotlyDiv, onSelect: (label: strin
 	});
 }
 
+/**
+ * Renders a donut/pie trace with the shared donut layout, nudges a resize so
+ * Plotly sizes the chart correctly inside flex layouts, and wires slice/legend
+ * click selection. Shared by the Version and device donut charts.
+ */
+export function renderDonut(
+	plotDiv: PlotlyDiv,
+	data: object[],
+	width: number | undefined,
+	onSelect: (label: string) => void
+): void {
+	renderPlot(plotDiv, data, donutLayout(width));
+	window?.dispatchEvent(new Event('resize'));
+	attachSelectHandlers(plotDiv, onSelect);
+}
+
 /** Layout for Requests / Users / SuccessRate sparklines */
 export function sparklineLayout() {
 	return {

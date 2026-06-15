@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setParam } from '$lib/params';
+	import { toggleParam } from '$lib/params';
 	import type { LocationBar } from '$lib/aggregate';
 
 	function getFlagEmoji(countryCode: string) {
@@ -13,10 +13,6 @@
 	function countryCodeToName(countryCode: string) {
 		const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
 		return regionNames.of(countryCode);
-	}
-
-	function setLocationParam(location: string | null) {
-		setParam('location', location);
 	}
 
 	let { locationBars, targetLocation = $bindable<string | null>(null) }: {
@@ -36,11 +32,7 @@
 						aria-label="location"
 						class="bar"
 						title="{countryCodeToName(location.location)}: {location.frequency.toLocaleString()} requests"
-						onclick={() => {
-							const value = targetLocation === location.location ? null : location.location;
-							targetLocation = value;
-							setLocationParam(value);
-						}}
+						onclick={() => toggleParam('location', location.location, targetLocation, (v) => (targetLocation = v))}
 					>
 						<div class="bar-inner" style="height: {location.height * 100}%"></div>
 					</button>

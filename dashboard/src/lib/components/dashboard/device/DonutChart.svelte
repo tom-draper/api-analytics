@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { graphColors } from '$lib/consts';
-	import { renderPlot, donutLayout, buildDonutData, attachSelectHandlers } from '$lib/plotly';
-	import { setParam } from '$lib/params';
+	import { renderDonut, buildDonutData, type PlotlyDiv } from '$lib/plotly';
+	import { toggleParam } from '$lib/params';
 	import { untrack } from 'svelte';
 
 	let { uaIdCount, userAgents, getter, paramKey, target = $bindable<string | null>(null) }: {
@@ -12,27 +12,17 @@
 		target: string | null;
 	} = $props();
 
-	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
+	let plotDiv = $state<PlotlyDiv | undefined>(undefined);
 	const colorMap = new Map<string, string>();
 
 	function selectLabel(label: string) {
-		const current = untrack(() => target);
-		if (current === label) {
-			target = null;
-			setParam(paramKey, null);
-		} else {
-			target = label;
-			setParam(paramKey, label);
-		}
+		toggleParam(paramKey, label, untrack(() => target), (v) => (target = v));
 	}
 
 	$effect(() => {
 		if (!plotDiv || !uaIdCount) return;
 
-		renderPlot(plotDiv, buildDonutData(uaIdCount, userAgents, getter, graphColors, target, colorMap), donutLayout(411));
-		window?.dispatchEvent(new Event('resize'));
-
-		attachSelectHandlers(plotDiv, selectLabel);
+		renderDonut(plotDiv, buildDonutData(uaIdCount, userAgents, getter, graphColors, target, colorMap), 411, selectLabel);
 	});
 </script>
 

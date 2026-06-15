@@ -63,14 +63,26 @@
 		const body = await fetchPageRaw(userID, page);
 		if (!body || !data) return 0;
 
-		Object.assign(data.userAgents, body.user_agents);
-
 		const mostRecent = new Date(body.requests[body.requests.length - 1][ColumnIndex.CreatedAt]);
-		if (dateInPeriod(mostRecent, settings.period)) {
-			// Trigger dashboard re-render
+		const inPeriod = dateInPeriod(mostRecent, settings.period);
+
+		// Send only the new page to the worker; it merges into its cache and
+		// re-aggregates only when the page falls within the current period.
+		worker?.postMessage({
+			type: 'append',
+			requests: body.requests,
+			userAgents: body.user_agents,
+			reaggregate: inPeriod,
+			settings: $state.snapshot(settings)
+		});
+
+		// Keep the local copy current for the template (userAgents, request count).
+		// In-period pages reassign data so dependent components re-render; out-of-period
+		// pages mutate in place to avoid a re-render they wouldn't affect.
+		Object.assign(data.userAgents, body.user_agents);
+		if (inPeriod) {
 			data = { ...data, requests: data.requests.concat(body.requests) };
 		} else {
-			// Avoid triggering dashboard re-render
 			data.requests.push(...body.requests);
 		}
 
@@ -113,15 +125,20 @@
 	let fetchStatus = $state<{ failed: boolean; status: number | null; message: string } | undefined>(undefined);
 	let worker = $state.raw<Worker | undefined>(undefined);
 
-	// When data changes: send full requests + userAgents to worker cache, then filter
-	$effect(() => {
+	// Sends the initial dataset to the worker for caching + first aggregation.
+	function postInit() {
 		if (!worker || !data) return;
-		worker.postMessage({ type: 'init', requests: data.requests, userAgents: data.userAgents, settings: untrack(() => $state.snapshot(settings)) });
-	});
+		worker.postMessage({
+			type: 'init',
+			requests: data.requests,
+			userAgents: data.userAgents,
+			settings: $state.snapshot(settings)
+		});
+	}
 
-	// When settings change: re-filter using cached requests in worker
-	// worker is untracked so this effect only fires on settings changes, not on initial data load
-	// (the init effect handles the initial aggregation)
+	// When settings change: re-filter using the requests already cached in the worker.
+	// worker/data are untracked so this only fires on settings changes; postInit and
+	// the per-page appends handle aggregation during the initial load.
 	$effect(() => {
 		const s = $state.snapshot(settings);
 		const w = untrack(() => worker);
@@ -133,18 +150,20 @@
 		const storeData = get(dataStore);
 		if (storeData && storeData.requests.length > 0) {
 			data = storeData;
+			postInit();
 			loading = false;
+			return;
+		}
+
+		const dashboardData = await getDashboardData();
+		data = dashboardData;
+		dataStore.set(dashboardData);
+		postInit();
+
+		if (dashboardData.requests.length >= pageSize) {
+			fetchAdditionalPages();
 		} else {
-			const dashboardData = await getDashboardData();
-
-			if (dashboardData.requests.length >= pageSize) {
-				fetchAdditionalPages();
-			} else {
-				loading = false;
-			}
-
-			data = dashboardData;
-			dataStore.set(dashboardData);
+			loading = false;
 		}
 	}
 
