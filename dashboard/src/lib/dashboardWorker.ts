@@ -25,7 +25,7 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
 	if (msg.type === 'init') {
 		const requests = msg.requests;
 		for (let i = 0; i < requests.length; i++) {
-			requests[i][ColumnIndex.CreatedAt] = new Date(requests[i][ColumnIndex.CreatedAt] as string);
+			requests[i][ColumnIndex.CreatedAt] = new Date(requests[i][ColumnIndex.CreatedAt] as unknown as string);
 		}
 		requests.sort((a, b) =>
 			(a[ColumnIndex.CreatedAt] as Date).getTime() - (b[ColumnIndex.CreatedAt] as Date).getTime()

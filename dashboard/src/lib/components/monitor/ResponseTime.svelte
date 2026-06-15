@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { periodToMarkers, type MonitorPeriod } from '$lib/period';
+	import type { PlotlyDiv } from '$lib/plotly';
 
 	function getPlotLayout() {
 		return {
@@ -53,8 +54,9 @@
 				dates[i] = new Date();
 			} else {
 				// 30 mins from previous date
-				dates[i] = new Date(dates[i - 1]);
-				dates[i].setMinutes(dates[i].getMinutes() - 30);
+				const prev = new Date(dates[i - 1]!);
+				prev.setMinutes(prev.getMinutes() - 30);
+				dates[i] = prev;
 			}
 		}
 
@@ -84,29 +86,29 @@
 		};
 	}
 
-	function generatePlot(data: Sample[], period: MonitorPeriod) {
-		if (plotDiv.data) {
-			refreshPlot(data, period);
+	function generatePlot(div: PlotlyDiv, data: Sample[], period: MonitorPeriod) {
+		if (div.data) {
+			refreshPlot(div, data, period);
 		} else {
-			newPlot(data, period);
+			newPlot(div, data, period);
 		}
 	}
 
-	async function newPlot(data: Sample[], period: MonitorPeriod) {
+	function newPlot(div: PlotlyDiv, data: Sample[], period: MonitorPeriod) {
 		const plotData = getPlotData(data, period);
-		Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
+		Plotly.newPlot(div, plotData.data, plotData.layout, plotData.config);
 	}
 
-	function refreshPlot(data: Sample[], period: MonitorPeriod) {
-		Plotly.react(plotDiv, bars(data, period), getPlotLayout());
+	function refreshPlot(div: PlotlyDiv, data: Sample[], period: MonitorPeriod) {
+		Plotly.react(div, bars(data, period), getPlotLayout());
 	}
 
 	let { data, period }: { data: Sample[]; period: MonitorPeriod } = $props();
 
-	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
+	let plotDiv = $state<PlotlyDiv | undefined>(undefined);
 
 	$effect(() => {
-		if (plotDiv && data) generatePlot(data, period);
+		if (plotDiv && data) generatePlot(plotDiv, data, period);
 	});
 </script>
 

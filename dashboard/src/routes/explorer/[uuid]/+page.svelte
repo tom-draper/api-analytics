@@ -13,7 +13,7 @@
 	import { defaultFilter, type Filter } from '$lib/filter';
 	import { nextDay, toDay } from '$lib/date';
 
-	const userID = formatUUID(page.params.uuid);
+	const userID = formatUUID(page.params.uuid ?? '');
 
 	async function fetchData() {
 		const url = getServerURL();
@@ -132,9 +132,9 @@
 		filter = defaultFilter(data.requests);
 	}
 
-	let data = $state.raw<DashboardData | undefined>(undefined);
+	let data = $state.raw<DashboardData>({ requests: [], userAgents: {} });
 	let filteredRequests = $state.raw<RequestsData>([]);
-	let filter = $state<Filter | undefined>(undefined);
+	let filter = $state<Filter>(defaultFilter([]));
 
 	$effect(() => {
 		if (data && filter) {
@@ -149,7 +149,7 @@
 			}
 		});
 
-		if (!data) {
+		if (data.requests.length === 0) {
 			data = await getDashboardData();
 
 			if (data.requests.length >= pageSize) {

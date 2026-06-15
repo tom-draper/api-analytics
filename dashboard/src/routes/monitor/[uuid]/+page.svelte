@@ -10,7 +10,7 @@
 	import Lightning from '$components/Lightning.svelte';
 	import type { MonitorPeriod } from '$lib/period';
 
-	const userID = formatUUID(page.params.uuid);
+	const userID = formatUUID(page.params.uuid ?? '');
 
 	async function fetchData() {
 		const url = getServerURL();
@@ -103,7 +103,7 @@
 	let status: Status;
 	let statusTitle: string;
 
-	let intervalID: NodeJS.Timeout;
+	let intervalID: ReturnType<typeof setInterval>;
 
 	$: if (data) {
 		status = getStatus(data, error);
@@ -233,7 +233,7 @@
 		{/if}
 	</div>
 </div>
-<Notification bind:state={notification} />
+<Notification state={notification} />
 
 <style scoped>
 	.monitoring {

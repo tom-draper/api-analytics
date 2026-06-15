@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Lightning from '$components/Lightning.svelte';
 	import Loading from '$components/Loading.svelte';
-	declare const __APP_VERSION__: string;
 	const version = __APP_VERSION__;
 
 	let { loading }: { loading: boolean } = $props();

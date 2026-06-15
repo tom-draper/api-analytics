@@ -5,31 +5,31 @@
 	type State = 'generate' | 'loading' | 'copy' | 'copied' | 'error';
 
 	let apiKey = $state('');
-	let state = $state<State>('generate');
+	let status = $state<State>('generate');
 
 	async function submit() {
 		if (apiKey) return;
 
-		state = 'loading';
+		status = 'loading';
 
 		try {
 			const url = getServerURL();
 			const response = await fetch(`${url}/api/generate-api-key`);
 			if (response.status === 200) {
 				apiKey = await response.json();
-				state = 'copy';
+				status = 'copy';
 			} else {
-				state = 'error';
+				status = 'error';
 			}
 		} catch (e) {
 			console.log(e);
-			state = 'generate';
+			status = 'generate';
 		}
 	}
 
 	function copyToClipboard() {
 		navigator.clipboard.writeText(apiKey);
-		state = 'copied';
+		status = 'copied';
 	}
 </script>
 
@@ -41,7 +41,7 @@
 		<h2 class="title">Generate API Key</h2>
 		<p class="subtitle">Get a free API key to start tracking your requests</p>
 
-		<label class="input-label" class:label-ready={state === 'copy' || state === 'copied'} for="api-key">
+		<label class="input-label" class:label-ready={status === 'copy' || status === 'copied'} for="api-key">
 			Your API Key
 			<svg class="arrow" viewBox="240 170 320 400" fill="none" xmlns="http://www.w3.org/2000/svg">
 				<g stroke-width="31" stroke="currentColor" stroke-linecap="square" transform="matrix(1,0,0,1,-4,0)">
@@ -60,26 +60,26 @@
 			readonly
 			bind:value={apiKey}
 			placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-			class:input-ready={state === 'copy' || state === 'copied'}
+			class:input-ready={status === 'copy' || status === 'copied'}
 		/>
 
-		{#if state === 'error'}
+		{#if status === 'error'}
 			<p class="error-msg">Something went wrong. Please try again.</p>
 		{/if}
 
-		{#if state === 'loading'}
+		{#if status === 'loading'}
 			<button class="form-btn" disabled aria-label="Loading">
 				<div class="loader"></div>
 			</button>
-		{:else if state === 'copy' || state === 'copied'}
+		{:else if status === 'copy' || status === 'copied'}
 			<button class="form-btn copy-btn" onclick={copyToClipboard}>
-				{state === 'copied' ? 'Copied ✓' : 'Copy to clipboard'}
+				{status === 'copied' ? 'Copied ✓' : 'Copy to clipboard'}
 			</button>
 		{:else}
 			<button class="form-btn" onclick={submit}>Generate</button>
 		{/if}
 
-		<p class="keep-safe" class:keep-safe-visible={state === 'copy' || state === 'copied'}>
+		<p class="keep-safe" class:keep-safe-visible={status === 'copy' || status === 'copied'}>
 			Keep your API key safe – it grants access to your analytics data.
 		</p>
 	</div>

@@ -1,11 +1,7 @@
 import { ColumnIndex } from './consts';
 
 export function getUserIdentifier(request: RequestsData[number]) {
-	return (
-		request[ColumnIndex.IPAddress] ??
-		'' + request[ColumnIndex.UserID].toString() ??
-		''
-	);
+	return request[ColumnIndex.IPAddress] || request[ColumnIndex.UserID]?.toString() || '';
 }
 
 export function formatUserID(ipAddress: string, customUserID: string) {

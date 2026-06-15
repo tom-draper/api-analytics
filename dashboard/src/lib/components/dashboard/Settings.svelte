@@ -20,7 +20,7 @@
 		show = false;
 	}
 
-	function handleClick(e: MouseEvent) {
+	function handleClick(e: Event) {
 		e.stopImmediatePropagation();
 	}
 

@@ -16,11 +16,11 @@
 		}
 		newItems.add(item);
 		items = newItems;
-		input.value = null;
+		if (input) input.value = '';
 	}
 
 	function handleInputKeyDown(e: KeyboardEvent) {
-		if (e.key === 'Enter') {
+		if (e.key === 'Enter' && input) {
 			addItem(input.value);
 		}
 	}

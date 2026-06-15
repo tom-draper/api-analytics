@@ -34,7 +34,7 @@
 	import { untrack } from 'svelte';
 	import type { AggregatedData } from '$lib/aggregate';
 
-	const userID = formatUUID(page.params.uuid);
+	const userID = formatUUID(page.params.uuid ?? '');
 
 	async function fetchData() {
 		let data: DashboardData = { requests: [], userAgents: {} };
@@ -61,7 +61,7 @@
 
 	async function fetchAdditionalPage(page: number) {
 		const body = await fetchPageRaw(userID, page);
-		if (!body) return 0;
+		if (!body || !data) return 0;
 
 		Object.assign(data.userAgents, body.user_agents);
 
@@ -129,23 +129,7 @@
 		w.postMessage({ type: 'filter', settings: s });
 	});
 
-	onMount(async () => {
-		const w = new Worker(new URL('$lib/dashboardWorker.ts', import.meta.url), { type: 'module' });
-		w.onmessage = (e) => {
-			const msg = e.data;
-			if (msg.type === 'export') {
-				exportCSV(msg.current, columns, data!.userAgents);
-				return;
-			}
-			if (msg.hostnames !== undefined) hostnames = msg.hostnames;
-			// Defer the render by one rAF so the CSS animation isn't starved
-			// by the synchronous Plotly chart initialisation that follows
-			requestAnimationFrame(() => {
-				aggregated = msg.aggregated;
-			});
-		};
-		worker = w;
-
+	async function loadData() {
 		const storeData = get(dataStore);
 		if (storeData && storeData.requests.length > 0) {
 			data = storeData;
@@ -162,6 +146,26 @@
 			data = dashboardData;
 			dataStore.set(dashboardData);
 		}
+	}
+
+	onMount(() => {
+		const w = new Worker(new URL('$lib/dashboardWorker.ts', import.meta.url), { type: 'module' });
+		w.onmessage = (e) => {
+			const msg = e.data;
+			if (msg.type === 'export') {
+				exportCSV(msg.current, columns, data!.userAgents);
+				return;
+			}
+			if (msg.hostnames !== undefined) hostnames = msg.hostnames;
+			// Defer the render by one rAF so the CSS animation isn't starved
+			// by the synchronous Plotly chart initialisation that follows
+			requestAnimationFrame(() => {
+				aggregated = msg.aggregated;
+			});
+		};
+		worker = w;
+
+		loadData();
 
 		return () => w.terminate();
 	});
@@ -182,7 +186,7 @@
 		<div class="dashboard-content">
 			<div class="left">
 				<div class="row">
-					<Logo bind:loading />
+					<Logo {loading} />
 					<SuccessRate rate={aggregated.successRate} buckets={aggregated.successBuckets} />
 				</div>
 				<div class="row">

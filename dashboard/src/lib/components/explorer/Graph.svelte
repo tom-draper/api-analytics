@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { ColumnIndex } from '$lib/consts';
+	import type { PlotlyDiv } from '$lib/plotly';
 
 	function getPlotLayout() {
 		return {
@@ -42,7 +43,7 @@
 			}
 		}
 
-		const requestFreqArr = Object.entries(requestFreq).sort((a, b) => a[0] - b[0]);
+		const requestFreqArr = Object.entries(requestFreq).sort((a, b) => Number(a[0]) - Number(b[0]));
 		const dates = requestFreqArr.map((value) => new Date(parseInt(value[0])));
 		const requests = requestFreqArr.map((value) => value[1]);
 		const requestsText = requests.map((count) => `${count} requests`);
@@ -72,28 +73,28 @@
 		};
 	}
 
-	function generatePlot(data: RequestsData) {
-		if (plotDiv.data) {
-			refreshPlot(data);
+	function generatePlot(div: PlotlyDiv, data: RequestsData) {
+		if (div.data) {
+			refreshPlot(div, data);
 		} else {
-			newPlot(data);
+			newPlot(div, data);
 		}
 	}
 
-	async function newPlot(data: RequestsData) {
+	function newPlot(div: PlotlyDiv, data: RequestsData) {
 		const plotData = getPlotData(data);
-		Plotly.newPlot(plotDiv, plotData.data, plotData.layout, plotData.config);
+		Plotly.newPlot(div, plotData.data, plotData.layout, plotData.config);
 	}
 
-	function refreshPlot(data: RequestsData) {
-		Plotly.react(plotDiv, bars(data), getPlotLayout());
+	function refreshPlot(div: PlotlyDiv, data: RequestsData) {
+		Plotly.react(div, bars(data), getPlotLayout());
 	}
 
 	let { data }: { data: RequestsData } = $props();
-	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
+	let plotDiv = $state<PlotlyDiv | undefined>(undefined);
 
 	$effect(() => {
-		if (plotDiv && data) generatePlot(data);
+		if (plotDiv && data) generatePlot(plotDiv, data);
 	});
 </script>
 

@@ -29,7 +29,7 @@
 			pips={false}
 			first={true}
 			pushy={true}
-			onstop={(e) => {
+			on:stop={(e) => {
 				filter.timespan[e.detail.activeHandle] = e.detail.value;
 			}}
 		/>

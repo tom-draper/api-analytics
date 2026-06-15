@@ -21,10 +21,12 @@ export type Filter = {
 
 export function defaultFilter(data: RequestsData) {
     const filter: Filter = {
-        timespan: [
-            data[0][ColumnIndex.CreatedAt].getTime(),
-            data[data.length - 1][ColumnIndex.CreatedAt].getTime()
-        ],
+        timespan: data.length
+            ? [
+                  data[0][ColumnIndex.CreatedAt].getTime(),
+                  data[data.length - 1][ColumnIndex.CreatedAt].getTime()
+              ]
+            : [0, 0],
         status: {
             success: true,
             redirect: true,

@@ -4,26 +4,26 @@
 
 	type State = 'idle' | 'loading' | 'deleted' | 'error';
 
-	let state: State = $state('idle');
+	let status: State = $state('idle');
 	let apiKey = $state('');
 
 	async function submit() {
 		if (!apiKey) return;
 
-		state = 'loading';
+		status = 'loading';
 
 		try {
 			const url = getServerURL();
 			const response = await fetch(`${url}/api/delete/${apiKey}`);
 			if (response.status === 200) {
 				apiKey = '';
-				state = 'deleted';
+				status = 'deleted';
 			} else {
-				state = 'error';
+				status = 'error';
 			}
 		} catch (e) {
 			console.log(e);
-			state = 'error';
+			status = 'error';
 		}
 	}
 
@@ -32,7 +32,7 @@
 	}
 
 	function reset() {
-		state = 'idle';
+		status = 'idle';
 		apiKey = '';
 	}
 </script>
@@ -68,21 +68,21 @@
 			bind:value={apiKey}
 			placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 			onkeydown={enter}
-			disabled={state === 'loading' || state === 'deleted'}
+			disabled={status === 'loading' || status === 'deleted'}
 		/>
 
-		{#if state === 'deleted'}
+		{#if status === 'deleted'}
 			<div class="status-msg success">
 				Your account and all associated data has been deleted.
 			</div>
-		{:else if state === 'error'}
+		{:else if status === 'error'}
 			<div class="status-msg error">
 				Something went wrong. Please check your API key and try again.
 			</div>
 			<button class="form-btn delete-btn" onclick={reset}>Try again</button>
 		{:else}
-			<button class="form-btn delete-btn" onclick={submit} disabled={state === 'loading'}>
-				{#if state === 'loading'}
+			<button class="form-btn delete-btn" onclick={submit} disabled={status === 'loading'}>
+				{#if status === 'loading'}
 					<div class="loader"></div>
 				{:else}
 					Delete

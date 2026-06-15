@@ -45,7 +45,7 @@
 			pips={false}
 			first={true}
 			pushy={true}
-			onstop={(e) => {
+			on:stop={(e) => {
 				filter.responseTime[e.detail.activeHandle] = e.detail.value;
 			}}
 		/>

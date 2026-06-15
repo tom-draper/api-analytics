@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { renderPlot } from '$lib/plotly';
+	import { renderPlot, type PlotlyDiv } from '$lib/plotly';
 
 	function getPlotLayout(range: [number, number]) {
 		return {
@@ -39,9 +39,9 @@
 		];
 	}
 
-	function generatePlot(freqTimes: number[], freqCounts: number[]) {
+	function generatePlot(div: PlotlyDiv, freqTimes: number[], freqCounts: number[]) {
 		const range: [number, number] = [freqTimes[0] ?? 0, freqTimes[freqTimes.length - 1] ?? 0];
-		renderPlot(plotDiv, bars(freqTimes, freqCounts), getPlotLayout(range));
+		renderPlot(div, bars(freqTimes, freqCounts), getPlotLayout(range));
 	}
 
 	let { freqTimes, freqCounts, LQ, median, UQ }: {
@@ -52,12 +52,12 @@
 		UQ: number;
 	} = $props();
 
-	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
+	let plotDiv = $state<PlotlyDiv | undefined>(undefined);
 
 	$effect(() => {
 		if (!plotDiv) return;
 		if (freqTimes.length > 0) {
-			generatePlot(freqTimes, freqCounts);
+			generatePlot(plotDiv, freqTimes, freqCounts);
 		} else if (plotDiv.data) {
 			Plotly.purge(plotDiv);
 		}

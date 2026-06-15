@@ -118,6 +118,10 @@
 
 	function getSamples(data: MonitorData, period: MonitorPeriod) {
 		const markers = periodToMarkers(period);
+		if (!markers) {
+			return [];
+		}
+
 		const samples: Sample[] = Array.from({ length: markers }, () => ({
 			label: 'no-request',
 			responseTime: 0,
@@ -125,19 +129,16 @@
 			createdAt: null
 		}));
 
-		if (!markers) {
-			return samples;
-		}
-
 		const sampledData = periodSample(data, period);
 		const start = markers - sampledData.length;
 
 		for (let i = 0; i < sampledData.length; i++) {
+			const createdAt = sampledData[i].created_at;
 			samples[i + start] = {
 				label: 'no-request',
 				status: sampledData[i].status,
 				responseTime: sampledData[i].response_time,
-				createdAt: new Date(sampledData[i].created_at)
+				createdAt: createdAt === null ? null : new Date(createdAt)
 			};
 			if (sampledData[i].status >= 200 && sampledData[i].status <= 299) {
 				samples[i + start].label = 'success';

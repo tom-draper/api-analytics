@@ -1,7 +1,7 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 
 const { version } = JSON.parse(readFileSync('package.json', 'utf-8'));
 

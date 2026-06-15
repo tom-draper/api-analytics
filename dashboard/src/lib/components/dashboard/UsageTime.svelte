@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { renderPlot } from '$lib/plotly';
+	import { renderPlot, type PlotlyDiv } from '$lib/plotly';
 	import { setParam } from '$lib/params';
 	import { untrack } from 'svelte';
 
@@ -40,8 +40,8 @@
 		];
 	}
 
-	function generatePlot(hourlyBuckets: number[], selectedHour: number | null) {
-		renderPlot(plotDiv, bars(hourlyBuckets, selectedHour), getPlotLayout());
+	function generatePlot(div: PlotlyDiv, hourlyBuckets: number[], selectedHour: number | null) {
+		renderPlot(div, bars(hourlyBuckets, selectedHour), getPlotLayout());
 	}
 
 	function selectHour(hour: number) {
@@ -58,27 +58,21 @@
 		hourlyBuckets: number[];
 		targetHour: number | null;
 	} = $props();
-	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
+	let plotDiv = $state<PlotlyDiv | undefined>(undefined);
 
+	// Re-renders on both hourlyBuckets and targetHour changes (targetHour drives
+	// the highlighted slice). Re-attaching the click handler is idempotent thanks
+	// to removeAllListeners, so a single effect covers both cases.
 	$effect(() => {
 		if (!plotDiv || !hourlyBuckets) return;
 
-		generatePlot(hourlyBuckets, untrack(() => targetHour));
+		generatePlot(plotDiv, hourlyBuckets, targetHour);
 
-		const el = plotDiv as any;
-		el.removeAllListeners?.('plotly_click');
-		el.on?.('plotly_click', (data: any) => {
+		plotDiv.removeAllListeners?.('plotly_click');
+		plotDiv.on?.('plotly_click', (data: any) => {
 			const theta = data.points[0]?.theta as string;
 			if (theta !== undefined) selectHour(parseInt(theta));
 		});
-	});
-
-	$effect(() => {
-		const h = targetHour;
-		const div = untrack(() => plotDiv);
-		const buckets = untrack(() => hourlyBuckets);
-		if (!div || !buckets) return;
-		generatePlot(buckets, h);
 	});
 </script>
 

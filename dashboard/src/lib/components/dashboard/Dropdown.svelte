@@ -27,7 +27,7 @@
 		};
 	});
 
-	let { open = $bindable(false), options, selected = $bindable<string | null>(null), defaultOption }: { open: boolean; options: string[]; selected: string | null; defaultOption: string | null } = $props();
+	let { open = $bindable(false), options, selected = $bindable<string | null>(null), defaultOption }: { open?: boolean; options: string[]; selected: string | null; defaultOption: string | null } = $props();
 </script>
 
 <div class="dropdown" id="dropdown" bind:this={dropdown}>

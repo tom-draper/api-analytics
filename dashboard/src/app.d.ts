@@ -14,7 +14,14 @@ declare global {
 		requests: RequestsData;
 	};
 
-	// ip_address, path, hostname, user_agent, method, response_time, status, location, created_at
+	// Plotly is loaded globally from a CDN script in the root layout.
+	const Plotly: any;
+
+	// Injected at build time by Vite (see vite.config.ts `define`).
+	const __APP_VERSION__: string;
+
+	// ip_address, path, hostname, user_agent, method, response_time, status,
+	// location, user_id, created_at, referrer
 	type RequestsData = [
 		string,
 		string,
@@ -26,6 +33,7 @@ declare global {
 		string,
 		string,
 		Date,
+		string | null,
 	][];
 
 	type UserAgents = {

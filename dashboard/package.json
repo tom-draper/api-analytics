@@ -22,6 +22,7 @@
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
 		"@tailwindcss/postcss": "^4.2.2",
 		"@tailwindcss/vite": "^4.2.2",
+		"@types/node": "^25.9.3",
 		"@types/plotly.js": "^3.0.10",
 		"autoprefixer": "^10.5.0",
 		"eslint": "^10.2.1",

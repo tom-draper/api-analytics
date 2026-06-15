@@ -4,13 +4,13 @@
 
 	type State = 'idle' | 'loading' | 'success' | 'error';
 
-	let state = $state<State>('idle');
+	let status = $state<State>('idle');
 	let apiKey = $state('');
 
 	async function submit() {
 		if (!apiKey) return;
 
-		state = 'loading';
+		status = 'loading';
 
 		try {
 			const url = getServerURL();
@@ -18,15 +18,15 @@
 				method: 'POST',
 				headers: { 'X-AUTH-TOKEN': apiKey },
 			});
-			state = response.status === 200 ? 'success' : 'error';
+			status = response.status === 200 ? 'success' : 'error';
 		} catch (e) {
 			console.log(e);
-			state = 'error';
+			status = 'error';
 		}
 	}
 
 	function reset() {
-		state = 'idle';
+		status = 'idle';
 		apiKey = '';
 	}
 
@@ -47,12 +47,12 @@
 		<h2 class="title">Regenerate Link</h2>
 		<p class="subtitle">Invalidate your current dashboard link and generate a new one.</p>
 
-		{#if state === 'success'}
+		{#if status === 'success'}
 			<div class="status-msg success">
 				Your dashboard link has been regenerated. Any previously shared links are now invalid.
 			</div>
 			<button class="form-btn" onclick={reset}>Done</button>
-		{:else if state === 'error'}
+		{:else if status === 'error'}
 			<div class="status-msg error">
 				Something went wrong. Please check your API key and try again.
 			</div>
@@ -77,10 +77,10 @@
 				bind:value={apiKey}
 				placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 				onkeydown={enter}
-				disabled={state === 'loading'}
+				disabled={status === 'loading'}
 			/>
-			<button class="form-btn regen-btn" onclick={submit} disabled={state === 'loading'}>
-				{#if state === 'loading'}
+			<button class="form-btn regen-btn" onclick={submit} disabled={status === 'loading'}>
+				{#if status === 'loading'}
 					<div class="loader"></div>
 				{:else}
 					Regenerate

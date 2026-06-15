@@ -1,10 +1,16 @@
-declare const Plotly: any;
 import { periodToDays, type Period } from '$lib/period';
 
 const config = { responsive: true, showSendToCloud: false, displayModeBar: false };
 
+/** An HTMLDivElement bound to a Plotly chart, exposing the properties Plotly attaches. */
+export type PlotlyDiv = HTMLDivElement & {
+	data?: unknown;
+	on?: (event: string, handler: (data: any) => void) => void;
+	removeAllListeners?: (event: string) => void;
+};
+
 /** Calls react() if the chart exists, newPlot() otherwise. Shared by all chart components. */
-export function renderPlot(plotDiv: HTMLElement & { data?: unknown }, data: object[], layout: object): void {
+export function renderPlot(plotDiv: PlotlyDiv, data: object[], layout: object): void {
 	if (plotDiv.data) {
 		Plotly.react(plotDiv, data, layout);
 	} else {
@@ -17,16 +23,15 @@ export function renderPlot(plotDiv: HTMLElement & { data?: unknown }, data: obje
  * slice or its legend entry invokes onSelect with the slice label. Removes any
  * previously attached listeners first so it is safe to call on every re-render.
  */
-export function attachSelectHandlers(plotDiv: HTMLElement, onSelect: (label: string) => void): void {
-	const el = plotDiv as any;
-	el.removeAllListeners?.('plotly_click');
-	el.removeAllListeners?.('plotly_legendclick');
+export function attachSelectHandlers(plotDiv: PlotlyDiv, onSelect: (label: string) => void): void {
+	plotDiv.removeAllListeners?.('plotly_click');
+	plotDiv.removeAllListeners?.('plotly_legendclick');
 
-	el.on?.('plotly_click', (data: any) => {
+	plotDiv.on?.('plotly_click', (data: any) => {
 		const label = data.points[0]?.label;
 		if (label) onSelect(label);
 	});
-	el.on?.('plotly_legendclick', (data: any) => {
+	plotDiv.on?.('plotly_legendclick', (data: any) => {
 		const label = data.node?.querySelector?.('.legendtext')?.textContent?.trim();
 		if (label) onSelect(label);
 		return false;

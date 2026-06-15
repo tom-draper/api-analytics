@@ -206,10 +206,4 @@
 		border-left: 4px solid var(--highlight);
 		margin: 1rem 0;
 	}
-	.warning {
-		/* background-color: #fff3cd; */
-		padding: 1rem;
-		border-left: 4px solid #ffc107;
-		margin: 1rem 0;
-	}
 </style>
