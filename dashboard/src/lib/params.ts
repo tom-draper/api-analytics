@@ -1,21 +1,21 @@
-import { replaceState } from "$app/navigation";
-import { page } from "$app/state";
+import { replaceState } from '$app/navigation';
+import { page } from '$app/state';
 
 export function setParam(param: string, value: string | null) {
-    if (value === null) {
-        page.url.searchParams.delete(param);
-    } else {
-        page.url.searchParams.set(param, value);
-    }
-    replaceState(page.url, page.state);
+	if (value === null) {
+		page.url.searchParams.delete(param);
+	} else {
+		page.url.searchParams.set(param, value);
+	}
+	replaceState(page.url, page.state);
 }
 
 export function setParamNoReplace(param: string, value: string | null) {
-    if (value === null) {
-        page.url.searchParams.delete(param);
-    } else {
-        page.url.searchParams.set(param, value);
-    }
+	if (value === null) {
+		page.url.searchParams.delete(param);
+	} else {
+		page.url.searchParams.set(param, value);
+	}
 }
 
 /**
@@ -24,16 +24,16 @@ export function setParamNoReplace(param: string, value: string | null) {
  * `set` writes the bindable target ($state can't be assigned through a plain ref).
  */
 export function toggleParam<T extends string | number>(
-    key: string,
-    value: T,
-    current: T | null,
-    set: (next: T | null) => void
+	key: string,
+	value: T,
+	current: T | null,
+	set: (next: T | null) => void
 ) {
-    if (current === value) {
-        set(null);
-        setParam(key, null);
-    } else {
-        set(value);
-        setParam(key, String(value));
-    }
+	if (current === value) {
+		set(null);
+		setParam(key, null);
+	} else {
+		set(value);
+		setParam(key, String(value));
+	}
 }
