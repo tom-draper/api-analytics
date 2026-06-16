@@ -35,7 +35,9 @@
 		opacity: 1 !important;
 	}
 
-	.error, .warn, .success {
+	.error,
+	.warn,
+	.success {
 		color: var(--dark-background);
 	}
 

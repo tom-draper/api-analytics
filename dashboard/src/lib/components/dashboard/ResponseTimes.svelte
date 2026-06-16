@@ -14,15 +14,15 @@
 				gridcolor: 'gray',
 				showgrid: false,
 				fixedrange: true,
-				visible: false,
+				visible: false
 			},
 			xaxis: {
 				range: range,
 				showgrid: false,
 				fixedrange: true,
-				visible: false,
+				visible: false
 			},
-			dragmode: false,
+			dragmode: false
 		};
 	}
 
@@ -34,8 +34,8 @@
 				type: 'bar',
 				marker: { color: '#505050' },
 				hovertemplate: `<b>%{y} requests</b><br>%{x:.1f}ms</b> elapsed<extra></extra>`,
-				showlegend: false,
-			},
+				showlegend: false
+			}
 		];
 	}
 
@@ -44,7 +44,13 @@
 		renderPlot(div, bars(freqTimes, freqCounts), getPlotLayout(range));
 	}
 
-	let { freqTimes, freqCounts, LQ, median, UQ }: {
+	let {
+		freqTimes,
+		freqCounts,
+		LQ,
+		median,
+		UQ
+	}: {
 		freqTimes: number[];
 		freqCounts: number[];
 		LQ: number;

@@ -133,12 +133,22 @@ function modifyDateForPeriod(date: Date, days: number | null): void {
 	}
 }
 
-type ActivityEntry = { requestCount: number; users: Set<string>; totalRT: number; successCount: number };
+type ActivityEntry = {
+	requestCount: number;
+	users: Set<string>;
+	totalRT: number;
+	successCount: number;
+};
 
 function initActivityMap(days: number | null): Map<number, ActivityEntry> {
 	const map = new Map<number, ActivityEntry>();
 	if (days === null) return map;
-	const newEntry = (): ActivityEntry => ({ requestCount: 0, users: new Set(), totalRT: 0, successCount: 0 });
+	const newEntry = (): ActivityEntry => ({
+		requestCount: 0,
+		users: new Set(),
+		totalRT: 0,
+		successCount: 0
+	});
 
 	if (days === 1) {
 		for (let i = 0; i < 288; i++) {
@@ -216,7 +226,7 @@ function emptyResult(previous: RequestsData, settings: DashboardSettings): Aggre
 		topUsers: null,
 		topUserIDActive: false,
 		topLocationsActive: false,
-		uaIdCount: {},
+		uaIdCount: {}
 	};
 }
 
@@ -230,8 +240,17 @@ export function aggregate(
 
 	const days = periodToDays(settings.period);
 	const now = Date.now();
-	const periodMs = days ? days * 86400000 : (n > 0 ? (current[n - 1][ColumnIndex.CreatedAt] as Date).getTime() - (current[0][ColumnIndex.CreatedAt] as Date).getTime() : 0);
-	const startMs = days ? now - periodMs : (n > 0 ? (current[0][ColumnIndex.CreatedAt] as Date).getTime() : 0);
+	const periodMs = days
+		? days * 86400000
+		: n > 0
+			? (current[n - 1][ColumnIndex.CreatedAt] as Date).getTime() -
+				(current[0][ColumnIndex.CreatedAt] as Date).getTime()
+			: 0;
+	const startMs = days
+		? now - periodMs
+		: n > 0
+			? (current[0][ColumnIndex.CreatedAt] as Date).getTime()
+			: 0;
 	const bucketInterval = Math.max(periodMs / 5, 1);
 
 	const requestBuckets = [0, 0, 0, 0, 0];
@@ -373,7 +392,7 @@ export function aggregate(
 					customUserID: customUserID ?? '',
 					lastRequested: createdAt,
 					requests: 1,
-					locations: location ? { [location]: 1 } : {},
+					locations: location ? { [location]: 1 } : {}
 				};
 			}
 		}
@@ -385,7 +404,9 @@ export function aggregate(
 	}
 
 	// Build sparse response time frequency histogram and compute quartiles from it
-	const rtFreqTimes = Object.keys(rtFreq).map(Number).sort((a, b) => a - b);
+	const rtFreqTimes = Object.keys(rtFreq)
+		.map(Number)
+		.sort((a, b) => a - b);
 	const rtFreqCounts = rtFreqTimes.map((t) => rtFreq[t]);
 	const rtLQ = quantileFromFreq(rtFreqTimes, rtFreqCounts, n, 0.25);
 	const rtMedian = quantileFromFreq(rtFreqTimes, rtFreqCounts, n, 0.5);
@@ -397,13 +418,25 @@ export function aggregate(
 		requestCount: entry.requestCount,
 		userCount: entry.users.size,
 		avgResponseTime: entry.requestCount > 0 ? entry.totalRT / entry.requestCount : 0,
-		successRate: entry.requestCount > 0 ? entry.successCount / entry.requestCount : 0,
+		successRate: entry.requestCount > 0 ? entry.successCount / entry.requestCount : 0
 	})).sort((a, b) => a.date - b.date);
 
 	// Build location, referrer, and user ID bars (sorted by count, heights normalized)
-	const locationBars: LocationBar[] = buildBars(locationCount, (location, frequency, height) => ({ location, frequency, height }));
-	const referrerBars: ReferrerBar[] = buildBars(referrerCount, (referrer, count, height) => ({ referrer, count, height }), topListLimit);
-	const userIDBars: UserIDBar[] = buildBars(userIDCount, (userID, count, height) => ({ userID, count, height }), topListLimit);
+	const locationBars: LocationBar[] = buildBars(locationCount, (location, frequency, height) => ({
+		location,
+		frequency,
+		height
+	}));
+	const referrerBars: ReferrerBar[] = buildBars(
+		referrerCount,
+		(referrer, count, height) => ({ referrer, count, height }),
+		topListLimit
+	);
+	const userIDBars: UserIDBar[] = buildBars(
+		userIDCount,
+		(userID, count, height) => ({ userID, count, height }),
+		topListLimit
+	);
 
 	// Build top users
 	const userValues = Object.values(users);
@@ -417,7 +450,9 @@ export function aggregate(
 		const topUserRequestsCount = sorted.length > 0 ? sorted[0].requests : 0;
 		if (topUserRequestsCount > 1 || settings.targetUser !== null) {
 			topUsers = sorted.slice(0, TOP_USERS_LIMIT);
-			topUserIDActive = topUsers.some((u) => u.customUserID !== '' && u.customUserID !== null);
+			topUserIDActive = topUsers.some(
+				(u) => u.customUserID !== '' && u.customUserID !== null
+			);
 			topLocationsActive = topUsers.some((u) => Object.keys(u.locations).length > 0);
 		}
 	}
@@ -463,6 +498,6 @@ export function aggregate(
 		topUserIDActive,
 		topLocationsActive,
 
-		uaIdCount,
+		uaIdCount
 	};
 }

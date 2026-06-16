@@ -1,12 +1,6 @@
-export type Period =
-	| '24 hours'
-	| 'week'
-	| 'month'
-	| '6 months'
-	| 'year'
-	| 'all time';
+export type Period = '24 hours' | 'week' | 'month' | '6 months' | 'year' | 'all time';
 
-export type MonitorPeriod = '24h' | '7d' | '30d' | '60d'
+export type MonitorPeriod = '24h' | '7d' | '30d' | '60d';
 
 export const defaultPeriod: Period = 'week';
 
@@ -16,7 +10,7 @@ export const periodDisplay: Record<Period, string> = {
 	month: 'Month',
 	'6 months': '6 months',
 	year: 'Year',
-	'all time': 'All time',
+	'all time': 'All time'
 };
 
 export function periodToDays(period: Period): number | null {

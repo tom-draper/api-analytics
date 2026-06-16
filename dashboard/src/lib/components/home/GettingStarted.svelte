@@ -48,7 +48,8 @@
 		{ language: 'ruby', framework: 'Sinatra' },
 		{ language: 'csharp', framework: 'ASP.NET Core' }
 	];
-	let { highlighted }: { highlighted: Record<string, { install: string; example: string }> } = $props();
+	let { highlighted }: { highlighted: Record<string, { install: string; example: string }> } =
+		$props();
 
 	let currentFramework = $state(frameworks[0]);
 

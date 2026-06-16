@@ -15,7 +15,7 @@ const userAgents = [
 	'PostmanRuntime/7.26.5',
 	'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36 OPR/38.0.2220.41',
 	'Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0',
-	'python-requests/2.26.0',
+	'python-requests/2.26.0'
 ];
 const userAgentDist = [0.19, 0.11, 0.04, 0.01, 0.01, 0.01, 0.01, 0.01];
 
@@ -102,7 +102,7 @@ const ipAddresses = [
 	'163.119.106.48',
 	'64.166.232.8',
 	'230.32.68.99',
-	'70.127.237.2',
+	'70.127.237.2'
 ];
 const ipAddressesDist = (() => {
 	const p = Array(ipAddresses.length).fill(1);
@@ -133,7 +133,7 @@ const userIDs = [
 	'e4fb46e3-ae3d-4031-8b47-0b5d16dc83fc',
 	'99d7e572-26d4-44b5-88c4-92f1f3e50892',
 	'2fd7a3fb-5de9-4e8e-93a7-2dbf1d6d7485',
-	'9c622482-69ff-491d-a96b-4e7dd29b4a5d',
+	'9c622482-69ff-491d-a96b-4e7dd29b4a5d'
 ];
 
 function getUserID() {
@@ -177,13 +177,12 @@ const locations = [
 	'BM',
 	'BT',
 	'BO',
-	'BQ',
+	'BQ'
 ];
 const locationsDist = [
-	0.56, 1, 0.18, 0.2, 0.4, 0.3, 0.1, 0.05, 0.2, 0.06, 0.01, 0.01, 0.01, 0.01,
-	0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01,
-	0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01,
-	0.01,
+	0.56, 1, 0.18, 0.2, 0.4, 0.3, 0.1, 0.05, 0.2, 0.06, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01,
+	0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01,
+	0.01, 0.01, 0.01, 0.01, 0.01, 0.01
 ];
 
 function getLocation() {
@@ -199,7 +198,7 @@ const referrers = [
 	'https://twitter.com',
 	'https://reddit.com',
 	'https://npmjs.com',
-	null,
+	null
 ];
 const referrersDist = [0.2, 0.18, 0.12, 0.1, 0.08, 0.07, 0.05, 0.2];
 
@@ -224,29 +223,19 @@ function getDate(daysAgo: Range, distribution: Distribution, outages: Range[]) {
 	let secondsAgo: number;
 	switch (distribution) {
 		case Distribution.Uniform:
-			secondsAgo = randInt(
-				daysToSeconds(daysAgo.min),
-				daysToSeconds(daysAgo.max),
-			);
+			secondsAgo = randInt(daysToSeconds(daysAgo.min), daysToSeconds(daysAgo.max));
 			break;
 		case Distribution.Poisson:
 			secondsAgo = samplePoisson(3, daysToSeconds(daysAgo.max));
 			break;
 		case Distribution.Normal:
-			secondsAgo = randn_bm(
-				daysToSeconds(daysAgo.min),
-				daysToSeconds(daysAgo.max),
-				0.75,
-			);
+			secondsAgo = randn_bm(daysToSeconds(daysAgo.min), daysToSeconds(daysAgo.max), 0.75);
 			break;
 	}
 
 	// Check if chosen date falls inside of an outage
 	for (const outage of outages) {
-		if (
-			secondsAgo > daysToSeconds(outage.min) &&
-			secondsAgo < daysToSeconds(outage.max)
-		) {
+		if (secondsAgo > daysToSeconds(outage.min) && secondsAgo < daysToSeconds(outage.max)) {
 			return null;
 		}
 	}
@@ -277,11 +266,7 @@ type Range = {
 	max: number;
 };
 
-function addDemoSamples(
-	demoData: RequestsData,
-	config: Sample,
-	outages: Range[] = [],
-) {
+function addDemoSamples(demoData: RequestsData, config: Sample, outages: Range[] = []) {
 	for (let i = 0; i < config.count; i++) {
 		const date = getDate(config.daysAgo, config.distribution, outages);
 		if (date === null) {
@@ -300,7 +285,7 @@ function addDemoSamples(
 			getLocation(),
 			userID,
 			date,
-			getReferrer(),
+			getReferrer()
 		]);
 	}
 }
@@ -308,7 +293,7 @@ function addDemoSamples(
 const enum Distribution {
 	Uniform,
 	Normal,
-	Poisson,
+	Poisson
 }
 
 function samplePoisson(lambda: number, T: number) {
@@ -346,7 +331,7 @@ function randn_bm(min: number, max: number, skew: number) {
 function scaleRange(range: Range, scale: number): Range {
 	return {
 		min: range.min * scale,
-		max: range.max * scale,
+		max: range.max * scale
 	};
 }
 
@@ -354,7 +339,7 @@ function createUniformBaselineSamples(
 	demoRequests: RequestsData,
 	maxDaysAgo: number,
 	scale: number,
-	outages: Range[],
+	outages: Range[]
 ) {
 	const count = 12000 * scale;
 
@@ -374,9 +359,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: v1ResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -387,9 +372,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: v1ResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -400,9 +385,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: v1ResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -413,9 +398,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: v1ResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -426,9 +411,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: scaleRange(v1ResponseTime, 4),
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -439,9 +424,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: scaleRange(v1ResponseTime, 4),
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -452,9 +437,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: scaleRange(v1ResponseTime, 4),
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -465,9 +450,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: notFoundResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 
 	addDemoSamples(
@@ -479,9 +464,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: v2ResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -492,9 +477,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: v2ResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -505,9 +490,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: v2ResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -518,9 +503,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: v2ResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -531,9 +516,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: v2ResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -544,9 +529,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: v2ResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -557,9 +542,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: v2ResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -570,9 +555,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: v2ResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -584,9 +569,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: scaleRange(v3ResponseTime, 6),
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -598,9 +583,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: scaleRange(v3ResponseTime, 6),
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -612,9 +597,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: scaleRange(v3ResponseTime, 6),
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -626,9 +611,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: scaleRange(v3ResponseTime, 6),
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -639,9 +624,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: v2ResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -652,9 +637,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: notFoundResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 
 	addDemoSamples(
@@ -666,9 +651,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: v3ResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -679,9 +664,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: v3ResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -692,9 +677,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: v3ResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -705,9 +690,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: scaleRange(v3ResponseTime, 6),
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -719,9 +704,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: scaleRange(v3ResponseTime, 6),
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -733,9 +718,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: v3ResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -746,9 +731,9 @@ function createUniformBaselineSamples(
 			daysAgo: maxRange,
 			responseTime: notFoundResponseTime,
 			user: user,
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -758,19 +743,19 @@ function createUniformBaselineSamples(
 			status: 403,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo / 5,
+				max: maxDaysAgo / 5
 			},
 			responseTime: {
 				min: 25,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 115,
-				max: 130,
+				max: 130
 			},
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -780,19 +765,19 @@ function createUniformBaselineSamples(
 			status: 200,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo / 5,
+				max: maxDaysAgo / 5
 			},
 			responseTime: {
 				min: 25,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 115,
-				max: 120,
+				max: 120
 			},
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 }
 
@@ -800,7 +785,7 @@ function createVariableBaselineSamples(
 	demoRequests: RequestsData,
 	maxDaysAgo: number,
 	scale: number,
-	outages: Range[],
+	outages: Range[]
 ) {
 	const count = 2000 * scale;
 	addDemoSamples(
@@ -811,19 +796,19 @@ function createVariableBaselineSamples(
 			status: 200,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo,
+				max: maxDaysAgo
 			},
 			responseTime: {
 				min: 25,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 115,
-				max: 390,
+				max: 390
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -833,19 +818,19 @@ function createVariableBaselineSamples(
 			status: 200,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo / 2,
+				max: maxDaysAgo / 2
 			},
 			responseTime: {
 				min: 25,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 115,
-				max: 390,
+				max: 390
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -855,19 +840,19 @@ function createVariableBaselineSamples(
 			status: 200,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo / 3,
+				max: maxDaysAgo / 3
 			},
 			responseTime: {
 				min: 25,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 115,
-				max: 390,
+				max: 390
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -877,19 +862,19 @@ function createVariableBaselineSamples(
 			status: 200,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo / 4,
+				max: maxDaysAgo / 4
 			},
 			responseTime: {
 				min: 25,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 115,
-				max: 390,
+				max: 390
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -899,19 +884,19 @@ function createVariableBaselineSamples(
 			status: 200,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo / 5,
+				max: maxDaysAgo / 5
 			},
 			responseTime: {
 				min: 25,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 115,
-				max: 390,
+				max: 390
 			},
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -921,19 +906,19 @@ function createVariableBaselineSamples(
 			status: 200,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo / 5,
+				max: maxDaysAgo / 5
 			},
 			responseTime: {
 				min: 25,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 115,
-				max: 390,
+				max: 390
 			},
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -943,19 +928,19 @@ function createVariableBaselineSamples(
 			status: 200,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo / 4,
+				max: maxDaysAgo / 4
 			},
 			responseTime: {
 				min: 25,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 115,
-				max: 390,
+				max: 390
 			},
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 
 	addDemoSamples(
@@ -966,19 +951,19 @@ function createVariableBaselineSamples(
 			status: 301,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo,
+				max: maxDaysAgo
 			},
 			responseTime: {
 				min: 30,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 11,
-				max: 39,
+				max: 39
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -988,19 +973,19 @@ function createVariableBaselineSamples(
 			status: 302,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo / 2,
+				max: maxDaysAgo / 2
 			},
 			responseTime: {
 				min: 25,
-				max: 700,
+				max: 700
 			},
 			user: {
 				min: 115,
-				max: 390,
+				max: 390
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1010,19 +995,19 @@ function createVariableBaselineSamples(
 			status: 302,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo / 3,
+				max: maxDaysAgo / 3
 			},
 			responseTime: {
 				min: 25,
-				max: 700,
+				max: 700
 			},
 			user: {
 				min: 115,
-				max: 390,
+				max: 390
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1032,19 +1017,19 @@ function createVariableBaselineSamples(
 			status: 301,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo / 4,
+				max: maxDaysAgo / 4
 			},
 			responseTime: {
 				min: 25,
-				max: 700,
+				max: 700
 			},
 			user: {
 				min: 115,
-				max: 390,
+				max: 390
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1054,19 +1039,19 @@ function createVariableBaselineSamples(
 			status: 301,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo / 5,
+				max: maxDaysAgo / 5
 			},
 			responseTime: {
 				min: 25,
-				max: 700,
+				max: 700
 			},
 			user: {
 				min: 115,
-				max: 390,
+				max: 390
 			},
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1076,19 +1061,19 @@ function createVariableBaselineSamples(
 			status: 302,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo / 5,
+				max: maxDaysAgo / 5
 			},
 			responseTime: {
 				min: 25,
-				max: 700,
+				max: 700
 			},
 			user: {
 				min: 50,
-				max: 150,
+				max: 150
 			},
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1098,19 +1083,19 @@ function createVariableBaselineSamples(
 			status: 301,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo / 4,
+				max: maxDaysAgo / 4
 			},
 			responseTime: {
 				min: 25,
-				max: 700,
+				max: 700
 			},
 			user: {
 				min: 115,
-				max: 390,
+				max: 390
 			},
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 }
 
@@ -1118,7 +1103,7 @@ function createVariableUsageSamples(
 	demoRequests: RequestsData,
 	maxDaysAgo: number,
 	scale: number,
-	outages: Range[],
+	outages: Range[]
 ) {
 	const count = 1000 * scale;
 	addDemoSamples(
@@ -1129,19 +1114,19 @@ function createVariableUsageSamples(
 			status: 200,
 			daysAgo: {
 				min: maxDaysAgo * 0.7,
-				max: maxDaysAgo * 0.75,
+				max: maxDaysAgo * 0.75
 			},
 			responseTime: {
 				min: 60,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 115,
-				max: 116,
+				max: 116
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1151,19 +1136,19 @@ function createVariableUsageSamples(
 			status: 200,
 			daysAgo: {
 				min: maxDaysAgo * 0.79,
-				max: maxDaysAgo * 0.83,
+				max: maxDaysAgo * 0.83
 			},
 			responseTime: {
 				min: 60,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 116,
-				max: 120,
+				max: 120
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1173,19 +1158,19 @@ function createVariableUsageSamples(
 			status: 200,
 			daysAgo: {
 				min: maxDaysAgo * 0.7,
-				max: maxDaysAgo * 0.9,
+				max: maxDaysAgo * 0.9
 			},
 			responseTime: {
 				min: 60,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 116,
-				max: 120,
+				max: 120
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1195,19 +1180,19 @@ function createVariableUsageSamples(
 			status: 200,
 			daysAgo: {
 				min: maxDaysAgo * 0.3,
-				max: maxDaysAgo * 0.6,
+				max: maxDaysAgo * 0.6
 			},
 			responseTime: {
 				min: 60,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 116,
-				max: 120,
+				max: 120
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1217,19 +1202,19 @@ function createVariableUsageSamples(
 			status: 200,
 			daysAgo: {
 				min: maxDaysAgo * 0.3,
-				max: maxDaysAgo * 0.6,
+				max: maxDaysAgo * 0.6
 			},
 			responseTime: {
 				min: 60,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 116,
-				max: 120,
+				max: 120
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1239,19 +1224,19 @@ function createVariableUsageSamples(
 			status: 200,
 			daysAgo: {
 				min: maxDaysAgo * 0.1,
-				max: maxDaysAgo * 0.55,
+				max: maxDaysAgo * 0.55
 			},
 			responseTime: {
 				min: 60,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 116,
-				max: 120,
+				max: 120
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 
 	addDemoSamples(
@@ -1262,19 +1247,19 @@ function createVariableUsageSamples(
 			status: 200,
 			daysAgo: {
 				min: maxDaysAgo * 0.1,
-				max: maxDaysAgo * 0.55,
+				max: maxDaysAgo * 0.55
 			},
 			responseTime: {
 				min: 60,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 116,
-				max: 120,
+				max: 120
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 }
 
@@ -1282,7 +1267,7 @@ function createErrorSamples(
 	demoRequests: RequestsData,
 	maxDaysAgo: number,
 	scale: number,
-	outages: Range[],
+	outages: Range[]
 ) {
 	const count = 3000 * scale;
 	addDemoSamples(
@@ -1293,19 +1278,19 @@ function createErrorSamples(
 			status: 500,
 			daysAgo: {
 				min: 200,
-				max: 210,
+				max: 210
 			},
 			responseTime: {
 				min: 100,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 116,
-				max: 120,
+				max: 120
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1315,19 +1300,19 @@ function createErrorSamples(
 			status: 500,
 			daysAgo: {
 				min: 250,
-				max: 260,
+				max: 260
 			},
 			responseTime: {
 				min: 100,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 116,
-				max: 120,
+				max: 120
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1337,19 +1322,19 @@ function createErrorSamples(
 			status: 500,
 			daysAgo: {
 				min: 250,
-				max: 260,
+				max: 260
 			},
 			responseTime: {
 				min: 100,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 116,
-				max: 120,
+				max: 120
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1359,19 +1344,19 @@ function createErrorSamples(
 			status: 404,
 			daysAgo: {
 				min: 24,
-				max: 27,
+				max: 27
 			},
 			responseTime: {
 				min: 100,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 116,
-				max: 120,
+				max: 120
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1381,19 +1366,19 @@ function createErrorSamples(
 			status: 404,
 			daysAgo: {
 				min: 20,
-				max: 40,
+				max: 40
 			},
 			responseTime: {
 				min: 100,
-				max: 600,
+				max: 600
 			},
 			user: {
 				min: 116,
-				max: 120,
+				max: 120
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 
 	addDemoSamples(
@@ -1404,19 +1389,19 @@ function createErrorSamples(
 			status: 404,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo,
+				max: maxDaysAgo
 			},
 			responseTime: {
 				min: 10,
-				max: 200,
+				max: 200
 			},
 			user: {
 				min: 100,
-				max: 120,
+				max: 120
 			},
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1426,19 +1411,19 @@ function createErrorSamples(
 			status: 404,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo,
+				max: maxDaysAgo
 			},
 			responseTime: {
 				min: 10,
-				max: 20,
+				max: 20
 			},
 			user: {
 				min: 100,
-				max: 120,
+				max: 120
 			},
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1448,19 +1433,19 @@ function createErrorSamples(
 			status: 404,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo,
+				max: maxDaysAgo
 			},
 			responseTime: {
 				min: 10,
-				max: 20,
+				max: 20
 			},
 			user: {
 				min: 100,
-				max: 120,
+				max: 120
 			},
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1470,19 +1455,19 @@ function createErrorSamples(
 			status: 404,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo,
+				max: maxDaysAgo
 			},
 			responseTime: {
 				min: 10,
-				max: 20,
+				max: 20
 			},
 			user: {
 				min: 100,
-				max: 120,
+				max: 120
 			},
-			distribution: Distribution.Uniform,
+			distribution: Distribution.Uniform
 		},
-		outages,
+		outages
 	);
 	addDemoSamples(
 		demoRequests,
@@ -1492,19 +1477,19 @@ function createErrorSamples(
 			status: 404,
 			daysAgo: {
 				min: 0,
-				max: maxDaysAgo,
+				max: maxDaysAgo
 			},
 			responseTime: {
 				min: 10,
-				max: 20,
+				max: 20
 			},
 			user: {
 				min: 96,
-				max: 100,
+				max: 100
 			},
-			distribution: Distribution.Normal,
+			distribution: Distribution.Normal
 		},
-		outages,
+		outages
 	);
 }
 
@@ -1516,7 +1501,7 @@ export default function generateDemoData() {
 
 	const outages = [
 		{ min: 300, max: 305 },
-		{ min: 310, max: 313 },
+		{ min: 310, max: 313 }
 	];
 
 	// Baseline
@@ -1529,7 +1514,7 @@ export default function generateDemoData() {
 
 	const demoData: DashboardData = {
 		userAgents: getUserAgents(),
-		requests: demoRequests,
+		requests: demoRequests
 	};
 	return demoData;
 }

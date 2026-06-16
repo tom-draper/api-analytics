@@ -66,22 +66,24 @@ export function sparklineLayout() {
 		height: 60,
 		yaxis: { gridcolor: 'gray', showgrid: false, fixedrange: true, dragmode: false },
 		xaxis: { visible: false, dragmode: false },
-		dragmode: false,
+		dragmode: false
 	};
 }
 
 /** Data trace for Requests / Users / SuccessRate sparklines */
 export function sparklineData(buckets: number[]) {
-	return [{
-		x: [...Array(buckets.length).keys()],
-		y: buckets,
-		type: 'lines',
-		marker: { color: 'transparent' },
-		showlegend: false,
-		line: { shape: 'spline', smoothing: 1, color: '#3FCF8E30' },
-		fill: 'tozeroy',
-		fillcolor: '#3fcf8e15',
-	}];
+	return [
+		{
+			x: [...Array(buckets.length).keys()],
+			y: buckets,
+			type: 'lines',
+			marker: { color: 'transparent' },
+			showlegend: false,
+			line: { shape: 'spline', smoothing: 1, color: '#3FCF8E30' },
+			fill: 'tozeroy',
+			fillcolor: '#3fcf8e15'
+		}
+	];
 }
 
 /** Layout for Client / DeviceType / OperatingSystem / Version donut charts */
@@ -96,9 +98,14 @@ export function donutLayout(width?: number) {
 		height: 196,
 		...(width !== undefined ? { width } : {}),
 		legend: { itemclick: false, itemdoubleclick: false },
-		yaxis: { title: { text: 'Requests' }, gridcolor: 'gray', showgrid: false, fixedrange: true },
+		yaxis: {
+			title: { text: 'Requests' },
+			gridcolor: 'gray',
+			showgrid: false,
+			fixedrange: true
+		},
 		xaxis: { visible: false },
-		dragmode: false,
+		dragmode: false
 	};
 }
 
@@ -129,8 +136,18 @@ export function buildDonutData(
 	} else {
 		markerColors = colors;
 	}
-	const pull = selectedLabel != null ? labels.map((l) => (l === selectedLabel ? 0.08 : 0)) : undefined;
-	return [{ values, labels, type: 'pie', hole: 0.6, marker: { colors: markerColors }, ...(pull ? { pull } : {}) }];
+	const pull =
+		selectedLabel != null ? labels.map((l) => (l === selectedLabel ? 0.08 : 0)) : undefined;
+	return [
+		{
+			values,
+			labels,
+			type: 'pie',
+			hole: 0.6,
+			marker: { colors: markerColors },
+			...(pull ? { pull } : {})
+		}
+	];
 }
 
 /** Format a bucket start date as a time range label based on period bucket size */
@@ -164,8 +181,19 @@ export function activityLayout(period: Period, yAxisTitle: string, barmode?: str
 		paper_bgcolor: 'transparent',
 		height: 159,
 		...(barmode ? { barmode } : {}),
-		yaxis: { title: { text: yAxisTitle }, gridcolor: 'gray', showgrid: false, fixedrange: true },
-		xaxis: { title: { text: 'Date' }, showgrid: false, fixedrange: true, ...(periodAgo !== null ? { range: [periodAgo, new Date()] } : {}), visible: false },
-		dragmode: false,
+		yaxis: {
+			title: { text: yAxisTitle },
+			gridcolor: 'gray',
+			showgrid: false,
+			fixedrange: true
+		},
+		xaxis: {
+			title: { text: 'Date' },
+			showgrid: false,
+			fixedrange: true,
+			...(periodAgo !== null ? { range: [periodAgo, new Date()] } : {}),
+			visible: false
+		},
+		dragmode: false
 	};
 }

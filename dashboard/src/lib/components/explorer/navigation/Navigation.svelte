@@ -12,7 +12,11 @@
 		filter = defaultFilter(data.requests);
 	}
 
-	let { data = $bindable(), filteredRequests = $bindable(), filter = $bindable() }: { data: DashboardData; filteredRequests: RequestsData; filter: Filter } = $props();
+	let {
+		data = $bindable(),
+		filteredRequests = $bindable(),
+		filter = $bindable()
+	}: { data: DashboardData; filteredRequests: RequestsData; filter: Filter } = $props();
 </script>
 
 <nav
@@ -34,7 +38,11 @@
 						stroke="currentColor"
 						class="mr-1 size-3"
 					>
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M6 18 18 6M6 6l12 12"
+						/>
 					</svg>
 
 					<div>Reset</div>

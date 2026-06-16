@@ -2,12 +2,7 @@ import { error } from '@sveltejs/kit';
 import { dev } from '$app/environment';
 import type { Handle } from '@sveltejs/kit';
 
-const HOSTED_PATHS = [
-	'/faq',
-	'/frequently-asked-questions',
-	'/outages',
-	'/privacy-policy',
-];
+const HOSTED_PATHS = ['/faq', '/frequently-asked-questions', '/outages', '/privacy-policy'];
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const isHostedPath = HOSTED_PATHS.some((p) => event.url.pathname.startsWith(p));

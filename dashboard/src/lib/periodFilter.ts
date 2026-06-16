@@ -40,7 +40,8 @@ function wildCardMatch(endpoint: string, hiddenEndpoints: Set<string>): boolean 
 	return false;
 }
 
-const botPattern = /bot|crawl|spider|scraper|slurp|curl|wget|python|java(?!script)|ruby|php|perl|go-http|okhttp|libwww|httpclient|axios|requests|puppeteer|playwright|selenium|headless/i;
+const botPattern =
+	/bot|crawl|spider|scraper|slurp|curl|wget|python|java(?!script)|ruby|php|perl|go-http|okhttp|libwww|httpclient|axios|requests|puppeteer|playwright|selenium|headless/i;
 
 // User-agent classification only depends on the userAgents map, which is stable
 // between data appends. Memoise the derived id sets keyed by the map reference so
@@ -86,9 +87,18 @@ export function getPeriodData(
 	const pathVersionCache = new Map<string, string | null>();
 
 	const botUAIds = settings.ignoreBots ? botUASet(userAgents) : null;
-	const clientUAIds = settings.targetClient !== null ? labelUASet(userAgents, 'client', settings.targetClient, clientCandidates) : null;
-	const deviceUAIds = settings.targetDeviceType !== null ? labelUASet(userAgents, 'device', settings.targetDeviceType, deviceCandidates) : null;
-	const osUAIds = settings.targetOS !== null ? labelUASet(userAgents, 'os', settings.targetOS, osCandidates) : null;
+	const clientUAIds =
+		settings.targetClient !== null
+			? labelUASet(userAgents, 'client', settings.targetClient, clientCandidates)
+			: null;
+	const deviceUAIds =
+		settings.targetDeviceType !== null
+			? labelUASet(userAgents, 'device', settings.targetDeviceType, deviceCandidates)
+			: null;
+	const osUAIds =
+		settings.targetOS !== null
+			? labelUASet(userAgents, 'os', settings.targetOS, osCandidates)
+			: null;
 
 	const current: RequestsData = [];
 	const previous: RequestsData = [];
@@ -138,7 +148,8 @@ export function getPeriodData(
 			(!deviceUAIds || deviceUAIds.has(request[ColumnIndex.UserAgent] as number)) &&
 			(!osUAIds || osUAIds.has(request[ColumnIndex.UserAgent] as number)) &&
 			(settings.targetEndpoint.path === null || settings.targetEndpoint.path === path) &&
-			(settings.targetEndpoint.status === null || settings.targetEndpoint.status === status) &&
+			(settings.targetEndpoint.status === null ||
+				settings.targetEndpoint.status === status) &&
 			(settings.targetReferrer === null || settings.targetReferrer === referrer) &&
 			(settings.targetLocation === null || settings.targetLocation === location) &&
 			(settings.targetWeekday === null || settings.targetWeekday === weekday) &&

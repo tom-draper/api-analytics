@@ -3,10 +3,14 @@
 		<a class="doc-link flex-1 bg-[#181818] hover:bg-[var(--hover-bg)]" href="/faq">FAQ</a>
 	</div>
 	<div class="doc-link-container flex-1 grid place-items-center">
-		<a class="doc-link flex-1 bg-[#181818] hover:bg-[var(--hover-bg)]" href="/privacy-policy">Privacy Policy</a>
+		<a class="doc-link flex-1 bg-[#181818] hover:bg-[var(--hover-bg)]" href="/privacy-policy"
+			>Privacy Policy</a
+		>
 	</div>
 	<div class="doc-link-container flex-1 grid place-items-center">
-		<a class="doc-link flex-1 bg-[#181818] hover:bg-[var(--hover-bg)]" href="/outages">Outages</a>
+		<a class="doc-link flex-1 bg-[#181818] hover:bg-[var(--hover-bg)]" href="/outages"
+			>Outages</a
+		>
 	</div>
 </div>
 

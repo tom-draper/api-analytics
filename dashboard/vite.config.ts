@@ -8,13 +8,13 @@ const { version } = JSON.parse(readFileSync('package.json', 'utf-8'));
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
 	define: {
-		__APP_VERSION__: JSON.stringify(version),
+		__APP_VERSION__: JSON.stringify(version)
 	},
 	resolve: {
 		alias: {
 			$lib: '/src/lib',
 			$components: '/src/lib/components',
-			$img: '/src/lib/img',
+			$img: '/src/lib/img'
 		}
 	}
 });

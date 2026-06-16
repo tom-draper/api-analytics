@@ -4,7 +4,8 @@
 	import { type Filter } from '$lib/filter';
 	import RangeSlider from 'svelte-range-slider-pips';
 
-	let { filter = $bindable(), data = $bindable() }: { filter: Filter; data: DashboardData } = $props();
+	let { filter = $bindable(), data = $bindable() }: { filter: Filter; data: DashboardData } =
+		$props();
 
 	let values = $state<[number, number]>([0, 0]);
 	let minDate = $state<Date | null>(null);

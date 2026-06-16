@@ -16,7 +16,7 @@
 			const url = getServerURL();
 			const response = await fetch(`${url}/api/regenerate-user-id`, {
 				method: 'POST',
-				headers: { 'X-AUTH-TOKEN': apiKey },
+				headers: { 'X-AUTH-TOKEN': apiKey }
 			});
 			status = response.status === 200 ? 'success' : 'error';
 		} catch (e) {
@@ -49,7 +49,8 @@
 
 		{#if status === 'success'}
 			<div class="status-msg success">
-				Your dashboard link has been regenerated. Any previously shared links are now invalid.
+				Your dashboard link has been regenerated. Any previously shared links are now
+				invalid.
 			</div>
 			<button class="form-btn" onclick={reset}>Done</button>
 		{:else if status === 'error'}
@@ -60,13 +61,34 @@
 		{:else}
 			<label class="input-label" for="api-key">
 				Enter API Key
-				<svg class="arrow" viewBox="240 170 320 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<g stroke-width="31" stroke="currentColor" stroke-linecap="square" transform="matrix(1,0,0,1,-4,0)">
-						<path d="M250 256.4Q413 180.4 550 556.4" marker-end="url(#arrowhead-regen)"/>
+				<svg
+					class="arrow"
+					viewBox="240 170 320 400"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<g
+						stroke-width="31"
+						stroke="currentColor"
+						stroke-linecap="square"
+						transform="matrix(1,0,0,1,-4,0)"
+					>
+						<path
+							d="M250 256.4Q413 180.4 550 556.4"
+							marker-end="url(#arrowhead-regen)"
+						/>
 					</g>
 					<defs>
-						<marker markerWidth="6" markerHeight="6" refX="3" refY="3" viewBox="0 0 6 6" orient="auto" id="arrowhead-regen">
-							<polygon points="0,6 0,0 6,3" fill="currentColor"/>
+						<marker
+							markerWidth="6"
+							markerHeight="6"
+							refX="3"
+							refY="3"
+							viewBox="0 0 6 6"
+							orient="auto"
+							id="arrowhead-regen"
+						>
+							<polygon points="0,6 0,0 6,3" fill="currentColor" />
 						</marker>
 					</defs>
 				</svg>

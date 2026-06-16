@@ -1,7 +1,12 @@
 <script lang="ts">
 	import Lightning from '$components/Lightning.svelte';
 
-	let { title, description, img, path }: { title: string; description: string; img: string; path: string } = $props();
+	let {
+		title,
+		description,
+		img,
+		path
+	}: { title: string; description: string; img: string; path: string } = $props();
 </script>
 
 <div class="dashboard">

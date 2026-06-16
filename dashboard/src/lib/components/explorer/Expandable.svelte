@@ -2,7 +2,17 @@
 	import { type Filter } from '$lib/filter';
 	import type { Component } from 'svelte';
 
-	let { title, content, filter = $bindable(), data = $bindable() }: { title: string; content: Component<{ filter: Filter; data: DashboardData }>; filter: Filter; data: DashboardData } = $props();
+	let {
+		title,
+		content,
+		filter = $bindable(),
+		data = $bindable()
+	}: {
+		title: string;
+		content: Component<{ filter: Filter; data: DashboardData }>;
+		filter: Filter;
+		data: DashboardData;
+	} = $props();
 	let hidden = $state(false);
 
 	function toggleHidden() {
@@ -29,7 +39,11 @@
 					stroke="currentColor"
 					class="h-[1em] w-[1em]"
 				>
-					<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="m4.5 15.75 7.5-7.5 7.5 7.5"
+					/>
 				</svg>
 			{:else}
 				<svg
@@ -40,7 +54,11 @@
 					stroke="currentColor"
 					class="h-[1em] w-[1em]"
 				>
-					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+					/>
 				</svg>
 			{/if}
 		</div>
@@ -50,7 +68,7 @@
 		<div class="rounded border border-solid border-[var(--border)] text-[14px]">
 			{#if content}
 				{@const Content = content}
-				<Content bind:filter={filter} bind:data={data} />
+				<Content bind:filter bind:data />
 			{/if}
 		</div>
 	</div>

@@ -46,7 +46,11 @@
 		activeFilter = value;
 	}
 
-	let { endpointFreq, targetPath = $bindable<string | null>(null), targetStatus = $bindable<number | null>(null) }: {
+	let {
+		endpointFreq,
+		targetPath = $bindable<string | null>(null),
+		targetStatus = $bindable<number | null>(null)
+	}: {
 		endpointFreq: EndpointFreq;
 		targetPath: string | null;
 		targetStatus: number | null;
@@ -65,11 +69,17 @@
 	</div>
 
 	{#if endpointData.endpoints.length > 0}
-		<EndpointList endpoints={endpointData.endpoints} maxCount={endpointData.maxCount} selectEndpoint={handleEndpointSelection} />
+		<EndpointList
+			endpoints={endpointData.endpoints}
+			maxCount={endpointData.maxCount}
+			selectEndpoint={handleEndpointSelection}
+		/>
 	{/if}
 	{#if targetPath !== null}
 		<div class="clear-row">
-			<button class="clear-btn" onclick={() => handleEndpointSelection(null, null)}>Clear filter</button>
+			<button class="clear-btn" onclick={() => handleEndpointSelection(null, null)}
+				>Clear filter</button
+			>
 		</div>
 	{/if}
 </div>

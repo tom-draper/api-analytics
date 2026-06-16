@@ -6,11 +6,21 @@
 
 	const getter = cachedFunction((ua: string | null) => matchCandidate(ua, deviceCandidates));
 
-	let { uaIdCount, userAgents, targetDeviceType = $bindable<string | null>(null) }: {
+	let {
+		uaIdCount,
+		userAgents,
+		targetDeviceType = $bindable<string | null>(null)
+	}: {
 		uaIdCount: { [id: number]: number };
 		userAgents: UserAgents;
 		targetDeviceType: string | null;
 	} = $props();
 </script>
 
-<DonutChart {uaIdCount} {userAgents} {getter} paramKey="deviceType" bind:target={targetDeviceType} />
+<DonutChart
+	{uaIdCount}
+	{userAgents}
+	{getter}
+	paramKey="deviceType"
+	bind:target={targetDeviceType}
+/>

@@ -122,7 +122,9 @@
 	});
 	let aggregated = $state.raw<AggregatedData | undefined>(undefined);
 	let loading = $state(true);
-	let fetchStatus = $state<{ failed: boolean; status: number | null; message: string } | undefined>(undefined);
+	let fetchStatus = $state<
+		{ failed: boolean; status: number | null; message: string } | undefined
+	>(undefined);
 	let worker = $state.raw<Worker | undefined>(undefined);
 
 	// Sends the initial dataset to the worker for caching + first aggregation.
@@ -168,7 +170,9 @@
 	}
 
 	onMount(() => {
-		const w = new Worker(new URL('$lib/dashboardWorker.ts', import.meta.url), { type: 'module' });
+		const w = new Worker(new URL('$lib/dashboardWorker.ts', import.meta.url), {
+			type: 'module'
+		});
 		w.onmessage = (e) => {
 			const msg = e.data;
 			if (msg.type === 'export') {
@@ -206,7 +210,10 @@
 			<div class="left">
 				<div class="row">
 					<Logo {loading} />
-					<SuccessRate rate={aggregated.successRate} buckets={aggregated.successBuckets} />
+					<SuccessRate
+						rate={aggregated.successRate}
+						buckets={aggregated.successBuckets}
+					/>
 				</div>
 				<div class="row">
 					<Requests
@@ -238,21 +245,37 @@
 					bind:targetPath={settings.targetEndpoint.path}
 					bind:targetStatus={settings.targetEndpoint.status}
 				/>
-				<Versions versionCount={aggregated.versionCount} hasMultiple={aggregated.versionHasMultiple} bind:targetVersion={settings.targetVersion} />
+				<Versions
+					versionCount={aggregated.versionCount}
+					hasMultiple={aggregated.versionHasMultiple}
+					bind:targetVersion={settings.targetVersion}
+				/>
 			</div>
 			<div class="right">
-				<Activity
-					activityBuckets={aggregated.activityBuckets}
-					period={aggregated.period}
-				/>
+				<Activity activityBuckets={aggregated.activityBuckets} period={aggregated.period} />
 				<div class="grid-row">
-					<Locations locationBars={aggregated.locationBars} bind:targetLocation={settings.targetLocation} />
-					<Device uaIdCount={aggregated.uaIdCount} userAgents={data.userAgents} bind:targetClient={settings.targetClient} bind:targetDeviceType={settings.targetDeviceType} bind:targetOS={settings.targetOS} />
+					<Locations
+						locationBars={aggregated.locationBars}
+						bind:targetLocation={settings.targetLocation}
+					/>
+					<Device
+						uaIdCount={aggregated.uaIdCount}
+						userAgents={data.userAgents}
+						bind:targetClient={settings.targetClient}
+						bind:targetDeviceType={settings.targetDeviceType}
+						bind:targetOS={settings.targetOS}
+					/>
 				</div>
 				<div class="flex chart-row">
 					<div class="flex-grow">
-						<UsageTime hourlyBuckets={aggregated.hourlyBuckets} bind:targetHour={settings.targetHour} />
-						<DaysOfWeek weekdayBuckets={aggregated.weekdayBuckets} bind:targetWeekday={settings.targetWeekday} />
+						<UsageTime
+							hourlyBuckets={aggregated.hourlyBuckets}
+							bind:targetHour={settings.targetHour}
+						/>
+						<DaysOfWeek
+							weekdayBuckets={aggregated.weekdayBuckets}
+							bind:targetWeekday={settings.targetWeekday}
+						/>
 						<TopUsers
 							users={aggregated.topUsers}
 							userIDActive={aggregated.topUserIDActive}
@@ -262,7 +285,10 @@
 					</div>
 					<div class="referrer-col">
 						{#if aggregated.referrerAvailable}
-							<Referrers referrerBars={aggregated.referrerBars} bind:targetReferrer={settings.targetReferrer} />
+							<Referrers
+								referrerBars={aggregated.referrerBars}
+								bind:targetReferrer={settings.targetReferrer}
+							/>
 						{/if}
 					</div>
 				</div>

@@ -10,7 +10,9 @@
 		const users = buckets.map((b) => b.userCount);
 		const requests = buckets.map((b) => b.requestCount - b.userCount);
 		const requestsText = buckets.map((b) => `${b.requestCount} requests`);
-		const usersText = buckets.map((b) => `${b.requestCount} requests from ${b.userCount} users`);
+		const usersText = buckets.map(
+			(b) => `${b.requestCount} requests from ${b.userCount} users`
+		);
 
 		return [
 			{
@@ -38,7 +40,8 @@
 		];
 	}
 
-	let { activityBuckets, period }: { activityBuckets: ActivityBucket[]; period: Period } = $props();
+	let { activityBuckets, period }: { activityBuckets: ActivityBucket[]; period: Period } =
+		$props();
 
 	const data = $derived(bars(activityBuckets, period));
 	const layout = $derived(activityLayout(period, 'Requests', 'stack'));

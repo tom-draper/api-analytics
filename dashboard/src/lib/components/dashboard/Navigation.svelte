@@ -6,7 +6,6 @@
 
 	const timePeriods: Period[] = ['24 hours', 'week', 'month', '6 months', 'year', 'all time'];
 
-
 	function setPeriodParam(period: Period) {
 		setParam('period', period);
 	}
@@ -15,7 +14,11 @@
 		setParam('hostname', hostname);
 	}
 
-	let { settings = $bindable(), showSettings = $bindable(false), hostnames = $bindable([]) }: { settings: DashboardSettings; showSettings: boolean; hostnames: string[] } = $props();
+	let {
+		settings = $bindable(),
+		showSettings = $bindable(false),
+		hostnames = $bindable([])
+	}: { settings: DashboardSettings; showSettings: boolean; hostnames: string[] } = $props();
 	let dropdownOpen = $state(false);
 	let selectedHostname = $state<string | null>(settings.hostname ?? null);
 
@@ -45,10 +48,8 @@
 		</div>
 	</a> -->
 	<div class="donate ml-auto grid">
-		<a
-			target="_blank"
-			href="https://www.buymeacoffee.com/tomdraper"
-			class="donate-link">Buy me a coffee</a
+		<a target="_blank" href="https://www.buymeacoffee.com/tomdraper" class="donate-link"
+			>Buy me a coffee</a
 		>
 	</div>
 	<button
@@ -67,7 +68,9 @@
 			defaultOption={'All hostnames'}
 		/>
 	</div>
-	<div class="nav-btn time-period flex overflow-hidden rounded-[4px] border border-[var(--border)]">
+	<div
+		class="nav-btn time-period flex overflow-hidden rounded-[4px] border border-[var(--border)]"
+	>
 		{#each timePeriods as period}
 			<button
 				class="time-period-btn cursor-pointer border-none bg-[var(--background)] px-[12px] py-[4px] text-[var(--dim-text)]"

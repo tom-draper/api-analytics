@@ -6,7 +6,11 @@
 
 	const getter = cachedFunction((ua: string | null) => matchCandidate(ua, clientCandidates));
 
-	let { uaIdCount, userAgents, targetClient = $bindable<string | null>(null) }: {
+	let {
+		uaIdCount,
+		userAgents,
+		targetClient = $bindable<string | null>(null)
+	}: {
 		uaIdCount: { [id: number]: number };
 		userAgents: UserAgents;
 		targetClient: string | null;

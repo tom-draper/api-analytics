@@ -8,7 +8,11 @@
 <div class="flex flex-col text-[14px]">
 	<div class="flex items-center border-b border-solid border-[var(--border)]">
 		{#if filter}
-			<Checkbox bind:checked={filter.status.success} label="Success" color="var(--highlight)" />
+			<Checkbox
+				bind:checked={filter.status.success}
+				label="Success"
+				color="var(--highlight)"
+			/>
 		{/if}
 	</div>
 	<div class="flex items-center border-b border-solid border-[var(--border)]">
@@ -18,7 +22,11 @@
 	</div>
 	<div class="flex items-center border-b border-solid border-[var(--border)]">
 		{#if filter}
-			<Checkbox bind:checked={filter.status.client} label="Client error" color="var(--yellow)" />
+			<Checkbox
+				bind:checked={filter.status.client}
+				label="Client error"
+				color="var(--yellow)"
+			/>
 		{/if}
 	</div>
 	<div class="flex items-center">

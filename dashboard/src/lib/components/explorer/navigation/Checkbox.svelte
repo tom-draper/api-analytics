@@ -1,5 +1,9 @@
 <script lang="ts">
-	let { checked = $bindable(false), label, color }: { checked: boolean; label: string; color: string } = $props();
+	let {
+		checked = $bindable(false),
+		label,
+		color
+	}: { checked: boolean; label: string; color: string } = $props();
 
 	function toggleChecked() {
 		checked = !checked;
@@ -25,7 +29,11 @@
 						stroke="currentColor"
 						class="size-3 text-[var(--light-background)]"
 					>
-						<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="m4.5 12.75 6 6 9-13.5"
+						/>
 					</svg>
 				{/if}
 			</div>

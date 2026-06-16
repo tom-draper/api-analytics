@@ -73,7 +73,12 @@
 
 	type TargetUser = { ipAddress: string; userID: string; composite: boolean };
 
-	let { users, userIDActive, locationsActive, targetUser = $bindable<TargetUser | null>(null) }: {
+	let {
+		users,
+		userIDActive,
+		locationsActive,
+		targetUser = $bindable<TargetUser | null>(null)
+	}: {
 		users: TopUserData[] | null;
 		userIDActive: boolean;
 		locationsActive: boolean;
@@ -83,15 +88,21 @@
 	const PAGE_SIZE = 10;
 	let pageNumber = $state(1);
 	const totalPages = $derived(Math.ceil((users?.length ?? 0) / PAGE_SIZE));
-	const dataPage = $derived(users ? users.slice((pageNumber - 1) * PAGE_SIZE, pageNumber * PAGE_SIZE) : []);
+	const dataPage = $derived(
+		users ? users.slice((pageNumber - 1) * PAGE_SIZE, pageNumber * PAGE_SIZE) : []
+	);
 
 	$effect(() => {
 		users;
 		pageNumber = 1;
 	});
 
-	function nextPage() { pageNumber += 1; }
-	function prevPage() { pageNumber -= 1; }
+	function nextPage() {
+		pageNumber += 1;
+	}
+	function prevPage() {
+		pageNumber -= 1;
+	}
 </script>
 
 {#if dataPage.length > 0 || targetUser !== null}
@@ -116,13 +127,17 @@
 					{#each dataPage as { ipAddress, customUserID, requests, locations, lastRequested }, i}
 						<tr
 							class="highlight-row"
-							class:highlighted-row={targetUser !== null && userTargeted(targetUser, ipAddress, customUserID)}
-							class:dim-row={targetUser !== null && !userTargeted(targetUser, ipAddress, customUserID)}
+							class:highlighted-row={targetUser !== null &&
+								userTargeted(targetUser, ipAddress, customUserID)}
+							class:dim-row={targetUser !== null &&
+								!userTargeted(targetUser, ipAddress, customUserID)}
 							class:last-row={i === dataPage.length - 1}
 						>
 							<td onclick={() => selectUser(ipAddress, customUserID)}>{ipAddress}</td>
 							{#if userIDActive}
-								<td onclick={() => selectUser(ipAddress, customUserID)}>{customUserID ?? ''}</td>
+								<td onclick={() => selectUser(ipAddress, customUserID)}
+									>{customUserID ?? ''}</td
+								>
 							{/if}
 							{#if locationsActive}
 								<td onclick={() => selectUser(ipAddress, customUserID)}
@@ -132,7 +147,10 @@
 							<td onclick={() => selectUser(ipAddress, customUserID)}>
 								{lastRequested.toLocaleString()}
 							</td>
-							<td class="align-right" onclick={() => selectUser(ipAddress, customUserID)}>
+							<td
+								class="align-right"
+								onclick={() => selectUser(ipAddress, customUserID)}
+							>
 								{requests.toLocaleString()}
 							</td>
 						</tr>
@@ -140,15 +158,24 @@
 				</tbody>
 			</table>
 			{#if dataPage.length === 0 && targetUser !== null}
-				<div class="no-results">Filtered by: <span class="no-results-user">{formatDisplayUserID(targetUser)}</span> — <button onclick={() => { targetUser = null; setUserParams(null, null); }}>Clear filter</button></div>
+				<div class="no-results">
+					Filtered by: <span class="no-results-user"
+						>{formatDisplayUserID(targetUser)}</span
+					>
+					—
+					<button
+						onclick={() => {
+							targetUser = null;
+							setUserParams(null, null);
+						}}>Clear filter</button
+					>
+				</div>
 			{/if}
 		</div>
 		<div class="buttons">
 			<div class="current-page">Page {pageNumber} of {totalPages}</div>
 			{#if pageNumber > 1}
-				<button
-					class:btn-prev={pageNumber < totalPages}
-					onclick={prevPage}>Previous</button
+				<button class:btn-prev={pageNumber < totalPages} onclick={prevPage}>Previous</button
 				>
 			{/if}
 			{#if pageNumber < totalPages}

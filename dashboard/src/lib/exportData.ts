@@ -20,11 +20,7 @@ function convertLineToCSV(line: RequestsData[number], userAgents: UserAgents) {
 	return str;
 }
 
-function convertToCSV(
-	data: RequestsData,
-	columns: string[],
-	userAgents: UserAgents,
-) {
+function convertToCSV(data: RequestsData, columns: string[], userAgents: UserAgents) {
 	let str = columns.join(',') + '\r\n';
 	for (let i = 0; i < data.length; i++) {
 		const line = convertLineToCSV(data[i], userAgents);
@@ -33,15 +29,9 @@ function convertToCSV(
 	return str;
 }
 
-export default function exportCSV(
-	data: RequestsData,
-	columns: string[],
-	userAgents: UserAgents,
-) {
+export default function exportCSV(data: RequestsData, columns: string[], userAgents: UserAgents) {
 	const csv = convertToCSV(data, columns, userAgents);
-	const exportedFilename = `api_analytics_${new Date()
-		.toJSON()
-		.replace(/[- .]/g, '_')}.csv`;
+	const exportedFilename = `api_analytics_${new Date().toJSON().replace(/[- .]/g, '_')}.csv`;
 	const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
 
 	const link = document.createElement('a');

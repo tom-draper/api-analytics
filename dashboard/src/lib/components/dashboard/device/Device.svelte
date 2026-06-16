@@ -12,7 +12,13 @@
 		window.dispatchEvent(new Event('resize'));
 	}
 
-	let { uaIdCount, userAgents, targetClient = $bindable<string | null>(null), targetDeviceType = $bindable<string | null>(null), targetOS = $bindable<string | null>(null) }: {
+	let {
+		uaIdCount,
+		userAgents,
+		targetClient = $bindable<string | null>(null),
+		targetDeviceType = $bindable<string | null>(null),
+		targetOS = $bindable<string | null>(null)
+	}: {
 		uaIdCount: { [id: number]: number };
 		userAgents: UserAgents;
 		targetClient: string | null;

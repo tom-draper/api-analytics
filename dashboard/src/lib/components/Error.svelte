@@ -117,7 +117,8 @@
 		background-clip: text;
 	}
 	.message-error {
-		background: radial-gradient(circle farthest-corner at center center, var(--red), #111) no-repeat;
+		background: radial-gradient(circle farthest-corner at center center, var(--red), #111)
+			no-repeat;
 		background-clip: text;
 	}
 </style>

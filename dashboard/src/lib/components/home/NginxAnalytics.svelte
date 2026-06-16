@@ -9,10 +9,17 @@
 		<div class="nginx-content">
 			<h2>Using NGINX?</h2>
 			<p class="description">
-				Try <a href="https://github.com/tom-draper/nginx-analytics" target="_blank" class="highlight">NGINX Analytics</a>, a flexible and fully self-hosted
-				solution for real-time monitoring.
+				Try <a
+					href="https://github.com/tom-draper/nginx-analytics"
+					target="_blank"
+					class="highlight">NGINX Analytics</a
+				>, a flexible and fully self-hosted solution for real-time monitoring.
 			</p>
-			<a href="https://github.com/tom-draper/nginx-analytics" target="_blank" class="get-started">Get Started</a>
+			<a
+				href="https://github.com/tom-draper/nginx-analytics"
+				target="_blank"
+				class="get-started">Get Started</a
+			>
 		</div>
 	</div>
 </div>

@@ -35,7 +35,7 @@ export const clientCandidates: Candidate[] = [
 	{ name: 'Safari', regex: /Safari\//, matches: 0 },
 	{ name: 'Edge', regex: /Edg\//, matches: 0 },
 	{ name: 'Opera', regex: /(OPR|Opera)\//, matches: 0 },
-	{ name: 'Internet Explorer', regex: /(; MSIE |Trident\/)/, matches: 0 },
+	{ name: 'Internet Explorer', regex: /(; MSIE |Trident\/)/, matches: 0 }
 ];
 
 export const deviceCandidates: Candidate[] = [
@@ -43,7 +43,7 @@ export const deviceCandidates: Candidate[] = [
 	{ name: 'Android', regex: /Android/, matches: 0 },
 	{ name: 'Samsung', regex: /Tizen\//, matches: 0 },
 	{ name: 'Mac', regex: /Macintosh/, matches: 0 },
-	{ name: 'Windows', regex: /Windows/, matches: 0 },
+	{ name: 'Windows', regex: /Windows/, matches: 0 }
 ];
 
 export const osCandidates: Candidate[] = [
@@ -57,7 +57,11 @@ export const osCandidates: Candidate[] = [
 	{ name: 'Windows 7', regex: /(Windows NT 6.1)/, matches: 0 },
 	{ name: 'Windows 8', regex: /(Windows NT 6.2)/, matches: 0 },
 	{ name: 'Windows 10/11', regex: /(Windows NT 10.0)/, matches: 0 },
-	{ name: 'Windows NT 4.0', regex: /(Windows NT 4.0)|(WinNT4.0)|(WinNT)|(Windows NT)/, matches: 0 },
+	{
+		name: 'Windows NT 4.0',
+		regex: /(Windows NT 4.0)|(WinNT4.0)|(WinNT)|(Windows NT)/,
+		matches: 0
+	},
 	{ name: 'Windows ME', regex: /Windows ME/, matches: 0 },
 	{ name: 'OpenBSD', regex: /OpenBSD/, matches: 0 },
 	{ name: 'SunOS', regex: /SunOS/, matches: 0 },
@@ -71,8 +75,8 @@ export const osCandidates: Candidate[] = [
 	{
 		name: 'Search Bot',
 		regex: /(APIs-Google)|(AdsBot)|(nuhk)|(Googlebot)|(Storebot)|(Google-Site-Verification)|(Mediapartners)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves\/Teoma)|(ia_archiver)/,
-		matches: 0,
-	},
+		matches: 0
+	}
 ];
 
 /** Pure (non-mutating) label lookup — used by periodFilter to build UA ID sets. */

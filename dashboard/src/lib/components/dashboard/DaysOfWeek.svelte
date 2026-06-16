@@ -6,7 +6,10 @@
 	const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 	const dayOrder = [1, 2, 3, 4, 5, 6, 0];
 
-	let { weekdayBuckets, targetWeekday = $bindable<number | null>(null) }: {
+	let {
+		weekdayBuckets,
+		targetWeekday = $bindable<number | null>(null)
+	}: {
 		weekdayBuckets: number[];
 		targetWeekday: number | null;
 	} = $props();
@@ -21,7 +24,7 @@
 				label: dayLabels[i],
 				dayIdx,
 				count: weekdayBuckets[dayIdx],
-				height: max > 0 ? weekdayBuckets[dayIdx] / max : 0,
+				height: max > 0 ? weekdayBuckets[dayIdx] / max : 0
 			}))
 			.filter((bar) => bar.count > 0);
 	});

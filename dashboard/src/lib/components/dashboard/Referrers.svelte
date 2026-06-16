@@ -3,7 +3,10 @@
 	import type { ReferrerBar } from '$lib/aggregate';
 	import BarList from './BarList.svelte';
 
-	let { referrerBars, targetReferrer = $bindable<string | null>(null) }: {
+	let {
+		referrerBars,
+		targetReferrer = $bindable<string | null>(null)
+	}: {
 		referrerBars: ReferrerBar[];
 		targetReferrer: string | null;
 	} = $props();

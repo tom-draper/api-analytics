@@ -117,14 +117,14 @@
 	onMount(async () => {
 		data = await fetchData();
 
-		if(isDemo() ){
+		if (isDemo()) {
 			console.log(data);
-			data['https://persona-api.vercel.app/v1'] = data['https://www.google.com']
-			delete data['https://www.google.com']
-	
+			data['https://persona-api.vercel.app/v1'] = data['https://www.google.com'];
+			delete data['https://www.google.com'];
+
 			for (let i = 2053; i < 2058; i++) {
-				data['https://persona-api.vercel.app/v1'][i].status = 500
-				data['https://persona-api.vercel.app/v1'][i].response_time = 0
+				data['https://persona-api.vercel.app/v1'][i].status = 500;
+				data['https://persona-api.vercel.app/v1'][i].response_time = 0;
 			}
 		}
 
@@ -184,7 +184,11 @@
 						stroke="currentColor"
 						class="size-6"
 					>
-						<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M12 4.5v15m7.5-7.5h-15"
+						/>
 					</svg>
 					<span>New</span>
 				</button>

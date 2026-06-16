@@ -3,7 +3,8 @@
 	import { type Filter } from '$lib/filter';
 	import RangeSlider from 'svelte-range-slider-pips';
 
-	let { filter = $bindable(), data = $bindable() }: { filter: Filter; data: DashboardData } = $props();
+	let { filter = $bindable(), data = $bindable() }: { filter: Filter; data: DashboardData } =
+		$props();
 
 	let values = $state<[number, number]>([0, 0]);
 	let minResponseTime = $state<number | null>(null);
@@ -22,12 +23,12 @@
 			}
 		}
 
-		return {min, max}
+		return { min, max };
 	}
 
 	$effect(() => {
 		if (data && filter) {
-			const range = responseTimeRange(data)
+			const range = responseTimeRange(data);
 			minResponseTime = range.min;
 			maxResponseTime = range.max;
 

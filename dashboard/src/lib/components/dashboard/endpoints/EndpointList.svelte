@@ -6,7 +6,15 @@
 		selectEndpoint?.(path, status);
 	}
 
-	let { endpoints, maxCount, selectEndpoint }: { endpoints: Endpoint[]; maxCount: number; selectEndpoint?: (path: string | null, status: number | null) => void } = $props();
+	let {
+		endpoints,
+		maxCount,
+		selectEndpoint
+	}: {
+		endpoints: Endpoint[];
+		maxCount: number;
+		selectEndpoint?: (path: string | null, status: number | null) => void;
+	} = $props();
 </script>
 
 <div class="endpoints">

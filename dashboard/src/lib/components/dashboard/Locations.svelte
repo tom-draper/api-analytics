@@ -15,7 +15,10 @@
 		return regionNames.of(countryCode);
 	}
 
-	let { locationBars, targetLocation = $bindable<string | null>(null) }: {
+	let {
+		locationBars,
+		targetLocation = $bindable<string | null>(null)
+	}: {
 		locationBars: LocationBar[];
 		targetLocation: string | null;
 	} = $props();
@@ -24,15 +27,25 @@
 <div class="card">
 	<div class="card-title">Location</div>
 	{#if locationBars.length > 0}
-		<div class="locations-count">{locationBars.length} location{locationBars.length > 1 ? 's' : ''}</div>
+		<div class="locations-count">
+			{locationBars.length} location{locationBars.length > 1 ? 's' : ''}
+		</div>
 		<div class="bars">
 			{#each locationBars.slice(0, 12) as location}
 				<div class="bar-container">
 					<button
 						aria-label="location"
 						class="bar"
-						title="{countryCodeToName(location.location)}: {location.frequency.toLocaleString()} requests"
-						onclick={() => toggleParam('location', location.location, targetLocation, (v) => (targetLocation = v))}
+						title="{countryCodeToName(
+							location.location
+						)}: {location.frequency.toLocaleString()} requests"
+						onclick={() =>
+							toggleParam(
+								'location',
+								location.location,
+								targetLocation,
+								(v) => (targetLocation = v)
+							)}
 					>
 						<div class="bar-inner" style="height: {location.height * 100}%"></div>
 					</button>

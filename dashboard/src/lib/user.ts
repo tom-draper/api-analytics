@@ -8,14 +8,19 @@ export function formatUserID(ipAddress: string, customUserID: string) {
 	return `${ipAddress}||${customUserID}`;
 }
 
-export function userTargeted(targetUser: { ipAddress: string, userID: string, composite: boolean }, ipAddress: string, userID: string) {
+export function userTargeted(
+	targetUser: { ipAddress: string; userID: string; composite: boolean },
+	ipAddress: string,
+	userID: string
+) {
 	if (!targetUser) {
 		return false;
 	}
 
 	if (targetUser.composite) {
 		return (
-			formatUserID(ipAddress, userID) === formatUserID(targetUser.ipAddress, targetUser.userID)
+			formatUserID(ipAddress, userID) ===
+			formatUserID(targetUser.ipAddress, targetUser.userID)
 		);
 	} else {
 		return targetUser.userID === userID;

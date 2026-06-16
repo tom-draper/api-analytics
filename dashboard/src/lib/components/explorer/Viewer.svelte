@@ -11,7 +11,8 @@
 
 	<div class="mx-4 h-[16px] text-left text-xs text-[var(--dim-text)]">
 		{#if data && filteredData && data.requests.length !== filteredData.length}
-			Showing {filteredData.length.toLocaleString()} out of {data.requests.length.toLocaleString()} rows
+			Showing {filteredData.length.toLocaleString()} out of {data.requests.length.toLocaleString()}
+			rows
 		{/if}
 	</div>
 

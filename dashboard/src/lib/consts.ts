@@ -1,4 +1,4 @@
-import { shuffleList } from "./shuffle";
+import { shuffleList } from './shuffle';
 
 export const serverURL = 'https://www.apianalytics-server.com';
 
@@ -17,7 +17,7 @@ export const columns = [
 	'location',
 	'user_id',
 	'time',
-	'referrer',
+	'referrer'
 ];
 
 export const enum ColumnIndex {
@@ -31,7 +31,7 @@ export const enum ColumnIndex {
 	Location = 7,
 	UserID = 8,
 	CreatedAt = 9,
-	Referrer = 10,
+	Referrer = 10
 }
 
 export const graphColors = [
@@ -42,7 +42,7 @@ export const graphColors = [
 	'#FFD6A5', // Orange
 	'#F9968B', // Salmon
 	'#B1A2CA', // Purple
-	'#E46161', // Red
+	'#E46161' // Red
 ];
 
 // Integer to method string mapping used by server
@@ -55,7 +55,7 @@ export const methodMap = [
 	'OPTIONS',
 	'CONNECT',
 	'HEAD',
-	'TRACE',
+	'TRACE'
 ];
 
 export const loadingMessages = shuffleList([

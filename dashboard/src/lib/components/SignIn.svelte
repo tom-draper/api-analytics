@@ -15,13 +15,13 @@
 	const subtitles: Record<typeof type, string> = {
 		dashboard: 'View your API analytics',
 		monitor: 'Monitor your API uptime',
-		explorer: 'Explore your logged requests',
+		explorer: 'Explore your logged requests'
 	};
 
 	const buttonLabels: Record<typeof type, string> = {
 		dashboard: 'View',
 		monitor: 'View',
-		explorer: 'Explore',
+		explorer: 'Explore'
 	};
 
 	async function submit() {
@@ -66,13 +66,31 @@
 		<p class="subtitle">{subtitles[type]}</p>
 		<label class="input-label" for="api-key">
 			Enter API Key
-			<svg class="arrow" viewBox="240 170 320 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<g stroke-width="31" stroke="currentColor" stroke-linecap="square" transform="matrix(1,0,0,1,-4,0)">
-					<path d="M250 256.4Q413 180.4 550 556.4" marker-end="url(#arrowhead)"/>
+			<svg
+				class="arrow"
+				viewBox="240 170 320 400"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<g
+					stroke-width="31"
+					stroke="currentColor"
+					stroke-linecap="square"
+					transform="matrix(1,0,0,1,-4,0)"
+				>
+					<path d="M250 256.4Q413 180.4 550 556.4" marker-end="url(#arrowhead)" />
 				</g>
 				<defs>
-					<marker markerWidth="6" markerHeight="6" refX="3" refY="3" viewBox="0 0 6 6" orient="auto" id="arrowhead">
-						<polygon points="0,6 0,0 6,3" fill="currentColor"/>
+					<marker
+						markerWidth="6"
+						markerHeight="6"
+						refX="3"
+						refY="3"
+						viewBox="0 0 6 6"
+						orient="auto"
+						id="arrowhead"
+					>
+						<polygon points="0,6 0,0 6,3" fill="currentColor" />
 					</marker>
 				</defs>
 			</svg>

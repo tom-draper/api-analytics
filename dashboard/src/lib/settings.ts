@@ -1,4 +1,4 @@
-import { defaultPeriod, isPeriod, type Period } from "./period";
+import { defaultPeriod, isPeriod, type Period } from './period';
 
 export type DashboardSettings = {
 	disable404: boolean;
@@ -18,9 +18,9 @@ export type DashboardSettings = {
 	targetDeviceType: string | null;
 	targetOS: string | null;
 	targetUser: {
-		ipAddress: string,
-		userID: string,
-		composite: boolean
+		ipAddress: string;
+		userID: string;
+		composite: boolean;
 	} | null;
 	hiddenEndpoints: Set<string>;
 	ignoreParams: boolean;
@@ -86,7 +86,7 @@ export function initSettings(): DashboardSettings {
 		period: defaultPeriod,
 		targetEndpoint: {
 			path: null,
-			status: null,
+			status: null
 		},
 		targetReferrer: null,
 		targetLocation: null,
@@ -98,6 +98,6 @@ export function initSettings(): DashboardSettings {
 		targetOS: null,
 		targetUser: null,
 		hiddenEndpoints: new Set(),
-		ignoreParams: true,
+		ignoreParams: true
 	};
 }

@@ -2,7 +2,15 @@
 	import { renderPlot, sparklineData, sparklineLayout, type PlotlyDiv } from '$lib/plotly';
 	import { getPercentageChange } from '$lib/utils';
 
-	let { title, count, prevCount, buckets, perHour, tooltip, side = 'right' }: {
+	let {
+		title,
+		count,
+		prevCount,
+		buckets,
+		perHour,
+		tooltip,
+		side = 'right'
+	}: {
 		title: string;
 		count: number;
 		prevCount: number;
@@ -21,7 +29,12 @@
 	});
 </script>
 
-<button class="card" class:left={side === 'left'} onclick={() => (showPerHour = !showPerHour)} title={tooltip}>
+<button
+	class="card"
+	class:left={side === 'left'}
+	onclick={() => (showPerHour = !showPerHour)}
+	title={tooltip}
+>
 	{#if showPerHour}
 		<div class="card-title">
 			{title} <span class="per-hour">/ hour</span>

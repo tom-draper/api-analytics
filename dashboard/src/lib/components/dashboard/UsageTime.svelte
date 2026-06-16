@@ -45,10 +45,18 @@
 	}
 
 	function selectHour(hour: number) {
-		toggleParam('hour', hour, untrack(() => targetHour), (v) => (targetHour = v));
+		toggleParam(
+			'hour',
+			hour,
+			untrack(() => targetHour),
+			(v) => (targetHour = v)
+		);
 	}
 
-	let { hourlyBuckets, targetHour = $bindable<number | null>(null) }: {
+	let {
+		hourlyBuckets,
+		targetHour = $bindable<number | null>(null)
+	}: {
 		hourlyBuckets: number[];
 		targetHour: number | null;
 	} = $props();

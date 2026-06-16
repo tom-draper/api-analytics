@@ -5,7 +5,10 @@
 	import ActivityResponseTimes from './ActivityResponseTimes.svelte';
 	import ActivitySuccessRate from './ActivitySuccessRate.svelte';
 
-	let { activityBuckets, period }: {
+	let {
+		activityBuckets,
+		period
+	}: {
 		activityBuckets: ActivityBucket[];
 		period: Period;
 	} = $props();

@@ -31,8 +31,8 @@
 		'user_id:2345678901',
 		'response_time:>1000',
 		'response_time:<20',
-		'response_time:0',
-	]
+		'response_time:0'
+	];
 
 	function getPlaceholder() {
 		let placeholderExample = [];

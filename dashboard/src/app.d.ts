@@ -33,7 +33,7 @@ declare global {
 		string,
 		string,
 		Date,
-		string | null,
+		string | null
 	][];
 
 	type UserAgents = {
@@ -44,7 +44,7 @@ declare global {
 		status: number;
 		response_time: number;
 		created_at: Date | null;
-	}
+	};
 
 	type MonitorSample = {
 		status: number;
@@ -54,7 +54,7 @@ declare global {
 
 	type MonitorData = { [url: string]: RawMonitorSample[] };
 
-	type StatusLabel = "success" | "warning" | "error" | "no-request";
+	type StatusLabel = 'success' | 'warning' | 'error' | 'no-request';
 
 	// Monitor sample with label for status colour CSS class
 	type Sample = MonitorSample & { label: StatusLabel };
@@ -64,4 +64,4 @@ declare global {
 	};
 }
 
-export { };
+export {};

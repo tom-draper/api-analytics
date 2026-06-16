@@ -5,7 +5,11 @@
 		filterChange?.(value);
 	}
 
-	let { activeFilter, filterChange }: { activeFilter: EndpointFilterType; filterChange?: (value: EndpointFilterType) => void } = $props();
+	let {
+		activeFilter,
+		filterChange
+	}: { activeFilter: EndpointFilterType; filterChange?: (value: EndpointFilterType) => void } =
+		$props();
 </script>
 
 <div class="toggle">

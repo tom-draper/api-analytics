@@ -1,5 +1,5 @@
 import { serverURL } from './consts';
-import { page } from '$app/state'
+import { page } from '$app/state';
 
 function getSourceURL() {
 	const params = page.url.searchParams;

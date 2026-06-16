@@ -41,15 +41,37 @@
 		<h2 class="title">Generate API Key</h2>
 		<p class="subtitle">Get a free API key to start tracking your requests</p>
 
-		<label class="input-label" class:label-ready={status === 'copy' || status === 'copied'} for="api-key">
+		<label
+			class="input-label"
+			class:label-ready={status === 'copy' || status === 'copied'}
+			for="api-key"
+		>
 			Your API Key
-			<svg class="arrow" viewBox="240 170 320 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<g stroke-width="31" stroke="currentColor" stroke-linecap="square" transform="matrix(1,0,0,1,-4,0)">
-					<path d="M250 256.4Q413 180.4 550 556.4" marker-end="url(#arrowhead-gen)"/>
+			<svg
+				class="arrow"
+				viewBox="240 170 320 400"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<g
+					stroke-width="31"
+					stroke="currentColor"
+					stroke-linecap="square"
+					transform="matrix(1,0,0,1,-4,0)"
+				>
+					<path d="M250 256.4Q413 180.4 550 556.4" marker-end="url(#arrowhead-gen)" />
 				</g>
 				<defs>
-					<marker markerWidth="6" markerHeight="6" refX="3" refY="3" viewBox="0 0 6 6" orient="auto" id="arrowhead-gen">
-						<polygon points="0,6 0,0 6,3" fill="currentColor"/>
+					<marker
+						markerWidth="6"
+						markerHeight="6"
+						refX="3"
+						refY="3"
+						viewBox="0 0 6 6"
+						orient="auto"
+						id="arrowhead-gen"
+					>
+						<polygon points="0,6 0,0 6,3" fill="currentColor" />
 					</marker>
 				</defs>
 			</svg>
@@ -127,7 +149,10 @@
 		max-height: 0;
 		overflow: hidden;
 		opacity: 0;
-		transition: max-height 0.4s ease, opacity 0.4s, padding-top 0.4s;
+		transition:
+			max-height 0.4s ease,
+			opacity 0.4s,
+			padding-top 0.4s;
 	}
 	.keep-safe-visible {
 		max-height: 3em;

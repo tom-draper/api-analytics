@@ -89,7 +89,7 @@ const color = [
 	'#47d193',
 	'#99e6c3',
 	'#99e6c3',
-	'#99e6c3',
+	'#99e6c3'
 
 	// '#232222',
 	// '#242624',
@@ -102,12 +102,7 @@ const color = [
 ];
 
 function setCircleColor(circle) {
-	const d = distance(
-		circle.cx.baseVal.value,
-		circle.cy.baseVal.value,
-		500,
-		500,
-	);
+	const d = distance(circle.cx.baseVal.value, circle.cy.baseVal.value, 500, 500);
 	const p = Array(color.length).fill(0);
 	if (d < 80) {
 		p[0] = 6;

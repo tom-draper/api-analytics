@@ -24,7 +24,11 @@
 		e.stopImmediatePropagation();
 	}
 
-	let { show = $bindable(false), settings = $bindable(), exportCSV }: { show: boolean; settings: DashboardSettings; exportCSV: () => void } = $props();
+	let {
+		show = $bindable(false),
+		settings = $bindable(),
+		exportCSV
+	}: { show: boolean; settings: DashboardSettings; exportCSV: () => void } = $props();
 	let hiddenEndpoints = $state<Set<string>>(settings.hiddenEndpoints);
 
 	$effect(() => {
@@ -32,8 +36,22 @@
 	});
 </script>
 
-<div class="background" class:hidden={!show} role="presentation" onclick={hideSettings} onkeydown={(e) => e.key === 'Escape' && hideSettings()}>
-	<div class="container" role="dialog" aria-modal="true" aria-label="Settings" tabindex="-1" onclick={handleClick} onkeydown={handleClick}>
+<div
+	class="background"
+	class:hidden={!show}
+	role="presentation"
+	onclick={hideSettings}
+	onkeydown={(e) => e.key === 'Escape' && hideSettings()}
+>
+	<div
+		class="container"
+		role="dialog"
+		aria-modal="true"
+		aria-label="Settings"
+		tabindex="-1"
+		onclick={handleClick}
+		onkeydown={handleClick}
+	>
 		<h2 class="title">Settings</h2>
 		<div class="setting mb-2">
 			<div class="setting-label">Exclude status 404</div>
@@ -107,10 +125,16 @@
 				OS: <span>{settings.targetOS || 'None'}</span>
 			</div>
 			<div class="setting-filter" class:active={settings.targetWeekday !== null}>
-				Day: <span>{settings.targetWeekday !== null ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][settings.targetWeekday] : 'None'}</span>
+				Day: <span
+					>{settings.targetWeekday !== null
+						? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][settings.targetWeekday]
+						: 'None'}</span
+				>
 			</div>
 			<div class="setting-filter" class:active={settings.targetHour !== null}>
-				Hour: <span>{settings.targetHour !== null ? `${settings.targetHour}:00` : 'None'}</span>
+				Hour: <span
+					>{settings.targetHour !== null ? `${settings.targetHour}:00` : 'None'}</span
+				>
 			</div>
 			<div class="setting-filter" class:active={settings.targetReferrer}>
 				Referrer: <span>{settings.targetReferrer || 'None'}</span>

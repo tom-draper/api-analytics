@@ -4,7 +4,13 @@
 	import { toggleParam } from '$lib/params';
 	import { untrack } from 'svelte';
 
-	let { uaIdCount, userAgents, getter, paramKey, target = $bindable<string | null>(null) }: {
+	let {
+		uaIdCount,
+		userAgents,
+		getter,
+		paramKey,
+		target = $bindable<string | null>(null)
+	}: {
 		uaIdCount: { [id: number]: number };
 		userAgents: UserAgents;
 		getter: (userAgent: string | null) => string;
@@ -16,13 +22,23 @@
 	const colorMap = new Map<string, string>();
 
 	function selectLabel(label: string) {
-		toggleParam(paramKey, label, untrack(() => target), (v) => (target = v));
+		toggleParam(
+			paramKey,
+			label,
+			untrack(() => target),
+			(v) => (target = v)
+		);
 	}
 
 	$effect(() => {
 		if (!plotDiv || !uaIdCount) return;
 
-		renderDonut(plotDiv, buildDonutData(uaIdCount, userAgents, getter, graphColors, target, colorMap), 411, selectLabel);
+		renderDonut(
+			plotDiv,
+			buildDonutData(uaIdCount, userAgents, getter, graphColors, target, colorMap),
+			411,
+			selectLabel
+		);
 	});
 </script>
 

@@ -4,7 +4,10 @@
 	import type { DashboardSettings } from '$lib/settings';
 	import BarList from './BarList.svelte';
 
-	let { userIDBars, targetUser = $bindable<DashboardSettings['targetUser']>(null) }: {
+	let {
+		userIDBars,
+		targetUser = $bindable<DashboardSettings['targetUser']>(null)
+	}: {
 		userIDBars: UserIDBar[];
 		targetUser: DashboardSettings['targetUser'];
 	} = $props();

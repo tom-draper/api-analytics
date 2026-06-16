@@ -4,23 +4,24 @@
 	<div class="text-[var(--dim-text)]">Last updated: 2025-01-28</div>
 
 	<p>
-		API Analytics ("we," "us," or "our") is committed to protecting the privacy of our users. This
-		Privacy Policy explains how we collect, use, and share information when you use our analytics
-		service ("Service") and outlines your rights regarding your personal data.
+		API Analytics ("we," "us," or "our") is committed to protecting the privacy of our users.
+		This Privacy Policy explains how we collect, use, and share information when you use our
+		analytics service ("Service") and outlines your rights regarding your personal data.
 	</p>
 
 	<div class="important">
 		<p>
-			By using our Service, you acknowledge that you have read and understood this Privacy Policy.
-			If you disagree with any aspect of these terms, please discontinue use of the Service.
+			By using our Service, you acknowledge that you have read and understood this Privacy
+			Policy. If you disagree with any aspect of these terms, please discontinue use of the
+			Service.
 		</p>
 	</div>
 
 	<h2>1. Information We Collect</h2>
 
 	<p>
-		Through our API middleware package, we automatically collect the following data points for each
-		API request:
+		Through our API middleware package, we automatically collect the following data points for
+		each API request:
 	</p>
 
 	<ul>
@@ -54,28 +55,28 @@
 		<li><strong>Level 2:</strong> IP addresses are never accessed or collected.</li>
 	</ul>
 	<p>
-		You can adjust the privacy level at any time through the API Analytics middleware configuration
-		settings.
+		You can adjust the privacy level at any time through the API Analytics middleware
+		configuration settings.
 	</p>
 
 	<h4>Optional Custom User ID Field</h4>
 	<p>
-		An optional custom user identifier text field can be configured to store additional data related
-		to the request. The data captured by this field is fully defined by you within the API Analytics
-		middleware settings.
+		An optional custom user identifier text field can be configured to store additional data
+		related to the request. The data captured by this field is fully defined by you within the
+		API Analytics middleware settings.
 	</p>
 
 	<h4>Responsibility for Data Submission</h4>
 	<p>
-		As the operator of your API, you are solely responsible for ensuring that the submission of any
-		client IP addresses or other personal data to the Service complies with all applicable laws and
-		regulations, including but not limited to data protection and privacy laws in your jurisdiction
-		and the jurisdictions of your API's users.
+		As the operator of your API, you are solely responsible for ensuring that the submission of
+		any client IP addresses or other personal data to the Service complies with all applicable
+		laws and regulations, including but not limited to data protection and privacy laws in your
+		jurisdiction and the jurisdictions of your API's users.
 	</p>
 	<p>
-		If collecting and submitting IP addresses is prohibited in your use case or under local laws,
-		you must configure the privacy level appropriately (Level 1 or Level 2) to disable IP address
-		access and storage.
+		If collecting and submitting IP addresses is prohibited in your use case or under local
+		laws, you must configure the privacy level appropriately (Level 1 or Level 2) to disable IP
+		address access and storage.
 	</p>
 
 	<h2>2. How We Use Information</h2>
@@ -83,8 +84,8 @@
 	<p>We use the information we collect to provide, maintain, and improve the Service.</p>
 
 	<p>
-		Other than this use, stored data is only every used to populate the dashboard on your access, or
-		returned to you via the data API on request.
+		Other than this use, stored data is only every used to populate the dashboard on your
+		access, or returned to you via the data API on request.
 	</p>
 
 	<h2>3. Sharing and Disclosure of Information</h2>
@@ -97,10 +98,10 @@
 
 	<h2>4. Account Management and Data Access</h2>
 	<p>
-		Account creation and managament for the Service is handled solely through a UUID API key. This
-		key is required to log API requests, access your dashboard, or retrieve raw data.
-		<strong>If you lose your API key, you will be unable to access your associated data.</strong> Please
-		ensure you securely store your API key.
+		Account creation and managament for the Service is handled solely through a UUID API key.
+		This key is required to log API requests, access your dashboard, or retrieve raw data.
+		<strong>If you lose your API key, you will be unable to access your associated data.</strong
+		> Please ensure you securely store your API key.
 	</p>
 
 	<h2>5. Data Retention</h2>
@@ -117,13 +118,13 @@
 	</p>
 
 	<p>
-		Accounts and associated data will be deleted automatically after a period of inactivity. This is
-		triggered when one of the two following conditions are met:
+		Accounts and associated data will be deleted automatically after a period of inactivity.
+		This is triggered when one of the two following conditions are met:
 	</p>
 	<ul>
 		<li>
-			Six months have passed since the last data access, via the API Analytics dashboard or data
-			API, or
+			Six months have passed since the last data access, via the API Analytics dashboard or
+			data API, or
 		</li>
 		<li>Three months have passed since the most recent logged request.</li>
 	</ul>
@@ -137,20 +138,20 @@
 	</p>
 
 	<p>
-		While we make every effort to ensure the security of your data, no method of transmission over
-		the Internet or method of electronic storage is completely secure. Therefore, we cannot
+		While we make every effort to ensure the security of your data, no method of transmission
+		over the Internet or method of electronic storage is completely secure. Therefore, we cannot
 		guarantee its absolute security.
 	</p>
 	<p>
-		We recommend that you also take precautions to protect your data, including keeping your API key
-		confidential.
+		We recommend that you also take precautions to protect your data, including keeping your API
+		key confidential.
 	</p>
 
 	<h2>7. Changes to This Privacy Policy</h2>
 	<p>
-		We may update this Privacy Policy periodically to reflect changes in our practices or for legal,
-		operational, or regulatory reasons. We encourage you to review this Privacy Policy periodically
-		for any updates.
+		We may update this Privacy Policy periodically to reflect changes in our practices or for
+		legal, operational, or regulatory reasons. We encourage you to review this Privacy Policy
+		periodically for any updates.
 	</p>
 </div>
 

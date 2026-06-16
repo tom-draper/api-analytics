@@ -35,14 +35,25 @@
 		if (page.length < pageSize) {
 			const length = page.length;
 			for (let i = 0; i < pageSize - length; i++) {
-				const row: Page[number] = [null, null, null, null, null, null, null, null, null, null, null];
+				const row: Page[number] = [
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null
+				];
 				page.push(row);
 			}
 		}
 
 		return page;
 	}
-
 </script>
 
 <div class="min-h-[inherit] flex flex-col">
@@ -69,10 +80,12 @@
 							statusSuccess(request[ColumnIndex.Status])}
 						class:success-border={request[ColumnIndex.Status] &&
 							statusSuccess(request[ColumnIndex.Status])}
-						class:warn-bg={request[ColumnIndex.Status] && statusBad(request[ColumnIndex.Status])}
+						class:warn-bg={request[ColumnIndex.Status] &&
+							statusBad(request[ColumnIndex.Status])}
 						class:warn-border={request[ColumnIndex.Status] &&
 							statusBad(request[ColumnIndex.Status])}
-						class:error-bg={request[ColumnIndex.Status] && statusError(request[ColumnIndex.Status])}
+						class:error-bg={request[ColumnIndex.Status] &&
+							statusError(request[ColumnIndex.Status])}
 						class:error-border={request[ColumnIndex.Status] &&
 							statusError(request[ColumnIndex.Status])}
 						class:bottom-row={i === page.length - 1}
@@ -102,18 +115,29 @@
 							class:text-[var(--red)]={request[ColumnIndex.Status] &&
 								statusError(request[ColumnIndex.Status])}
 							class:text-[var(--yellow)]={request[ColumnIndex.Status] &&
-								statusBad(request[ColumnIndex.Status])}>{request[ColumnIndex.Status]}</td
+								statusBad(request[ColumnIndex.Status])}
+							>{request[ColumnIndex.Status]}</td
 						>
-						<td class="text-[var(--faint-text)] flex-1 flex items-center justify-start">{request[ColumnIndex.Hostname]}</td>
-						<td class="text-[var(--faint-text)] flex-1 flex items-center justify-start">{request[ColumnIndex.Path]}</td>
+						<td class="text-[var(--faint-text)] flex-1 flex items-center justify-start"
+							>{request[ColumnIndex.Hostname]}</td
+						>
+						<td class="text-[var(--faint-text)] flex-1 flex items-center justify-start"
+							>{request[ColumnIndex.Path]}</td
+						>
 						<td class="flex-none w-16 flex items-center justify-start"
 							>{request[ColumnIndex.Method] !== null
 								? methodMap[request[ColumnIndex.Method]]
 								: null}</td
 						>
-						<td class="flex-1 flex items-center justify-start">{request[ColumnIndex.IPAddress]}</td>
-						<td class="flex-1 flex items-center justify-start">{request[ColumnIndex.UserID]}</td>
-						<td class="flex-1 flex items-center justify-start">{request[ColumnIndex.ResponseTime]}</td>
+						<td class="flex-1 flex items-center justify-start"
+							>{request[ColumnIndex.IPAddress]}</td
+						>
+						<td class="flex-1 flex items-center justify-start"
+							>{request[ColumnIndex.UserID]}</td
+						>
+						<td class="flex-1 flex items-center justify-start"
+							>{request[ColumnIndex.ResponseTime]}</td
+						>
 					</tr>
 				{/each}
 			{/if}
@@ -123,7 +147,9 @@
 		<div class="ml-auto flex gap-2">
 			{#if data && data.length}
 				<div class="content-center px-1">
-					Page {pageNumber} of {data ? Math.ceil(data.length / pageSize).toLocaleString() : 0}
+					Page {pageNumber} of {data
+						? Math.ceil(data.length / pageSize).toLocaleString()
+						: 0}
 				</div>
 				<button
 					class="px-1 py-2 hover:text-[var(--faded-text)] disabled:text-[var(--dim-text)]"
@@ -223,7 +249,10 @@
 		cursor: pointer;
 	}
 	.success-bg {
-		background: radial-gradient(rgba(var(--highlight-rgb), 0.03), rgba(var(--highlight-rgb), 0.05));
+		background: radial-gradient(
+			rgba(var(--highlight-rgb), 0.03),
+			rgba(var(--highlight-rgb), 0.05)
+		);
 	}
 	.warn-bg {
 		background: radial-gradient(rgba(var(--yellow-rgb), 0.14), rgba(var(--yellow-rgb), 0.18));

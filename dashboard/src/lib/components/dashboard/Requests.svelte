@@ -3,7 +3,14 @@
 	import { countPerHour } from '$lib/utils';
 	import MetricCard from './MetricCard.svelte';
 
-	let { buckets, count, prevCount, firstDate, lastDate, period }: {
+	let {
+		buckets,
+		count,
+		prevCount,
+		firstDate,
+		lastDate,
+		period
+	}: {
 		buckets: number[];
 		count: number;
 		prevCount: number;

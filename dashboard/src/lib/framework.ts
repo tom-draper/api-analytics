@@ -15,7 +15,7 @@ const frameworkExamples: FrameworkExamples = {
 MIDDLEWARE = [
     'api_analytics.django.Analytics',
     ...
-]`,
+]`
 	},
 	Flask: {
 		install: 'pip install api-analytics[flask]',
@@ -30,11 +30,11 @@ def root():
     return {'message': 'Hello, World!'}
 
 if __name__ == '__main__':
-    app.run()`,
+    app.run()`
 	},
 	FastAPI: {
 		install: 'pip install api-analytics[fastapi]',
-	    example: `import uvicorn
+		example: `import uvicorn
 from fastapi import FastAPI
 from api_analytics.fastapi import Analytics
 
@@ -46,7 +46,7 @@ async def root():
     return {'message': 'Hello, World!'}
 
 if __name__ == '__main__':
-    uvicorn.run('app:app', reload=True)`,
+    uvicorn.run('app:app', reload=True)`
 	},
 	Tornado: {
 		install: 'pip install api-analytics[tornado]',
@@ -70,7 +70,7 @@ def make_app():
 if __name__ == '__main__':
     app = make_app()
     app.listen(8080)
-    IOLoop.instance().start()`,
+    IOLoop.instance().start()`
 	},
 	Express: {
 		install: 'npm install @api-analytics/express',
@@ -87,7 +87,7 @@ app.get('/', (req, res) => {
 
 app.listen(8080, () => {
     console.log('Server listening at http://localhost:8080');
-});`,
+});`
 	},
 	Fastify: {
 		install: 'npm install @api-analytics/fastify',
@@ -108,7 +108,7 @@ fastify.listen({ port: 8080 }, (err) => {
         process.exit(1);
     }
     console.log('Server listening at http://localhost:8080');
-});`,
+});`
 	},
 	Koa: {
 		install: 'npm install @api-analytics/koa',
@@ -125,7 +125,7 @@ app.use((ctx) => {
 
 app.listen(8080, () => {
     console.log('Server listening at http://localhost:8080');
-});`,
+});`
 	},
 	Hono: {
 		install: 'npm install @api-analytics/hono',
@@ -141,11 +141,10 @@ app.get('/', (c) => c.json({ message: 'Hello World!' }));
 
 serve(app, (info) => {
     console.log('Server listening at http://localhost:' + info.port);
-});`,
+});`
 	},
 	Gin: {
-		install:
-			'go get -u github.com/tom-draper/api-analytics/analytics/go/gin',
+		install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/gin',
 		example: `package main
 
 import(
@@ -168,11 +167,10 @@ func main() {
 
     r.GET("/", root)
     r.Run(":8080")
-}`,
+}`
 	},
 	Echo: {
-		install:
-			'go get -u github.com/tom-draper/api-analytics/analytics/go/echo',
+		install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/echo',
 		example: `package main
 
 import (
@@ -195,11 +193,10 @@ func main() {
 
     e.GET("/", root)
     e.Start(":8080")
-}`,
+}`
 	},
 	Fiber: {
-		install:
-			'go get -u github.com/tom-draper/api-analytics/analytics/go/fiber',
+		install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/fiber',
 		example: `package main
 
 import (
@@ -221,11 +218,10 @@ func main() {
 
     app.Get("/", root)
     app.Listen(":8080")
-}`,
+}`
 	},
 	Chi: {
-		install:
-			'go get -u github.com/tom-draper/api-analytics/analytics/go/chi',
+		install: 'go get -u github.com/tom-draper/api-analytics/analytics/go/chi',
 		example: `package main
 
 import (
@@ -256,7 +252,7 @@ func main() {
 
     r.Get("/", root)
     http.ListenAndServe(":8080", r)
-}`,
+}`
 	},
 	Actix: {
 		install: 'cargo add actix-analytics',
@@ -287,7 +283,7 @@ async fn main() -> std::io::Result<()> {
     .bind(("127.0.0.1", 8080))?
     .run()
     .await
-}`,
+}`
 	},
 	Axum: {
 		install: 'cargo add axum-analytics',
@@ -317,7 +313,7 @@ async fn main() {
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
-}`,
+}`
 	},
 	Rocket: {
 		install: 'cargo add rocket-analytics',
@@ -345,7 +341,7 @@ fn rocket() -> _ {
     rocket::build()
         .mount("/", routes![root])
         .attach(Analytics::new(<API-KEY>))  // Add middleware
-}`,
+}`
 	},
 	Rails: {
 		install: 'gem install api_analytics',
@@ -362,7 +358,7 @@ module RailsMiddleware
 
     config.middleware.use ::Analytics::Rails, <API-KEY> # Add middleware
   end
-end`,
+end`
 	},
 	Sinatra: {
 		install: 'gem install api_analytics',
@@ -377,7 +373,7 @@ end
 
 get '/' do
     {message: 'Hello, World!'}.to_json
-end`,
+end`
 	},
 	Laravel: {
 		install: 'composer require api-analytics/laravel',
@@ -385,7 +381,7 @@ end`,
 		example: `protected $middleware = [
     \\ApiAnalytics\\Laravel\\AnalyticsMiddleware::class,
     ...
-]`,
+]`
 	},
 	'ASP.NET Core': {
 		install: 'dotnet add package APIAnalytics.AspNetCore',
@@ -399,18 +395,30 @@ app.UseAnalytics(<API-KEY>); // Add middleware
 
 app.MapGet("/", () => Results.Ok(new { message = "Hello, World!" }));
 
-app.Run();`,
-	},
+app.Run();`
+	}
 };
 
 export default frameworkExamples;
 
 export const frameworkLanguages: Record<string, string> = {
-	FastAPI: 'python', Flask: 'python', Django: 'python', Tornado: 'python',
-	Express: 'javascript', Fastify: 'javascript', Koa: 'javascript', Hono: 'javascript',
-	Gin: 'go', Echo: 'go', Fiber: 'go', Chi: 'go',
-	Actix: 'rust', Axum: 'rust', Rocket: 'rust',
-	Rails: 'ruby', Sinatra: 'ruby',
+	FastAPI: 'python',
+	Flask: 'python',
+	Django: 'python',
+	Tornado: 'python',
+	Express: 'javascript',
+	Fastify: 'javascript',
+	Koa: 'javascript',
+	Hono: 'javascript',
+	Gin: 'go',
+	Echo: 'go',
+	Fiber: 'go',
+	Chi: 'go',
+	Actix: 'rust',
+	Axum: 'rust',
+	Rocket: 'rust',
+	Rails: 'ruby',
+	Sinatra: 'ruby',
 	Laravel: 'php',
-	'ASP.NET Core': 'csharp',
+	'ASP.NET Core': 'csharp'
 };

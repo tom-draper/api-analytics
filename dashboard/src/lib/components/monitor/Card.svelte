@@ -195,7 +195,23 @@
 		return false;
 	}
 
-	let { url, data, userID, period, anyError = $bindable(false), notification = $bindable(), removeMonitor }: { url: string; data: MonitorData; userID: string; period: MonitorPeriod; anyError: boolean; notification: NotificationState; removeMonitor: (url: string) => void } = $props();
+	let {
+		url,
+		data,
+		userID,
+		period,
+		anyError = $bindable(false),
+		notification = $bindable(),
+		removeMonitor
+	}: {
+		url: string;
+		data: MonitorData;
+		userID: string;
+		period: MonitorPeriod;
+		anyError: boolean;
+		notification: NotificationState;
+		removeMonitor: (url: string) => void;
+	} = $props();
 
 	let uptime = $state<number | null>(null);
 	let currentStatus = $state<'success' | 'error' | 'no-request'>('no-request');
@@ -229,7 +245,8 @@
 				></div>
 			</div>
 			<a href="{separatedURL.prefix}{separatedURL.body}" target="_blank" class="endpoint"
-				><span class="text-[var(--dim-text)]">{separatedURL.prefix}</span>{separatedURL.body}</a
+				><span class="text-[var(--dim-text)]">{separatedURL.prefix}</span
+				>{separatedURL.body}</a
 			>
 			<button
 				class="delete"

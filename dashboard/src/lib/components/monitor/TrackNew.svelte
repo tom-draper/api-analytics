@@ -63,7 +63,19 @@
 		}
 	}
 
-	let { userID, showTrackNew = $bindable(false), monitorCount, notification = $bindable(), addEmptyMonitor }: { userID: string; showTrackNew: boolean; monitorCount: number; notification: NotificationState; addEmptyMonitor: (url: string) => void } = $props();
+	let {
+		userID,
+		showTrackNew = $bindable(false),
+		monitorCount,
+		notification = $bindable(),
+		addEmptyMonitor
+	}: {
+		userID: string;
+		showTrackNew: boolean;
+		monitorCount: number;
+		notification: NotificationState;
+		addEmptyMonitor: (url: string) => void;
+	} = $props();
 
 	let monitorURL = $state('');
 	const options = ['https', 'http'];

@@ -19,7 +19,8 @@
 		];
 	}
 
-	let { activityBuckets, period }: { activityBuckets: ActivityBucket[]; period: Period } = $props();
+	let { activityBuckets, period }: { activityBuckets: ActivityBucket[]; period: Period } =
+		$props();
 
 	const data = $derived(bars(activityBuckets, period));
 	const layout = $derived(activityLayout(period, 'Response time (ms)'));

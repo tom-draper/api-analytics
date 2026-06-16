@@ -6,7 +6,13 @@ import type { DashboardSettings } from '$lib/settings';
 
 type WorkerMessage =
 	| { type: 'init'; requests: RequestsData; userAgents: UserAgents; settings: DashboardSettings }
-	| { type: 'append'; requests: RequestsData; userAgents: UserAgents; reaggregate: boolean; settings: DashboardSettings }
+	| {
+			type: 'append';
+			requests: RequestsData;
+			userAgents: UserAgents;
+			reaggregate: boolean;
+			settings: DashboardSettings;
+	  }
 	| { type: 'filter'; settings: DashboardSettings }
 	| { type: 'export' };
 
@@ -17,7 +23,9 @@ let cachedCurrent: RequestsData = [];
 
 function parseDates(requests: RequestsData): void {
 	for (let i = 0; i < requests.length; i++) {
-		requests[i][ColumnIndex.CreatedAt] = new Date(requests[i][ColumnIndex.CreatedAt] as unknown as string);
+		requests[i][ColumnIndex.CreatedAt] = new Date(
+			requests[i][ColumnIndex.CreatedAt] as unknown as string
+		);
 	}
 }
 

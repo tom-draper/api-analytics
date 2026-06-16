@@ -7,7 +7,13 @@
 		selected: boolean;
 	};
 
-	let { title, rows, onSelect, minHeight = '300px', marginTop = '0' }: {
+	let {
+		title,
+		rows,
+		onSelect,
+		minHeight = '300px',
+		marginTop = '0'
+	}: {
 		title: string;
 		rows: BarRow[];
 		onSelect: (value: string) => void;
@@ -21,7 +27,11 @@
 	<div class="list">
 		{#each rows as row}
 			<div class="row-container">
-				<button class="row" class:selected={row.selected} onclick={() => onSelect(row.value)}>
+				<button
+					class="row"
+					class:selected={row.selected}
+					onclick={() => onSelect(row.value)}
+				>
 					<div class="label">
 						<span class="font-semibold">{row.count.toLocaleString()}</span>
 						{row.label}

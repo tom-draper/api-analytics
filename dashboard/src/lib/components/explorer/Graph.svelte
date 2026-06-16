@@ -43,7 +43,9 @@
 			}
 		}
 
-		const requestFreqArr = Object.entries(requestFreq).sort((a, b) => Number(a[0]) - Number(b[0]));
+		const requestFreqArr = Object.entries(requestFreq).sort(
+			(a, b) => Number(a[0]) - Number(b[0])
+		);
 		const dates = requestFreqArr.map((value) => new Date(parseInt(value[0])));
 		const requests = requestFreqArr.map((value) => value[1]);
 		const requestsText = requests.map((count) => `${count} requests`);

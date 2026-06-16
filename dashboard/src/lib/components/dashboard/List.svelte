@@ -25,7 +25,10 @@
 		}
 	}
 
-	let { items = $bindable(new Set<string>()), placeholder }: { items: Set<string>; placeholder: string } = $props();
+	let {
+		items = $bindable(new Set<string>()),
+		placeholder
+	}: { items: Set<string>; placeholder: string } = $props();
 	let input = $state<HTMLInputElement | undefined>(undefined);
 	const hideOptions: boolean = true;
 </script>
@@ -58,7 +61,11 @@
 							stroke="currentColor"
 							class="size-6"
 						>
-							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								d="M6 18 18 6M6 6l12 12"
+							/>
 						</svg>
 					</button>
 					<div class="item-text">
