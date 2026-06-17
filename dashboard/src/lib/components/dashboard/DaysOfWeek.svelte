@@ -37,7 +37,7 @@
 <div class="card">
 	<div class="card-title">Day of week</div>
 	<div class="bars">
-		{#each bars as bar}
+		{#each bars as bar (bar.dayIdx)}
 			<div class="bar-container">
 				<button
 					aria-label={bar.label}

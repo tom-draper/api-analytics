@@ -65,13 +65,13 @@
 			options={hostnames.slice(0, 25)}
 			bind:selected={selectedHostname}
 			bind:open={dropdownOpen}
-			defaultOption={'All hostnames'}
+			defaultOption="All hostnames"
 		/>
 	</div>
 	<div
 		class="nav-btn time-period flex overflow-hidden rounded-[4px] border border-[var(--border)]"
 	>
-		{#each timePeriods as period}
+		{#each timePeriods as period (period)}
 			<button
 				class="time-period-btn cursor-pointer border-none bg-[var(--background)] px-[12px] py-[4px] text-[var(--dim-text)]"
 				class:time-period-btn-active={settings.period === period}

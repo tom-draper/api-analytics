@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
-	import generateDemoData from '$lib/demo';
 	import formatUUID from '$lib/uuid';
 	import { ColumnIndex, pageSize } from '$lib/consts';
 	import { getServerURL } from '$lib/url';

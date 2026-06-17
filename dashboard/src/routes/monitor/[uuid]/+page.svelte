@@ -195,7 +195,7 @@
 			</div>
 			<div class="period-controls-container text-sm">
 				<div class="period-controls">
-					{#each periods as p}
+					{#each periods as p (p)}
 						<button
 							class="period-btn"
 							class:active={period === p}
@@ -219,7 +219,7 @@
 					{addEmptyMonitor}
 				/>
 			{/if}
-			{#each Object.keys(data).sort() as url}
+			{#each Object.keys(data).sort() as url (url)}
 				<Card
 					{url}
 					{data}

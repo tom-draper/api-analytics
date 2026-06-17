@@ -60,7 +60,7 @@
 			{selected || defaultOption}
 		</button>
 		<div class="options" class:hidden={!open}>
-			{#each [defaultOption, ...options] as option, i}
+			{#each [defaultOption, ...options] as option, i (i)}
 				{#if option !== selected && option !== null && (selected !== null || option !== defaultOption)}
 					<button
 						class="option"

@@ -67,7 +67,7 @@
 <div class="add-middleware">
 	<div class="add-middleware-title">Getting Started</div>
 	<div class="frameworks">
-		{#each frameworks as { language, framework }}
+		{#each frameworks as { language, framework } (framework)}
 			<button
 				class="framework {language}"
 				class:active={currentFramework.framework === framework}
@@ -81,8 +81,9 @@
 		<div class="instructions-container">
 			<div class="instructions">
 				<div class="subtitle">Install</div>
-				{#each frameworks as { framework }}
+				{#each frameworks as { framework } (framework)}
 					<div class:hidden={currentFramework.framework !== framework}>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -- trusted Shiki-highlighted code -->
 						{@html highlighted[framework]?.install ?? ''}
 					</div>
 				{/each}
@@ -90,8 +91,9 @@
 				<div class="code-file">
 					{frameworkExamples[currentFramework.framework].codeFile ?? ''}
 				</div>
-				{#each frameworks as { framework }}
+				{#each frameworks as { framework } (framework)}
 					<div class:hidden={currentFramework.framework !== framework}>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -- trusted Shiki-highlighted code -->
 						{@html highlighted[framework]?.example ?? ''}
 					</div>
 				{/each}

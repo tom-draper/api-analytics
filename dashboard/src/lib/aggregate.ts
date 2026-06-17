@@ -381,7 +381,7 @@ export function aggregate(
 
 		// 10. Top users (data is sorted ascending so last seen is always most recent)
 		if (userID) {
-			let user = users[userID];
+			const user = users[userID];
 			if (user) {
 				user.requests++;
 				if (location) user.locations[location] = (user.locations[location] || 0) + 1;

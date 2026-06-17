@@ -44,7 +44,7 @@
 			onkeydown={handleInputKeyDown}
 		/>
 		<div class="items" class:hidden={hideOptions}>
-			{#each Array.from(items) as item, _}
+			{#each Array.from(items) as item (item)}
 				<div class="item">
 					<button
 						class="remove-btn"

@@ -142,7 +142,7 @@
 		</div>
 		<div class="setting-title">Hidden endpoints:</div>
 		<div class="setting mb-4">
-			<List bind:items={hiddenEndpoints} placeholder={'/api/v1/example'} />
+			<List bind:items={hiddenEndpoints} placeholder="/api/v1/example" />
 		</div>
 		<div class="export-csv">
 			<button class="export-csv-btn" onclick={exportCSV} title="Export data to CSV"

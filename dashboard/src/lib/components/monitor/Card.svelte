@@ -269,7 +269,7 @@
 	</div>
 	{#if samples.length > 0}
 		<div class="measurements">
-			{#each samples as sample}
+			{#each samples as sample, i (i)}
 				<div class="measurement {sample.label}" title={getTitle(sample)}></div>
 			{/each}
 		</div>

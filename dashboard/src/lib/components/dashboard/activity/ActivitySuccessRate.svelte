@@ -28,7 +28,7 @@
 	{#if successRate != undefined}
 		<div class="success-rate-title">Success rate</div>
 		<div class="errors">
-			{#each successRate as { value, date, requestCount }}
+			{#each successRate as { value, date, requestCount } (date)}
 				<div
 					class="error level-{requestCount === 0
 						? 0

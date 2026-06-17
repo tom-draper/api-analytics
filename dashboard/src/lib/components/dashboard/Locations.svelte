@@ -31,7 +31,7 @@
 			{locationBars.length} location{locationBars.length > 1 ? 's' : ''}
 		</div>
 		<div class="bars">
-			{#each locationBars.slice(0, 12) as location}
+			{#each locationBars.slice(0, 12) as location (location.location)}
 				<div class="bar-container">
 					<button
 						aria-label="location"

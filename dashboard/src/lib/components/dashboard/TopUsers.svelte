@@ -93,6 +93,8 @@
 	);
 
 	$effect(() => {
+		// Reset to the first page whenever the user list changes
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		users;
 		pageNumber = 1;
 	});
@@ -124,7 +126,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each dataPage as { ipAddress, customUserID, requests, locations, lastRequested }, i}
+					{#each dataPage as { ipAddress, customUserID, requests, locations, lastRequested }, i (ipAddress + customUserID)}
 						<tr
 							class="highlight-row"
 							class:highlighted-row={targetUser !== null &&

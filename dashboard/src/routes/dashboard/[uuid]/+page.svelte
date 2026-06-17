@@ -17,7 +17,7 @@
 	import generateDemoData from '$lib/demo';
 	import formatUUID from '$lib/uuid';
 	import Settings from '$components/dashboard/Settings.svelte';
-	import { initSettings, parseSettingsFromURL, type DashboardSettings } from '$lib/settings';
+	import { parseSettingsFromURL } from '$lib/settings';
 	import type { NotificationState } from '$lib/notification';
 	import Notification from '$components/dashboard/Notification.svelte';
 	import exportCSV from '$lib/exportData';
@@ -28,7 +28,6 @@
 	import Navigation from '$components/dashboard/Navigation.svelte';
 	import { dataStore } from '$lib/dataStore';
 	import Referrers from '$components/dashboard/Referrers.svelte';
-	import UserIDList from '$components/dashboard/UserIDList.svelte';
 	import Loading from '$components/Loading.svelte';
 	import { get } from 'svelte/store';
 	import { untrack } from 'svelte';
@@ -306,7 +305,7 @@
 				<Loading />
 			</div>
 			<div class="loading-text-container">
-				{#each loadingMessages as message, i}
+				{#each loadingMessages as message (message)}
 					<div class="loading-text">{message}</div>
 				{/each}
 			</div>

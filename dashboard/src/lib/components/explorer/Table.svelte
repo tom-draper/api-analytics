@@ -73,7 +73,7 @@
 		</thead>
 		<tbody class="flex-1 flex flex-col">
 			{#if page}
-				{#each page as request, i}
+				{#each page as request, i (i)}
 					<tr
 						class="text-[14px] flex w-full flex-1"
 						class:success-bg={request[ColumnIndex.Status] &&

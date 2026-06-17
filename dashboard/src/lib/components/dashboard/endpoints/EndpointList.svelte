@@ -18,7 +18,7 @@
 </script>
 
 <div class="endpoints">
-	{#each endpoints as endpoint, i}
+	{#each endpoints as endpoint, i (endpoint.path + endpoint.status)}
 		<div class="endpoint-container flex">
 			<button
 				class="endpoint"

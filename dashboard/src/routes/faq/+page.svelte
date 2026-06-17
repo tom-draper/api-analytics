@@ -11,7 +11,7 @@
 <div class="info-page-container">
 	<h1>Frequently Asked Questions</h1>
 
-	{#each data.faq as item, i}
+	{#each data.faq as item, i (i)}
 		<div class="mb-4">
 			<button class="question-btn" on:click={() => toggleAnswer(i)}>
 				<div class="m-auto flex-1">
@@ -52,6 +52,7 @@
 				</div>
 			</button>
 			<div class="answer" class:hidden={!showing[i]}>
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -- trusted FAQ content -->
 				{@html item.answer}
 			</div>
 		</div>

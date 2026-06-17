@@ -7,9 +7,9 @@
 	import { page } from '$app/state';
 	import { formatPath } from '$lib/path';
 
-	export let data;
+	let { data } = $props();
 
-	$: params = page.url.searchParams.toString();
+	const params = $derived(page.url.searchParams.toString());
 </script>
 
 <div class="home">

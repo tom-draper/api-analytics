@@ -25,7 +25,7 @@
 <div class="card" style="--bar-min-height: {minHeight}; --bar-margin-top: {marginTop};">
 	<div class="card-title">{title}</div>
 	<div class="list">
-		{#each rows as row}
+		{#each rows as row (row.value)}
 			<div class="row-container">
 				<button
 					class="row"
