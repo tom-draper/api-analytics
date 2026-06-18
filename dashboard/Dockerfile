@@ -2,22 +2,24 @@
 FROM node:20-alpine AS builder
 
 WORKDIR /app
+RUN corepack enable
 
-# Copy dependency files
-COPY package.json package-lock.json ./
-RUN npm ci
-ENV PATH="/app/node_modules/.bin:$PATH"
+# Install dependencies (pnpm, per package.json "packageManager")
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
+# Backend URL baked into the build (see vite.config.ts / src/lib/url.ts).
 ARG SERVER_URL
-ENV VITE_SERVER_URL=$SERVER_URL
+ENV SERVER_URL=$SERVER_URL
+# Optional base path when serving the dashboard under a sub-path (e.g. /api-analytics).
 ARG RELATIVE_DASHBOARD_URL
 ENV VITE_RELATIVE_DASHBOARD_URL=$RELATIVE_DASHBOARD_URL
 
-# Copy the rest of the project files
-COPY . .
+# Build a standalone Node server
+ENV ADAPTER=node
 
-# Build the application
-RUN npm run build
+COPY . .
+RUN pnpm build
 
 # Production stage
 FROM node:20-alpine AS production
@@ -26,14 +28,12 @@ FROM node:20-alpine AS production
 RUN apk add --no-cache curl
 
 WORKDIR /app
+RUN corepack enable
 
-# Copy built output from build stage
+# Copy built output and install production dependencies only
 COPY --from=builder /app/build ./build
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/package-lock.json ./package-lock.json
-
-# Install production dependencies only
-RUN npm ci --omit=dev
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
+RUN pnpm install --prod --frozen-lockfile
 
 # Start the server
 CMD ["node", "build"]

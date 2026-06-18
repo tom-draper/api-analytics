@@ -249,6 +249,20 @@ pnpm install
 pnpm build
 ```
 
+This uses `adapter-auto`, which targets common hosting platforms automatically.
+
+#### Docker
+
+To run the dashboard as a standalone container, build with the `node` adapter using the provided `Dockerfile`, passing your backend URL as a build argument:
+
+```bash
+cd api-analytics/dashboard
+docker build --build-arg SERVER_URL=https://your-domain.com -t api-analytics-dashboard .
+docker run -p 3000:3000 api-analytics-dashboard
+```
+
+The dashboard will be available at `http://localhost:3000`.
+
 `SERVER_URL` is baked into the build, so rebuild if it changes. The `source` URL parameter still works on a self-hosted dashboard and takes precedence, letting you override the backend per-visit.
 
 ## Contributions
