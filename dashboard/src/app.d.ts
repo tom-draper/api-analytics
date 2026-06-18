@@ -20,6 +20,9 @@ declare global {
 	// Injected at build time by Vite (see vite.config.ts `define`).
 	const __APP_VERSION__: string;
 
+	// Self-hosted backend URL from the SERVER_URL env var at build time, or '' if unset.
+	const __SERVER_URL__: string;
+
 	// ip_address, path, hostname, user_agent, method, response_time, status,
 	// location, user_id, created_at, referrer
 	type RequestsData = [

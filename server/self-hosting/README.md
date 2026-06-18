@@ -221,17 +221,35 @@ docker exec -it api tail api.log
 
 #### Dashboard
 
-You can use the dashboard by specifying the URL of your server as a `source` parameter when using `apianalytics.dev`, or you can access the raw data directly by making a GET request to your API data endpoint.
+The easiest way to view your self-hosted data is the hosted dashboard at `apianalytics.dev` — just point it at your backend with the `source` URL parameter, no deployment required:
 
-You can access your dashboard at: `https://www.apianalytics.dev/dashboard?source=https://www.your-domain.com`
+```
+https://www.apianalytics.dev/dashboard?source=https://your-domain.com
+```
 
-You can access your raw data by sending a GET request to `https://www.your-domain.com/api/data`, with your API key set as `X-AUTH-TOKEN` in the headers.
+The dashboard fetches and renders your data entirely in your browser, directly from your backend — your API key and request data never pass through the hosted service. The `source` parameter is carried over when you sign in, so it applies to your dashboard, monitor and explorer views.
+
+Alternatively, access your raw data directly with a GET request to `https://your-domain.com/api/data`, with your API key set as the `X-AUTH-TOKEN` header.
 
 ## Frontend Hosting
 
-Once up and running, self-hosted backend can be fully utilised and managed through `apianalytics.dev`. This ensures you always have the latest updates and improvements to the dashboard.
+Most self-hosters can simply use the hosted dashboard with the `source` parameter described above — it always has the latest improvements and requires nothing to deploy.
 
-Whilst not recommeneded, it's possible to self-host the frontend dashboard by setting the URL of your backend service as a `SERVER_URL` environment variable, or manually changing the `SERVER_URL` held in `src/lib/consts.ts`. The frontend can then be deployed using your preferred hosting provider.
+If you'd rather host the dashboard yourself, point it at your backend with the `SERVER_URL` environment variable. Copy `dashboard/.env.example` to `dashboard/.env` and set:
+
+```
+SERVER_URL=https://your-domain.com
+```
+
+Then build and deploy with your preferred hosting provider:
+
+```bash
+cd api-analytics/dashboard
+pnpm install
+pnpm build
+```
+
+`SERVER_URL` is baked into the build, so rebuild if it changes. The `source` URL parameter still works on a self-hosted dashboard and takes precedence, letting you override the backend per-visit.
 
 ## Contributions
 

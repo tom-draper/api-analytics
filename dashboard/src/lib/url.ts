@@ -1,28 +1,29 @@
 import { serverURL } from './consts';
 import { page } from '$app/state';
 
-function getSourceURL() {
-	const params = page.url.searchParams;
-	const source = params.get('source');
-	if (source === '' || source === null) {
-		return null;
-	}
+function cleanURL(url: string) {
+	return url.endsWith('/') ? url.slice(0, -1) : url;
+}
+
+/** Backend URL from the `?source=` query param (per-request override), if present. */
+function getParamServerURL() {
+	const source = page.url.searchParams.get('source');
+	if (!source) return null;
 	return cleanURL(source);
 }
 
-function getEnvSourceURL() {
-	const url = import.meta.env.VITE_SERVER_URL;
-	if (!url) return null;
-	return cleanURL(url);
+/** Backend URL baked in via the SERVER_URL env var when self-hosting the dashboard. */
+function getEnvServerURL() {
+	if (!__SERVER_URL__) return null;
+	return cleanURL(__SERVER_URL__);
 }
 
-function cleanURL(url: string) {
-	if (url.endsWith('/')) {
-		return url.slice(0, -1);
-	}
-	return url;
-}
-
+/**
+ * Resolves the backend server URL, in order of precedence:
+ *   1. the `?source=` URL param (lets anyone point the hosted dashboard at their own backend)
+ *   2. the SERVER_URL env var (for a self-hosted dashboard)
+ *   3. the default hosted backend
+ */
 export function getServerURL() {
-	return getSourceURL() ?? getEnvSourceURL() ?? serverURL;
+	return getParamServerURL() ?? getEnvServerURL() ?? serverURL;
 }
