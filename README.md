@@ -531,9 +531,9 @@ In order to keep the service free, up to 1 million requests can be stored agains
 
 ## Self-Hosting
 
-The project can be self-hosted by following the [guide](./server/self-hosting/README.md).
+The project can be self-hosted by following the [guide](./server/self-hosting/README.md). You can run the full backend with Docker Compose, then either point the hosted dashboard at it with a `?source=` URL parameter or self-host the dashboard too.
 
-Please note: Self-hosting is still undergoing testing, development and further improvements to make it as easy as possible to deploy. It is currently recommended that you avoid self-hosting for production use.
+Please note: Self-hosting is still being refined to make deployment as smooth as possible, so test thoroughly before relying on it in production.
 
 ## Contributions
 

@@ -97,5 +97,27 @@ services:
       POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     command: /bin/bash -c "printenv > /etc/environment && tail -f /dev/null"
 
+  # Optional self-hosted dashboard. Off by default (most users point the hosted
+  # dashboard at their backend with ?source=). Start it with:
+  #   docker compose --profile dashboard up -d
+  # SERVER_URL is the browser-reachable backend URL, baked in at build time, so
+  # rebuild (--build) after changing DOMAIN_NAME.
+  dashboard:
+    container_name: dashboard
+    profiles: ["dashboard"]
+    build:
+      context: ../../dashboard
+      dockerfile: Dockerfile
+      args:
+        SERVER_URL: https://${DOMAIN_NAME}
+    restart: always
+    ports:
+      - "5173:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 volumes:
   db-data:

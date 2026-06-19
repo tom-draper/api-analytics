@@ -11,7 +11,7 @@ By default, the `docker-compose.yml` file is set up to generate a free SSL certi
 
 You may need to adjust this configuration to work with your environment.
 
-**Self-hosting is still undergoing testing, development and further improvements to make it as easy as possible to deploy. It is currently recommended that you avoid self-hosting for production use.**
+**Self-hosting is still being refined to make deployment as smooth as possible. Please test thoroughly before relying on it in production.**
 
 ## Backend Hosting
 
@@ -262,6 +262,12 @@ docker run -p 3000:3000 api-analytics-dashboard
 ```
 
 The dashboard will be available at `http://localhost:3000`.
+
+Alternatively, bring it up alongside the backend with the `docker-compose.yml` file. The dashboard is an opt-in service (it isn't started by the default `docker compose up`), enabled with the `dashboard` profile. It builds using your `DOMAIN_NAME` from the `.env` file as the backend URL and is served on port `5173`:
+
+```bash
+docker compose --profile dashboard up -d --build
+```
 
 `SERVER_URL` is baked into the build, so rebuild if it changes. The `source` URL parameter still works on a self-hosted dashboard and takes precedence, letting you override the backend per-visit.
 
