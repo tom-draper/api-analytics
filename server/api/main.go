@@ -52,7 +52,16 @@ func main() {
 
 	r := app.Group("/api")
 
-	r.Use(cors.Default())
+	// Matches cors.Default() (allow all origins) but also permits the auth header
+	// so cross-origin dashboards (e.g. via ?source= or self-hosting) can call
+	// authenticated endpoints such as /api/data.
+	r.Use(cors.New(cors.Config{
+		AllowAllOrigins:  true,
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "X-AUTH-TOKEN", "API-Key"},
+		AllowCredentials: false,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	// Limit a single IP's request logs to 100 per second
 	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
