@@ -175,22 +175,3 @@ func ValidAPIKey(apiKey string) bool {
 	// Match UUID v4 format
 	return uuidRegex.MatchString(apiKey)
 }
-
-func ValidateInput(data map[string]interface{}) map[string]bool {
-	results := make(map[string]bool)
-
-	for key, value := range data {
-		switch v := value.(type) {
-		case string:
-			results[key] = ValidString(v)
-		case time.Time:
-			results[key] = ValidDate(v)
-		case int:
-			if key == "status" {
-				results[key] = ValidStatus(v)
-			}
-		}
-	}
-
-	return results
-}

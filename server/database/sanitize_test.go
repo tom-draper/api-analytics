@@ -588,84 +588,6 @@ func TestValidIPAddress(t *testing.T) {
 	}
 }
 
-func TestValidateInput(t *testing.T) {
-	tests := []struct {
-		name     string
-		data     map[string]interface{}
-		expected map[string]bool
-	}{
-		{
-			name: "mixed valid data",
-			data: map[string]interface{}{
-				"name":      "John Doe",
-				"timestamp": time.Now(),
-				"status":    200,
-			},
-			expected: map[string]bool{
-				"name":      true,
-				"timestamp": true,
-				"status":    true,
-			},
-		},
-		{
-			name: "mixed invalid data",
-			data: map[string]interface{}{
-				"name":      "",
-				"timestamp": time.Time{},
-				"status":    999,
-			},
-			expected: map[string]bool{
-				"name":      false,
-				"timestamp": false,
-				"status":    false,
-			},
-		},
-		{
-			name: "string with SQL injection",
-			data: map[string]interface{}{
-				"query": "SELECT * FROM users",
-			},
-			expected: map[string]bool{
-				"query": false,
-			},
-		},
-		{
-			name: "non-status integer",
-			data: map[string]interface{}{
-				"count": 42,
-			},
-			expected: map[string]bool{},
-		},
-		{
-			name:     "empty data",
-			data:     map[string]interface{}{},
-			expected: map[string]bool{},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := ValidateInput(tt.data)
-			
-			// Check that all expected keys are present with correct values
-			for key, expectedValue := range tt.expected {
-				if actualValue, exists := result[key]; !exists {
-					t.Errorf("ValidateInput() missing key %q", key)
-				} else if actualValue != expectedValue {
-					t.Errorf("ValidateInput() key %q = %v, expected %v", key, actualValue, expectedValue)
-				}
-			}
-			
-			// Check that no unexpected keys are present
-			for key := range result {
-				if _, expected := tt.expected[key]; !expected {
-					t.Errorf("ValidateInput() unexpected key %q with value %v", key, result[key])
-				}
-			}
-		})
-	}
-}
-
 // Benchmark tests
 func BenchmarkValidString(b *testing.B) {
 	testString := "This is a test string with some content"
@@ -680,18 +602,5 @@ func BenchmarkValidIPAddress(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ValidIPAddress(testIP)
-	}
-}
-
-func BenchmarkValidateInput(b *testing.B) {
-	testData := map[string]interface{}{
-		"name":      "John Doe",
-		"timestamp": time.Now(),
-		"status":    200,
-		"ip":        "192.168.1.1",
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		ValidateInput(testData)
 	}
 }
