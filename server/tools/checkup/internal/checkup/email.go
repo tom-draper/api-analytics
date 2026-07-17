@@ -44,10 +44,13 @@ func (c *Client) SendEmailCheckup() error {
 		return fmt.Errorf("EMAIL_ADDRESS environment variable not set")
 	}
 
-	emailClient, err := email.NewClientFromEnv()
+	sender, err := email.NewFromEnv()
 	if err != nil {
-		log.Printf("Error creating email client: %v\n", err)
+		log.Printf("Error creating email sender: %v\n", err)
 		return err
+	}
+	if sender == nil {
+		return fmt.Errorf("email is disabled: set EMAIL_PROVIDER to send checkup emails")
 	}
 
 	body, err := c.buildEmailBody()
@@ -56,7 +59,7 @@ func (c *Client) SendEmailCheckup() error {
 		return err
 	}
 
-	return emailClient.Send(email.Message{
+	return sender.Send(email.Message{
 		To:      []string{c.cfg.EmailAddress},
 		From:    "",
 		Subject: "API Analytics",

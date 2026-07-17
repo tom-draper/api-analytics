@@ -84,13 +84,16 @@ func main() {
 
 	// Send email alert if any failures detected
 	if serviceStatus.ServiceDown() || apiTestStatus.TestFailed() {
-		emailClient, err := email.NewClientFromEnv()
+		sender, err := email.NewFromEnv()
 		if err != nil {
-			log.Fatalf("Error creating email client: %v", err)
+			log.Fatalf("Error creating email sender: %v", err)
+		}
+		if sender == nil {
+			log.Fatalf("email is disabled: set EMAIL_PROVIDER to send alerts")
 		}
 
 		body := buildEmailBody(serviceStatus, apiTestStatus)
-		err = emailClient.Send(email.Message{
+		err = sender.Send(email.Message{
 			To:      []string{cfg.EmailAddress},
 			From:    "",
 			Subject: "API Analytics",
