@@ -38,6 +38,22 @@ func newCache(maxSize int) *Cache {
 	}
 }
 
+// reseedUserAgentSequence advances the user_agents id sequence past the current
+// maximum id. A restore or backfill that inserts rows with explicit ids can
+// leave the serial sequence behind max(id); the next generated id would then
+// collide with an existing primary key and fail every insert, silently dropping
+// requests that carry a new user agent. Reseeding once at startup closes that
+// gap. It is a no-op on an empty table so the first insert still gets id 1.
+func reseedUserAgentSequence(ctx context.Context, db *database.DB) error {
+	_, err := db.Pool.Exec(ctx, `
+		SELECT setval(
+			pg_get_serial_sequence('user_agents', 'id'),
+			(SELECT MAX(id) FROM user_agents)
+		)
+		WHERE EXISTS (SELECT 1 FROM user_agents)`)
+	return err
+}
+
 func preloadUserAgentCache(ctx context.Context, db *database.DB, cache *Cache) (int, error) {
 	rows, err := db.Pool.Query(ctx, "SELECT user_agent, id FROM user_agents LIMIT 50000")
 	if err != nil {

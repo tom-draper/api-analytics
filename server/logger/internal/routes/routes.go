@@ -17,6 +17,12 @@ import (
 func RegisterRouter(r *gin.RouterGroup, db *database.DB, geoIPDB *geoip2.Reader, cfg *config.Config, startTime time.Time) {
 	cache := newCache(10000)
 
+	// Keep the user_agents id sequence ahead of max(id) so inserts cannot hit a
+	// primary-key collision after a restore or backfill.
+	if err := reseedUserAgentSequence(context.Background(), db); err != nil {
+		log.Error(fmt.Sprintf("failed to reseed user agent sequence: %v", err))
+	}
+
 	count, err := preloadUserAgentCache(context.Background(), db, cache)
 	if err != nil {
 		log.Error(fmt.Sprintf("failed to preload user agent cache: %v", err))
