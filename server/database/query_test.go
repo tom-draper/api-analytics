@@ -8,6 +8,12 @@ import (
 
 var testDB *DB
 
+// nonexistentUUID is a syntactically valid UUID that the tests never insert, so
+// lookups and deletes keyed on it match no rows. The api_key and user_id
+// columns are uuid, so a non-UUID literal is rejected by Postgres before it can
+// simply match nothing.
+const nonexistentUUID = "00000000-0000-0000-0000-000000000000"
+
 // requireDB skips a test that needs Postgres when POSTGRES_URL is unset, so
 // that the pure validation tests in this package still run without a database.
 func requireDB(t *testing.T) {
@@ -91,7 +97,7 @@ func TestGetUserID(t *testing.T) {
 	})
 
 	t.Run("non-existent api key", func(t *testing.T) {
-		userID, err := testDB.GetUserID(ctx, "non-existent-key")
+		userID, err := testDB.GetUserID(ctx, nonexistentUUID)
 		if err == nil {
 			t.Fatal("Expected error for non-existent API key")
 		}
@@ -144,7 +150,7 @@ func TestGetAPIKey(t *testing.T) {
 	})
 
 	t.Run("non-existent user id", func(t *testing.T) {
-		apiKey, err := testDB.GetAPIKey(ctx, "non-existent-user-id")
+		apiKey, err := testDB.GetAPIKey(ctx, nonexistentUUID)
 		if err == nil {
 			t.Fatal("Expected error for non-existent user ID")
 		}
@@ -192,7 +198,7 @@ func TestDeleteUser(t *testing.T) {
 	})
 
 	t.Run("delete non-existent user", func(t *testing.T) {
-		err := testDB.DeleteUser(ctx, "non-existent-key")
+		err := testDB.DeleteUser(ctx, nonexistentUUID)
 		// This should not return an error as DELETE operations are idempotent
 		if err != nil {
 			t.Errorf("Expected no error for deleting non-existent user, got %v", err)
@@ -200,9 +206,10 @@ func TestDeleteUser(t *testing.T) {
 	})
 
 	t.Run("delete with empty api key", func(t *testing.T) {
-		err := testDB.DeleteUser(ctx, "")
-		if err != nil {
-			t.Errorf("Expected no error for empty API key, got %v", err)
+		// The api_key column is uuid, so an empty (non-UUID) key is rejected by
+		// Postgres. Callers validate the key format before reaching this helper.
+		if err := testDB.DeleteUser(ctx, ""); err == nil {
+			t.Error("Expected an error for an empty (non-UUID) API key")
 		}
 	})
 }
@@ -228,14 +235,15 @@ func TestDeleteRequests(t *testing.T) {
 	})
 
 	t.Run("delete with non-existent api key", func(t *testing.T) {
-		if err := testDB.DeleteRequests(ctx, "non-existent-key"); err != nil {
+		if err := testDB.DeleteRequests(ctx, nonexistentUUID); err != nil {
 			t.Errorf("Expected no error for non-existent API key, got %v", err)
 		}
 	})
 
 	t.Run("delete with empty api key", func(t *testing.T) {
-		if err := testDB.DeleteRequests(ctx, ""); err != nil {
-			t.Errorf("Expected no error for empty API key, got %v", err)
+		// api_key is a uuid column; an empty (non-UUID) key is rejected by Postgres.
+		if err := testDB.DeleteRequests(ctx, ""); err == nil {
+			t.Error("Expected an error for an empty (non-UUID) API key")
 		}
 	})
 }
@@ -261,14 +269,15 @@ func TestDeleteMonitors(t *testing.T) {
 	})
 
 	t.Run("delete with non-existent api key", func(t *testing.T) {
-		if err := testDB.DeleteMonitors(ctx, "non-existent-key"); err != nil {
+		if err := testDB.DeleteMonitors(ctx, nonexistentUUID); err != nil {
 			t.Errorf("Expected no error for non-existent API key, got %v", err)
 		}
 	})
 
 	t.Run("delete with empty api key", func(t *testing.T) {
-		if err := testDB.DeleteMonitors(ctx, ""); err != nil {
-			t.Errorf("Expected no error for empty API key, got %v", err)
+		// api_key is a uuid column; an empty (non-UUID) key is rejected by Postgres.
+		if err := testDB.DeleteMonitors(ctx, ""); err == nil {
+			t.Error("Expected an error for an empty (non-UUID) API key")
 		}
 	})
 }
@@ -294,14 +303,15 @@ func TestDeletePings(t *testing.T) {
 	})
 
 	t.Run("delete with non-existent api key", func(t *testing.T) {
-		if err := testDB.DeletePings(ctx, "non-existent-key"); err != nil {
+		if err := testDB.DeletePings(ctx, nonexistentUUID); err != nil {
 			t.Errorf("Expected no error for non-existent API key, got %v", err)
 		}
 	})
 
 	t.Run("delete with empty api key", func(t *testing.T) {
-		if err := testDB.DeletePings(ctx, ""); err != nil {
-			t.Errorf("Expected no error for empty API key, got %v", err)
+		// api_key is a uuid column; an empty (non-UUID) key is rejected by Postgres.
+		if err := testDB.DeletePings(ctx, ""); err == nil {
+			t.Error("Expected an error for an empty (non-UUID) API key")
 		}
 	})
 }
