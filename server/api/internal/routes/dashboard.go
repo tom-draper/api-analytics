@@ -146,7 +146,7 @@ func sendDashboardResponse(c *gin.Context, db *database.DB, ctx context.Context,
 		log.Error(fmt.Sprintf("key=%s: user last access update failed - %s", apiKey, err.Error()))
 	}
 
-	c.Writer.Header().Set("Accept-Encoding", "gzip")
+	c.Writer.Header().Set("Vary", "Accept-Encoding")
 	c.Writer.Header().Set("Content-Encoding", "gzip")
 	c.Writer.Header().Set("Content-Type", "application/json")
 	c.Data(http.StatusOK, "gzip", gzipOutput)
