@@ -1,9 +1,7 @@
-node_modules
+bin
 
 .env
 .env.*
-
-.vercel
 
 tmp
 

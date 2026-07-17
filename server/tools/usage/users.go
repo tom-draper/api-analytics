@@ -3,52 +3,19 @@ package usage
 import (
 	"context"
 	"fmt"
-	"time"
-
-	"github.com/fatih/color"
-	"github.com/tom-draper/api-analytics/server/database"
 )
 
-type UserRow struct {
-	UserID    string    `json:"user_id"`
-	APIKey    string    `json:"api_key"`
-	CreatedAt time.Time `json:"created_at"`
-}
+// User queries
 
-func HourlyUsersCount(ctx context.Context) (int, error) {
-	return UsersCount(ctx, "1 hour")
-}
-
-func DailyUsersCount(ctx context.Context) (int, error) {
-	return UsersCount(ctx, "24 hours")
-}
-
-func WeeklyUsersCount(ctx context.Context) (int, error) {
-	return UsersCount(ctx, "7 days")
-}
-
-func MonthlyUsersCount(ctx context.Context) (int, error) {
-	return UsersCount(ctx, "30 days")
-}
-
-func TotalUsersCount(ctx context.Context) (int, error) {
-	return UsersCount(ctx, "")
-}
-
-func UsersCount(ctx context.Context, interval string) (int, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return 0, err
-	}
-	defer conn.Close(ctx)
-
+// UsersCount returns the count of users within the given interval
+func (c *Client) UsersCount(ctx context.Context, interval string) (int, error) {
 	var count int
 	query := "SELECT COUNT(*) FROM users"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
 
-	err = conn.QueryRow(ctx, query).Scan(&count)
+	err := c.db.Pool.QueryRow(ctx, query).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -56,39 +23,39 @@ func UsersCount(ctx context.Context, interval string) (int, error) {
 	return count, nil
 }
 
-func HourlyUsers(ctx context.Context) ([]UserRow, error) {
-	return Users(ctx, "1 hour")
+// HourlyUsersCount returns the count of users in the last hour
+func (c *Client) HourlyUsersCount(ctx context.Context) (int, error) {
+	return c.UsersCount(ctx, Hourly)
 }
 
-func DailyUsers(ctx context.Context) ([]UserRow, error) {
-	return Users(ctx, "24 hours")
+// DailyUsersCount returns the count of users in the last 24 hours
+func (c *Client) DailyUsersCount(ctx context.Context) (int, error) {
+	return c.UsersCount(ctx, Daily)
 }
 
-func WeeklyUsers(ctx context.Context) ([]UserRow, error) {
-	return Users(ctx, "7 days")
+// WeeklyUsersCount returns the count of users in the last week
+func (c *Client) WeeklyUsersCount(ctx context.Context) (int, error) {
+	return c.UsersCount(ctx, Weekly)
 }
 
-func MonthlyUsers(ctx context.Context) ([]UserRow, error) {
-	return Users(ctx, "30 days")
+// MonthlyUsersCount returns the count of users in the last month
+func (c *Client) MonthlyUsersCount(ctx context.Context) (int, error) {
+	return c.UsersCount(ctx, Monthly)
 }
 
-func TotalUsers(ctx context.Context) ([]UserRow, error) {
-	return Users(ctx, "")
+// TotalUsersCount returns the total count of all users
+func (c *Client) TotalUsersCount(ctx context.Context) (int, error) {
+	return c.UsersCount(ctx, "")
 }
 
-func Users(ctx context.Context, interval string) ([]UserRow, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close(ctx)
-
+// Users returns users within the given interval
+func (c *Client) Users(ctx context.Context, interval string) ([]UserRow, error) {
 	query := "SELECT api_key, user_id, created_at FROM users"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
 
-	rows, err := conn.Query(ctx, query)
+	rows, err := c.db.Pool.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -106,39 +73,33 @@ func Users(ctx context.Context, interval string) ([]UserRow, error) {
 	return users, nil
 }
 
-type User struct {
-	APIKey         string    `json:"api_key"`
-	TotalRequests  int       `json:"total_requests"`
-	DailyRequests  int       `json:"daily_requests"`
-	WeeklyRequests int       `json:"weekly_requests"`
-	CreatedAt      time.Time `json:"created_at"`
+// HourlyUsers returns users from the last hour
+func (c *Client) HourlyUsers(ctx context.Context) ([]UserRow, error) {
+	return c.Users(ctx, Hourly)
 }
 
-func (user User) Display(rank int) {
-	var colorPrintf func(format string, a ...interface{})
-	if user.DailyRequests == 0 && user.WeeklyRequests == 0 {
-		colorPrintf = color.Red
-	} else if user.DailyRequests == 0 || user.WeeklyRequests == 0 {
-		colorPrintf = color.Yellow
-	} else {
-		colorPrintf = color.Green
-	}
-	colorPrintf("[%d] %s %d (+%d / +%d) %s\n", rank, user.APIKey, user.TotalRequests, user.DailyRequests, user.WeeklyRequests, user.CreatedAt.Format("2006-01-02 15:04:05"))
+// DailyUsers returns users from the last 24 hours
+func (c *Client) DailyUsers(ctx context.Context) ([]UserRow, error) {
+	return c.Users(ctx, Daily)
 }
 
-func DisplayUsers(users []User) {
-	for i, user := range users {
-		user.Display(i)
-	}
+// WeeklyUsers returns users from the last week
+func (c *Client) WeeklyUsers(ctx context.Context) ([]UserRow, error) {
+	return c.Users(ctx, Weekly)
 }
 
-func TopUsers(ctx context.Context, n int) ([]User, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close(ctx)
+// MonthlyUsers returns users from the last month
+func (c *Client) MonthlyUsers(ctx context.Context) ([]UserRow, error) {
+	return c.Users(ctx, Monthly)
+}
 
+// TotalUsers returns all users
+func (c *Client) TotalUsers(ctx context.Context) ([]UserRow, error) {
+	return c.Users(ctx, "")
+}
+
+// TopUsers returns the top N users by request count
+func (c *Client) TopUsers(ctx context.Context, n int) ([]User, error) {
 	query := `
 		SELECT requests.api_key, users.created_at, COUNT(*) AS total_requests,
 		       COALESCE(SUM(CASE WHEN DATE(created_at) = CURRENT_DATE THEN 1 ELSE 0 END), 0) AS daily_requests,
@@ -148,7 +109,7 @@ func TopUsers(ctx context.Context, n int) ([]User, error) {
 		GROUP BY requests.api_key, users.created_at
 		ORDER BY total_requests DESC
 		LIMIT $1;`
-	rows, err := conn.Query(ctx, query, n)
+	rows, err := c.db.Pool.Query(ctx, query, n)
 	if err != nil {
 		return nil, err
 	}
@@ -166,40 +127,14 @@ func TopUsers(ctx context.Context, n int) ([]User, error) {
 	return users, nil
 }
 
-type UserTime struct {
-	APIKey    string    `json:"api_key"`
-	CreatedAt time.Time `json:"created_at"`
-	Days      string    `json:"days"`
-}
-
-func (user UserTime) Display(rank int) {
-	format := "[%d] %s %s (%s)\n"
-	timeFormat := "2006-01-02 15:04:05"
-	daysSince := time.Since(user.CreatedAt)
-
-	switch {
-	case daysSince > time.Hour*24*30*6:
-		color.Red(format, rank, user.APIKey, user.CreatedAt.Format(timeFormat), user.Days)
-	case daysSince > time.Hour*24*30*3:
-		color.Yellow(format, rank, user.APIKey, user.CreatedAt.Format(timeFormat), user.Days)
-	default:
-		fmt.Printf(format, rank, user.APIKey, user.CreatedAt.Format(timeFormat), user.Days)
-	}
-}
-
-func DisplayUserTimes(users []UserTime) {
-	for i, user := range users {
-		user.Display(i)
-	}
-}
-
-func UnusedUsers(ctx context.Context) ([]UserTime, error) {
-	usersRequests, err := UnusedUsersRequests(ctx)
+// UnusedUsers returns users with no requests or monitors
+func (c *Client) UnusedUsers(ctx context.Context) ([]UserTime, error) {
+	usersRequests, err := c.UnusedUsersRequests(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	usersMonitors, err := UnusedUsersMonitors(ctx)
+	usersMonitors, err := c.UnusedUsersMonitors(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -218,15 +153,10 @@ func UnusedUsers(ctx context.Context) ([]UserTime, error) {
 	return users, nil
 }
 
-func UnusedUsersRequests(ctx context.Context) ([]UserTime, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close(ctx)
-
+// UnusedUsersRequests returns users with no requests
+func (c *Client) UnusedUsersRequests(ctx context.Context) ([]UserTime, error) {
 	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM users u WHERE NOT EXISTS (SELECT FROM requests WHERE api_key = u.api_key) ORDER BY created_at;"
-	rows, err := conn.Query(ctx, query)
+	rows, err := c.db.Pool.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -244,15 +174,10 @@ func UnusedUsersRequests(ctx context.Context) ([]UserTime, error) {
 	return users, nil
 }
 
-func UnusedUsersMonitors(ctx context.Context) ([]UserTime, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close(ctx)
-
+// UnusedUsersMonitors returns users with no monitors
+func (c *Client) UnusedUsersMonitors(ctx context.Context) ([]UserTime, error) {
 	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM users u WHERE NOT EXISTS (SELECT FROM monitors WHERE api_key = u.api_key) ORDER BY created_at;"
-	rows, err := conn.Query(ctx, query)
+	rows, err := c.db.Pool.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -270,15 +195,10 @@ func UnusedUsersMonitors(ctx context.Context) ([]UserTime, error) {
 	return users, nil
 }
 
-func SinceLastRequestUsers(ctx context.Context) ([]UserTime, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close(ctx)
-
+// SinceLastRequestUsers returns users sorted by their last request time
+func (c *Client) SinceLastRequestUsers(ctx context.Context) ([]UserTime, error) {
 	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM (SELECT DISTINCT ON (api_key) api_key, created_at FROM requests ORDER BY api_key, created_at DESC) AS derived_table ORDER BY created_at;"
-	rows, err := conn.Query(ctx, query)
+	rows, err := c.db.Pool.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}

@@ -1,8 +1,16 @@
+<<<<<<< HEAD
+Dockerfile
 node_modules
-.svelte-kit
+.git
 build
+.svelte-kit
 .env
 .env.*
-.git
 *.log
+=======
 Dockerfile
+node_modules
+.git
+build
+.svelte-kit
+>>>>>>> server-update

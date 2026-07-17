@@ -1,0 +1,11 @@
+bin
+node_modules
+
+.env
+.env.*
+
+.vercel
+
+tmp
+
+GeoLite2-Country.mmdb

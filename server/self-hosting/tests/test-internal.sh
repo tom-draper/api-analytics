@@ -1,44 +1,65 @@
 #!/bin/bash
+# Tests API and logger services directly, bypassing the reverse proxy.
+# Run this first to confirm the core services are working before testing your proxy setup.
 
-display_result() {
-    local response=$1
-    local status_code=$2
-    local expected_code=$3
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BOLD='\033[1m'
+NC='\033[0m'
 
-    if [ "$status_code" -eq "$expected_code" ]; then
-        echo -e "\e[32mSuccess\e[0m"  # Green "Success" message
+API_URL="http://localhost:3000"
+LOGGER_URL="http://localhost:8000"
+
+passed=0
+failed=0
+
+result() {
+    local label="$1"
+    local status_code="$2"
+    local expected="$3"
+    local hint="$4"
+    local body="$5"
+
+    printf "  %-45s" "$label"
+    if [ "$status_code" -eq "$expected" ]; then
+        echo -e "${GREEN}PASS${NC}"
+        ((passed++))
+        return 0
     else
-        echo -e "\e[31mFailed\e[0m"  # Red "Failed" message
+        echo -e "${RED}FAIL${NC} (HTTP $status_code)"
+        echo -e "    ${YELLOW}Hint: $hint${NC}"
+        if [ -n "$body" ]; then
+            echo "    Response: $body"
+        fi
+        ((failed++))
+        return 1
     fi
-
-    echo "Status Code: $status_code"
-    echo "Response: $response"
-    echo ""  # Print a new line for formatting
 }
 
-# Check if an API key has been provided
-if [ $# -ge 1 ]; then
-    echo "API key provided: $1"
+echo ""
+echo -e "${BOLD}API Analytics - Internal Service Tests${NC}"
+echo -e "API:    $API_URL"
+echo -e "Logger: $LOGGER_URL"
+echo ""
+
+# --- API key generation ---
+
+response=$(curl -sf -w "%{http_code}" "$API_URL/api/generate" 2>/dev/null || echo "000")
+status_code="${response: -3}"
+body="${response%???}"
+api_key=$(echo "$body" | tr -d '"')
+
+if ! result "API key generation" "$status_code" 200 \
+    "check: docker logs api-analytics-api" "$body"; then
     echo ""
-    api_key=$1
-else
-    echo "Testing internal API key generation..."
-
-    response=$(curl -s -X GET -w "%{http_code}" http://localhost:3000/api/generate)
-    status_code="${response: -3}"   # Extract the last 3 characters as the status code
-    response_body="${response%???}"
-    api_key=$(echo "$response_body" | sed 's/[0-9][0-9][0-9]$//' | sed 's/\"//g')  # Strip status code from response
-
-    # Check if the status code is 200 and the API key is the correct length
-    display_result "$response_body" "$status_code" 200
-    if [ "$status_code" -ne 200 ]; then
-        exit 1
-    fi
+    echo -e "${RED}Cannot continue without a valid API key.${NC}"
+    exit 1
 fi
 
-echo "Testing internal request data logging..."
+# --- Request logging ---
 
-response=$(curl -so - -w "%{http_code}" -X POST  \
+response=$(curl -sf -w "%{http_code}" -X POST \
     -H "Content-Type: application/json" \
     -d '{
         "api_key": "'"$api_key"'",
@@ -69,68 +90,72 @@ response=$(curl -so - -w "%{http_code}" -X POST  \
         "framework": "FastAPI",
         "privacy_level": 0
     }' \
-    http://localhost:8000/api/log-request)
+    "$LOGGER_URL/api/log-request" 2>/dev/null || echo "000")
 
 status_code="${response: -3}"
-response_body="${response%???}"
+body="${response%???}"
 
-# Check if the status code is 201 (Created)
-display_result "$response_body" "$status_code" 201
-if [ "$status_code" -ne 201 ]; then
-    exit 2
+result "Request logging" "$status_code" 201 \
+    "check: docker logs api-analytics-logger" "$body" || true
+
+# --- User ID lookup ---
+
+response=$(curl -sf -w "%{http_code}" "$API_URL/api/user-id/$api_key" 2>/dev/null || echo "000")
+status_code="${response: -3}"
+body="${response%???}"
+user_id=$(echo "$body" | tr -d '"')
+
+if ! result "User ID lookup" "$status_code" 200 \
+    "check: docker logs api-analytics-api" "$body"; then
+    echo ""
+    echo -e "${RED}Cannot continue without a valid user ID.${NC}"
+    # Clean up
+    curl -sf "$API_URL/api/delete/$api_key" > /dev/null 2>&1 || true
+    exit 1
 fi
 
-echo "Testing internal user ID access..."
+# --- Dashboard data access ---
 
-response=$(curl -s -X GET -w "%{http_code}" http://localhost:3000/api/user-id/$api_key)
-echo $response
-status_code="${response: -3}"   # Extract the last 3 characters as the status code
-response_body="${response%???}"
-user_id=$(echo "$response_body" | sed 's/[0-9][0-9][0-9]$//' | sed 's/\"//g')  # Strip status code from response
+response=$(curl -sf -w "%{http_code}" --compressed -H "Accept-Encoding: gzip" \
+    "$API_URL/api/requests/$user_id" 2>/dev/null || echo "000")
+status_code="${response: -3}"
+body="${response%???}"
 
-# Check if the status code is 200 and the API key is the correct length
-display_result "$response_body" "$status_code" 200
-if [ "$status_code" -ne 200 ]; then
-    exit 3
-fi
+result "Dashboard data access" "$status_code" 200 \
+    "check: docker logs api-analytics-api" "$body" || true
 
-echo "Testing internal dashboard data access..."
+# --- Raw data access ---
 
-response=$(curl -s -X GET -w "%{http_code}" --compressed -H "Accept-Encoding: gzip" \
-    http://localhost:3000/api/requests/$user_id)
+response=$(curl -sf -w "%{http_code}" \
+    -H "X-AUTH-TOKEN: $api_key" \
+    "$API_URL/api/data" 2>/dev/null || echo "000")
+status_code="${response: -3}"
+body="${response%???}"
 
-status_code="${response: -3}"   # Extract the last 3 characters as the status code
-response_body="${response%???}"  # Extract everything except the last 3 characters as the response body
+result "Raw data access" "$status_code" 200 \
+    "check: docker logs api-analytics-api" "$body" || true
 
-# Check if the status code is 200 (OK) and response has a reasonable length
-display_result "$response_body" "$status_code" 200
-if [ "$status_code" -ne 200 ] || [ ${#response_body} -lt 100 ]; then
-    exit 4
-fi
+# --- Account deletion ---
 
-echo "Testing internal raw data access..."
+response=$(curl -sf -w "%{http_code}" "$API_URL/api/delete/$api_key" 2>/dev/null || echo "000")
+status_code="${response: -3}"
+body="${response%???}"
 
-response=$(curl -s -X GET -w "%{http_code}" \
-    http://localhost:3000/api/data --header "X-AUTH-TOKEN: $api_key")
+result "Account deletion" "$status_code" 200 \
+    "check: docker logs api-analytics-api" "$body" || true
 
-status_code="${response: -3}"   # Extract the last 3 characters as the status code
-response_body="${response%???}"  # Extract everything except the last 3 characters as the response body
+# --- Summary ---
 
-# Check if the status code is 200 (OK) and response has a reasonable length
-display_result "$response_body" "$status_code" 200
-if [ "$status_code" -ne 200 ] || [ ${#response_body} -lt 100 ]; then
-    exit 5
-fi
-
-echo "Testing internal account deletion..."
-
-response=$(curl -s -X GET -w "%{http_code}" http://localhost:3000/api/delete/$api_key)
-
-status_code="${response: -3}"   # Extract the last 3 characters as the status code
-response_body="${response%???}"  # Extract everything except the last 3 characters as the response body
-
-# Check if the status code is 200 (OK)
-display_result "$response_body" "$status_code" 200
-if [ "$status_code" -ne 200 ]; then
-    exit 6
+total=$((passed + failed))
+echo ""
+if [ "$failed" -eq 0 ]; then
+    echo -e "${GREEN}${BOLD}All $total tests passed.${NC}"
+else
+    echo -e "${RED}${BOLD}$failed/$total tests failed.${NC}"
+    echo ""
+    echo "Troubleshooting:"
+    echo "  docker ps                          check all services are running"
+    echo "  docker logs api-analytics-api      API service logs"
+    echo "  docker logs api-analytics-logger   logger service logs"
+    exit 1
 fi

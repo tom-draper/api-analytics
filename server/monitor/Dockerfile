@@ -1,28 +1,39 @@
-FROM golang:1.21
+# Build stage
+FROM golang:1.26-alpine AS builder
 
-# Set the Current Working Directory inside the container
+RUN apk add --no-cache ca-certificates tzdata
+
+WORKDIR /build
+
+COPY database/go.mod database/go.sum ./database/
+COPY monitor/go.mod monitor/go.sum ./monitor/
+
+WORKDIR /build/monitor
+RUN go mod download && go mod verify
+
+WORKDIR /build
+COPY database/ ./database/
+COPY monitor/ ./monitor/
+
+WORKDIR /build/monitor
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -trimpath \
+    -ldflags="-s -w" \
+    -o monitor ./cmd/monitor
+
+# Final stage
+FROM alpine:3.22
+
+RUN apk --no-cache add ca-certificates tzdata && \
+    adduser -D -s /bin/sh -u 1001 appuser
+
 WORKDIR /app
 
-# Copy the Go Modules and Sum Files
-COPY . /app
+COPY --from=builder /build/monitor/monitor /app/monitor
 
-# Build the Go app
-RUN go build -o monitor .
+RUN mkdir -p /app/logs && \
+    chown -R appuser:appuser /app
 
-# Install cron
-RUN apt-get update && apt-get install -y cron
+USER appuser
 
-# Add crontab file in the cron directory
-COPY crontab /etc/cron.d/monitor-cron
-
-# Give execution rights on the cron job
-RUN chmod 0644 /etc/cron.d/monitor-cron
-
-# Apply cron job
-RUN crontab /etc/cron.d/monitor-cron
-
-# Create the log file to be able to run tail
-RUN touch /var/log/cron.log
-
-# Run the command on container startup
-CMD cron && tail -f /var/log/cron.log
+CMD ["./monitor"]

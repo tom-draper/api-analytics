@@ -1,5 +1,5 @@
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 RUN corepack enable
@@ -22,10 +22,9 @@ COPY . .
 RUN pnpm build
 
 # Production stage
-FROM node:20-alpine AS production
+FROM node:24-alpine AS production
 
-# needed for healthcheck
-RUN apk add --no-cache curl
+RUN adduser -D -s /bin/sh -u 1001 appuser
 
 WORKDIR /app
 RUN corepack enable
@@ -34,6 +33,13 @@ RUN corepack enable
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
 RUN pnpm install --prod --frozen-lockfile
+RUN chown -R appuser:appuser /app
 
-# Start the server
+USER appuser
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
+
 CMD ["node", "build"]

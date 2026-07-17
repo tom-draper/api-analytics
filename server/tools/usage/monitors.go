@@ -3,52 +3,18 @@ package usage
 import (
 	"context"
 	"fmt"
-	"time"
-
-	"github.com/tom-draper/api-analytics/server/database"
 )
 
-type MonitorRow struct {
-	APIKey    string    `json:"api_key"`
-	URL       string    `json:"url"`
-	Secure    bool      `json:"secure"`
-	Ping      bool      `json:"ping"`
-	CreatedAt time.Time `json:"created_at"`
-}
+// Monitor queries
 
-func HourlyMonitorsCount(ctx context.Context) (int, error) {
-	return MonitorsCount(ctx, hourly)
-}
-
-func DailyMonitorsCount(ctx context.Context) (int, error) {
-	return MonitorsCount(ctx, daily)
-}
-
-func WeeklyMonitorsCount(ctx context.Context) (int, error) {
-	return MonitorsCount(ctx, weekly)
-}
-
-func MonthlyMonitorsCount(ctx context.Context) (int, error) {
-	return MonitorsCount(ctx, monthly)
-}
-
-func TotalMonitorsCount(ctx context.Context) (int, error) {
-	return MonitorsCount(ctx, "")
-}
-
-func MonitorsCount(ctx context.Context, interval string) (int, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return 0, err
-	}
-	defer conn.Close(ctx)
-
+// MonitorsCount returns the count of monitors within the given interval
+func (c *Client) MonitorsCount(ctx context.Context, interval string) (int, error) {
 	var count int
 	query := "SELECT COUNT(*) FROM monitor"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
-	err = conn.QueryRow(ctx, query).Scan(&count)
+	err := c.db.Pool.QueryRow(ctx, query).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -56,39 +22,39 @@ func MonitorsCount(ctx context.Context, interval string) (int, error) {
 	return count, nil
 }
 
-func HourlyMonitors(ctx context.Context) ([]MonitorRow, error) {
-	return Monitors(ctx, hourly)
+// HourlyMonitorsCount returns the count of monitors in the last hour
+func (c *Client) HourlyMonitorsCount(ctx context.Context) (int, error) {
+	return c.MonitorsCount(ctx, Hourly)
 }
 
-func DailyMonitors(ctx context.Context) ([]MonitorRow, error) {
-	return Monitors(ctx, daily)
+// DailyMonitorsCount returns the count of monitors in the last 24 hours
+func (c *Client) DailyMonitorsCount(ctx context.Context) (int, error) {
+	return c.MonitorsCount(ctx, Daily)
 }
 
-func WeeklyMonitors(ctx context.Context) ([]MonitorRow, error) {
-	return Monitors(ctx, weekly)
+// WeeklyMonitorsCount returns the count of monitors in the last week
+func (c *Client) WeeklyMonitorsCount(ctx context.Context) (int, error) {
+	return c.MonitorsCount(ctx, Weekly)
 }
 
-func MonthlyMonitors(ctx context.Context) ([]MonitorRow, error) {
-	return Monitors(ctx, monthly)
+// MonthlyMonitorsCount returns the count of monitors in the last month
+func (c *Client) MonthlyMonitorsCount(ctx context.Context) (int, error) {
+	return c.MonitorsCount(ctx, Monthly)
 }
 
-func TotalMonitors(ctx context.Context) ([]MonitorRow, error) {
-	return Monitors(ctx, "")
+// TotalMonitorsCount returns the total count of all monitors
+func (c *Client) TotalMonitorsCount(ctx context.Context) (int, error) {
+	return c.MonitorsCount(ctx, "")
 }
 
-func Monitors(ctx context.Context, interval string) ([]MonitorRow, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close(ctx)
-
+// Monitors returns monitors within the given interval
+func (c *Client) Monitors(ctx context.Context, interval string) ([]MonitorRow, error) {
 	query := "SELECT api_key, url, secure, ping, created_at FROM monitor"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
 	query += " ORDER BY created_at;"
-	rows, err := conn.Query(ctx, query)
+	rows, err := c.db.Pool.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +64,7 @@ func Monitors(ctx context.Context, interval string) ([]MonitorRow, error) {
 	for rows.Next() {
 		var monitor MonitorRow
 		if err := rows.Scan(&monitor.APIKey, &monitor.URL, &monitor.Secure, &monitor.Ping, &monitor.CreatedAt); err != nil {
-			return nil, err // Return error instead of silently continuing
+			return nil, err
 		}
 		monitors = append(monitors, monitor)
 	}
@@ -109,39 +75,39 @@ func Monitors(ctx context.Context, interval string) ([]MonitorRow, error) {
 	return monitors, nil
 }
 
-func HourlyUserMonitors(ctx context.Context) ([]UserCount, error) {
-	return UserMonitors(ctx, hourly)
+// HourlyMonitors returns monitors from the last hour
+func (c *Client) HourlyMonitors(ctx context.Context) ([]MonitorRow, error) {
+	return c.Monitors(ctx, Hourly)
 }
 
-func DailyUserMonitors(ctx context.Context) ([]UserCount, error) {
-	return UserMonitors(ctx, daily)
+// DailyMonitors returns monitors from the last 24 hours
+func (c *Client) DailyMonitors(ctx context.Context) ([]MonitorRow, error) {
+	return c.Monitors(ctx, Daily)
 }
 
-func WeeklyUserMonitors(ctx context.Context) ([]UserCount, error) {
-	return UserMonitors(ctx, weekly)
+// WeeklyMonitors returns monitors from the last week
+func (c *Client) WeeklyMonitors(ctx context.Context) ([]MonitorRow, error) {
+	return c.Monitors(ctx, Weekly)
 }
 
-func MonthlyUserMonitors(ctx context.Context) ([]UserCount, error) {
-	return UserMonitors(ctx, monthly)
+// MonthlyMonitors returns monitors from the last month
+func (c *Client) MonthlyMonitors(ctx context.Context) ([]MonitorRow, error) {
+	return c.Monitors(ctx, Monthly)
 }
 
-func TotalUserMonitors(ctx context.Context) ([]UserCount, error) {
-	return UserMonitors(ctx, "")
+// TotalMonitors returns all monitors
+func (c *Client) TotalMonitors(ctx context.Context) ([]MonitorRow, error) {
+	return c.Monitors(ctx, "")
 }
 
-func UserMonitors(ctx context.Context, interval string) ([]UserCount, error) {
-	conn, err := database.NewConnection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close(ctx)
-
+// UserMonitors returns monitor counts grouped by user within the given interval
+func (c *Client) UserMonitors(ctx context.Context, interval string) ([]UserCount, error) {
 	query := "SELECT api_key, COUNT(*) AS count FROM monitor"
 	if interval != "" {
 		query += fmt.Sprintf(" WHERE created_at >= NOW() - interval '%s'", interval)
 	}
 	query += " GROUP BY api_key ORDER BY count DESC;"
-	rows, err := conn.Query(ctx, query)
+	rows, err := c.db.Pool.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +117,7 @@ func UserMonitors(ctx context.Context, interval string) ([]UserCount, error) {
 	for rows.Next() {
 		var userMonitors UserCount
 		if err := rows.Scan(&userMonitors.APIKey, &userMonitors.Count); err != nil {
-			return nil, err // Return error instead of silently continuing
+			return nil, err
 		}
 		monitors = append(monitors, userMonitors)
 	}
@@ -160,4 +126,29 @@ func UserMonitors(ctx context.Context, interval string) ([]UserCount, error) {
 	}
 
 	return monitors, nil
+}
+
+// HourlyUserMonitors returns user monitor counts for the last hour
+func (c *Client) HourlyUserMonitors(ctx context.Context) ([]UserCount, error) {
+	return c.UserMonitors(ctx, Hourly)
+}
+
+// DailyUserMonitors returns user monitor counts for the last 24 hours
+func (c *Client) DailyUserMonitors(ctx context.Context) ([]UserCount, error) {
+	return c.UserMonitors(ctx, Daily)
+}
+
+// WeeklyUserMonitors returns user monitor counts for the last week
+func (c *Client) WeeklyUserMonitors(ctx context.Context) ([]UserCount, error) {
+	return c.UserMonitors(ctx, Weekly)
+}
+
+// MonthlyUserMonitors returns user monitor counts for the last month
+func (c *Client) MonthlyUserMonitors(ctx context.Context) ([]UserCount, error) {
+	return c.UserMonitors(ctx, Monthly)
+}
+
+// TotalUserMonitors returns user monitor counts for all time
+func (c *Client) TotalUserMonitors(ctx context.Context) ([]UserCount, error) {
+	return c.UserMonitors(ctx, "")
 }

@@ -3,43 +3,46 @@ package database
 import (
 	"context"
 	"fmt"
-	"log"
-	"os"
+	"time"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/joho/godotenv"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var dbURL string
-
-func LoadConfig() error {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Println("warning: could not load .env file")
-	}
-
-	// Get the POSTGRES_URL environment variable
-	dbURL = os.Getenv("POSTGRES_URL")
-	if dbURL == "" {
-		return fmt.Errorf("POSTGRES_URL is not set in the environment")
-	}
-
-	log.Printf("POSTGRES_URL=%s\n", dbURL)
-
-	return nil
+type DB struct {
+	Pool *pgxpool.Pool
 }
 
-func NewConnection() (*pgx.Conn, error) {
+func New(ctx context.Context, dbURL string) (*DB, error) {
 	if dbURL == "" {
-		err := LoadConfig()
-		if err != nil {
-			return nil, err
-		}
+		return nil, fmt.Errorf("database URL cannot be empty")
 	}
 
-	conn, err := pgx.Connect(context.Background(), dbURL)
+	config, err := pgxpool.ParseConfig(dbURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse database URL: %w", err)
 	}
-	return conn, nil
+
+	// Configure connection pool for optimal performance
+	config.MaxConns = 25                              // Maximum concurrent connections
+	config.MinConns = 5                               // Minimum idle connections (kept warm)
+	config.MaxConnLifetime = 1 * time.Hour            // Recycle connections after 1 hour
+	config.MaxConnIdleTime = 10 * time.Minute         // Close idle connections after 10 minutes
+	config.HealthCheckPeriod = 1 * time.Minute        // Check connection health every minute
+
+	pool, err := pgxpool.NewWithConfig(ctx, config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create connection pool: %w", err)
+	}
+
+	// Verify connection
+	if err := pool.Ping(ctx); err != nil {
+		pool.Close()
+		return nil, fmt.Errorf("failed to ping database: %w", err)
+	}
+
+	return &DB{Pool: pool}, nil
+}
+
+func (db *DB) Close() {
+	db.Pool.Close()
 }

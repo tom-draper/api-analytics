@@ -1,0 +1,103 @@
+services:
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    restart: always
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy-data:/data
+      - caddy-config:/config
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      SSL_EMAIL: ${SSL_EMAIL}
+    depends_on:
+      - api
+      - logger
+    healthcheck:
+      test: ["CMD", "caddy", "version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  db:
+    image: postgres:17
+    container_name: db
+    restart: always
+    user: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    expose:
+      - 5432
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    container_name: api-analytics-api
+    image: api-analytics-api
+    build:
+      context: ..
+      dockerfile: api/Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      API_RATE_LIMIT: ${API_RATE_LIMIT:-100}
+      API_MAX_LOAD: ${API_MAX_LOAD:-1000000}
+      API_PAGE_SIZE: ${API_PAGE_SIZE:-250000}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  logger:
+    container_name: api-analytics-logger
+    image: api-analytics-logger
+    build:
+      context: ..
+      dockerfile: logger/Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      LOGGER_RATE_LIMIT: ${LOGGER_RATE_LIMIT:-10}
+      LOGGER_MAX_INSERT: ${LOGGER_MAX_INSERT:-2000}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  monitor:
+    container_name: api-analytics-monitor
+    image: api-analytics-monitor
+    build:
+      context: ..
+      dockerfile: monitor/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+
+volumes:
+  db-data:
+  caddy-data:
+  caddy-config:
