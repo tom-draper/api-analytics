@@ -167,3 +167,25 @@ func TestRealUserAgentsAccepted(t *testing.T) {
 		}
 	}
 }
+
+func TestIPUsageForPrivacy(t *testing.T) {
+	tests := []struct {
+		name  string
+		level PrivacyLevel
+		want  ipUsage
+	}{
+		{"level 0 stores IP and infers location", P1, ipUsage{store: true, inferLocation: true, hash: true}},
+		{"level 1 discards IP but still infers location", P2, ipUsage{store: false, inferLocation: true, hash: true}},
+		{"level 2 never accesses IP or infers location", P3, ipUsage{store: false, inferLocation: false, hash: false}},
+		{"out-of-range level gets the most private treatment", P3 + 5, ipUsage{}},
+		{"negative level is treated as level 0", -1, ipUsage{store: true, inferLocation: true, hash: true}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ipUsageForPrivacy(tt.level); got != tt.want {
+				t.Errorf("ipUsageForPrivacy(%d) = %+v, want %+v", tt.level, got, tt.want)
+			}
+		})
+	}
+}

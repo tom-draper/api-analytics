@@ -24,6 +24,34 @@ const (
 
 type PrivacyLevel int
 
+// ipUsage describes how a request's client IP may be used under a given privacy
+// level. The enum is offset from the documented level by one (P1 = level 0).
+type ipUsage struct {
+	store         bool // persist the IP address
+	inferLocation bool // read the IP to infer a country
+	hash          bool // include the IP in the user hash
+}
+
+// ipUsageForPrivacy maps a privacy level to how the client IP may be used. See
+// the "Client ID and Privacy" section of the README:
+//
+//	P1 (level 0): infer location, then store the IP.
+//	P2 (level 1): infer location, then discard the IP.
+//	P3 (level 2): never access the IP; never infer location.
+//
+// Levels at or above P3 (including out-of-range values) get the most private
+// treatment; anything at or below P1 is treated as level 0.
+func ipUsageForPrivacy(level PrivacyLevel) ipUsage {
+	switch {
+	case level >= P3:
+		return ipUsage{}
+	case level == P2:
+		return ipUsage{inferLocation: true, hash: true}
+	default:
+		return ipUsage{store: true, inferLocation: true, hash: true}
+	}
+}
+
 type RequestData struct {
 	Path         string `json:"path"`
 	Hostname     string `json:"hostname"`
@@ -215,13 +243,23 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 				continue
 			}
 
+			usage := ipUsageForPrivacy(payload.PrivacyLevel)
+
 			var ipAddress *string
-			if payload.PrivacyLevel <= P1 && request.IPAddress != "" {
+			if usage.store && request.IPAddress != "" {
 				ipAddress = &request.IPAddress
 			}
 
-			location := getCountryCode(geoIPDB, cache, request.IPAddress)
-			userHash := getUserHash(request.IPAddress, request.UserAgent)
+			var location string
+			if usage.inferLocation {
+				location = getCountryCode(geoIPDB, cache, request.IPAddress)
+			}
+
+			hashIP := request.IPAddress
+			if !usage.hash {
+				hashIP = ""
+			}
+			userHash := getUserHash(hashIP, request.UserAgent)
 
 			createdAt, err := time.Parse(time.RFC3339Nano, request.CreatedAt)
 			if err != nil {
