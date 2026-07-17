@@ -3,9 +3,11 @@ package routes
 import (
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -145,30 +147,89 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) (string, []any
 	return query.String(), arguments
 }
 
+// normalizeQueryKey reduces a parameter name to a case- and separator-
+// insensitive form, so that userId, userID, user_id and userid all resolve to
+// the same filter. An unrecognized name applies no filter and returns a wider
+// result set than asked for, which is silent and easy to miss, so names are
+// matched leniently.
+func normalizeQueryKey(name string) string {
+	var b strings.Builder
+	b.Grow(len(name))
+	for _, r := range name {
+		if r == '_' || r == '-' {
+			continue
+		}
+		b.WriteRune(unicode.ToLower(r))
+	}
+	return b.String()
+}
+
+// queryLookup indexes a request's query parameters by normalized name.
+type queryLookup map[string]string
+
+func newQueryLookup(c *gin.Context) queryLookup {
+	values := c.Request.URL.Query()
+
+	// Sort so that a request supplying two spellings of one filter (say user_id
+	// and userId) always resolves to the same value rather than to whichever
+	// map iteration reached first.
+	names := make([]string, 0, len(values))
+	for name := range values {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+
+	lookup := make(queryLookup, len(names))
+	for _, name := range names {
+		value := values.Get(name)
+		if value == "" {
+			continue
+		}
+		if key := normalizeQueryKey(name); key != "" {
+			if _, exists := lookup[key]; !exists {
+				lookup[key] = value
+			}
+		}
+	}
+	return lookup
+}
+
+// get returns the value of the first of names that is present.
+func (q queryLookup) get(names ...string) string {
+	for _, name := range names {
+		if value, exists := q[normalizeQueryKey(name)]; exists {
+			return value
+		}
+	}
+	return ""
+}
+
 func getQueriesFromRequest(c *gin.Context) DataFetchQueries {
+	query := newQueryLookup(c)
+
 	page := 1
-	if pageQuery := c.Query("page"); pageQuery != "" {
+	if pageQuery := query.get("page"); pageQuery != "" {
 		if p, err := strconv.Atoi(pageQuery); err == nil {
 			page = p
 		}
 	}
 
-	status, err := strconv.Atoi(c.Query("status"))
+	status, err := strconv.Atoi(query.get("status"))
 	if err != nil {
 		status = 0
 	}
 
 	return DataFetchQueries{
 		page:      page,
-		compact:   c.Query("compact") == "true",
-		date:      parseQueryDate(c.Query("date")),
-		dateFrom:  parseQueryDate(c.Query("dateFrom")),
-		dateTo:    parseQueryDate(c.Query("dateTo")),
-		hostname:  c.Query("hostname"),
-		ipAddress: c.Query("ip"),
-		location:  c.Query("location"),
+		compact:   query.get("compact") == "true",
+		date:      parseQueryDate(query.get("date")),
+		dateFrom:  parseQueryDate(query.get("dateFrom")),
+		dateTo:    parseQueryDate(query.get("dateTo")),
+		hostname:  query.get("hostname"),
+		ipAddress: query.get("ipAddress", "ip"),
+		location:  query.get("location"),
 		status:    status,
-		userID:    c.Query("userID"),
+		userID:    query.get("userId"),
 	}
 }
 
