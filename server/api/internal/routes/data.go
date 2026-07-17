@@ -55,7 +55,7 @@ func getData(db *database.DB) gin.HandlerFunc {
 		defer rows.Close()
 
 		if queries.compact {
-			cols := [12]any{
+			cols := [compactCols]any{
 				"ip_address", "path", "hostname", "user_agent", "method",
 				"response_time", "status", "location", "user_id", "created_at", "referrer",
 			}
@@ -182,10 +182,18 @@ func parseQueryDate(date string) time.Time {
 	return time.Time{}
 }
 
-func buildRequestDataCompact(rows pgx.Rows, cols [12]any) ([][12]any, int) {
-	requests := [][12]any{cols}
+// compactCols is the number of columns in a compact response row, matching the
+// header written by getData and the column list selected by buildDataFetchQuery.
+const compactCols = 11
+
+// buildRequestDataCompact formats rows as positional arrays, prefixed by cols
+// as a header row. It scans into RequestRow, whose UserAgent is a string: the
+// compact query joins user_agents and selects the user_agent text column, not
+// the user_agent_id integer that DashboardRequestRow carries.
+func buildRequestDataCompact(rows pgx.Rows, cols [compactCols]any) ([][compactCols]any, int) {
+	requests := [][compactCols]any{cols}
 	skipped := 0
-	var request DashboardRequestRow
+	var request RequestRow
 	for rows.Next() {
 		err := rows.Scan(
 			&request.IPAddress,
@@ -205,18 +213,18 @@ func buildRequestDataCompact(rows pgx.Rows, cols [12]any) ([][12]any, int) {
 			if request.IPAddress.IPNet != nil {
 				ipAddress = request.IPAddress.IPNet.IP.String()
 			}
-			requests = append(requests, [12]any{
+			requests = append(requests, [compactCols]any{
 				ipAddress,
 				request.Path,
-				request.Hostname,
-				request.UserAgent,
+				getNullableString(request.Hostname),
+				getNullableString(request.UserAgent),
 				request.Method,
 				request.ResponseTime,
 				request.Status,
-				request.Location,
-				request.UserID,
+				getNullableString(request.Location),
+				getNullableString(request.UserID),
 				request.CreatedAt,
-				request.Referrer,
+				getNullableString(request.Referrer),
 			})
 		} else {
 			skipped++
