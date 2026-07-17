@@ -20,6 +20,11 @@ type DashboardData struct {
 	// Each row has 11 positional columns, matching the dashboard's ColumnIndex
 	// enum (IPAddress..Referrer, 0-10).
 	Requests [][11]any `json:"requests"`
+	// HasMore reports whether another page follows this one. It is computed
+	// server-side from the full page (returned rows plus any skipped on scan
+	// errors), so the dashboard never hardcodes the page size and cannot stop
+	// early on a page that was full but had a row skipped.
+	HasMore bool `json:"has_more"`
 }
 
 type UserAgentsLookup map[int]string
@@ -127,7 +132,7 @@ func fetchAndFormatRequestsPage(ctx context.Context, db *database.DB, apiKey str
 	return requests, userAgentIDs, count, skipped, rows.Err()
 }
 
-func sendDashboardResponse(c *gin.Context, db *database.DB, ctx context.Context, apiKey string, requests [][11]any, userAgentIDs map[int]struct{}) error {
+func sendDashboardResponse(c *gin.Context, db *database.DB, ctx context.Context, apiKey string, requests [][11]any, userAgentIDs map[int]struct{}, hasMore bool) error {
 	userAgents, err := db.GetUserAgents(ctx, userAgentIDs)
 	if err != nil {
 		log.Error(fmt.Sprintf("key=%s: user agent lookup failed - %s", apiKey, err.Error()))
@@ -135,7 +140,7 @@ func sendDashboardResponse(c *gin.Context, db *database.DB, ctx context.Context,
 		return err
 	}
 
-	gzipOutput, err := compressJSON(DashboardData{UserAgents: userAgents, Requests: requests})
+	gzipOutput, err := compressJSON(DashboardData{UserAgents: userAgents, Requests: requests, HasMore: hasMore})
 	if err != nil {
 		log.Error(fmt.Sprintf("key=%s: compression failed - %s", apiKey, err.Error()))
 		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Compression failed."})
@@ -231,7 +236,10 @@ func getRequestsHandler(db *database.DB, cfg *config.Config) gin.HandlerFunc {
 			}
 		}
 
-		if err := sendDashboardResponse(c, db, ctx, apiKey, allRequests, allUserAgentIDs); err != nil {
+		// This handler returns the complete set it intends to (a full load, or a
+		// single requested page capped at MaxLoad), so there is never a further
+		// page to fetch through it.
+		if err := sendDashboardResponse(c, db, ctx, apiKey, allRequests, allUserAgentIDs, false); err != nil {
 			return
 		}
 
@@ -276,7 +284,7 @@ func getPaginatedRequestsHandler(db *database.DB, cfg *config.Config) gin.Handle
 			return
 		}
 
-		requests, userAgentIDs, _, skipped, err := fetchAndFormatRequestsPage(ctx, db, apiKey, page, cfg.PageSize)
+		requests, userAgentIDs, count, skipped, err := fetchAndFormatRequestsPage(ctx, db, apiKey, page, cfg.PageSize)
 		if err != nil {
 			log.Error(fmt.Sprintf("key=%s: failed to fetch requests - %s", apiKey, err.Error()))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
@@ -286,7 +294,11 @@ func getPaginatedRequestsHandler(db *database.DB, cfg *config.Config) gin.Handle
 			log.Error(fmt.Sprintf("key=%s: skipped %d rows on page %d", apiKey, skipped, page))
 		}
 
-		if err := sendDashboardResponse(c, db, ctx, apiKey, requests, userAgentIDs); err != nil {
+		// A full page (returned rows plus any skipped) means another page may
+		// follow. Using count+skipped, not just the returned rows, avoids
+		// stopping early when a row on a full page failed to scan.
+		hasMore := count+skipped >= cfg.PageSize
+		if err := sendDashboardResponse(c, db, ctx, apiKey, requests, userAgentIDs, hasMore); err != nil {
 			return
 		}
 
