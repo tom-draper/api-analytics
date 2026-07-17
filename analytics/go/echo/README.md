@@ -6,7 +6,7 @@ A free and lightweight API analytics solution, complete with a dashboard.
 
 ### 1. Generate an API key
 
-Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It will be required when accessing your API analytics dashboard and logged data.
+Head to [apianalytics.dev/sign-up](https://apianalytics.dev/sign-up) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It will be required when accessing your API analytics dashboard and logged data.
 
 ### 2. Add middleware to your API
 
@@ -208,7 +208,7 @@ Active API monitoring can be set up by heading to [apianalytics.dev/monitoring](
 
 ## Limitations
 
-In order to keep the service free, up to 1.5 million requests can be stored against an API key. This is enforced as a rolling limit; old requests will be replaced by new requests. If your API would rapidly exceed this limit, we recommend you try other solutions or check out [self-hosting](./server/self-hosting/README.md).
+In order to keep the service free, up to 1 million requests can be stored against an API key. This is enforced as a rolling limit; old requests will be replaced by new requests. If your API would rapidly exceed this limit, we recommend you try other solutions or check out [self-hosting](./server/self-hosting/README.md).
 
 ## Self-Hosting
 

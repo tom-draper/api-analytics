@@ -6,7 +6,7 @@ A free and lightweight API analytics solution, complete with a dashboard.
 
 ### 1. Generate an API key
 
-Head to [apianalytics.dev/generate](https://apianalytics.dev/generate) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It's also required in order to access your API analytics dashboard and data.
+Head to [apianalytics.dev/sign-up](https://apianalytics.dev/sign-up) to generate your unique API key with a single click. This key is used to monitor your specific API and should be stored privately. It's also required in order to access your API analytics dashboard and data.
 
 ### 2. Add middleware to your API
 
@@ -202,17 +202,16 @@ analytics_config.get_user_id = ->(env) { env['HTTP_X_AUTH_TOKEN'] }
 
 All data is stored securely in compliance with The EU General Data Protection Regulation (GDPR).
 
-For any given request to your API, data recorded is limited to:
+For any given request to your API, data recorded is strictly limited to:
 
-- Path requested by client
-- Client IP address
-- Client operating system
-- Client browser
 - Request method (GET, POST, PUT, etc.)
-- Time of request
-- Status code
+- Endpoint requested
+- User agent
+- Client IP address (optional)
+- Timestamp of the request
+- Response status code
 - Response time
-- API hostname
+- Hostname of API
 - API framework (Rails, Sinatra)
 
 Data collected is only ever used to populate your analytics dashboard. All stored data is pseudo-anonymous, with the API key the only link between you and your logged request data. Should you lose your API key, you will have no method to access your API analytics.
