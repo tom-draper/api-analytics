@@ -20,6 +20,8 @@ func RegisterRouter(r *gin.RouterGroup, db *database.DB, cfg *config.Config, sta
 	r.GET("/reset-user-id/:apiKey", regenerateUserID(db))
 	r.GET("/requests/:userID", getRequestsHandler(db, cfg))
 	r.GET("/requests/:userID/:page", getPaginatedRequestsHandler(db, cfg))
+	r.POST("/delete", deleteAccount(db))
+	// Deprecated: a GET is expected to be safe to fetch. Use POST /delete.
 	r.GET("/delete/:apiKey", deleteData(db))
 	r.GET("/monitor/:userID", getUserMonitor(db))
 	r.GET("/monitor/pings/:userID", getUserPings(db))
