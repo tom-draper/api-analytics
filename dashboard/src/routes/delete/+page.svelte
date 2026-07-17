@@ -2,12 +2,20 @@
 	import { getServerURL } from '$lib/url';
 	import Lightning from '$components/Lightning.svelte';
 
-	type State = 'idle' | 'loading' | 'deleted' | 'error';
+	type State = 'idle' | 'confirm' | 'loading' | 'deleted' | 'error';
 
 	let status: State = $state('idle');
 	let apiKey = $state('');
 
-	async function submit() {
+	// First step: ask for explicit confirmation rather than deleting straight
+	// away. Deletion is irreversible, so it must never happen on a single action.
+	function requestDelete() {
+		if (!apiKey || status === 'loading') return;
+		status = 'confirm';
+	}
+
+	// Second step: the actual deletion, only reachable from an explicit confirm.
+	async function confirmDelete() {
 		if (!apiKey) return;
 
 		status = 'loading';
@@ -34,8 +42,14 @@
 		}
 	}
 
+	// Enter only advances to the confirmation step; it never performs the
+	// deletion, so a stray keypress cannot delete an account.
 	function enter(e: KeyboardEvent) {
-		if (e.key === 'Enter') submit();
+		if (e.key === 'Enter' && status === 'idle') requestDelete();
+	}
+
+	function cancel() {
+		status = 'idle';
 	}
 
 	function reset() {
@@ -93,7 +107,7 @@
 			bind:value={apiKey}
 			placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 			onkeydown={enter}
-			disabled={status === 'loading' || status === 'deleted'}
+			disabled={status === 'confirm' || status === 'loading' || status === 'deleted'}
 		/>
 
 		{#if status === 'deleted'}
@@ -105,8 +119,23 @@
 				Something went wrong. Please check your API key and try again.
 			</div>
 			<button class="form-btn delete-btn" onclick={reset}>Try again</button>
+		{:else if status === 'confirm'}
+			<div class="status-msg warning">
+				This permanently deletes your account and all associated data. This action cannot be
+				undone.
+			</div>
+			<div class="confirm-actions">
+				<button class="form-btn cancel-btn" onclick={cancel}>Cancel</button>
+				<button class="form-btn delete-btn" onclick={confirmDelete}
+					>Yes, delete everything</button
+				>
+			</div>
 		{:else}
-			<button class="form-btn delete-btn" onclick={submit} disabled={status === 'loading'}>
+			<button
+				class="form-btn delete-btn"
+				onclick={requestDelete}
+				disabled={status === 'loading'}
+			>
 				{#if status === 'loading'}
 					<div class="loader"></div>
 				{:else}
@@ -141,6 +170,25 @@
 		background: #0d2b1a;
 		color: var(--highlight);
 		border: 1px solid #1a4a2e;
+	}
+	.status-msg.warning {
+		background: #2b0d0d;
+		color: var(--red);
+		border: 1px solid #4a1a1a;
+	}
+	.confirm-actions {
+		display: flex;
+		gap: 0.75em;
+	}
+	.confirm-actions .form-btn {
+		flex: 1;
+	}
+	.cancel-btn {
+		background: #333333;
+		color: white;
+	}
+	.cancel-btn:hover:not(:disabled) {
+		background: #444444;
 	}
 	.loader {
 		border-top-color: var(--red);
