@@ -14,7 +14,14 @@
 
 		try {
 			const url = getServerURL();
-			const response = await fetch(`${url}/api/delete/${apiKey}`);
+			// Sent as a POST body to keep the API key out of URLs and server logs.
+			// No Content-Type is set on purpose: that keeps this a CORS simple
+			// request, avoiding a preflight the server does not answer. The other
+			// POST endpoints do the same.
+			const response = await fetch(`${url}/api/delete`, {
+				method: 'POST',
+				body: JSON.stringify({ api_key: apiKey })
+			});
 			if (response.status === 200) {
 				apiKey = '';
 				status = 'deleted';
