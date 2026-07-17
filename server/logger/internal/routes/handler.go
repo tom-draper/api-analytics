@@ -136,6 +136,15 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 			return
 		}
 
+		// Rate limit before the existence lookup so a flood on a single key is
+		// throttled without repeatedly hitting the database.
+		if rateLimiter.RateLimited(payload.APIKey) {
+			msg := "Too many requests."
+			log.LogClientError(c.ClientIP(), payload.APIKey, msg)
+			c.JSON(http.StatusTooManyRequests, gin.H{"status": http.StatusTooManyRequests, "message": msg})
+			return
+		}
+
 		ctx := c.Request.Context()
 
 		var exists bool
@@ -148,13 +157,6 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 			msg := "API key not found."
 			log.LogClientError(c.ClientIP(), payload.APIKey, msg)
 			c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": msg})
-			return
-		}
-
-		if rateLimiter.RateLimited(payload.APIKey) {
-			msg := "Too many requests."
-			log.LogClientError(c.ClientIP(), payload.APIKey, msg)
-			c.JSON(http.StatusTooManyRequests, gin.H{"status": http.StatusTooManyRequests, "message": msg})
 			return
 		}
 

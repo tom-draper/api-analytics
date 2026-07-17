@@ -72,6 +72,7 @@ services:
     environment:
       POSTGRES_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       LOGGER_RATE_LIMIT: ${LOGGER_RATE_LIMIT:-10}
+      LOGGER_IP_RATE_LIMIT: ${LOGGER_IP_RATE_LIMIT:-100}
       LOGGER_MAX_INSERT: ${LOGGER_MAX_INSERT:-2000}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]

@@ -8,9 +8,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/oschwald/geoip2-golang"
-	"github.com/tom-draper/api-analytics/server/logger/internal/log"
 	"github.com/tom-draper/api-analytics/server/database"
 	"github.com/tom-draper/api-analytics/server/logger/internal/config"
+	"github.com/tom-draper/api-analytics/server/logger/internal/log"
+	"github.com/tom-draper/api-analytics/server/logger/internal/ratelimit"
 )
 
 func RegisterRouter(r *gin.RouterGroup, db *database.DB, geoIPDB *geoip2.Reader, cfg *config.Config, startTime time.Time) {
@@ -23,10 +24,31 @@ func RegisterRouter(r *gin.RouterGroup, db *database.DB, geoIPDB *geoip2.Reader,
 		log.Info(fmt.Sprintf("user agent cache preloaded: %d entries", count))
 	}
 
+	// Rate limit ingest by source IP so a flood of unknown API keys is bounded
+	// before it reaches the per-key limiter and the key-existence lookup. The
+	// health check is left unthrottled so monitoring is unaffected.
+	ipLimiter := ipRateLimit(cfg.IPRateLimit)
+
 	h := logRequestHandler(db, geoIPDB, cache, cfg.RateLimit, cfg.MaxInsert)
-	r.POST("/log-request", h)
-	r.POST("/requests", h)
+	r.POST("/log-request", ipLimiter, h)
+	r.POST("/requests", ipLimiter, h)
 	r.GET("/health", checkHealth(db, startTime))
+}
+
+// ipRateLimit returns middleware that limits requests per source IP to
+// requestsPerMinute, keyed by client IP.
+func ipRateLimit(requestsPerMinute int) gin.HandlerFunc {
+	limiter := ratelimit.NewRateLimiter(requestsPerMinute)
+	return func(c *gin.Context) {
+		ip := c.ClientIP()
+		if limiter.RateLimited(ip) {
+			msg := "Too many requests."
+			log.LogClientError(ip, "", msg)
+			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"status": http.StatusTooManyRequests, "message": msg})
+			return
+		}
+		c.Next()
+	}
 }
 
 func checkHealth(db *database.DB, startTime time.Time) gin.HandlerFunc {
