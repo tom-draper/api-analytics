@@ -224,6 +224,12 @@ func getUserPings(db *database.DB) gin.HandlerFunc {
 				monitors[url] = make([]MonitorPing, 0)
 			}
 		}
+		if err := rows.Err(); err != nil {
+			rows.Close()
+			log.Error(fmt.Sprintf("id=%s: monitor scan error - %s", userID, err.Error()))
+			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
+			return
+		}
 		rows.Close()
 
 		rows, err = db.Pool.Query(ctx,
