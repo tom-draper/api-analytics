@@ -6,6 +6,7 @@ require (
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/joho/godotenv v1.5.1
 	github.com/tom-draper/api-analytics/server/database v0.0.0
+	github.com/tom-draper/api-analytics/server/email v0.0.0
 )
 
 require (
@@ -17,3 +18,5 @@ require (
 )
 
 replace github.com/tom-draper/api-analytics/server/database => ../database
+
+replace github.com/tom-draper/api-analytics/server/email => ../email

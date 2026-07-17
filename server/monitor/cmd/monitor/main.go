@@ -14,9 +14,20 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/tom-draper/api-analytics/server/database"
+	"github.com/tom-draper/api-analytics/server/email"
+	"github.com/tom-draper/api-analytics/server/monitor/internal/alert"
 	"github.com/tom-draper/api-analytics/server/monitor/internal/config"
 	"github.com/tom-draper/api-analytics/server/monitor/internal/log"
 )
+
+// pingResult is the outcome of pinging one monitored URL. A non-nil err means
+// the URL was unreachable, in which case no ping row is stored.
+type pingResult struct {
+	monitor MonitorRow
+	status  int
+	elapsed time.Duration
+	err     error
+}
 
 type MonitorRow struct {
 	APIKey    string    `json:"api_key"`
@@ -54,13 +65,26 @@ func main() {
 	defer db.Close()
 	log.Info("database connection pool initialized")
 
+	// Email alerts are optional and off by default. A nil sender (no
+	// EMAIL_PROVIDER) or disabled config yields a no-op alerter.
+	sender, err := email.NewFromEnv()
+	if err != nil {
+		log.Fatal(fmt.Sprintf("email configuration error: %v", err))
+	}
+	alerter := alert.New(cfg.AlertsEnabled, sender, cfg.AlertEmail)
+	if alerter.Enabled() {
+		log.Info(fmt.Sprintf("email alerts enabled, notifying %s", cfg.AlertEmail))
+	} else if cfg.AlertsEnabled {
+		log.Info("email alerts requested but no email provider is configured; alerts disabled")
+	}
+
 	log.Info(fmt.Sprintf("monitor running every %d minutes", cfg.Interval))
 
 	ticker := time.NewTicker(time.Duration(cfg.Interval) * time.Minute)
 	defer ticker.Stop()
 
 	// Run immediately on startup, then on each interval
-	runCycle(ctx, db)
+	runCycle(ctx, db, alerter)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -68,7 +92,7 @@ func main() {
 	for {
 		select {
 		case <-ticker.C:
-			runCycle(ctx, db)
+			runCycle(ctx, db, alerter)
 		case <-quit:
 			log.Info("shutting down...")
 			return
@@ -76,7 +100,7 @@ func main() {
 	}
 }
 
-func runCycle(ctx context.Context, db *database.DB) {
+func runCycle(ctx context.Context, db *database.DB, alerter *alert.Alerter) {
 	monitored, err := getMonitoredURLs(ctx, db)
 	if err != nil {
 		log.Error(fmt.Sprintf("failed to fetch monitored URLs: %v", err))
@@ -89,8 +113,13 @@ func runCycle(ctx context.Context, db *database.DB) {
 
 	shuffle(monitored)
 
-	pings := pingMonitored(monitored)
+	results := pingMonitored(monitored)
+	pings := successfulPings(results)
 	log.Info(fmt.Sprintf("completed %d pings", len(pings)))
+
+	// Alert on any up/down transitions before touching the database, so a DB
+	// error does not suppress downtime notifications.
+	alerter.Evaluate(alertResults(results))
 
 	if err = uploadPings(ctx, db, pings); err != nil {
 		log.Error(fmt.Sprintf("failed to upload pings: %v", err))
@@ -101,6 +130,38 @@ func runCycle(ctx context.Context, db *database.DB) {
 	if err = deleteExpiredPings(ctx, db); err != nil {
 		log.Error(fmt.Sprintf("failed to delete expired pings: %v", err))
 	}
+}
+
+// successfulPings turns the reachable results into rows for upload.
+func successfulPings(results []pingResult) []PingsRow {
+	pings := make([]PingsRow, 0, len(results))
+	for _, r := range results {
+		if r.err != nil {
+			continue
+		}
+		pings = append(pings, PingsRow{
+			APIKey:       r.monitor.APIKey,
+			URL:          r.monitor.URL,
+			ResponseTime: int(r.elapsed.Milliseconds()),
+			Status:       r.status,
+			CreatedAt:    time.Now(),
+		})
+	}
+	return pings
+}
+
+// alertResults adapts ping results for the alerter.
+func alertResults(results []pingResult) []alert.Result {
+	out := make([]alert.Result, 0, len(results))
+	for _, r := range results {
+		out = append(out, alert.Result{
+			APIKey: r.monitor.APIKey,
+			URL:    r.monitor.URL,
+			Status: r.status,
+			Err:    r.err,
+		})
+	}
+	return out
 }
 
 func getMonitoredURLs(ctx context.Context, db *database.DB) ([]MonitorRow, error) {
@@ -164,12 +225,12 @@ func deleteExpiredPings(ctx context.Context, db *database.DB) error {
 	return nil
 }
 
-func pingMonitored(monitored []MonitorRow) []PingsRow {
+func pingMonitored(monitored []MonitorRow) []pingResult {
 	client := getClient()
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
-	pings := make([]PingsRow, 0, len(monitored))
+	results := make([]pingResult, 0, len(monitored))
 
 	for _, m := range monitored {
 		wg.Add(1)
@@ -178,24 +239,24 @@ func pingMonitored(monitored []MonitorRow) []PingsRow {
 
 			status, elapsed, err := ping(client, m.URL, m.Secure, m.Ping)
 			if err != nil {
+				// An unreachable URL is recorded as a result (for alerting) but
+				// not stored as a ping row.
 				log.Error(err.Error())
-				return
 			}
 
 			mu.Lock()
-			pings = append(pings, PingsRow{
-				APIKey:       m.APIKey,
-				URL:          m.URL,
-				ResponseTime: int(elapsed.Milliseconds()),
-				Status:       status,
-				CreatedAt:    time.Now(),
+			results = append(results, pingResult{
+				monitor: m,
+				status:  status,
+				elapsed: elapsed,
+				err:     err,
 			})
 			mu.Unlock()
 		}(m)
 	}
 
 	wg.Wait()
-	return pings
+	return results
 }
 
 func ping(client http.Client, url string, secure bool, ping bool) (int, time.Duration, error) {
