@@ -1,33 +1,30 @@
+// Package email provides an optional, provider-agnostic way to send email.
+//
+// A Sender is selected from the environment with NewFromEnv, driven by
+// EMAIL_PROVIDER (smtp, resend, sendgrid, mailgun or ses). When the variable is
+// unset or "none", email is considered disabled and NewFromEnv returns a nil
+// Sender, so callers can treat email as an optional feature:
+//
+//	sender, err := email.NewFromEnv()
+//	if err != nil {
+//		// misconfiguration
+//	}
+//	if sender == nil {
+//		// email disabled; skip
+//	} else {
+//		err = sender.Send(msg)
+//	}
 package email
 
 import (
 	"errors"
 	"fmt"
-	"net/smtp"
 	"os"
-	"strconv"
 	"strings"
-
-	"github.com/joho/godotenv"
 )
 
-type Config struct {
-	SMTPServer  string
-	SMTPPort    int
-	Username    string
-	Password    string
-	FromAddress string
-	AuthType    AuthType
-}
-
-type AuthType int
-
-const (
-	AuthLogin AuthType = iota
-	AuthPlain
-	AuthCRAMMD5
-)
-
+// Message is a provider-agnostic email. Body is interpreted according to
+// ContentType, which defaults to "text/plain" when empty.
 type Message struct {
 	From        string
 	To          []string
@@ -35,143 +32,99 @@ type Message struct {
 	BCC         []string
 	Subject     string
 	Body        string
-	ContentType string // "text/plain" or "text/html"
+	ContentType string // "text/plain" (default) or "text/html"
 }
 
-type Client struct {
-	config Config
+// Sender delivers a Message through a specific provider.
+type Sender interface {
+	Send(msg Message) error
 }
 
-func NewClient(config Config) *Client {
-	return &Client{config: config}
-}
+// ErrDisabled is returned by helpers that require a configured provider when
+// none is set.
+var ErrDisabled = errors.New("email is disabled: set EMAIL_PROVIDER to enable")
 
-func NewClientFromEnv(envFile ...string) (*Client, error) {
-	envPath := ".env"
-	if len(envFile) > 0 {
-		envPath = envFile[0]
-	}
-
-	if err := godotenv.Load(envPath); err != nil {
-		if !os.IsNotExist(err) {
-			return nil, fmt.Errorf("failed to load env file: %w", err)
-		}
-	}
-
-	config := Config{
-		SMTPServer:  getEnvWithDefault("SMTP_SERVER", "smtp-mail.outlook.com"),
-		Username:    os.Getenv("EMAIL_USERNAME"),
-		Password:    os.Getenv("EMAIL_PASSWORD"),
-		FromAddress: os.Getenv("EMAIL_FROM_ADDRESS"),
-	}
-
-	portStr := getEnvWithDefault("SMTP_PORT", "587")
-	port, err := strconv.Atoi(portStr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid SMTP_PORT: %w", err)
-	}
-	config.SMTPPort = port
-
-	authTypeStr := getEnvWithDefault("SMTP_AUTH_TYPE", "login")
-	switch strings.ToLower(authTypeStr) {
-	case "login":
-		config.AuthType = AuthLogin
-	case "plain":
-		config.AuthType = AuthPlain
-	case "crammd5":
-		config.AuthType = AuthCRAMMD5
+// NewFromEnv builds a Sender from EMAIL_PROVIDER and the provider's own
+// environment variables. It returns (nil, nil) when email is disabled
+// (EMAIL_PROVIDER unset or "none"), and an error only when a provider is named
+// but misconfigured.
+func NewFromEnv() (Sender, error) {
+	provider := strings.ToLower(strings.TrimSpace(os.Getenv("EMAIL_PROVIDER")))
+	switch provider {
+	case "", "none", "off", "disabled":
+		return nil, nil
+	case "smtp":
+		return newSMTPFromEnv()
+	case "resend":
+		return newResendFromEnv()
+	case "sendgrid":
+		return newSendGridFromEnv()
+	case "mailgun":
+		return newMailgunFromEnv()
+	case "ses", "aws-ses":
+		return newSESFromEnv()
 	default:
-		return nil, fmt.Errorf("unsupported auth type: %s", authTypeStr)
+		return nil, fmt.Errorf("unsupported EMAIL_PROVIDER %q (want smtp, resend, sendgrid, mailgun or ses)", provider)
 	}
-
-	if config.FromAddress == "" {
-		config.FromAddress = config.Username
-	}
-
-	if config.Username == "" || config.Password == "" {
-		return nil, errors.New("EMAIL_USERNAME and EMAIL_PASSWORD must be set")
-	}
-
-	return NewClient(config), nil
 }
 
-func (c *Client) Send(msg Message) error {
-	if msg.From == "" {
-		msg.From = c.config.FromAddress
+// contentType returns the message content type, defaulting to text/plain. This
+// default lives here rather than only in a provider so that a message rendered
+// anywhere carries a valid type instead of an empty "Content-Type: ; ...".
+func (m Message) contentType() string {
+	if m.ContentType == "" {
+		return "text/plain"
 	}
+	return m.ContentType
+}
 
-	if len(msg.To) == 0 {
-		return errors.New("at least one recipient is required")
+// isHTML reports whether the body should be sent as HTML.
+func (m Message) isHTML() bool {
+	return strings.HasPrefix(m.contentType(), "text/html")
+}
+
+// recipients returns every address the message is delivered to.
+func (m Message) recipients() []string {
+	all := make([]string, 0, len(m.To)+len(m.CC)+len(m.BCC))
+	all = append(all, m.To...)
+	all = append(all, m.CC...)
+	all = append(all, m.BCC...)
+	return all
+}
+
+// resolveFrom fills an empty From with the provider's default address and
+// reports an error if neither is set.
+func (m *Message) resolveFrom(defaultFrom string) error {
+	if m.From == "" {
+		m.From = defaultFrom
 	}
-
-	if msg.ContentType == "" {
-		msg.ContentType = "text/plain"
+	if m.From == "" {
+		return errors.New("no From address: set the message From or EMAIL_FROM_ADDRESS")
 	}
-
-	auth, err := c.createAuth()
-	if err != nil {
-		return fmt.Errorf("failed to create auth: %w", err)
-	}
-
-	message := c.buildMessage(msg)
-
-	allRecipients := append(msg.To, msg.CC...)
-	allRecipients = append(allRecipients, msg.BCC...)
-
-	endpoint := fmt.Sprintf("%s:%d", c.config.SMTPServer, c.config.SMTPPort)
-	err = smtp.SendMail(endpoint, auth, msg.From, allRecipients, message)
-	if err != nil {
-		return fmt.Errorf("failed to send email: %w", err)
-	}
-
 	return nil
 }
 
-func (c *Client) SendSimple(to, subject, body string) error {
-	msg := Message{
-		To:      []string{to},
-		Subject: subject,
-		Body:    body,
+// validate checks the fields every provider requires.
+func (m Message) validate() error {
+	if len(m.To) == 0 {
+		return errors.New("at least one recipient is required")
 	}
-	return c.Send(msg)
+	return nil
 }
 
-func (c *Client) createAuth() (smtp.Auth, error) {
-	switch c.config.AuthType {
-	case AuthLogin:
-		return &loginAuth{
-			username: c.config.Username,
-			password: c.config.Password,
-		}, nil
-	case AuthPlain:
-		return smtp.PlainAuth("", c.config.Username, c.config.Password, c.config.SMTPServer), nil
-	case AuthCRAMMD5:
-		return smtp.CRAMMD5Auth(c.config.Username, c.config.Password), nil
-	default:
-		return nil, fmt.Errorf("unsupported auth type: %v", c.config.AuthType)
-	}
+// envDefaultFrom is the shared fallback From address for every provider.
+func envDefaultFrom() string {
+	return os.Getenv("EMAIL_FROM_ADDRESS")
 }
 
-func (c *Client) buildMessage(msg Message) []byte {
-	var builder strings.Builder
-
-	// Required headers
-	builder.WriteString(fmt.Sprintf("From: %s\r\n", msg.From))
-	builder.WriteString(fmt.Sprintf("To: %s\r\n", strings.Join(msg.To, ", ")))
-
-	if len(msg.CC) > 0 {
-		builder.WriteString(fmt.Sprintf("CC: %s\r\n", strings.Join(msg.CC, ", ")))
+// requireEnv returns the value of key or an error naming it, so provider
+// constructors fail with a clear message about what is missing.
+func requireEnv(key string) (string, error) {
+	value := strings.TrimSpace(os.Getenv(key))
+	if value == "" {
+		return "", fmt.Errorf("%s is required", key)
 	}
-
-	builder.WriteString(fmt.Sprintf("Subject: %s\r\n", msg.Subject))
-	builder.WriteString(fmt.Sprintf("Content-Type: %s; charset=UTF-8\r\n", msg.ContentType))
-	builder.WriteString("MIME-Version: 1.0\r\n")
-
-	builder.WriteString("\r\n")
-
-	builder.WriteString(msg.Body)
-
-	return []byte(builder.String())
+	return value, nil
 }
 
 func getEnvWithDefault(key, defaultValue string) string {
@@ -179,27 +132,4 @@ func getEnvWithDefault(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
-}
-
-type loginAuth struct {
-	username string
-	password string
-}
-
-func (a *loginAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
-	return "LOGIN", []byte{}, nil
-}
-
-func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
-	if more {
-		switch string(fromServer) {
-		case "Username:":
-			return []byte(a.username), nil
-		case "Password:":
-			return []byte(a.password), nil
-		default:
-			return nil, errors.New("unknown server response")
-		}
-	}
-	return nil, nil
 }
