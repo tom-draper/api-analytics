@@ -11,7 +11,9 @@ import (
 
 var (
 	locationRegex = regexp.MustCompile(`^[A-Z]{2}$`)
-	// UUID v4 format: 8-4-4-4-12 hex characters
+	// UUID shape: 8-4-4-4-12 lowercase hex characters. This checks the layout
+	// only, not the version or variant nibbles, so it accepts any UUID-shaped
+	// string, not strictly v4.
 	uuidRegex = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
 )
 
@@ -156,7 +158,8 @@ func ValidIPAddress(ipAddress string) bool {
 	return ip != nil
 }
 
-// ValidAPIKey validates that a string is a valid UUID (used for API keys and user IDs)
+// ValidAPIKey reports whether a string has UUID shape (used for API keys and
+// user IDs). It gates format only; it does not check the UUID version.
 func ValidAPIKey(apiKey string) bool {
 	if apiKey == "" {
 		return false
@@ -170,6 +173,6 @@ func ValidAPIKey(apiKey string) bool {
 	// Convert to lowercase for validation
 	apiKey = strings.ToLower(apiKey)
 
-	// Match UUID v4 format
+	// Match UUID shape (layout only, not version/variant)
 	return uuidRegex.MatchString(apiKey)
 }
