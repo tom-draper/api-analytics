@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -113,6 +114,58 @@ func TestGetQueriesFromRequestConflictingSpellingsAreDeterministic(t *testing.T)
 		if got := queriesFor(t, "user_id=aaa&userId=zzz").userID; got != first {
 			t.Fatalf("userID resolved to %q then %q; expected a stable result", first, got)
 		}
+	}
+}
+
+// dataRecorderFor drives getData far enough to see how the page is handled.
+func dataRecorderFor(t *testing.T, rawQuery string) *httptest.ResponseRecorder {
+	t.Helper()
+	gin.SetMode(gin.TestMode)
+
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Request = httptest.NewRequest(http.MethodGet, "/data?"+rawQuery, nil)
+	c.Request.Header.Set("X-AUTH-TOKEN", "11111111-1111-4111-8111-111111111111")
+
+	getData(nil)(c)
+	return recorder
+}
+
+// The data endpoint has no load-everything sentinel, so pages below 1 are
+// invalid. They previously became a negative OFFSET and surfaced as a 500.
+func TestGetDataRejectsPagesBelowOne(t *testing.T) {
+	for _, rawQuery := range []string{"page=0", "page=-1", "page=-5"} {
+		t.Run(rawQuery, func(t *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("%s reached the database instead of being rejected: %v", rawQuery, r)
+				}
+			}()
+
+			recorder := dataRecorderFor(t, rawQuery)
+			if recorder.Code != http.StatusBadRequest {
+				t.Errorf("status = %d, expected %d for %s", recorder.Code, http.StatusBadRequest, rawQuery)
+			}
+			if !strings.Contains(recorder.Body.String(), "Invalid page number") {
+				t.Errorf("body = %q, expected an invalid page message", recorder.Body.String())
+			}
+		})
+	}
+}
+
+func TestGetDataAcceptsValidPage(t *testing.T) {
+	for _, rawQuery := range []string{"page=1", "page=3", ""} {
+		t.Run("query="+rawQuery, func(t *testing.T) {
+			defer func() {
+				// Reaching the nil DB proves the page passed validation.
+				_ = recover()
+			}()
+
+			recorder := dataRecorderFor(t, rawQuery)
+			if recorder.Code == http.StatusBadRequest {
+				t.Errorf("%q was rejected, expected it to be accepted", rawQuery)
+			}
+		})
 	}
 }
 

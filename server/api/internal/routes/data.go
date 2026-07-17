@@ -45,6 +45,15 @@ func getData(db *database.DB) gin.HandlerFunc {
 		log.Info(fmt.Sprintf("key=%s: data access", apiKey))
 
 		queries := getQueriesFromRequest(c)
+
+		// Pages are 1-based: anything below 1 becomes a negative OFFSET, which
+		// Postgres rejects.
+		if queries.page < 1 {
+			log.Info(fmt.Sprintf("key=%s: invalid page number %d", apiKey, queries.page))
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid page number."})
+			return
+		}
+
 		ctx := c.Request.Context()
 
 		query, arguments := buildDataFetchQuery(apiKey, queries)

@@ -64,7 +64,27 @@ func TestGetRequestsHandlerRejectsUnparseablePage(t *testing.T) {
 	}
 }
 
-// A valid page must still be accepted and reach the database layer.
+// A negative page becomes a negative OFFSET, which Postgres rejects with an
+// error, surfacing as a 500. It must be refused before reaching the database.
+func TestGetRequestsHandlerRejectsNegativePage(t *testing.T) {
+	for _, rawQuery := range []string{"page=-1", "page=-5", "page=-250000"} {
+		t.Run(rawQuery, func(t *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("%s reached the database instead of being rejected: %v", rawQuery, r)
+				}
+			}()
+
+			recorder := requestsRecorderFor(t, rawQuery)
+			if recorder.Code != http.StatusBadRequest {
+				t.Errorf("status = %d, expected %d for %s", recorder.Code, http.StatusBadRequest, rawQuery)
+			}
+		})
+	}
+}
+
+// A valid page must still be accepted and reach the database layer. Page 0 is
+// the load-every-page sentinel and stays valid on this route.
 func TestGetRequestsHandlerAcceptsValidPage(t *testing.T) {
 	for _, rawQuery := range []string{"page=1", "page=3", "page=0"} {
 		t.Run(rawQuery, func(t *testing.T) {
@@ -89,5 +109,57 @@ func TestGetRequestsHandlerAbsentPage(t *testing.T) {
 	recorder := requestsRecorderFor(t, "")
 	if recorder.Code == http.StatusBadRequest {
 		t.Error("an absent page was rejected, expected it to default to page 1")
+	}
+}
+
+// paginatedRecorderFor drives getPaginatedRequestsHandler with a :page param.
+func paginatedRecorderFor(t *testing.T, page string) *httptest.ResponseRecorder {
+	t.Helper()
+	gin.SetMode(gin.TestMode)
+
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Request = httptest.NewRequest(http.MethodGet, "/requests/some-user-id/"+page, nil)
+	c.Params = gin.Params{
+		{Key: "userID", Value: "some-user-id"},
+		{Key: "page", Value: page},
+	}
+
+	getPaginatedRequestsHandler(nil, &config.Config{PageSize: 250_000, MaxLoad: 1_000_000})(c)
+	return recorder
+}
+
+// Unlike the query route, this one is strictly 1-based: page 0 is not a
+// sentinel and was already rejected, but negatives were not.
+func TestGetPaginatedRequestsHandlerRejectsPagesBelowOne(t *testing.T) {
+	for _, page := range []string{"0", "-1", "-5", "abc"} {
+		t.Run("page="+page, func(t *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("page %s reached the database instead of being rejected: %v", page, r)
+				}
+			}()
+
+			recorder := paginatedRecorderFor(t, page)
+			if recorder.Code != http.StatusBadRequest {
+				t.Errorf("status = %d, expected %d for page %s", recorder.Code, http.StatusBadRequest, page)
+			}
+		})
+	}
+}
+
+func TestGetPaginatedRequestsHandlerAcceptsValidPage(t *testing.T) {
+	for _, page := range []string{"1", "2", "100"} {
+		t.Run("page="+page, func(t *testing.T) {
+			defer func() {
+				// Reaching the nil DB proves the page passed validation.
+				_ = recover()
+			}()
+
+			recorder := paginatedRecorderFor(t, page)
+			if recorder.Code == http.StatusBadRequest {
+				t.Errorf("page %s was rejected, expected it to be accepted", page)
+			}
+		})
 	}
 }

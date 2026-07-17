@@ -162,11 +162,12 @@ func getRequestsHandler(db *database.DB, cfg *config.Config) gin.HandlerFunc {
 
 		// Page 0 means load every page. strconv.Atoi also returns 0 on failure,
 		// so an unparseable page must be rejected rather than fall through to
-		// the full load.
+		// the full load. A negative page would become a negative OFFSET, which
+		// Postgres rejects.
 		targetPage := 1
 		if pageQuery := c.Query("page"); pageQuery != "" {
 			page, err := strconv.Atoi(pageQuery)
-			if err != nil {
+			if err != nil || page < 0 {
 				log.Info(fmt.Sprintf("id=%s: failed to parse page number '%s' from query", userID, pageQuery))
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid page number."})
 				return
@@ -249,8 +250,10 @@ func getPaginatedRequestsHandler(db *database.DB, cfg *config.Config) gin.Handle
 			return
 		}
 
+		// Pages are 1-based here: anything below 1 becomes a negative OFFSET,
+		// which Postgres rejects.
 		page, err := strconv.Atoi(c.Param("page"))
-		if err != nil || page == 0 {
+		if err != nil || page < 1 {
 			log.Info("invalid page number")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid page number."})
 			return
