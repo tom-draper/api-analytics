@@ -6,20 +6,10 @@ import (
 	"strings"
 	"time"
 	"unicode"
+	"unicode/utf8"
 )
 
 var (
-	sqlKeywords = []string{
-		"SELECT", "INSERT", "UPDATE", "DELETE", "DROP", "CREATE", "ALTER",
-		"TRUNCATE", "EXEC", "EXECUTE", "UNION", "SCRIPT", "DECLARE",
-	}
-
-	sqlPatterns = []*regexp.Regexp{
-		regexp.MustCompile(`(?i)('|(\\)|;|--|/\*|\*/|xp_|sp_)`),
-		regexp.MustCompile(`(?i)(union\s+select|drop\s+table|insert\s+into)`),
-		regexp.MustCompile(`(?i)(\bor\b|\band\b)\s*['"]?\s*\d+\s*['"]?\s*[=><]`),
-	}
-
 	locationRegex = regexp.MustCompile(`^[A-Z]{2}$`)
 	// UUID v4 format: 8-4-4-4-12 hex characters
 	uuidRegex = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
@@ -38,6 +28,14 @@ func ValidDate(date time.Time) bool {
 	return date.After(minDate) && date.Before(maxDate)
 }
 
+// ValidString reports whether a value is safe to store as Postgres text.
+//
+// Logged values are request data (paths, user agents, referrers), so content
+// that merely looks like SQL is legitimate and accepted: every query in this
+// package is parameterized, and the logger inserts via COPY, so a value is
+// never parsed as SQL. This checks only what Postgres itself cannot store:
+// null bytes, control characters, and invalid UTF-8, any of which would abort
+// the enclosing batch insert.
 func ValidString(value string) bool {
 	if value == "" {
 		return false
@@ -47,24 +45,12 @@ func ValidString(value string) bool {
 		return false
 	}
 
+	if !utf8.ValidString(value) {
+		return false
+	}
+
 	for _, r := range value {
 		if r == 0 || (unicode.IsControl(r) && r != '\t' && r != '\n' && r != '\r') {
-			return false
-		}
-	}
-
-	upperValue := strings.ToUpper(value)
-
-	// Check for SQL keywords
-	for _, keyword := range sqlKeywords {
-		if strings.Contains(upperValue, keyword) {
-			return false
-		}
-	}
-
-	// Check for SQL injection patterns
-	for _, pattern := range sqlPatterns {
-		if pattern.MatchString(value) {
 			return false
 		}
 	}

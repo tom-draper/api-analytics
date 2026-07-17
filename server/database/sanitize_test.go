@@ -106,49 +106,14 @@ func TestValidString(t *testing.T) {
 			expected: false,
 		},
 		{
-			name:     "string with SQL keyword SELECT",
-			value:    "SELECT * FROM users",
+			name:     "invalid UTF-8",
+			value:    "user\xff\xfename",
 			expected: false,
 		},
 		{
-			name:     "string with SQL keyword (case insensitive)",
-			value:    "select * from users",
-			expected: false,
-		},
-		{
-			name:     "string with SQL keyword INSERT",
-			value:    "INSERT INTO table",
-			expected: false,
-		},
-		{
-			name:     "string with SQL injection single quote",
-			value:    "user'; DROP TABLE users; --",
-			expected: false,
-		},
-		{
-			name:     "string with SQL injection comment",
-			value:    "user -- comment",
-			expected: false,
-		},
-		{
-			name:     "string with SQL injection union select",
-			value:    "1 UNION SELECT password FROM users",
-			expected: false,
-		},
-		{
-			name:     "string with SQL injection or condition",
-			value:    "user OR 1=1",
-			expected: false,
-		},
-		{
-			name:     "string with backslash",
-			value:    "user\\name",
-			expected: false,
-		},
-		{
-			name:     "string with SQL comment /*",
-			value:    "user /* comment */",
-			expected: false,
+			name:     "valid multi-byte UTF-8",
+			value:    "/café/日本語",
+			expected: true,
 		},
 		{
 			name:     "valid string with numbers",
@@ -158,6 +123,24 @@ func TestValidString(t *testing.T) {
 		{
 			name:     "valid string with special chars (safe)",
 			value:    "user@domain.com",
+			expected: true,
+		},
+		// SQL-shaped content is stored as data, never parsed as SQL: all
+		// queries are parameterized and the logger inserts via COPY. These
+		// are accepted so that legitimate traffic is not silently dropped.
+		{
+			name:     "SQL keyword is ordinary text",
+			value:    "SELECT * FROM users",
+			expected: true,
+		},
+		{
+			name:     "injection attempt stored verbatim as data",
+			value:    "user'; DROP TABLE users; --",
+			expected: true,
+		},
+		{
+			name:     "string with backslash",
+			value:    "user\\name",
 			expected: true,
 		},
 	}
@@ -204,9 +187,9 @@ func TestValidHostname(t *testing.T) {
 			expected: true,
 		},
 		{
-			name:     "hostname with SQL injection",
+			name:     "hostname with SQL-shaped content is stored as data",
 			hostname: "example.com'; DROP TABLE hosts; --",
-			expected: false,
+			expected: true,
 		},
 		{
 			name:     "localhost",
@@ -262,9 +245,31 @@ func TestValidPath(t *testing.T) {
 			expected: true,
 		},
 		{
-			name:     "path with SQL injection",
+			name:     "path with SQL-shaped content is stored as data",
 			path:     "/users'; DROP TABLE paths; --",
-			expected: false,
+			expected: true,
+		},
+		// Regression: these ordinary REST paths were rejected by a SQL keyword
+		// blacklist, silently dropping the requests at ingest.
+		{
+			name:     "path containing SQL keyword DELETE",
+			path:     "/api/v1/users/delete",
+			expected: true,
+		},
+		{
+			name:     "path containing SQL keyword CREATE",
+			path:     "/users/create",
+			expected: true,
+		},
+		{
+			name:     "path containing SQL keyword SELECT",
+			path:     "/api/select-plan",
+			expected: true,
+		},
+		{
+			name:     "path containing SQL keyword SCRIPT",
+			path:     "/scripts/main.js",
+			expected: true,
 		},
 	}
 
@@ -310,13 +315,30 @@ func TestValidUserAgent(t *testing.T) {
 			expected:  true,
 		},
 		{
-			name:      "user agent with SQL injection",
+			name:      "user agent with SQL-shaped content is stored as data",
 			userAgent: "Mozilla'; DROP TABLE agents; --",
-			expected:  false,
+			expected:  true,
 		},
 		{
 			name:      "custom bot user agent",
 			userAgent: "MyBot/1.0",
+			expected:  true,
+		},
+		// Regression: the semicolons in every real browser user agent matched a
+		// SQL injection pattern, so effectively all browser traffic was dropped.
+		{
+			name:      "full Chrome user agent",
+			userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+			expected:  true,
+		},
+		{
+			name:      "full Safari user agent",
+			userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+			expected:  true,
+		},
+		{
+			name:      "full iPhone user agent",
+			userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
 			expected:  true,
 		},
 	}
@@ -368,9 +390,9 @@ func TestValidUserID(t *testing.T) {
 			expected: true,
 		},
 		{
-			name:     "user ID with SQL injection",
+			name:     "user ID with SQL-shaped content is stored as data",
 			userID:   "user'; DROP TABLE users; --",
-			expected: false,
+			expected: true,
 		},
 		{
 			name:     "user ID with email format",
@@ -604,3 +626,4 @@ func BenchmarkValidIPAddress(b *testing.B) {
 		ValidIPAddress(testIP)
 	}
 }
+
