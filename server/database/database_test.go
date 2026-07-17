@@ -7,6 +7,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	requireDB(t)
 	ctx := context.Background()
 
 	t.Run("creates connection pool successfully with valid URL", func(t *testing.T) {
@@ -100,6 +101,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestDBClose(t *testing.T) {
+	requireDB(t)
 	ctx := context.Background()
 	testURL := "postgres://user:pass@localhost:5432/testdb"
 
@@ -121,6 +123,7 @@ func TestDBClose(t *testing.T) {
 }
 
 func TestDBCheckConnection(t *testing.T) {
+	requireDB(t)
 	ctx := context.Background()
 
 	t.Run("successful connection check", func(t *testing.T) {
@@ -137,6 +140,7 @@ func TestDBCheckConnection(t *testing.T) {
 }
 
 func TestConnectionPoolConcurrency(t *testing.T) {
+	requireDB(t)
 	if testDB == nil {
 		t.Skip("testDB not initialized - run with query_test.go")
 	}
@@ -176,6 +180,7 @@ func TestConnectionPoolConcurrency(t *testing.T) {
 }
 
 func TestConnectionPoolReuse(t *testing.T) {
+	requireDB(t)
 	if testDB == nil {
 		t.Skip("testDB not initialized - run with query_test.go")
 	}

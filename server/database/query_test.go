@@ -8,29 +8,39 @@ import (
 
 var testDB *DB
 
-func TestMain(m *testing.M) {
-	// Setup: Create database connection pool once for all tests
-	dbURL := os.Getenv("POSTGRES_URL")
-	if dbURL == "" {
-		panic("POSTGRES_URL environment variable is not set")
+// requireDB skips a test that needs Postgres when POSTGRES_URL is unset, so
+// that the pure validation tests in this package still run without a database.
+func requireDB(t *testing.T) {
+	t.Helper()
+	if testDB == nil {
+		t.Skip("POSTGRES_URL not set; skipping database integration test")
 	}
+}
 
-	var err error
-	testDB, err = New(context.Background(), dbURL)
-	if err != nil {
-		panic("Failed to create database connection: " + err.Error())
+func TestMain(m *testing.M) {
+	// Setup: Create database connection pool once for all tests. A database is
+	// optional: without one, integration tests skip and the rest still run.
+	if dbURL := os.Getenv("POSTGRES_URL"); dbURL != "" {
+		var err error
+		testDB, err = New(context.Background(), dbURL)
+		if err != nil {
+			panic("Failed to create database connection: " + err.Error())
+		}
 	}
 
 	// Run tests
 	code := m.Run()
 
 	// Teardown: Close database connection
-	testDB.Close()
+	if testDB != nil {
+		testDB.Close()
+	}
 
 	os.Exit(code)
 }
 
 func TestCreateUser(t *testing.T) {
+	requireDB(t)
 	ctx := context.Background()
 
 	t.Run("successful creation", func(t *testing.T) {
@@ -54,6 +64,7 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestGetUserID(t *testing.T) {
+	requireDB(t)
 	ctx := context.Background()
 
 	apiKey, err := testDB.CreateUser(ctx)
@@ -101,6 +112,7 @@ func TestGetUserID(t *testing.T) {
 }
 
 func TestGetAPIKey(t *testing.T) {
+	requireDB(t)
 	ctx := context.Background()
 
 	originalAPIKey, err := testDB.CreateUser(ctx)
@@ -153,6 +165,7 @@ func TestGetAPIKey(t *testing.T) {
 }
 
 func TestDeleteUser(t *testing.T) {
+	requireDB(t)
 	ctx := context.Background()
 
 	t.Run("successful deletion", func(t *testing.T) {
@@ -195,6 +208,7 @@ func TestDeleteUser(t *testing.T) {
 }
 
 func TestDeleteRequests(t *testing.T) {
+	requireDB(t)
 	ctx := context.Background()
 
 	apiKey, err := testDB.CreateUser(ctx)
@@ -227,6 +241,7 @@ func TestDeleteRequests(t *testing.T) {
 }
 
 func TestDeleteMonitors(t *testing.T) {
+	requireDB(t)
 	ctx := context.Background()
 
 	apiKey, err := testDB.CreateUser(ctx)
@@ -259,6 +274,7 @@ func TestDeleteMonitors(t *testing.T) {
 }
 
 func TestDeletePings(t *testing.T) {
+	requireDB(t)
 	ctx := context.Background()
 
 	apiKey, err := testDB.CreateUser(ctx)
@@ -291,6 +307,7 @@ func TestDeletePings(t *testing.T) {
 }
 
 func TestCheckConnection(t *testing.T) {
+	requireDB(t)
 	ctx := context.Background()
 
 	t.Run("successful connection check", func(t *testing.T) {
@@ -301,6 +318,7 @@ func TestCheckConnection(t *testing.T) {
 }
 
 func TestUserWorkflow(t *testing.T) {
+	requireDB(t)
 	ctx := context.Background()
 
 	t.Run("complete user lifecycle", func(t *testing.T) {
@@ -353,6 +371,7 @@ func TestUserWorkflow(t *testing.T) {
 }
 
 func TestDeleteAllData(t *testing.T) {
+	requireDB(t)
 	ctx := context.Background()
 
 	apiKey, err := testDB.CreateUser(ctx)
@@ -373,6 +392,7 @@ func TestDeleteAllData(t *testing.T) {
 }
 
 func TestDeleteUserAccount(t *testing.T) {
+	requireDB(t)
 	ctx := context.Background()
 
 	t.Run("successful deletion of user account", func(t *testing.T) {
@@ -415,6 +435,7 @@ func isValidUUID(uuid string) bool {
 }
 
 func TestUUIDValidation(t *testing.T) {
+	requireDB(t)
 	ctx := context.Background()
 
 	apiKey, err := testDB.CreateUser(ctx)
