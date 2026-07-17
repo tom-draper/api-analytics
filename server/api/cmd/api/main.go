@@ -89,9 +89,15 @@ func setupRouter(db *database.DB, cfg *config.Config, startTime time.Time) *gin.
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
 
-	r := app.Group("/api")
-
-	r.Use(cors.Default())
+	// Middleware must be registered before the route group is created. A group
+	// copies the engine's handler chain as it stands at that moment, so
+	// anything added afterwards never runs for the group's routes.
+	//
+	// CORS goes first so that it answers preflight requests and aborts before
+	// they consume rate limit budget. Registering it on the engine rather than
+	// the group also means it covers requests that match no route, which is
+	// what a preflight is until the browser is told the real method is allowed.
+	app.Use(cors.Default())
 
 	// Limit a single IP's request logs per second
 	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
@@ -103,6 +109,8 @@ func setupRouter(db *database.DB, cfg *config.Config, startTime time.Time) *gin.
 		KeyFunc:      rateLimitKey,
 	})
 	app.Use(ratelimiter)
+
+	r := app.Group("/api")
 
 	routes.RegisterRouter(r, db, cfg, startTime)
 
