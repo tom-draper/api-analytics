@@ -21,10 +21,10 @@
 	import type { NotificationState } from '$lib/notification';
 	import Notification from '$components/dashboard/Notification.svelte';
 	import exportCSV from '$lib/exportData';
-	import { ColumnIndex, columns, loadingMessages, pageSize } from '$lib/consts';
+	import { ColumnIndex, columns, loadingMessages } from '$lib/consts';
 	import Error from '$components/Error.svelte';
 	import TopUsers from '$components/dashboard/TopUsers.svelte';
-	import { fetchPage, fetchPageRaw } from '$lib/fetchRequests';
+	import { fetchPage, fetchPageRaw, hasMorePages } from '$lib/fetchRequests';
 	import Navigation from '$components/dashboard/Navigation.svelte';
 	import { dataStore } from '$lib/dataStore';
 	import Referrers from '$components/dashboard/Referrers.svelte';
@@ -35,11 +35,16 @@
 
 	const userID = formatUUID(page.params.uuid ?? '');
 
+	// Set from the first page's server-reported page_size so pagination never
+	// depends on a value hardcoded in the dashboard.
+	let firstPageHasMore = false;
+
 	async function fetchData() {
 		let data: DashboardData = { requests: [], userAgents: {} };
 		const result = await fetchPage(userID, 1);
 		if (result.ok) {
 			data = { requests: result.body.requests, userAgents: result.body.user_agents };
+			firstPageHasMore = hasMorePages(result.body);
 			dataStore.set(data);
 		} else {
 			fetchStatus = { failed: true, message: result.message, status: result.status };
@@ -49,18 +54,18 @@
 
 	async function fetchAdditionalPages() {
 		let page = 2;
-		let requests: number;
+		let more: boolean;
 		do {
-			requests = await fetchAdditionalPage(page);
+			more = await fetchAdditionalPage(page);
 			page++;
-		} while (requests >= pageSize);
+		} while (more);
 
 		loading = false;
 	}
 
 	async function fetchAdditionalPage(page: number) {
 		const body = await fetchPageRaw(userID, page);
-		if (!body || !data) return 0;
+		if (!body || !data) return false;
 
 		const mostRecent = new Date(body.requests[body.requests.length - 1][ColumnIndex.CreatedAt]);
 		const inPeriod = dateInPeriod(mostRecent, settings.period);
@@ -86,7 +91,7 @@
 		}
 
 		dataStore.set(data);
-		return body.requests.length;
+		return hasMorePages(body);
 	}
 
 	function isDemo() {
@@ -161,7 +166,7 @@
 		dataStore.set(dashboardData);
 		postInit();
 
-		if (dashboardData.requests.length >= pageSize) {
+		if (firstPageHasMore) {
 			fetchAdditionalPages();
 		} else {
 			loading = false;

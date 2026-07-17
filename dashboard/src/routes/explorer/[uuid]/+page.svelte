@@ -2,9 +2,9 @@
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import formatUUID from '$lib/uuid';
-	import { ColumnIndex, pageSize } from '$lib/consts';
+	import { ColumnIndex } from '$lib/consts';
 	import { getServerURL } from '$lib/url';
-	import { fetchPageRaw } from '$lib/fetchRequests';
+	import { fetchPageRaw, hasMorePages } from '$lib/fetchRequests';
 	import { dataStore } from '$lib/dataStore';
 	import Navigation from '$components/explorer/navigation/Navigation.svelte';
 	import Viewer from '$components/explorer/Viewer.svelte';
@@ -13,6 +13,10 @@
 	import { nextDay, toDay } from '$lib/date';
 
 	const userID = formatUUID(page.params.uuid ?? '');
+
+	// Set from the first page's server-reported page_size so pagination never
+	// depends on a value hardcoded in the dashboard.
+	let firstPageHasMore = false;
 
 	async function fetchData() {
 		const url = getServerURL();
@@ -27,6 +31,7 @@
 			const body = await response.json();
 			if (response.ok && response.status === 200) {
 				data = { requests: body.requests, userAgents: body.user_agents };
+				firstPageHasMore = hasMorePages(body);
 				dataStore.set(data);
 			}
 		} catch (e) {
@@ -38,23 +43,23 @@
 
 	async function fetchAdditionalPages() {
 		let page = 2;
-		let requests: number;
+		let more: boolean;
 		do {
-			requests = await fetchAdditionalPage(page);
+			more = await fetchAdditionalPage(page);
 			page++;
-		} while (requests >= pageSize);
+		} while (more);
 	}
 
 	async function fetchAdditionalPage(page: number) {
 		const body = await fetchPageRaw(userID, page);
-		if (!body) return 0;
+		if (!body) return false;
 
 		data.userAgents = { ...data.userAgents, ...body.user_agents };
 		parseDates(body.requests);
 		sortByTime(body.requests);
 		data.requests = data.requests.concat(body.requests);
 		dataStore.set(data);
-		return body.requests.length;
+		return hasMorePages(body);
 	}
 
 	function isDemo() {
@@ -151,7 +156,7 @@
 		if (data.requests.length === 0) {
 			data = await getDashboardData();
 
-			if (data.requests.length >= pageSize) {
+			if (firstPageHasMore) {
 				// Fetch page 2 and onwards if initial fetch didn't get all data
 				fetchAdditionalPages();
 			}

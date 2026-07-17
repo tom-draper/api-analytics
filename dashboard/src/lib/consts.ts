@@ -2,8 +2,6 @@ import { shuffleList } from './shuffle';
 
 export const serverURL = 'https://www.apianalytics-server.com';
 
-export const pageSize = 200_000;
-
 export const topListLimit = 50;
 
 export const columns = [

@@ -3,7 +3,21 @@ import { getServerURL } from '$lib/url';
 export type PageBody = {
 	requests: any[];
 	user_agents: Record<number, string>;
+	has_more?: boolean;
 };
+
+/**
+ * Reports whether another page follows this one. The server decides this (via
+ * has_more) so the dashboard never hardcodes the page size, and so a page that
+ * was full but had a row skipped is not mistaken for the last page. If an older
+ * server omits has_more, fall back to paginating until an empty page.
+ */
+export function hasMorePages(body: PageBody): boolean {
+	if (typeof body.has_more === 'boolean') {
+		return body.has_more;
+	}
+	return body.requests.length > 0;
+}
 
 export type FetchResult =
 	| { ok: true; body: PageBody }
