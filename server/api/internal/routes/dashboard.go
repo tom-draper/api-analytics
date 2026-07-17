@@ -17,7 +17,9 @@ import (
 
 type DashboardData struct {
 	UserAgents UserAgentsLookup `json:"user_agents"`
-	Requests   [][12]any        `json:"requests"`
+	// Each row has 11 positional columns, matching the dashboard's ColumnIndex
+	// enum (IPAddress..Referrer, 0-10).
+	Requests [][11]any `json:"requests"`
 }
 
 type UserAgentsLookup map[int]string
@@ -64,7 +66,7 @@ type RequestRow struct {
 	CreatedAt    time.Time   `json:"created_at"`
 }
 
-func fetchAndFormatRequestsPage(ctx context.Context, db *database.DB, apiKey string, page, pageSize int) (requests [][12]any, userAgentIDs map[int]struct{}, count, skipped int, err error) {
+func fetchAndFormatRequestsPage(ctx context.Context, db *database.DB, apiKey string, page, pageSize int) (requests [][11]any, userAgentIDs map[int]struct{}, count, skipped int, err error) {
 	query := "SELECT ip_address, path, hostname, user_agent_id, method, response_time, status, location, user_id, created_at, referrer FROM requests WHERE api_key = $1 ORDER BY created_at LIMIT $2 OFFSET $3;"
 	offset := (page - 1) * pageSize
 	rows, err := db.Pool.Query(ctx, query, apiKey, pageSize, offset)
@@ -73,7 +75,7 @@ func fetchAndFormatRequestsPage(ctx context.Context, db *database.DB, apiKey str
 	}
 	defer rows.Close()
 
-	requests = make([][12]any, 0)
+	requests = make([][11]any, 0)
 	userAgentIDs = make(map[int]struct{})
 	request := new(DashboardRequestRow)
 
@@ -101,7 +103,7 @@ func fetchAndFormatRequestsPage(ctx context.Context, db *database.DB, apiKey str
 			ipAddress = request.IPAddress.IPNet.IP.String()
 		}
 
-		requests = append(requests, [12]any{
+		requests = append(requests, [11]any{
 			ipAddress,
 			request.Path,
 			getNullableString(request.Hostname),
@@ -125,7 +127,7 @@ func fetchAndFormatRequestsPage(ctx context.Context, db *database.DB, apiKey str
 	return requests, userAgentIDs, count, skipped, rows.Err()
 }
 
-func sendDashboardResponse(c *gin.Context, db *database.DB, ctx context.Context, apiKey string, requests [][12]any, userAgentIDs map[int]struct{}) error {
+func sendDashboardResponse(c *gin.Context, db *database.DB, ctx context.Context, apiKey string, requests [][11]any, userAgentIDs map[int]struct{}) error {
 	userAgents, err := db.GetUserAgents(ctx, userAgentIDs)
 	if err != nil {
 		log.Error(fmt.Sprintf("key=%s: user agent lookup failed - %s", apiKey, err.Error()))
@@ -194,7 +196,7 @@ func getRequestsHandler(db *database.DB, cfg *config.Config) gin.HandlerFunc {
 			return
 		}
 
-		allRequests := make([][12]any, 0)
+		allRequests := make([][11]any, 0)
 		allUserAgentIDs := make(map[int]struct{})
 		currentPage := 1
 		if targetPage != 0 {
