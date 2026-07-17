@@ -17,28 +17,29 @@
 		"@eslint/compat": "^2.1.0",
 		"@eslint/js": "^10.0.1",
 		"@sveltejs/adapter-auto": "^7.0.1",
-		"@sveltejs/adapter-node": "^5.5.4",
-		"@sveltejs/kit": "^2.65.1",
-		"@sveltejs/vite-plugin-svelte": "^7.1.2",
-		"@tailwindcss/postcss": "^4.3.1",
-		"@tailwindcss/vite": "^4.3.1",
-		"@types/node": "^25.9.3",
+		"@sveltejs/adapter-node": "^5.5.7",
+		"@sveltejs/kit": "^2.69.3",
+		"@sveltejs/vite-plugin-svelte": "^7.2.0",
+		"@tailwindcss/postcss": "^4.3.3",
+		"@tailwindcss/vite": "^4.3.3",
+		"@types/node": "^26.1.1",
 		"@types/plotly.js": "^3.0.10",
-		"autoprefixer": "^10.5.0",
-		"eslint": "^10.5.0",
+		"autoprefixer": "^10.5.4",
+		"esbuild": "^0.28.1",
+		"eslint": "^10.7.0",
 		"eslint-config-prettier": "^10.1.8",
-		"eslint-plugin-svelte": "^3.19.0",
-		"globals": "^17.6.0",
-		"prettier": "^3.8.4",
+		"eslint-plugin-svelte": "^3.20.0",
+		"globals": "^17.7.0",
+		"prettier": "^3.9.5",
 		"prettier-plugin-svelte": "^4.1.1",
-		"prettier-plugin-tailwindcss": "^0.8.0",
-		"svelte": "^5.56.3",
-		"svelte-check": "^4.6.0",
+		"prettier-plugin-tailwindcss": "^0.8.1",
+		"svelte": "^5.56.6",
+		"svelte-check": "^4.7.3",
 		"svelte-range-slider-pips": "^4.1.1",
-		"tailwindcss": "^4.3.1",
+		"tailwindcss": "^4.3.3",
 		"typescript": "^6.0.3",
-		"typescript-eslint": "^8.61.1",
-		"vite": "^8.0.16"
+		"typescript-eslint": "^8.64.0",
+		"vite": "^8.1.5"
 	},
 	"pnpm": {
 		"overrides": {
@@ -46,7 +47,7 @@
 		}
 	},
 	"dependencies": {
-		"shiki": "^4.2.0"
+		"shiki": "^4.3.1"
 	},
 	"packageManager": "pnpm@10.30.3+sha512.c961d1e0a2d8e354ecaa5166b822516668b7f44cb5bd95122d590dd81922f606f5473b6d23ec4a5be05e7fcd18e8488d47d978bbe981872f1145d06e9a740017"
 }
