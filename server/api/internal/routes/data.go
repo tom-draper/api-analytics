@@ -118,7 +118,10 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) (string, []any
 			arguments = append(arguments, queries.dateFrom.Format("2006-01-02"))
 		}
 		if !queries.dateTo.IsZero() && database.ValidDate(queries.dateTo) {
-			query.WriteString(fmt.Sprintf(" and r.created_at <= $%d", len(arguments)+1))
+			// created_at is a timestamp, so a bare date compares against midnight.
+			// Use < dateTo + 1 day to include the whole dateTo day, matching the
+			// single-date branch above.
+			query.WriteString(fmt.Sprintf(" and r.created_at < date $%d + interval '1 days'", len(arguments)+1))
 			arguments = append(arguments, queries.dateTo.Format("2006-01-02"))
 		}
 	}
