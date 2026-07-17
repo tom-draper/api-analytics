@@ -63,6 +63,25 @@ type ProcessedRequest struct {
 
 const frameworkOther int16 = 255
 
+// applyUserAgentIDs sets each request's UserAgentID from ids, returning the
+// requests that resolved and a count of those dropped.
+//
+// A request whose user agent did not resolve would carry user_agent_id 0, which
+// no user_agents row has, so the foreign key would reject the COPY and lose the
+// entire batch. Dropping only the affected requests keeps the rest insertable.
+func applyUserAgentIDs(requests []ProcessedRequest, ids map[string]int) ([]ProcessedRequest, int) {
+	resolved := requests[:0]
+	for _, request := range requests {
+		id, exists := ids[request.UserAgent]
+		if !exists {
+			continue
+		}
+		request.UserAgentID = id
+		resolved = append(resolved, request)
+	}
+	return resolved, len(requests) - len(resolved)
+}
+
 // truncate shortens a value to at most n bytes without splitting a multi-byte
 // character. Slicing raw bytes could cut a rune in half and leave invalid
 // UTF-8, which Postgres rejects, failing the whole batch insert.
@@ -242,10 +261,15 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 			return
 		}
 
-		for i := range validRequests {
-			if id, exists := userAgentIDs[validRequests[i].UserAgent]; exists {
-				validRequests[i].UserAgentID = id
-			}
+		validRequests, unresolved := applyUserAgentIDs(validRequests, userAgentIDs)
+		if unresolved > 0 {
+			log.Error(fmt.Sprintf("key=%s: dropped %d requests with unresolved user agents", payload.APIKey, unresolved))
+		}
+
+		if len(validRequests) == 0 {
+			log.Error(fmt.Sprintf("key=%s: no user agents could be resolved (received %d)", payload.APIKey, len(payload.Requests)))
+			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
+			return
 		}
 
 		_, err = db.Pool.CopyFrom(

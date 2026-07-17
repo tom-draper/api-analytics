@@ -87,6 +87,71 @@ func TestTruncatedValuesStayValid(t *testing.T) {
 	}
 }
 
+func TestApplyUserAgentIDs(t *testing.T) {
+	requests := []ProcessedRequest{
+		{Path: "/known/one", UserAgent: "curl/8.4.0"},
+		{Path: "/new/one", UserAgent: "brand-new-agent/1.0"},
+		{Path: "/known/two", UserAgent: "known-agent/2.0"},
+		{Path: "/new/two", UserAgent: "another-new-agent/1.0"},
+	}
+	ids := map[string]int{"curl/8.4.0": 1, "known-agent/2.0": 2}
+
+	resolved, unresolved := applyUserAgentIDs(requests, ids)
+
+	if unresolved != 2 {
+		t.Errorf("unresolved = %d, expected 2", unresolved)
+	}
+	if len(resolved) != 2 {
+		t.Fatalf("len(resolved) = %d, expected 2", len(resolved))
+	}
+	// Filtering happens in place, so a mis-ordered write would corrupt the
+	// surviving entries rather than merely drop the wrong ones.
+	if resolved[0].Path != "/known/one" || resolved[0].UserAgentID != 1 {
+		t.Errorf("resolved[0] = %+v, expected /known/one with id 1", resolved[0])
+	}
+	if resolved[1].Path != "/known/two" || resolved[1].UserAgentID != 2 {
+		t.Errorf("resolved[1] = %+v, expected /known/two with id 2", resolved[1])
+	}
+}
+
+func TestApplyUserAgentIDsAllResolve(t *testing.T) {
+	requests := []ProcessedRequest{
+		{Path: "/a", UserAgent: "curl/8.4.0"},
+		{Path: "/b", UserAgent: "known-agent/2.0"},
+	}
+	ids := map[string]int{"curl/8.4.0": 1, "known-agent/2.0": 2}
+
+	resolved, unresolved := applyUserAgentIDs(requests, ids)
+
+	if unresolved != 0 {
+		t.Errorf("unresolved = %d, expected 0", unresolved)
+	}
+	if len(resolved) != 2 {
+		t.Errorf("len(resolved) = %d, expected every request to survive", len(resolved))
+	}
+	for _, request := range resolved {
+		if request.UserAgentID == 0 {
+			t.Errorf("%s kept user_agent_id 0, which would fail the foreign key", request.Path)
+		}
+	}
+}
+
+func TestApplyUserAgentIDsNoneResolve(t *testing.T) {
+	requests := []ProcessedRequest{
+		{Path: "/a", UserAgent: "brand-new-agent/1.0"},
+		{Path: "/b", UserAgent: "another-new-agent/1.0"},
+	}
+
+	resolved, unresolved := applyUserAgentIDs(requests, map[string]int{})
+
+	if unresolved != 2 {
+		t.Errorf("unresolved = %d, expected 2", unresolved)
+	}
+	if len(resolved) != 0 {
+		t.Errorf("len(resolved) = %d, expected 0", len(resolved))
+	}
+}
+
 func TestRealUserAgentsAccepted(t *testing.T) {
 	userAgents := []string{
 		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
