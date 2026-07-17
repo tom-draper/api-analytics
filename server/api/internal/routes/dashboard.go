@@ -160,13 +160,18 @@ func getRequestsHandler(db *database.DB, cfg *config.Config) gin.HandlerFunc {
 			return
 		}
 
-		var err error
+		// Page 0 means load every page. strconv.Atoi also returns 0 on failure,
+		// so an unparseable page must be rejected rather than fall through to
+		// the full load.
 		targetPage := 1
 		if pageQuery := c.Query("page"); pageQuery != "" {
-			targetPage, err = strconv.Atoi(pageQuery)
+			page, err := strconv.Atoi(pageQuery)
 			if err != nil {
-				log.Info(fmt.Sprintf("failed to parse page number '%s' from query", pageQuery))
+				log.Info(fmt.Sprintf("id=%s: failed to parse page number '%s' from query", userID, pageQuery))
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid page number."})
+				return
 			}
+			targetPage = page
 		}
 
 		if targetPage == 0 {
