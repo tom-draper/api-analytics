@@ -221,9 +221,14 @@ func getQueriesFromRequest(c *gin.Context) DataFetchQueries {
 
 	page := 1
 	if pageQuery := query.get("page"); pageQuery != "" {
-		if p, err := strconv.Atoi(pageQuery); err == nil {
-			page = p
+		// A present but unparseable page is rejected (page 0 fails the page < 1
+		// check in getData) rather than silently serving page 1, matching the
+		// /requests routes.
+		p, err := strconv.Atoi(pageQuery)
+		if err != nil {
+			p = 0
 		}
+		page = p
 	}
 
 	status, err := strconv.Atoi(query.get("status"))
