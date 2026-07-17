@@ -88,6 +88,10 @@ services:
 
   monitor:
     container_name: api-analytics-monitor
+    # Pass email/alert settings from .env (EMAIL_PROVIDER, MONITOR_ALERT_EMAIL,
+    # provider credentials). Downtime alerts are off by default.
+    env_file:
+      - .env
     image: api-analytics-monitor
     build:
       context: ..
