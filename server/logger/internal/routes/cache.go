@@ -27,7 +27,7 @@ type Cache struct {
 
 type geoIPEntry struct {
 	countryCode string
-	lastAccess  int64 // unix nanoseconds; read/written atomically
+	lastAccess  int64 // unix seconds; read/written atomically
 }
 
 func newCache(maxSize int) *Cache {
