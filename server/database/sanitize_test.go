@@ -177,13 +177,13 @@ func TestValidHostname(t *testing.T) {
 			expected: true,
 		},
 		{
-			name:     "hostname too long (>253 chars)",
-			hostname: strings.Repeat("a", 254),
+			name:     "hostname too long (>255 chars)",
+			hostname: strings.Repeat("a", 256),
 			expected: false,
 		},
 		{
-			name:     "hostname exactly 253 chars",
-			hostname: strings.Repeat("a", 253),
+			name:     "hostname exactly 255 chars",
+			hostname: strings.Repeat("a", 255),
 			expected: true,
 		},
 		{
@@ -235,13 +235,13 @@ func TestValidPath(t *testing.T) {
 			expected: true,
 		},
 		{
-			name:     "path too long (>2048 chars)",
-			path:     "/" + strings.Repeat("a", 2048),
+			name:     "path too long (>255 chars)",
+			path:     "/" + strings.Repeat("a", 255),
 			expected: false,
 		},
 		{
-			name:     "path exactly 2048 chars",
-			path:     strings.Repeat("a", 2048),
+			name:     "path exactly 255 chars",
+			path:     strings.Repeat("a", 255),
 			expected: true,
 		},
 		{
@@ -305,13 +305,13 @@ func TestValidUserAgent(t *testing.T) {
 			expected:  true,
 		},
 		{
-			name:      "user agent too long (>1024 chars)",
-			userAgent: strings.Repeat("a", 1025),
+			name:      "user agent too long (>255 chars)",
+			userAgent: strings.Repeat("a", 256),
 			expected:  false,
 		},
 		{
-			name:      "user agent exactly 1024 chars",
-			userAgent: strings.Repeat("a", 1024),
+			name:      "user agent exactly 255 chars",
+			userAgent: strings.Repeat("a", 255),
 			expected:  true,
 		},
 		{
@@ -626,4 +626,3 @@ func BenchmarkValidIPAddress(b *testing.B) {
 		ValidIPAddress(testIP)
 	}
 }
-

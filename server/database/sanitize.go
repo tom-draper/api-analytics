@@ -15,6 +15,18 @@ var (
 	uuidRegex = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
 )
 
+// Maximum accepted lengths for stored string fields. These match the
+// character varying(255) columns in the requests and user_agents tables (see
+// server/self-hosting/database/schema.sql): a longer value cannot be stored,
+// so the logger truncates to these lengths before validation.
+const (
+	MaxPathLength      = 255
+	MaxHostnameLength  = 255
+	MaxUserAgentLength = 255
+	MaxUserIDLength    = 255
+	MaxReferrerLength  = 255
+)
+
 func ValidDate(date time.Time) bool {
 	if date.IsZero() {
 		return false
@@ -59,7 +71,7 @@ func ValidString(value string) bool {
 }
 
 func ValidHostname(hostname string) bool {
-	if hostname == "" || len(hostname) > 253 {
+	if hostname == "" || len(hostname) > MaxHostnameLength {
 		return false
 	}
 
@@ -75,7 +87,7 @@ func ValidPath(path string) bool {
 		return false
 	}
 
-	if len(path) > 2048 {
+	if len(path) > MaxPathLength {
 		return false
 	}
 
@@ -91,7 +103,7 @@ func ValidUserAgent(userAgent string) bool {
 		return false
 	}
 
-	if len(userAgent) > 1024 {
+	if len(userAgent) > MaxUserAgentLength {
 		return false
 	}
 
@@ -107,7 +119,7 @@ func ValidUserID(userID string) bool {
 		return false
 	}
 
-	if len(userID) < 1 || len(userID) > 255 {
+	if len(userID) < 1 || len(userID) > MaxUserIDLength {
 		return false
 	}
 

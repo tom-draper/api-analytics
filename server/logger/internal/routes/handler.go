@@ -184,27 +184,27 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 				continue
 			}
 
-			request.UserAgent = truncate(request.UserAgent, 255)
+			request.UserAgent = truncate(request.UserAgent, database.MaxUserAgentLength)
 			if !database.ValidUserAgent(request.UserAgent) {
 				continue
 			}
 
-			request.UserID = truncate(request.UserID, 255)
+			request.UserID = truncate(request.UserID, database.MaxUserIDLength)
 			if request.UserID != "" && !database.ValidUserID(request.UserID) {
 				continue
 			}
 
-			request.Hostname = truncate(request.Hostname, 255)
+			request.Hostname = truncate(request.Hostname, database.MaxHostnameLength)
 			if !database.ValidHostname(request.Hostname) {
 				continue
 			}
 
-			request.Path = truncate(request.Path, 255)
+			request.Path = truncate(request.Path, database.MaxPathLength)
 			if !database.ValidPath(request.Path) {
 				continue
 			}
 
-			request.Referrer = truncate(request.Referrer, 255)
+			request.Referrer = truncate(request.Referrer, database.MaxReferrerLength)
 			if request.Referrer != "" && !database.ValidString(request.Referrer) {
 				continue
 			}
