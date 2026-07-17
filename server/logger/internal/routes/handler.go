@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -61,6 +62,19 @@ type ProcessedRequest struct {
 }
 
 const frameworkOther int16 = 255
+
+// truncate shortens a value to at most n bytes without splitting a multi-byte
+// character. Slicing raw bytes could cut a rune in half and leave invalid
+// UTF-8, which Postgres rejects, failing the whole batch insert.
+func truncate(value string, n int) string {
+	if len(value) <= n {
+		return value
+	}
+	for n > 0 && !utf8.RuneStart(value[n]) {
+		n--
+	}
+	return value[:n]
+}
 
 var methodID = map[string]int16{
 	"GET": 0, "POST": 1, "PUT": 2, "PATCH": 3, "DELETE": 4,
@@ -151,37 +165,27 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 				continue
 			}
 
-			if len(request.UserAgent) > 255 {
-				request.UserAgent = request.UserAgent[:255]
-			}
+			request.UserAgent = truncate(request.UserAgent, 255)
 			if !database.ValidUserAgent(request.UserAgent) {
 				continue
 			}
 
-			if len(request.UserID) > 255 {
-				request.UserID = request.UserID[:255]
-			}
+			request.UserID = truncate(request.UserID, 255)
 			if request.UserID != "" && !database.ValidUserID(request.UserID) {
 				continue
 			}
 
-			if len(request.Hostname) > 255 {
-				request.Hostname = request.Hostname[:255]
-			}
+			request.Hostname = truncate(request.Hostname, 255)
 			if !database.ValidHostname(request.Hostname) {
 				continue
 			}
 
-			if len(request.Path) > 255 {
-				request.Path = request.Path[:255]
-			}
+			request.Path = truncate(request.Path, 255)
 			if !database.ValidPath(request.Path) {
 				continue
 			}
 
-			if len(request.Referrer) > 255 {
-				request.Referrer = request.Referrer[:255]
-			}
+			request.Referrer = truncate(request.Referrer, 255)
 			if request.Referrer != "" && !database.ValidString(request.Referrer) {
 				continue
 			}
