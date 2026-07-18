@@ -234,6 +234,30 @@ RSpec.describe Analytics do
         m.call(mock_env)
       end
     end
+
+    describe 'resilience' do
+      it 'never breaks the response when a data mapper raises' do
+        raising = Analytics::Config.new(0, Analytics::Config.new.server_url, ->(_env) { raise 'boom' })
+        m = Analytics::Middleware.new(ok_app, api_key, raising)
+        allow(m).to receive(:post_requests)
+        status, = m.call(mock_env)
+        expect(status).to eq(200)
+      end
+    end
+
+    describe '#flush' do
+      it 'posts buffered requests and clears the buffer' do
+        middleware.call(mock_env)
+        expect(middleware).to receive(:post_requests)
+        middleware.flush
+        expect(middleware.instance_variable_get(:@requests)).to be_empty
+      end
+
+      it 'does nothing when the buffer is empty' do
+        expect(middleware).not_to receive(:post_requests)
+        middleware.flush
+      end
+    end
   end
 
   describe Analytics::Rails do
