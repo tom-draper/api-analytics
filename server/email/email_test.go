@@ -582,6 +582,73 @@ func TestResendHTMLUsesHtmlField(t *testing.T) {
 	}
 }
 
+func TestSendGridHTMLContentType(t *testing.T) {
+	var raw []byte
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		raw, _ = io.ReadAll(r.Body)
+		w.WriteHeader(http.StatusAccepted)
+	}))
+	defer srv.Close()
+
+	sender := &sendGridSender{apiKey: "k", fromAddress: "from@example.com", endpoint: srv.URL}
+	err := sender.Send(Message{To: []string{"to@example.com"}, Subject: "S", Body: "<h1>Hi</h1>", ContentType: "text/html"})
+	if err != nil {
+		t.Fatalf("Send: %v", err)
+	}
+	if !strings.Contains(string(raw), `"type":"text/html"`) {
+		t.Errorf("html message should carry a text/html content type: %s", raw)
+	}
+}
+
+func TestMailgunHTMLUsesHtmlField(t *testing.T) {
+	var form string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		raw, _ := io.ReadAll(r.Body)
+		form = string(raw)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	sender := &mailgunSender{apiKey: "k", domain: "d", baseURL: srv.URL, fromAddress: "from@example.com"}
+	err := sender.Send(Message{To: []string{"to@example.com"}, Subject: "S", Body: "<h1>Hi</h1>", ContentType: "text/html"})
+	if err != nil {
+		t.Fatalf("Send: %v", err)
+	}
+	if !strings.Contains(form, "html=") {
+		t.Errorf("html message should set the html field: %s", form)
+	}
+	if strings.Contains(form, "text=") {
+		t.Errorf("html message must not also set the text field: %s", form)
+	}
+}
+
+func TestSESHTMLUsesHtmlBody(t *testing.T) {
+	var body string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		raw, _ := io.ReadAll(r.Body)
+		body = string(raw)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	sender := &sesSender{
+		creds:       awsCredentials{accessKeyID: "AKID", secretAccessKey: "s", region: "eu-west-1"},
+		fromAddress: "from@example.com",
+		endpoint:    srv.URL + "/v2/email/outbound-emails",
+		now:         func() time.Time { return time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC) },
+	}
+	err := sender.Send(Message{To: []string{"to@example.com"}, Subject: "S", Body: "<h1>Hi</h1>", ContentType: "text/html"})
+	if err != nil {
+		t.Fatalf("Send: %v", err)
+	}
+	if !strings.Contains(body, `"Html"`) {
+		t.Errorf("html message should use the Html body key: %s", body)
+	}
+	if strings.Contains(body, `"Text"`) {
+		t.Errorf("html message must not use the Text body key: %s", body)
+	}
+}
+
 func TestMessageRecipients(t *testing.T) {
 	m := Message{
 		To:  []string{"a@x.com", "b@x.com"},
