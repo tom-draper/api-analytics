@@ -232,6 +232,37 @@ func TestGetDataRejectsInvalidAPIKeyFormat(t *testing.T) {
 	}
 }
 
+func TestGetDataRejectsHugePage(t *testing.T) {
+	// A page beyond maxPageNumber would overflow (page-1)*pageSize into a
+	// negative OFFSET, so it must be rejected before reaching the database.
+	for _, rawQuery := range []string{"page=9223372036854775807", "page=10000001"} {
+		t.Run(rawQuery, func(t *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("%s reached the database instead of being rejected: %v", rawQuery, r)
+				}
+			}()
+			if recorder := dataRecorderFor(t, rawQuery); recorder.Code != http.StatusBadRequest {
+				t.Errorf("status = %d, want 400 for %s", recorder.Code, rawQuery)
+			}
+		})
+	}
+}
+
+func TestNormalizeQueryKeyUnicode(t *testing.T) {
+	cases := map[string]string{
+		"___---":  "", // only separators collapse to empty
+		"User_ID": "userid",
+		"ÉÀ":      "éà", // unicode letters are lowercased
+		"a-1_b":   "a1b",
+	}
+	for in, want := range cases {
+		if got := normalizeQueryKey(in); got != want {
+			t.Errorf("normalizeQueryKey(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
+
 func TestNormalizeQueryKey(t *testing.T) {
 	tests := []struct {
 		name     string

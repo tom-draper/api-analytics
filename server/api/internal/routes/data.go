@@ -28,6 +28,11 @@ type DataFetchQueries struct {
 	userID    string
 }
 
+// maxPageNumber caps the accepted page so that (page-1)*pageSize cannot overflow
+// int. Ten million pages is far beyond any real dataset (billions of rows at any
+// page size) while staying well within int64.
+const maxPageNumber = 10_000_000
+
 func getData(db *database.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		apiKey := getAPIKeyFromHeader(c)
@@ -47,8 +52,9 @@ func getData(db *database.DB) gin.HandlerFunc {
 		queries := getQueriesFromRequest(c)
 
 		// Pages are 1-based: anything below 1 becomes a negative OFFSET, which
-		// Postgres rejects.
-		if queries.page < 1 {
+		// Postgres rejects. An absurdly large page is also rejected because
+		// (page-1)*pageSize would overflow int and wrap to a negative OFFSET.
+		if queries.page < 1 || queries.page > maxPageNumber {
 			log.Info(fmt.Sprintf("key=%s: invalid page number %d", apiKey, queries.page))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid page number."})
 			return

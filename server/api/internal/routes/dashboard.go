@@ -174,7 +174,7 @@ func getRequestsHandler(db *database.DB, cfg *config.Config) gin.HandlerFunc {
 		targetPage := 1
 		if pageQuery := c.Query("page"); pageQuery != "" {
 			page, err := strconv.Atoi(pageQuery)
-			if err != nil || page < 0 {
+			if err != nil || page < 0 || page > maxPageNumber {
 				log.Info(fmt.Sprintf("id=%s: failed to parse page number '%s' from query", userID, pageQuery))
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid page number."})
 				return
@@ -263,7 +263,7 @@ func getPaginatedRequestsHandler(db *database.DB, cfg *config.Config) gin.Handle
 		// Pages are 1-based here: anything below 1 becomes a negative OFFSET,
 		// which Postgres rejects.
 		page, err := strconv.Atoi(c.Param("page"))
-		if err != nil || page < 1 {
+		if err != nil || page < 1 || page > maxPageNumber {
 			log.Info("invalid page number")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid page number."})
 			return
