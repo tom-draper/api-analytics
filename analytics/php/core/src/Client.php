@@ -14,6 +14,12 @@ class Client
 {
     private const FLUSH_INTERVAL_SECONDS = 60;
 
+    // Analytics posting is best-effort, so keep timeouts short: the flush runs
+    // synchronously at request shutdown, and a slow or unreachable server must
+    // not tie up the PHP-FPM worker for long.
+    private const POST_TIMEOUT_SECONDS = 5;
+    private const CONNECT_TIMEOUT_SECONDS = 2;
+
     private string $apiKey;
     private string $framework;
     private Config $config;
@@ -104,9 +110,23 @@ class Client
     private function registerShutdown(): void
     {
         if (!$this->shutdownRegistered) {
-            register_shutdown_function([$this, 'flush']);
+            register_shutdown_function([$this, 'shutdownFlush']);
             $this->shutdownRegistered = true;
         }
+    }
+
+    /**
+     * Flush handler run at script shutdown. On PHP-FPM it finalises the HTTP
+     * response first, so the buffered analytics POST runs after the client has
+     * already received the response and cannot add to its latency.
+     */
+    public function shutdownFlush(): void
+    {
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        }
+
+        $this->flush();
     }
 
     private function postRequests(): void
@@ -159,8 +179,8 @@ class Client
                 'Content-Length: ' . strlen($json),
             ],
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_TIMEOUT => self::POST_TIMEOUT_SECONDS,
+            CURLOPT_CONNECTTIMEOUT => self::CONNECT_TIMEOUT_SECONDS,
         ]);
 
         curl_exec($ch);
@@ -174,7 +194,7 @@ class Client
                 'method' => 'POST',
                 'header' => "Content-Type: application/json\r\nContent-Length: " . strlen($json) . "\r\n",
                 'content' => $json,
-                'timeout' => 30,
+                'timeout' => self::POST_TIMEOUT_SECONDS,
                 'ignore_errors' => true,
             ],
         ]);
