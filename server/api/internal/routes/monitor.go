@@ -4,12 +4,29 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+	"unicode"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/tom-draper/api-analytics/server/api/internal/log"
 	"github.com/tom-draper/api-analytics/server/database"
 )
+
+// validMonitorURL rejects a monitored URL that is empty, longer than its
+// varchar(255) column, or contains control characters. Control characters (in
+// particular CR/LF) are rejected so a URL cannot inject headers into the
+// downtime alert emails that embed it.
+func validMonitorURL(url string) bool {
+	if url == "" || len(url) > 255 {
+		return false
+	}
+	for _, r := range url {
+		if r == 0 || unicode.IsControl(r) {
+			return false
+		}
+	}
+	return true
+}
 
 type MonitorRow struct {
 	URL       string    `json:"url"`
@@ -79,6 +96,12 @@ func addUserMonitor(db *database.DB) gin.HandlerFunc {
 		if monitor.UserID == "" {
 			log.Info("user ID empty")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User ID required."})
+			return
+		}
+
+		if !validMonitorURL(monitor.URL) {
+			log.Info("invalid monitor URL")
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid monitor URL."})
 			return
 		}
 
