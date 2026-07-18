@@ -14,9 +14,11 @@
 
 		try {
 			const url = getServerURL();
+			// Sent as a POST body (no custom header) to keep the API key out of
+			// URLs and to stay a CORS simple request, matching the delete page.
 			const response = await fetch(`${url}/api/regenerate-user-id`, {
 				method: 'POST',
-				headers: { 'X-AUTH-TOKEN': apiKey }
+				body: JSON.stringify({ api_key: apiKey })
 			});
 			status = response.status === 200 ? 'success' : 'error';
 		} catch (e) {
