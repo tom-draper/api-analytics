@@ -14,7 +14,7 @@ func TestNew(t *testing.T) {
 		// This assumes POSTGRES_URL is set in the environment
 		// You can also read it from env for the test
 		testURL := "postgres://user:pass@localhost:5432/testdb"
-		
+
 		db, err := New(ctx, testURL)
 		if err != nil {
 			// Connection failure is expected if database isn't running
@@ -50,7 +50,7 @@ func TestNew(t *testing.T) {
 
 	t.Run("returns error with invalid URL format", func(t *testing.T) {
 		invalidURL := "not-a-valid-url"
-		
+
 		db, err := New(ctx, invalidURL)
 		if err == nil {
 			if db != nil {
@@ -66,7 +66,7 @@ func TestNew(t *testing.T) {
 	t.Run("returns error when connection fails", func(t *testing.T) {
 		// Use a URL that has correct format but points to non-existent server
 		testURL := "postgres://user:pass@nonexistent.invalid:5432/testdb"
-		
+
 		db, err := New(ctx, testURL)
 		if err == nil {
 			if db != nil {
@@ -83,10 +83,10 @@ func TestNew(t *testing.T) {
 		// Create a context that times out immediately
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Nanosecond)
 		defer cancel()
-		
+
 		// Use a URL that would take time to connect
 		testURL := "postgres://user:pass@192.0.2.1:5432/testdb" // TEST-NET-1, should timeout
-		
+
 		db, err := New(ctx, testURL)
 		if err == nil {
 			if db != nil {
@@ -159,13 +159,13 @@ func TestConnectionPoolConcurrency(t *testing.T) {
 					errors <- err
 					return
 				}
-				
+
 				// Clean up
 				if err := testDB.DeleteUser(ctx, apiKey); err != nil {
 					errors <- err
 					return
 				}
-				
+
 				errors <- nil
 			}()
 		}
@@ -195,7 +195,7 @@ func TestConnectionPoolReuse(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to create user: %v", err)
 			}
-			
+
 			if err := testDB.DeleteUser(ctx, apiKey); err != nil {
 				t.Fatalf("Failed to delete user: %v", err)
 			}
