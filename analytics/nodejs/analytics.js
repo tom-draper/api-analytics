@@ -103,11 +103,54 @@ class Analytics {
 		this.config = config;
 		this.requests = [];
 		this.lastPosted = new Date();
+
+		// Periodically flush buffered requests so a partial batch is not held
+		// indefinitely when traffic goes idle (logRequest only flushes when a
+		// new request arrives). unref() so this timer never keeps the process
+		// alive by itself.
+		if (this.apiKey) {
+			const timer = setInterval(() => this.flush(), 60000);
+			if (typeof timer.unref === "function") {
+				timer.unref();
+			}
+		}
 	}
 
 	/**
-	 * Logs a request to storage. If time interval has elapsed, post all stored
-	 * logs to the server.
+	 * Posts any buffered requests to the server. A no-op when the buffer is
+	 * empty. Exposed so an application can drain the buffer on shutdown.
+	 * @returns {Promise<void>}
+	 */
+	async flush() {
+		if (!this.apiKey || this.requests.length === 0) {
+			return;
+		}
+
+		this.lastPosted = new Date();
+		const requestsToSend = this.requests;
+		this.requests = [];
+
+		try {
+			await fetch(this.getServerEndpoint(), {
+				method: "POST",
+				body: JSON.stringify({
+					api_key: this.apiKey,
+					requests: requestsToSend,
+					framework: this.framework,
+					privacy_level: this.config.privacyLevel,
+				}),
+				headers: {
+					"Content-Type": "application/json",
+				},
+			});
+		} catch (error) {
+			console.error("Failed to send analytics data:", error);
+		}
+	}
+
+	/**
+	 * Logs a request to storage. If the flush interval has elapsed, posts all
+	 * stored logs to the server.
 	 * @param {RequestData} requestData - Request data to be logged
 	 * @returns {Promise<void>}
 	 */
@@ -118,29 +161,8 @@ class Analytics {
 
 		this.requests.push(requestData);
 		const now = new Date();
-		if (now - this.lastPosted > 60000 && this.requests.length > 0) {
-			this.lastPosted = now;
-
-			const requestsToSend = this.requests;
-			this.requests = [];
-
-			const url = this.getServerEndpoint();
-			try {
-				await fetch(url, {
-					method: "POST",
-					body: JSON.stringify({
-						api_key: this.apiKey,
-						requests: requestsToSend,
-						framework: this.framework,
-						privacy_level: this.config.privacyLevel,
-					}),
-					headers: {
-						"Content-Type": "application/json",
-					},
-				});
-			} catch (error) {
-				console.error("Failed to send analytics data:", error);
-			}
+		if (now - this.lastPosted > 60000) {
+			await this.flush();
 		}
 	}
 
