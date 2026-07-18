@@ -1,15 +1,24 @@
+import atexit
 import logging
 import threading
+import time
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import requests
 
 DEFAULT_SERVER_URL = "https://www.apianalytics-server.com"
+FLUSH_INTERVAL_SECONDS = 60.0
 
 _lock = threading.Lock()
 _requests: Dict[str, List[Dict]] = {}
 _last_posted: Dict[str, datetime] = {}
+# Per-key posting metadata (framework, privacy_level, server_url), recorded on
+# each log call so the background flusher and the atexit hook can post a batch
+# without it being threaded through to them.
+_meta: Dict[str, Tuple[str, int, str]] = {}
+_flusher_started = False
+_flusher_lock = threading.Lock()
 
 logger = logging.getLogger("api_analytics")
 logger.setLevel(logging.DEBUG)
@@ -27,6 +36,8 @@ def log_request(
         logger.debug("Aborting log request: API key is not set.")
         return
 
+    _ensure_flusher()
+
     requests_to_post = None
     with _lock:
         if api_key not in _requests:
@@ -34,8 +45,9 @@ def log_request(
             _last_posted[api_key] = datetime.now()
 
         _requests[api_key].append(request_data)
+        _meta[api_key] = (framework, privacy_level, server_url)
         now = datetime.now()
-        if (now - _last_posted[api_key]).total_seconds() > 60.0:
+        if (now - _last_posted[api_key]).total_seconds() > FLUSH_INTERVAL_SECONDS:
             requests_to_post = list(_requests[api_key])
             _requests[api_key] = []
             _last_posted[api_key] = now
@@ -45,6 +57,51 @@ def log_request(
             target=_post_requests,
             args=(api_key, requests_to_post, framework, privacy_level, server_url),
         ).start()
+
+
+def flush() -> None:
+    """Post every buffered request for every API key.
+
+    Called periodically by the background flusher and on interpreter exit, so a
+    partial batch is not held indefinitely when traffic goes idle or lost when
+    the process shuts down. Safe to call directly from an application's own
+    shutdown hook.
+    """
+    batches = []
+    with _lock:
+        for api_key, buffered in _requests.items():
+            if buffered and api_key in _meta:
+                batches.append((api_key, buffered, _meta[api_key]))
+                _requests[api_key] = []
+                _last_posted[api_key] = datetime.now()
+
+    for api_key, buffered, (framework, privacy_level, server_url) in batches:
+        _post_requests(api_key, buffered, framework, privacy_level, server_url)
+
+
+def _ensure_flusher():
+    # Lazily start a single daemon thread that flushes buffered requests every
+    # FLUSH_INTERVAL_SECONDS, and register an atexit hook to flush on shutdown.
+    # Started on the first logged request rather than at import so it runs in the
+    # worker process of a forking server.
+    global _flusher_started
+    if _flusher_started:
+        return
+    with _flusher_lock:
+        if _flusher_started:
+            return
+        _flusher_started = True
+
+    def _run():
+        while True:
+            time.sleep(FLUSH_INTERVAL_SECONDS)
+            try:
+                flush()
+            except Exception as e:
+                logger.debug(f"Background flush failed: {e}")
+
+    threading.Thread(target=_run, daemon=True).start()
+    atexit.register(flush)
 
 
 def _post_requests(
