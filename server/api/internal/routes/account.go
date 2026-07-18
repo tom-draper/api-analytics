@@ -84,20 +84,6 @@ func deleteAccount(db *database.DB) gin.HandlerFunc {
 	}
 }
 
-// deleteData is the deprecated GET form of deleteAccount, kept so that existing
-// clients keep working. Prefer POST /delete: a GET is expected to be safe to
-// fetch, so link scanners and prefetchers can fire this one unprompted.
-func deleteData(db *database.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		apiKey, ok := requireAPIKeyParam(c)
-		if !ok {
-			return
-		}
-
-		deleteAccountByAPIKey(c, db, apiKey)
-	}
-}
-
 func deleteAccountByAPIKey(c *gin.Context, db *database.DB, apiKey string) {
 	ctx := c.Request.Context()
 
