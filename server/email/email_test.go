@@ -643,6 +643,64 @@ func TestProviderMissingFromErrors(t *testing.T) {
 	}
 }
 
+func TestRequireEnv(t *testing.T) {
+	t.Run("returns the trimmed value", func(t *testing.T) {
+		t.Setenv("EMAIL_TEST_VAR", "  value  ")
+		got, err := requireEnv("EMAIL_TEST_VAR")
+		if err != nil {
+			t.Fatalf("requireEnv: %v", err)
+		}
+		if got != "value" {
+			t.Errorf("value = %q, want trimmed %q", got, "value")
+		}
+	})
+
+	t.Run("errors when empty", func(t *testing.T) {
+		t.Setenv("EMAIL_TEST_VAR", "   ")
+		if _, err := requireEnv("EMAIL_TEST_VAR"); err == nil {
+			t.Error("expected an error for a blank value")
+		}
+	})
+}
+
+func TestGetEnvWithDefault(t *testing.T) {
+	t.Setenv("EMAIL_TEST_VAR", "")
+	if got := getEnvWithDefault("EMAIL_TEST_VAR", "fallback"); got != "fallback" {
+		t.Errorf("unset = %q, want fallback", got)
+	}
+	t.Setenv("EMAIL_TEST_VAR", "explicit")
+	if got := getEnvWithDefault("EMAIL_TEST_VAR", "fallback"); got != "explicit" {
+		t.Errorf("set = %q, want explicit", got)
+	}
+}
+
+func TestNewMailgunFromEnvBaseURL(t *testing.T) {
+	t.Setenv("MAILGUN_API_KEY", "key")
+	t.Setenv("MAILGUN_DOMAIN", "mail.example.com")
+
+	t.Run("defaults to the US host", func(t *testing.T) {
+		t.Setenv("MAILGUN_BASE_URL", "")
+		s, err := newMailgunFromEnv()
+		if err != nil {
+			t.Fatalf("newMailgunFromEnv: %v", err)
+		}
+		if s.baseURL != "https://api.mailgun.net" {
+			t.Errorf("baseURL = %q, want the US default", s.baseURL)
+		}
+	})
+
+	t.Run("trims a trailing slash from a custom host", func(t *testing.T) {
+		t.Setenv("MAILGUN_BASE_URL", "https://api.eu.mailgun.net/")
+		s, err := newMailgunFromEnv()
+		if err != nil {
+			t.Fatalf("newMailgunFromEnv: %v", err)
+		}
+		if s.baseURL != "https://api.eu.mailgun.net" {
+			t.Errorf("baseURL = %q, want the trailing slash trimmed", s.baseURL)
+		}
+	})
+}
+
 func TestDoRequestNon2xx(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
