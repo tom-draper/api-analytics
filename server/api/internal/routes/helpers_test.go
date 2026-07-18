@@ -75,6 +75,52 @@ func TestGetAPIKeyFromHeader(t *testing.T) {
 	}
 }
 
+// TestDashboardDataJSONShape locks the field names the dashboard reads from a
+// paginated response. Renaming a tag here would silently break pagination.
+func TestDashboardDataJSONShape(t *testing.T) {
+	raw, err := json.Marshal(DashboardData{
+		UserAgents: UserAgentsLookup{1: "Mozilla/5.0"},
+		Requests:   [][11]any{{"1.2.3.4", "/path"}},
+		HasMore:    true,
+	})
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+
+	var out map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &out); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	for _, key := range []string{"user_agents", "requests", "has_more"} {
+		if _, ok := out[key]; !ok {
+			t.Errorf("response is missing the %q field: %s", key, raw)
+		}
+	}
+	if string(out["has_more"]) != "true" {
+		t.Errorf("has_more = %s, want true", out["has_more"])
+	}
+}
+
+// TestRequestDataJSONShape locks the public /data row field names.
+func TestRequestDataJSONShape(t *testing.T) {
+	raw, err := json.Marshal(RequestData{})
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	var out map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &out); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	for _, key := range []string{
+		"ip_address", "path", "hostname", "user_agent", "method",
+		"status", "response_time", "location", "referrer", "user_id", "created_at",
+	} {
+		if _, ok := out[key]; !ok {
+			t.Errorf("RequestData JSON is missing the %q field: %s", key, raw)
+		}
+	}
+}
+
 func TestGetNullableString(t *testing.T) {
 	if got := getNullableString(nil); got != "" {
 		t.Errorf("nil pointer = %q, want empty", got)
