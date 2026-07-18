@@ -1,6 +1,7 @@
 package email
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -313,6 +314,116 @@ func TestSESSendSignsRequest(t *testing.T) {
 	}
 }
 
+// TestSigV4SigningKeyKnownAnswer checks the HMAC key-derivation chain against
+// the signing key AWS publishes in its Signature Version 4 documentation. This
+// proves the crypto is correct against an external reference, not merely
+// self-consistent.
+func TestSigV4SigningKeyKnownAnswer(t *testing.T) {
+	const (
+		secret = "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
+		want   = "f4780e2d9f65fa895f9c67b32ce1baf0b0d8a43505a000a1a9e090d414db404d"
+	)
+
+	kDate := hmacSHA256([]byte("AWS4"+secret), "20120215")
+	kRegion := hmacSHA256(kDate, "us-east-1")
+	kService := hmacSHA256(kRegion, "iam")
+	kSigning := hmacSHA256(kService, "aws4_request")
+
+	if got := hex.EncodeToString(kSigning); got != want {
+		t.Errorf("signing key = %s, want %s", got, want)
+	}
+}
+
+func TestHexSHA256(t *testing.T) {
+	// Empty-input SHA-256 is a well-known constant.
+	const emptyHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+	if got := hexSHA256(nil); got != emptyHash {
+		t.Errorf("hexSHA256(empty) = %s, want %s", got, emptyHash)
+	}
+}
+
+func TestSESIncludesSessionToken(t *testing.T) {
+	var authHeader, token string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader = r.Header.Get("Authorization")
+		token = r.Header.Get("X-Amz-Security-Token")
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	sender := &sesSender{
+		creds: awsCredentials{
+			accessKeyID:     "AKID",
+			secretAccessKey: "secret",
+			sessionToken:    "temp-token",
+			region:          "eu-west-1",
+		},
+		fromAddress: "from@example.com",
+		endpoint:    srv.URL + "/v2/email/outbound-emails",
+		now:         func() time.Time { return time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC) },
+	}
+	if err := sender.Send(Message{To: []string{"to@example.com"}, Subject: "S", Body: "B"}); err != nil {
+		t.Fatalf("Send: %v", err)
+	}
+
+	if token != "temp-token" {
+		t.Errorf("X-Amz-Security-Token = %q, want temp-token", token)
+	}
+	// A signed session token must be listed among the signed headers.
+	if !strings.Contains(authHeader, "x-amz-security-token") {
+		t.Errorf("session token not covered by the signature: %q", authHeader)
+	}
+}
+
+func TestNewFromEnvMailgun(t *testing.T) {
+	t.Setenv("EMAIL_PROVIDER", "mailgun")
+	t.Setenv("MAILGUN_API_KEY", "")
+	t.Setenv("MAILGUN_DOMAIN", "")
+	if _, err := NewFromEnv(); err == nil {
+		t.Error("expected an error when Mailgun credentials are missing")
+	}
+
+	t.Setenv("MAILGUN_API_KEY", "key-x")
+	t.Setenv("MAILGUN_DOMAIN", "mail.example.com")
+	sender, err := NewFromEnv()
+	if err != nil {
+		t.Fatalf("NewFromEnv: %v", err)
+	}
+	if _, ok := sender.(*mailgunSender); !ok {
+		t.Errorf("expected *mailgunSender, got %T", sender)
+	}
+}
+
+func TestNewFromEnvSES(t *testing.T) {
+	t.Setenv("EMAIL_PROVIDER", "ses")
+	t.Setenv("AWS_ACCESS_KEY_ID", "")
+	t.Setenv("AWS_SECRET_ACCESS_KEY", "")
+	t.Setenv("AWS_REGION", "")
+	if _, err := NewFromEnv(); err == nil {
+		t.Error("expected an error when AWS credentials are missing")
+	}
+
+	t.Setenv("AWS_ACCESS_KEY_ID", "AKID")
+	t.Setenv("AWS_SECRET_ACCESS_KEY", "secret")
+	// Region still missing: SES needs one to build the endpoint.
+	if _, err := NewFromEnv(); err == nil {
+		t.Error("expected an error when AWS_REGION is missing")
+	}
+
+	t.Setenv("AWS_REGION", "eu-west-1")
+	sender, err := NewFromEnv()
+	if err != nil {
+		t.Fatalf("NewFromEnv: %v", err)
+	}
+	ses, ok := sender.(*sesSender)
+	if !ok {
+		t.Fatalf("expected *sesSender, got %T", sender)
+	}
+	if !strings.Contains(ses.endpoint, "eu-west-1") {
+		t.Errorf("endpoint should embed the region: %q", ses.endpoint)
+	}
+}
+
 func TestSigV4Deterministic(t *testing.T) {
 	build := func(body string) string {
 		req, _ := http.NewRequest(http.MethodPost, "https://email.eu-west-1.amazonaws.com/v2/email/outbound-emails", strings.NewReader(body))
@@ -486,6 +597,49 @@ func TestMessageRecipients(t *testing.T) {
 		if got[i] != want[i] {
 			t.Errorf("recipients[%d] = %q, want %q", i, got[i], want[i])
 		}
+	}
+}
+
+// TestProvidersValidateBeforeSending ensures an invalid message is rejected
+// before any HTTP request is made, so a bad message never reaches the provider.
+func TestProvidersValidateBeforeSending(t *testing.T) {
+	called := false
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	fixed := func() time.Time { return time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC) }
+	senders := map[string]Sender{
+		"resend":   &resendSender{apiKey: "k", fromAddress: "f@x.com", endpoint: srv.URL},
+		"sendgrid": &sendGridSender{apiKey: "k", fromAddress: "f@x.com", endpoint: srv.URL},
+		"mailgun":  &mailgunSender{apiKey: "k", domain: "d", baseURL: srv.URL, fromAddress: "f@x.com"},
+		"ses": &sesSender{
+			creds:       awsCredentials{accessKeyID: "AKID", secretAccessKey: "s", region: "eu-west-1"},
+			fromAddress: "f@x.com", endpoint: srv.URL, now: fixed,
+		},
+	}
+
+	for name, s := range senders {
+		t.Run(name+"/no recipients", func(t *testing.T) {
+			if err := s.Send(Message{Subject: "S", Body: "B"}); err == nil {
+				t.Error("expected an error for a message with no recipients")
+			}
+		})
+	}
+
+	if called {
+		t.Error("no HTTP request should be made for an invalid message")
+	}
+}
+
+func TestProviderMissingFromErrors(t *testing.T) {
+	// A sender with no default From and a message with no From must fail before
+	// sending, regardless of provider.
+	s := &resendSender{apiKey: "k", fromAddress: "", endpoint: "http://127.0.0.1:0"}
+	if err := s.Send(Message{To: []string{"to@x.com"}, Subject: "S", Body: "B"}); err == nil {
+		t.Error("expected an error when neither the message nor the sender has a From address")
 	}
 }
 
