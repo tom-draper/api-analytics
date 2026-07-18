@@ -10,7 +10,7 @@ use serde::Serialize;
 use std::{
     net::{IpAddr, SocketAddr},
     pin::Pin,
-    sync::Arc,
+    sync::{Arc, Once},
     task::{Context, Poll},
     time::{Duration, Instant},
 };
@@ -137,40 +137,55 @@ fn get_user_id(_req: &Request<Body>) -> String {
 
 #[derive(Clone)]
 pub struct Analytics {
+    api_key: String,
     config: Config,
     requests: Arc<RwLock<Vec<RequestData>>>,
+    started: Arc<Once>,
 }
 
 impl Analytics {
     pub fn new(api_key: String) -> Self {
-        let requests: Arc<RwLock<Vec<RequestData>>> = Arc::new(RwLock::new(vec![]));
-        let requests_clone = Arc::clone(&requests);
-        let config = Config::default();
-        let privacy_level = config.privacy_level;
-        let server_url = config.server_url.clone();
+        Self {
+            api_key,
+            config: Config::default(),
+            requests: Arc::new(RwLock::new(vec![])),
+            started: Arc::new(Once::new()),
+        }
+    }
 
-        tokio::spawn(async move {
-            let client = Client::builder()
-                .timeout(Duration::from_secs(10))
-                .build()
-                .unwrap_or_else(|_| Client::new());
+    // start_poller launches the background flush task exactly once, reading the
+    // final server URL and privacy level. It is invoked from `layer`, after any
+    // `with_*` builder call has run, so those settings are honoured. Spawning in
+    // `new` instead would capture the defaults before the builders execute,
+    // sending data to the public server and reporting privacy_level 0.
+    fn start_poller(&self) {
+        let requests = Arc::clone(&self.requests);
+        let api_key = self.api_key.clone();
+        let privacy_level = self.config.privacy_level;
+        let server_url = self.config.server_url.clone();
 
-            let mut ticker = interval(Duration::from_secs(60));
-            ticker.tick().await; // skip the immediate first tick
-            loop {
-                ticker.tick().await;
-                let batch = {
-                    let mut reqs = requests_clone.write().await;
-                    std::mem::take(&mut *reqs)
-                };
-                if !batch.is_empty() {
-                    let payload = Payload::new(api_key.clone(), batch, privacy_level);
-                    post_requests(&client, payload, &server_url).await;
+        self.started.call_once(move || {
+            tokio::spawn(async move {
+                let client = Client::builder()
+                    .timeout(Duration::from_secs(10))
+                    .build()
+                    .unwrap_or_else(|_| Client::new());
+
+                let mut ticker = interval(Duration::from_secs(60));
+                ticker.tick().await; // skip the immediate first tick
+                loop {
+                    ticker.tick().await;
+                    let batch = {
+                        let mut reqs = requests.write().await;
+                        std::mem::take(&mut *reqs)
+                    };
+                    if !batch.is_empty() {
+                        let payload = Payload::new(api_key.clone(), batch, privacy_level);
+                        post_requests(&client, payload, &server_url).await;
+                    }
                 }
-            }
+            });
         });
-
-        Self { config, requests }
     }
 
     pub fn with_privacy_level(mut self, privacy_level: i32) -> Self {
@@ -232,6 +247,7 @@ impl<S> Layer<S> for Analytics {
     type Service = AnalyticsMiddleware<S>;
 
     fn layer(&self, inner: S) -> Self::Service {
+        self.start_poller();
         AnalyticsMiddleware {
             config: Arc::new(self.config.clone()),
             requests: Arc::clone(&self.requests),
@@ -409,5 +425,20 @@ mod tests {
         assert_eq!(ip_from_cf_connecting_ip(&headers), None);
         assert_eq!(ip_from_x_forwarded_for(&headers), None);
         assert_eq!(ip_from_x_real_ip(&headers), None);
+    }
+
+    #[test]
+    fn builders_set_config_read_by_poller() {
+        // The background poller reads server_url and privacy_level from
+        // self.config when it starts (in `layer`), so the builders must be
+        // reflected there. This also asserts `new` does not spawn: it runs
+        // outside a tokio runtime, which would panic if `new` called
+        // tokio::spawn — the original bug that captured the defaults early.
+        let analytics = Analytics::new("test-key".to_string())
+            .with_server_url("https://self-hosted.example".to_string())
+            .with_privacy_level(2);
+
+        assert_eq!(analytics.config.server_url, "https://self-hosted.example/");
+        assert_eq!(analytics.config.privacy_level, 2);
     }
 }
