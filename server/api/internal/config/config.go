@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/tom-draper/api-analytics/server/api/internal/log"
@@ -16,6 +17,11 @@ type Config struct {
 	RateLimit   uint
 	MaxLoad     int
 	PageSize    int
+	// AllowedOrigins restricts CORS to these origins. Empty means allow all
+	// origins (the historical default), which is safe here because responses
+	// carry no cookies and access is gated by an API key or an unguessable
+	// user ID, not by the browser's ambient credentials.
+	AllowedOrigins []string
 }
 
 // Load loads environment variables and validates them
@@ -24,11 +30,12 @@ func Load() (*Config, error) {
 	_ = godotenv.Load()
 
 	cfg := &Config{
-		PostgresURL: os.Getenv("POSTGRES_URL"),
-		Port:        getIntWithDefault("API_PORT", 3000),
-		RateLimit:   uint(getIntWithDefault("API_RATE_LIMIT", 100)),
-		MaxLoad:     getIntWithDefault("API_MAX_LOAD", 1_000_000),
-		PageSize:    getIntWithDefault("API_PAGE_SIZE", 250_000),
+		PostgresURL:    os.Getenv("POSTGRES_URL"),
+		Port:           getIntWithDefault("API_PORT", 3000),
+		RateLimit:      uint(getIntWithDefault("API_RATE_LIMIT", 100)),
+		MaxLoad:        getIntWithDefault("API_MAX_LOAD", 1_000_000),
+		PageSize:       getIntWithDefault("API_PAGE_SIZE", 250_000),
+		AllowedOrigins: parseOrigins(os.Getenv("CORS_ALLOWED_ORIGINS")),
 	}
 
 	// Validate required fields
@@ -59,6 +66,20 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
+// parseOrigins splits a comma-separated CORS origin list, trimming blanks.
+func parseOrigins(value string) []string {
+	if strings.TrimSpace(value) == "" {
+		return nil
+	}
+	var origins []string
+	for _, origin := range strings.Split(value, ",") {
+		if origin = strings.TrimSpace(origin); origin != "" {
+			origins = append(origins, origin)
+		}
+	}
+	return origins
+}
+
 // getIntWithDefault is a helper that doesn't log (used internally)
 func getIntWithDefault(name string, defaultValue int) int {
 	valueStr := os.Getenv(name)
@@ -74,4 +95,3 @@ func getIntWithDefault(name string, defaultValue int) int {
 
 	return value
 }
-

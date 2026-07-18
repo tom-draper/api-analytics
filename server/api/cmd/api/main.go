@@ -97,7 +97,7 @@ func setupRouter(db *database.DB, cfg *config.Config, startTime time.Time) *gin.
 	// they consume rate limit budget. Registering it on the engine rather than
 	// the group also means it covers requests that match no route, which is
 	// what a preflight is until the browser is told the real method is allowed.
-	app.Use(cors.Default())
+	app.Use(corsMiddleware(cfg.AllowedOrigins))
 
 	// Limit a single IP's request logs per second
 	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
@@ -115,6 +115,18 @@ func setupRouter(db *database.DB, cfg *config.Config, startTime time.Time) *gin.
 	routes.RegisterRouter(r, db, cfg, startTime)
 
 	return app
+}
+
+// corsMiddleware allows all origins when allowedOrigins is empty (the historical
+// default) and otherwise restricts CORS to the configured origins, so a hosted
+// deployment can lock the dashboard API down to its own front-end.
+func corsMiddleware(allowedOrigins []string) gin.HandlerFunc {
+	if len(allowedOrigins) == 0 {
+		return cors.Default()
+	}
+	c := cors.DefaultConfig()
+	c.AllowOrigins = allowedOrigins
+	return cors.New(c)
 }
 
 func rateLimitKey(c *gin.Context) string {
