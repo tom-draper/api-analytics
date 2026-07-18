@@ -330,6 +330,165 @@ func TestSigV4Deterministic(t *testing.T) {
 	}
 }
 
+func TestSMTPAuthMechanisms(t *testing.T) {
+	base := &smtpSender{server: "smtp.example.com", username: "u", password: "p"}
+
+	t.Run("login returns loginAuth", func(t *testing.T) {
+		base.authType = AuthLogin
+		auth, err := base.auth()
+		if err != nil {
+			t.Fatalf("auth: %v", err)
+		}
+		if _, ok := auth.(*loginAuth); !ok {
+			t.Errorf("expected *loginAuth, got %T", auth)
+		}
+	})
+
+	for name, at := range map[string]AuthType{"plain": AuthPlain, "crammd5": AuthCRAMMD5} {
+		t.Run(name+" returns a non-nil auth", func(t *testing.T) {
+			base.authType = at
+			auth, err := base.auth()
+			if err != nil || auth == nil {
+				t.Errorf("auth() = (%v, %v), want a non-nil auth", auth, err)
+			}
+		})
+	}
+
+	t.Run("unknown auth type errors", func(t *testing.T) {
+		base.authType = AuthType(99)
+		if _, err := base.auth(); err == nil {
+			t.Error("expected an error for an unknown auth type")
+		}
+	})
+}
+
+func TestLoginAuthProtocol(t *testing.T) {
+	auth := &loginAuth{username: "user", password: "pass"}
+
+	mech, resp, err := auth.Start(nil)
+	if err != nil || mech != "LOGIN" || len(resp) != 0 {
+		t.Fatalf("Start = (%q, %v, %v), want (LOGIN, empty, nil)", mech, resp, err)
+	}
+
+	if r, _ := auth.Next([]byte("Username:"), true); string(r) != "user" {
+		t.Errorf("username prompt returned %q", r)
+	}
+	if r, _ := auth.Next([]byte("Password:"), true); string(r) != "pass" {
+		t.Errorf("password prompt returned %q", r)
+	}
+	if _, err := auth.Next([]byte("Surprise:"), true); err == nil {
+		t.Error("expected an error for an unknown prompt")
+	}
+	if r, err := auth.Next(nil, false); err != nil || r != nil {
+		t.Errorf("end of exchange = (%v, %v), want (nil, nil)", r, err)
+	}
+}
+
+func TestNewSMTPFromEnv(t *testing.T) {
+	t.Run("defaults with From falling back to username", func(t *testing.T) {
+		t.Setenv("EMAIL_USERNAME", "me@example.com")
+		t.Setenv("EMAIL_PASSWORD", "secret")
+		t.Setenv("EMAIL_FROM_ADDRESS", "")
+		t.Setenv("SMTP_SERVER", "")
+		t.Setenv("SMTP_PORT", "")
+		t.Setenv("SMTP_AUTH_TYPE", "")
+
+		s, err := newSMTPFromEnv()
+		if err != nil {
+			t.Fatalf("newSMTPFromEnv: %v", err)
+		}
+		if s.server != "smtp-mail.outlook.com" || s.port != 587 || s.authType != AuthLogin {
+			t.Errorf("unexpected defaults: %+v", s)
+		}
+		if s.fromAddress != "me@example.com" {
+			t.Errorf("From = %q, want the username fallback", s.fromAddress)
+		}
+	})
+
+	t.Run("custom values", func(t *testing.T) {
+		t.Setenv("EMAIL_USERNAME", "me@example.com")
+		t.Setenv("EMAIL_PASSWORD", "secret")
+		t.Setenv("EMAIL_FROM_ADDRESS", "noreply@example.com")
+		t.Setenv("SMTP_SERVER", "smtp.gmail.com")
+		t.Setenv("SMTP_PORT", "465")
+		t.Setenv("SMTP_AUTH_TYPE", "plain")
+
+		s, err := newSMTPFromEnv()
+		if err != nil {
+			t.Fatalf("newSMTPFromEnv: %v", err)
+		}
+		if s.server != "smtp.gmail.com" || s.port != 465 || s.authType != AuthPlain {
+			t.Errorf("custom values not applied: %+v", s)
+		}
+		if s.fromAddress != "noreply@example.com" {
+			t.Errorf("From = %q", s.fromAddress)
+		}
+	})
+
+	errorCases := []struct {
+		name string
+		env  map[string]string
+	}{
+		{"missing username", map[string]string{"EMAIL_USERNAME": "", "EMAIL_PASSWORD": "p"}},
+		{"missing password", map[string]string{"EMAIL_USERNAME": "u", "EMAIL_PASSWORD": ""}},
+		{"invalid port", map[string]string{"EMAIL_USERNAME": "u", "EMAIL_PASSWORD": "p", "SMTP_PORT": "not-a-port"}},
+		{"invalid auth type", map[string]string{"EMAIL_USERNAME": "u", "EMAIL_PASSWORD": "p", "SMTP_AUTH_TYPE": "magic"}},
+	}
+	for _, tc := range errorCases {
+		t.Run(tc.name, func(t *testing.T) {
+			for k, v := range tc.env {
+				t.Setenv(k, v)
+			}
+			if _, err := newSMTPFromEnv(); err == nil {
+				t.Errorf("expected an error for %s", tc.name)
+			}
+		})
+	}
+}
+
+func TestResendHTMLUsesHtmlField(t *testing.T) {
+	var body map[string]any
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		raw, _ := io.ReadAll(r.Body)
+		_ = json.Unmarshal(raw, &body)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	sender := &resendSender{apiKey: "re_test", fromAddress: "from@example.com", endpoint: srv.URL}
+	err := sender.Send(Message{
+		To: []string{"to@example.com"}, Subject: "S",
+		Body: "<h1>Hi</h1>", ContentType: "text/html",
+	})
+	if err != nil {
+		t.Fatalf("Send: %v", err)
+	}
+	if _, ok := body["html"]; !ok {
+		t.Errorf("html message should set the html field, got: %v", body)
+	}
+	if _, ok := body["text"]; ok {
+		t.Errorf("html message must not set the text field, got: %v", body)
+	}
+}
+
+func TestMessageRecipients(t *testing.T) {
+	m := Message{
+		To:  []string{"a@x.com", "b@x.com"},
+		CC:  []string{"c@x.com"},
+		BCC: []string{"d@x.com"},
+	}
+	got := m.recipients()
+	want := []string{"a@x.com", "b@x.com", "c@x.com", "d@x.com"}
+	if len(got) != len(want) {
+		t.Fatalf("recipients = %v, want %v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Errorf("recipients[%d] = %q, want %q", i, got[i], want[i])
+		}
+	}
+}
+
 func TestDoRequestNon2xx(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
