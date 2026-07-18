@@ -27,3 +27,34 @@ function getEnvServerURL() {
 export function getServerURL() {
 	return getParamServerURL() ?? getEnvServerURL() ?? serverURL;
 }
+
+/** The backend this build trusts: the SERVER_URL env var, else the default hosted backend. The `?source=` override is deliberately excluded. */
+function getTrustedServerURL() {
+	return getEnvServerURL() ?? serverURL;
+}
+
+/**
+ * Returns the origin the backend has been redirected to by `?source=` when it
+ * differs from the trusted build-time backend, or null when the backend is
+ * trusted. Pages that submit the secret API key use this to warn before sending
+ * it to a non-default origin: a crafted `?source=` on the hosted dashboard would
+ * otherwise exfiltrate a key the user types into a legitimate-looking page.
+ */
+export function untrustedBackendOrigin(): string | null {
+	const source = getParamServerURL();
+	if (!source) return null;
+
+	let sourceOrigin: string;
+	try {
+		sourceOrigin = new URL(source).origin;
+	} catch {
+		return source; // unparseable source: treat as untrusted, show the raw value
+	}
+
+	try {
+		if (sourceOrigin === new URL(getTrustedServerURL()).origin) return null;
+	} catch {
+		// trusted URL unparseable (should not happen) — fall through and warn.
+	}
+	return sourceOrigin;
+}

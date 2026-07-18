@@ -1,16 +1,20 @@
 <script lang="ts">
-	import { getServerURL } from '$lib/url';
+	import { getServerURL, untrustedBackendOrigin } from '$lib/url';
 	import Lightning from '$components/Lightning.svelte';
 
 	type State = 'idle' | 'confirm' | 'loading' | 'deleted' | 'error';
 
 	let status: State = $state('idle');
 	let apiKey = $state('');
+	// Set when ?source= points the backend at a non-default origin, warning the
+	// user before the API key is sent there.
+	let destinationWarning = $state<string | null>(null);
 
 	// First step: ask for explicit confirmation rather than deleting straight
 	// away. Deletion is irreversible, so it must never happen on a single action.
 	function requestDelete() {
 		if (!apiKey || status === 'loading') return;
+		destinationWarning = untrustedBackendOrigin();
 		status = 'confirm';
 	}
 
@@ -50,11 +54,13 @@
 
 	function cancel() {
 		status = 'idle';
+		destinationWarning = null;
 	}
 
 	function reset() {
 		status = 'idle';
 		apiKey = '';
+		destinationWarning = null;
 	}
 </script>
 
@@ -120,6 +126,12 @@
 			</div>
 			<button class="form-btn delete-btn" onclick={reset}>Try again</button>
 		{:else if status === 'confirm'}
+			{#if destinationWarning}
+				<div class="status-msg danger-origin">
+					Your API key will be sent to <strong>{destinationWarning}</strong>, which is not
+					the default backend. Only continue if this is your own server.
+				</div>
+			{/if}
 			<div class="status-msg warning">
 				This permanently deletes your account and all associated data. This action cannot be
 				undone.
@@ -175,6 +187,12 @@
 		background: #2b0d0d;
 		color: var(--red);
 		border: 1px solid #4a1a1a;
+	}
+	.status-msg.danger-origin {
+		background: #2b1a0d;
+		color: #e0a561;
+		border: 1px solid #4a3320;
+		text-align: left;
 	}
 	.confirm-actions {
 		display: flex;
