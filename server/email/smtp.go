@@ -110,18 +110,28 @@ func (s *smtpSender) auth() (smtp.Auth, error) {
 	}
 }
 
+// headerSanitizer strips the CR and LF that separate header lines, so a value
+// carrying user-influenced content (e.g. a monitored URL in an alert subject)
+// cannot inject additional headers into the message.
+var headerSanitizer = strings.NewReplacer("\r", "", "\n", "")
+
+// sanitizeHeader removes any CR/LF from an email header value.
+func sanitizeHeader(value string) string {
+	return headerSanitizer.Replace(value)
+}
+
 // renderMIME builds the RFC 822 message for SMTP delivery. ContentType defaults
 // to text/plain via Message.contentType so the header is never emitted with an
-// empty type.
+// empty type. Header values are sanitized to prevent header injection.
 func renderMIME(msg Message) []byte {
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("From: %s\r\n", msg.From))
-	b.WriteString(fmt.Sprintf("To: %s\r\n", strings.Join(msg.To, ", ")))
+	b.WriteString(fmt.Sprintf("From: %s\r\n", sanitizeHeader(msg.From)))
+	b.WriteString(fmt.Sprintf("To: %s\r\n", sanitizeHeader(strings.Join(msg.To, ", "))))
 	if len(msg.CC) > 0 {
-		b.WriteString(fmt.Sprintf("CC: %s\r\n", strings.Join(msg.CC, ", ")))
+		b.WriteString(fmt.Sprintf("CC: %s\r\n", sanitizeHeader(strings.Join(msg.CC, ", "))))
 	}
-	b.WriteString(fmt.Sprintf("Subject: %s\r\n", msg.Subject))
-	b.WriteString(fmt.Sprintf("Content-Type: %s; charset=UTF-8\r\n", msg.contentType()))
+	b.WriteString(fmt.Sprintf("Subject: %s\r\n", sanitizeHeader(msg.Subject)))
+	b.WriteString(fmt.Sprintf("Content-Type: %s; charset=UTF-8\r\n", sanitizeHeader(msg.contentType())))
 	b.WriteString("MIME-Version: 1.0\r\n")
 	b.WriteString("\r\n")
 	b.WriteString(msg.Body)

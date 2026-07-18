@@ -54,6 +54,30 @@ func TestRenderMIMEContentType(t *testing.T) {
 	}
 }
 
+// TestRenderMIMEStripsHeaderInjection ensures CR/LF in a header value (e.g. a
+// subject derived from a user-supplied monitored URL) cannot inject additional
+// headers into the message.
+func TestRenderMIMEStripsHeaderInjection(t *testing.T) {
+	mime := string(renderMIME(Message{
+		From:    "from@example.com",
+		To:      []string{"ops@example.com"},
+		Subject: "http://x\r\nBcc: attacker@evil.com",
+		Body:    "Body",
+	}))
+
+	// The CR/LF must be stripped so the injected text stays part of the Subject
+	// value rather than becoming its own header line.
+	headers := strings.SplitN(mime, "\r\n\r\n", 2)[0]
+	for _, line := range strings.Split(headers, "\r\n") {
+		if strings.HasPrefix(line, "Bcc:") {
+			t.Fatalf("header injection succeeded, found injected header line %q", line)
+		}
+	}
+	if !strings.Contains(headers, "Subject: http://xBcc: attacker@evil.com") {
+		t.Errorf("subject was not rendered as a single sanitized line:\n%s", headers)
+	}
+}
+
 func TestRenderMIMEHeaders(t *testing.T) {
 	mime := string(renderMIME(Message{
 		From:    "from@example.com",
