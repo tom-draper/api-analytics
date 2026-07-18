@@ -41,24 +41,24 @@ func loadEnv(filename string) error {
 
 func getTestClient(serverURL string) *Client {
 	apiKey := os.Getenv("API_KEY")
+	if apiKey == "" {
+		// NewClient requires a non-empty key. These tests exercise batching and
+		// transport, not authentication, so a placeholder is sufficient and lets
+		// the suite run without a configured API_KEY.
+		apiKey = "test-api-key"
+	}
 	return NewClient(apiKey, "Gin", 0, serverURL)
 }
 
 func TestMain(m *testing.M) {
-	// Load environment variables before running tests
-	err := loadEnv(".env")
-	if err != nil {
-		// Log the error and exit if the .env file fails to load
+	// Load environment variables before running tests. The .env file is
+	// optional so the suite runs in CI (and locally) without one; only a
+	// malformed file is treated as fatal.
+	if err := loadEnv(".env"); err != nil && !os.IsNotExist(err) {
 		panic("Failed to load .env file: " + err.Error())
 	}
 
-	// Run the tests
-	code := m.Run()
-
-	// Perform any teardown tasks here if necessary
-
-	// Exit with the test exit code
-	os.Exit(code)
+	os.Exit(m.Run())
 }
 
 func TestNewClient(t *testing.T) {
@@ -103,6 +103,9 @@ func TestLogRequest(t *testing.T) {
 }
 
 func TestWorkerPushing(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping: waits on the 1-minute worker flush interval")
+	}
 	req1 := RequestData{
 		Hostname:     "localhost",
 		IPAddress:    "127.0.0.1",
@@ -187,6 +190,9 @@ func TestWorkerPushing(t *testing.T) {
 }
 
 func TestWorkerPushingMultiple(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping: waits on the 1-minute worker flush interval")
+	}
 	req1 := RequestData{
 		Hostname:     "localhost",
 		IPAddress:    "127.0.0.1",
@@ -322,6 +328,9 @@ func TestClientShutdown(t *testing.T) {
 }
 
 func TestPerformanceLogRequests(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping: waits on the 1-minute worker flush interval")
+	}
 	requests := []RequestData{}
 	serverTriggerCount := 0
 	var mu sync.Mutex
