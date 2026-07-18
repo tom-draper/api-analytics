@@ -158,6 +158,29 @@ func ValidIPAddress(ipAddress string) bool {
 	return ip != nil
 }
 
+// cgnatRange is the 100.64.0.0/10 carrier-grade NAT block (RFC 6598), which
+// net.IP.IsPrivate does not cover but which is not publicly routable.
+var cgnatRange = &net.IPNet{IP: net.IPv4(100, 64, 0, 0), Mask: net.CIDRMask(10, 32)}
+
+// IsPublicIP reports whether ip is a globally routable public address. It
+// returns false for loopback, unspecified, link-local (including the
+// 169.254.169.254 cloud metadata endpoint), private (RFC 1918 and IPv6 ULA),
+// carrier-grade NAT and multicast addresses. It is the single source of truth
+// for SSRF address filtering, used both to validate monitor URLs on submission
+// and to guard the monitor pinger's outbound dialer.
+func IsPublicIP(ip net.IP) bool {
+	if ip.IsLoopback() || ip.IsUnspecified() ||
+		ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() ||
+		ip.IsMulticast() || ip.IsInterfaceLocalMulticast() ||
+		ip.IsPrivate() {
+		return false
+	}
+	if ip4 := ip.To4(); ip4 != nil && cgnatRange.Contains(ip4) {
+		return false
+	}
+	return true
+}
+
 // ValidAPIKey reports whether a string has UUID shape (used for API keys and
 // user IDs). It gates format only; it does not check the UUID version.
 func ValidAPIKey(apiKey string) bool {

@@ -2,7 +2,10 @@ package routes
 
 import (
 	"fmt"
+	"net"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 	"unicode"
 
@@ -26,6 +29,35 @@ func validMonitorURL(url string) bool {
 		}
 	}
 	return true
+}
+
+// internalMonitorTarget reports whether rawURL points at an address that must
+// not be monitored, giving the user immediate feedback instead of a monitor
+// that only ever reports "down". It rejects localhost and literal non-public
+// IPs (loopback, private, link-local metadata, etc). Hostnames are not resolved
+// here — that would add DNS latency to the request path — so a hostname that
+// resolves to an internal address is caught authoritatively by the pinger's
+// dialer guard, which re-checks the resolved IP at connection time.
+func internalMonitorTarget(rawURL string) bool {
+	// Ensure a scheme so url.Parse populates Host rather than Path.
+	if !strings.Contains(rawURL, "://") {
+		rawURL = "http://" + rawURL
+	}
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return false
+	}
+	host := u.Hostname()
+	if host == "" {
+		return false
+	}
+	if strings.EqualFold(host, "localhost") {
+		return true
+	}
+	if ip := net.ParseIP(host); ip != nil && !database.IsPublicIP(ip) {
+		return true
+	}
+	return false
 }
 
 type MonitorRow struct {
@@ -102,6 +134,12 @@ func addUserMonitor(db *database.DB) gin.HandlerFunc {
 		if !validMonitorURL(monitor.URL) {
 			log.Info("invalid monitor URL")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid monitor URL."})
+			return
+		}
+
+		if internalMonitorTarget(monitor.URL) {
+			log.Info("internal monitor URL rejected")
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Monitor URL must point to a public address."})
 			return
 		}
 

@@ -1,6 +1,7 @@
 package database
 
 import (
+	"net"
 	"strings"
 	"testing"
 	"time"
@@ -653,5 +654,40 @@ func BenchmarkValidIPAddress(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ValidIPAddress(testIP)
+	}
+}
+
+func TestIsPublicIP(t *testing.T) {
+	blocked := []string{
+		"127.0.0.1",          // loopback
+		"::1",                // loopback v6
+		"169.254.169.254",    // cloud metadata (link-local)
+		"10.0.0.5",           // private RFC1918
+		"172.16.3.4",         // private RFC1918
+		"192.168.1.1",        // private RFC1918
+		"100.64.0.1",         // carrier-grade NAT
+		"0.0.0.0",            // unspecified
+		"fd00::1",            // IPv6 unique local
+		"fe80::1",            // IPv6 link-local
+		"224.0.0.1",          // multicast
+		"::ffff:127.0.0.1",   // IPv4-mapped loopback
+		"::ffff:192.168.0.1", // IPv4-mapped private
+	}
+	for _, s := range blocked {
+		if ip := net.ParseIP(s); ip == nil || IsPublicIP(ip) {
+			t.Errorf("IsPublicIP(%s) = true, want false (should be blocked)", s)
+		}
+	}
+
+	public := []string{
+		"1.1.1.1",
+		"8.8.8.8",
+		"93.184.216.34", // example.com
+		"2606:4700:4700::1111",
+	}
+	for _, s := range public {
+		if ip := net.ParseIP(s); ip == nil || !IsPublicIP(ip) {
+			t.Errorf("IsPublicIP(%s) = false, want true (should be allowed)", s)
+		}
 	}
 }

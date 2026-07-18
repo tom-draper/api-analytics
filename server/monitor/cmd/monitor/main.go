@@ -337,28 +337,10 @@ func guardPrivateAddress(network, address string, _ syscall.RawConn) error {
 	if ip == nil {
 		return fmt.Errorf("unresolved dial address %q", host)
 	}
-	if !isPublicIP(ip) {
+	if !database.IsPublicIP(ip) {
 		return fmt.Errorf("%w: %s", errPrivateAddress, ip)
 	}
 	return nil
-}
-
-// cgnatRange is the 100.64.0.0/10 carrier-grade NAT block (RFC 6598), which
-// net.IP.IsPrivate does not cover but which is not publicly routable.
-var cgnatRange = &net.IPNet{IP: net.IPv4(100, 64, 0, 0), Mask: net.CIDRMask(10, 32)}
-
-// isPublicIP reports whether ip is a globally routable public address.
-func isPublicIP(ip net.IP) bool {
-	if ip.IsLoopback() || ip.IsUnspecified() ||
-		ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() ||
-		ip.IsMulticast() || ip.IsInterfaceLocalMulticast() ||
-		ip.IsPrivate() {
-		return false
-	}
-	if ip4 := ip.To4(); ip4 != nil && cgnatRange.Contains(ip4) {
-		return false
-	}
-	return true
 }
 
 func shuffle(monitored []MonitorRow) {
