@@ -1,28 +1,15 @@
 <script lang="ts">
-	import { getServerURL, untrustedBackendOrigin } from '$lib/url';
+	import { getServerURL } from '$lib/url';
 	import Lightning from '$components/Lightning.svelte';
 
-	type State = 'idle' | 'confirm' | 'loading' | 'success' | 'error';
+	type State = 'idle' | 'loading' | 'success' | 'error';
 
 	let status = $state<State>('idle');
 	let apiKey = $state('');
-	// Set when ?source= points the backend at a non-default origin; the user must
-	// confirm before the API key is sent there.
-	let destinationWarning = $state<string | null>(null);
 
-	function submit() {
-		if (!apiKey || status === 'loading') return;
+	async function submit() {
+		if (!apiKey) return;
 
-		const origin = untrustedBackendOrigin();
-		if (origin) {
-			destinationWarning = origin;
-			status = 'confirm';
-			return;
-		}
-		send();
-	}
-
-	async function send() {
 		status = 'loading';
 
 		try {
@@ -40,21 +27,13 @@
 		}
 	}
 
-	function cancel() {
-		status = 'idle';
-		destinationWarning = null;
-	}
-
 	function reset() {
 		status = 'idle';
 		apiKey = '';
-		destinationWarning = null;
 	}
 
-	// Enter only submits from the idle input; it never confirms sending the key to
-	// an untrusted backend.
 	function enter(e: KeyboardEvent) {
-		if (e.key === 'Enter' && status === 'idle') submit();
+		if (e.key === 'Enter') submit();
 	}
 </script>
 
@@ -81,15 +60,6 @@
 				Something went wrong. Please check your API key and try again.
 			</div>
 			<button class="form-btn regen-btn" onclick={reset}>Try again</button>
-		{:else if status === 'confirm'}
-			<div class="status-msg warning">
-				Your API key will be sent to <strong>{destinationWarning}</strong>, which is not the
-				default backend. Only continue if this is your own server.
-			</div>
-			<div class="confirm-actions">
-				<button class="form-btn cancel-btn" onclick={cancel}>Cancel</button>
-				<button class="form-btn regen-btn" onclick={send}>Send &amp; regenerate</button>
-			</div>
 		{:else}
 			<label class="input-label" for="api-key">
 				Enter API Key
@@ -169,25 +139,5 @@
 		background: #0d1f2b;
 		color: var(--blue);
 		border: 1px solid #1a3a4a;
-	}
-	.status-msg.warning {
-		background: #2b1a0d;
-		color: #e0a561;
-		border: 1px solid #4a3320;
-		text-align: left;
-	}
-	.confirm-actions {
-		display: flex;
-		gap: 0.75em;
-	}
-	.confirm-actions .form-btn {
-		flex: 1;
-	}
-	.cancel-btn {
-		background: #333333;
-		color: white;
-	}
-	.cancel-btn:hover:not(:disabled) {
-		background: #444444;
 	}
 </style>
