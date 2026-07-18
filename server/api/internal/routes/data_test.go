@@ -169,6 +169,53 @@ func TestGetDataAcceptsValidPage(t *testing.T) {
 	}
 }
 
+func TestGetQueriesFromRequestCompactFlag(t *testing.T) {
+	if !queriesFor(t, "compact=true").compact {
+		t.Error("compact=true should enable the compact response")
+	}
+	// Only the exact value "true" enables it; everything else stays off.
+	for _, rawQuery := range []string{"", "compact=false", "compact=1", "compact=yes", "compact=TRUE"} {
+		t.Run("off/"+rawQuery, func(t *testing.T) {
+			if queriesFor(t, rawQuery).compact {
+				t.Errorf("%q should not enable compact", rawQuery)
+			}
+		})
+	}
+}
+
+func getDataResponse(t *testing.T, token string) *httptest.ResponseRecorder {
+	t.Helper()
+	gin.SetMode(gin.TestMode)
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Request = httptest.NewRequest(http.MethodGet, "/data", nil)
+	if token != "" {
+		c.Request.Header.Set("X-AUTH-TOKEN", token)
+	}
+	getData(nil)(c)
+	return recorder
+}
+
+func TestGetDataRejectsMissingAPIKey(t *testing.T) {
+	recorder := getDataResponse(t, "")
+	if recorder.Code != http.StatusBadRequest {
+		t.Errorf("status = %d, want %d", recorder.Code, http.StatusBadRequest)
+	}
+	if !strings.Contains(recorder.Body.String(), "API key required") {
+		t.Errorf("body = %q, want an 'API key required' message", recorder.Body.String())
+	}
+}
+
+func TestGetDataRejectsInvalidAPIKeyFormat(t *testing.T) {
+	recorder := getDataResponse(t, "not-a-uuid")
+	if recorder.Code != http.StatusBadRequest {
+		t.Errorf("status = %d, want %d", recorder.Code, http.StatusBadRequest)
+	}
+	if !strings.Contains(recorder.Body.String(), "Invalid API key format") {
+		t.Errorf("body = %q, want an invalid-format message", recorder.Body.String())
+	}
+}
+
 func TestNormalizeQueryKey(t *testing.T) {
 	tests := []struct {
 		name     string
