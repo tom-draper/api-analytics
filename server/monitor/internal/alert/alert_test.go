@@ -55,6 +55,29 @@ func TestAlerterDisabled(t *testing.T) {
 	a.Evaluate([]Result{{URL: "u", Status: 500}})
 }
 
+func TestAlerterMessageContent(t *testing.T) {
+	fs := &fakeSender{}
+	a := New(true, fs, "ops@example.com")
+
+	// A 5xx downtime reports the status code.
+	a.Evaluate([]Result{{APIKey: "k1", URL: "https://a.example", Status: 503}})
+	if len(fs.sent) != 1 {
+		t.Fatalf("expected 1 alert, got %d", len(fs.sent))
+	}
+	if !strings.Contains(fs.sent[0].Body, "HTTP 503") || !strings.Contains(fs.sent[0].Body, "https://a.example") {
+		t.Errorf("status alert body missing detail: %q", fs.sent[0].Body)
+	}
+
+	// An unreachable URL reports the underlying error.
+	a.Evaluate([]Result{{APIKey: "k2", URL: "https://b.example", Err: errors.New("dial timeout")}})
+	if len(fs.sent) != 2 {
+		t.Fatalf("expected 2 alerts, got %d", len(fs.sent))
+	}
+	if !strings.Contains(fs.sent[1].Body, "unreachable") || !strings.Contains(fs.sent[1].Body, "dial timeout") {
+		t.Errorf("unreachable alert body missing detail: %q", fs.sent[1].Body)
+	}
+}
+
 func TestAlerterTransitions(t *testing.T) {
 	fs := &fakeSender{}
 	a := New(true, fs, "ops@example.com")
