@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/rand"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -261,6 +263,7 @@ func pingMonitored(monitored []MonitorRow) []pingResult {
 
 func ping(client http.Client, url string, secure bool, ping bool) (int, time.Duration, error) {
 	method := getMethod(ping)
+	url = applyScheme(url, secure)
 
 	request, err := http.NewRequest(method, url, nil)
 	if err != nil {
@@ -286,13 +289,76 @@ func getMethod(ping bool) string {
 	return "GET"
 }
 
+// applyScheme ensures url carries an http/https scheme so it can be pinged.
+// A url that already specifies a scheme is used as-is (the dashboard bakes the
+// scheme in when a monitor is added); a scheme-less url — which a direct API
+// caller can store — falls back to the monitor's secure flag, selecting https
+// when secure and http otherwise.
+func applyScheme(url string, secure bool) string {
+	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
+		return url
+	}
+	if secure {
+		return "https://" + url
+	}
+	return "http://" + url
+}
+
 func getClient() http.Client {
-	dialer := net.Dialer{Timeout: 2 * time.Second}
+	dialer := net.Dialer{
+		Timeout: 2 * time.Second,
+		// Control runs after DNS resolution, on the address actually being
+		// dialed, and rejects non-public targets. Because it sees the resolved
+		// IP it also defeats DNS rebinding between when a monitor is added and
+		// when it is pinged.
+		Control: guardPrivateAddress,
+	}
 	return http.Client{
 		Transport: &http.Transport{
-			Dial: dialer.Dial,
+			DialContext: dialer.DialContext,
 		},
 	}
+}
+
+// errPrivateAddress is returned when a monitored URL resolves to a non-public
+// address, so the monitor pinger cannot be abused to reach internal services.
+var errPrivateAddress = errors.New("refusing to connect to non-public address")
+
+// guardPrivateAddress is a net.Dialer Control function that blocks connections
+// to any address that is not a routable public IP: loopback, link-local
+// (including the 169.254.169.254 cloud metadata endpoint), private (RFC 1918
+// and IPv6 ULA), carrier-grade NAT, multicast and unspecified addresses.
+func guardPrivateAddress(network, address string, _ syscall.RawConn) error {
+	host, _, err := net.SplitHostPort(address)
+	if err != nil {
+		return fmt.Errorf("invalid dial address %q: %w", address, err)
+	}
+	ip := net.ParseIP(host)
+	if ip == nil {
+		return fmt.Errorf("unresolved dial address %q", host)
+	}
+	if !isPublicIP(ip) {
+		return fmt.Errorf("%w: %s", errPrivateAddress, ip)
+	}
+	return nil
+}
+
+// cgnatRange is the 100.64.0.0/10 carrier-grade NAT block (RFC 6598), which
+// net.IP.IsPrivate does not cover but which is not publicly routable.
+var cgnatRange = &net.IPNet{IP: net.IPv4(100, 64, 0, 0), Mask: net.CIDRMask(10, 32)}
+
+// isPublicIP reports whether ip is a globally routable public address.
+func isPublicIP(ip net.IP) bool {
+	if ip.IsLoopback() || ip.IsUnspecified() ||
+		ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() ||
+		ip.IsMulticast() || ip.IsInterfaceLocalMulticast() ||
+		ip.IsPrivate() {
+		return false
+	}
+	if ip4 := ip.To4(); ip4 != nil && cgnatRange.Contains(ip4) {
+		return false
+	}
+	return true
 }
 
 func shuffle(monitored []MonitorRow) {
