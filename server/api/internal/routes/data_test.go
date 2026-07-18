@@ -169,6 +169,22 @@ func TestGetDataAcceptsValidPage(t *testing.T) {
 	}
 }
 
+func TestGetQueriesFromRequestStatus(t *testing.T) {
+	tests := map[string]int{
+		"status=200": 200,
+		"status=404": 404,
+		"status=abc": 0, // unparseable falls back to 0 (no status filter)
+		"":           0, // absent
+	}
+	for rawQuery, want := range tests {
+		t.Run("query="+rawQuery, func(t *testing.T) {
+			if got := queriesFor(t, rawQuery).status; got != want {
+				t.Errorf("status for %q = %d, want %d", rawQuery, got, want)
+			}
+		})
+	}
+}
+
 func TestGetQueriesFromRequestCompactFlag(t *testing.T) {
 	if !queriesFor(t, "compact=true").compact {
 		t.Error("compact=true should enable the compact response")
