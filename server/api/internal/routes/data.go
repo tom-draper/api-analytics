@@ -110,7 +110,7 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) (string, []any
 	arguments := []any{apiKey}
 
 	if !queries.date.IsZero() && database.ValidDate(queries.date) {
-		query.WriteString(fmt.Sprintf(" and r.created_at >= $%d and r.created_at < date $%d + interval '1 days'", len(arguments)+1, len(arguments)+2))
+		query.WriteString(fmt.Sprintf(" and r.created_at >= $%d and r.created_at < $%d::date + interval '1 days'", len(arguments)+1, len(arguments)+2))
 		arguments = append(arguments, queries.date.Format("2006-01-02"), queries.date.Format("2006-01-02"))
 	} else {
 		if !queries.dateFrom.IsZero() && database.ValidDate(queries.dateFrom) {
@@ -120,8 +120,10 @@ func buildDataFetchQuery(apiKey string, queries DataFetchQueries) (string, []any
 		if !queries.dateTo.IsZero() && database.ValidDate(queries.dateTo) {
 			// created_at is a timestamp, so a bare date compares against midnight.
 			// Use < dateTo + 1 day to include the whole dateTo day, matching the
-			// single-date branch above.
-			query.WriteString(fmt.Sprintf(" and r.created_at < date $%d + interval '1 days'", len(arguments)+1))
+			// single-date branch above. The parameter is cast with $n::date
+			// because "date $n" (a typed literal) is only valid for string
+			// literals, not bind parameters.
+			query.WriteString(fmt.Sprintf(" and r.created_at < $%d::date + interval '1 days'", len(arguments)+1))
 			arguments = append(arguments, queries.dateTo.Format("2006-01-02"))
 		}
 	}

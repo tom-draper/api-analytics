@@ -52,7 +52,7 @@ func TestBuildDataFetchQueryOffset(t *testing.T) {
 
 func TestBuildDataFetchQueryDateToUsesFullDay(t *testing.T) {
 	// Regression: dateTo must include the whole end day, so it is compared with
-	// "< date $n + interval '1 days'", not "<= $n".
+	// "< $n::date + interval '1 days'", not "<= $n".
 	query, args := buildDataFetchQuery(testKey, DataFetchQueries{
 		page:     1,
 		dateFrom: mustDate(t, "2024-06-01"),
@@ -62,7 +62,7 @@ func TestBuildDataFetchQueryDateToUsesFullDay(t *testing.T) {
 	if !strings.Contains(query, "r.created_at >= $2") {
 		t.Errorf("missing dateFrom clause:\n%s", query)
 	}
-	if !strings.Contains(query, "r.created_at < date $3 + interval '1 days'") {
+	if !strings.Contains(query, "r.created_at < $3::date + interval '1 days'") {
 		t.Errorf("dateTo must be exclusive of the next day, got:\n%s", query)
 	}
 	if strings.Contains(query, "created_at <= $") {
@@ -78,7 +78,7 @@ func TestBuildDataFetchQuerySingleDate(t *testing.T) {
 		page: 1,
 		date: mustDate(t, "2024-06-15"),
 	})
-	if !strings.Contains(query, "r.created_at >= $2 and r.created_at < date $3 + interval '1 days'") {
+	if !strings.Contains(query, "r.created_at >= $2 and r.created_at < $3::date + interval '1 days'") {
 		t.Errorf("single date should span the whole day, got:\n%s", query)
 	}
 	// The same day value is bound twice.
