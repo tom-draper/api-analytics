@@ -233,13 +233,23 @@ var hasherPool = sync.Pool{
 	New: func() any { return sha256.New() },
 }
 
-func getUserHash(ipAddress, userAgent string) string {
+// getUserHash derives an anonymous per-user identifier from the IP and user
+// agent. secret is a server-side pepper: when set, it is mixed into the digest
+// so the output cannot be brute-forced back to the source IP (the IPv4 space is
+// small enough to enumerate against an unsalted hash). An empty secret keeps the
+// legacy unsalted digest, so hashes are stable across deployments that do not
+// set one.
+func getUserHash(secret, ipAddress, userAgent string) string {
 	if ipAddress == "" && userAgent == "" {
 		return ""
 	}
 
 	h := hasherPool.Get().(hash.Hash)
 	h.Reset()
+	if secret != "" {
+		h.Write([]byte(secret))
+		h.Write([]byte("|"))
+	}
 	h.Write([]byte(ipAddress + "|" + userAgent))
 	result := hex.EncodeToString(h.Sum(nil))[:32]
 	hasherPool.Put(h)

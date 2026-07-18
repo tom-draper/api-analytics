@@ -135,7 +135,7 @@ var frameworkID = map[string]int16{
 	"Sinatra": 15, "Rocket": 16, "ASP.NET Core": 17, "Hono": 18,
 }
 
-func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, rateLimit int, maxInsert int) gin.HandlerFunc {
+func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, rateLimit int, maxInsert int, hashSecret string) gin.HandlerFunc {
 	rateLimiter := ratelimit.NewRateLimiter(rateLimit)
 
 	return func(c *gin.Context) {
@@ -243,6 +243,10 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 				continue
 			}
 
+			if !database.ValidStatus(int(request.Status)) {
+				continue
+			}
+
 			usage := ipUsageForPrivacy(payload.PrivacyLevel)
 
 			var ipAddress *string
@@ -259,7 +263,7 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 			if !usage.hash {
 				hashIP = ""
 			}
-			userHash := getUserHash(hashIP, request.UserAgent)
+			userHash := getUserHash(hashSecret, hashIP, request.UserAgent)
 
 			createdAt, err := time.Parse(time.RFC3339Nano, request.CreatedAt)
 			if err != nil {

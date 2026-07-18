@@ -35,7 +35,7 @@ func RegisterRouter(r *gin.RouterGroup, db *database.DB, geoIPDB *geoip2.Reader,
 	// health check is left unthrottled so monitoring is unaffected.
 	ipLimiter := ipRateLimit(cfg.IPRateLimit)
 
-	h := logRequestHandler(db, geoIPDB, cache, cfg.RateLimit, cfg.MaxInsert)
+	h := logRequestHandler(db, geoIPDB, cache, cfg.RateLimit, cfg.MaxInsert, cfg.HashSecret)
 	r.POST("/log-request", ipLimiter, h)
 	r.POST("/requests", ipLimiter, h)
 	r.GET("/health", checkHealth(db, startTime))

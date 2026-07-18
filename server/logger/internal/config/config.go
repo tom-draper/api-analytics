@@ -16,6 +16,7 @@ type Config struct {
 	RateLimit   int
 	IPRateLimit int
 	MaxInsert   int
+	HashSecret  string
 }
 
 // Load loads environment variables and validates them
@@ -31,11 +32,16 @@ func Load() (*Config, error) {
 		RateLimit:   getIntWithDefault("LOGGER_RATE_LIMIT", 10),
 		IPRateLimit: getIntWithDefault("LOGGER_IP_RATE_LIMIT", 100),
 		MaxInsert:   getIntWithDefault("LOGGER_MAX_INSERT", 2000),
+		HashSecret:  os.Getenv("USER_HASH_SECRET"),
 	}
 
 	// Validate required fields
 	if cfg.PostgresURL == "" {
 		return nil, fmt.Errorf("POSTGRES_URL is required")
+	}
+
+	if cfg.HashSecret == "" {
+		log.Info("USER_HASH_SECRET not set: user hashes are unsalted and can be brute-forced back to the source IP; set it to anonymise stored hashes")
 	}
 
 	// Validate ranges

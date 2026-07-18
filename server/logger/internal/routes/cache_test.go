@@ -2,6 +2,8 @@ package routes
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"regexp"
 	"testing"
 	"time"
@@ -11,8 +13,8 @@ var hex32 = regexp.MustCompile(`^[0-9a-f]{32}$`)
 
 func TestGetUserHash(t *testing.T) {
 	t.Run("deterministic", func(t *testing.T) {
-		a := getUserHash("1.2.3.4", "Mozilla/5.0")
-		b := getUserHash("1.2.3.4", "Mozilla/5.0")
+		a := getUserHash("", "1.2.3.4", "Mozilla/5.0")
+		b := getUserHash("", "1.2.3.4", "Mozilla/5.0")
 		if a != b {
 			t.Errorf("same input hashed differently: %q vs %q", a, b)
 		}
@@ -22,24 +24,47 @@ func TestGetUserHash(t *testing.T) {
 	})
 
 	t.Run("distinct inputs differ", func(t *testing.T) {
-		if getUserHash("1.2.3.4", "UA") == getUserHash("5.6.7.8", "UA") {
+		if getUserHash("", "1.2.3.4", "UA") == getUserHash("", "5.6.7.8", "UA") {
 			t.Error("different IPs produced the same hash")
 		}
-		if getUserHash("1.2.3.4", "UA-a") == getUserHash("1.2.3.4", "UA-b") {
+		if getUserHash("", "1.2.3.4", "UA-a") == getUserHash("", "1.2.3.4", "UA-b") {
 			t.Error("different user agents produced the same hash")
 		}
 	})
 
 	t.Run("empty when both fields empty", func(t *testing.T) {
-		if got := getUserHash("", ""); got != "" {
+		if got := getUserHash("", "", ""); got != "" {
 			t.Errorf("empty inputs = %q, want empty", got)
 		}
 	})
 
 	t.Run("field separator prevents collisions", func(t *testing.T) {
 		// Without a delimiter, ("ab","c") and ("a","bc") would hash the same.
-		if getUserHash("ab", "c") == getUserHash("a", "bc") {
+		if getUserHash("", "ab", "c") == getUserHash("", "a", "bc") {
 			t.Error("hash does not delimit IP from user agent")
+		}
+	})
+
+	t.Run("empty secret matches legacy unsalted hash", func(t *testing.T) {
+		// An unset secret must not change the digest, so hashes stay stable
+		// across deployments that never set USER_HASH_SECRET.
+		want := sha256.Sum256([]byte("1.2.3.4|Mozilla/5.0"))
+		if got := getUserHash("", "1.2.3.4", "Mozilla/5.0"); got != hex.EncodeToString(want[:])[:32] {
+			t.Errorf("empty-secret hash = %q, does not match legacy unsalted digest", got)
+		}
+	})
+
+	t.Run("secret changes the hash and stays deterministic", func(t *testing.T) {
+		unsalted := getUserHash("", "1.2.3.4", "UA")
+		peppered := getUserHash("pepper", "1.2.3.4", "UA")
+		if peppered == unsalted {
+			t.Error("secret did not change the hash")
+		}
+		if peppered != getUserHash("pepper", "1.2.3.4", "UA") {
+			t.Error("peppered hash is not deterministic")
+		}
+		if getUserHash("pepper-a", "1.2.3.4", "UA") == getUserHash("pepper-b", "1.2.3.4", "UA") {
+			t.Error("different secrets produced the same hash")
 		}
 	})
 }
