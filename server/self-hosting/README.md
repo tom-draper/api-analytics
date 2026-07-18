@@ -70,6 +70,8 @@ chmod +x setup.sh && ./setup.sh
 
 Then open `.env` and fill in any remaining values. For SSL deployments you will also need to set `DOMAIN_NAME` and `ACME_EMAIL`.
 
+The script also generates a random `USER_HASH_SECRET` — a pepper that keeps the anonymous per-user hash from being reversed back to visitor IPs. Keep it constant once set; changing it resets unique-user counts. To lock browser access to your dashboard's origin, set `CORS_ALLOWED_ORIGINS` (comma-separated); left empty, all origins are allowed.
+
 ### 3. Start the services
 
 ```bash

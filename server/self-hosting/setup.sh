@@ -19,12 +19,15 @@ if ! command -v openssl &>/dev/null; then
 fi
 
 password=$(openssl rand -hex 32)
+hash_secret=$(openssl rand -hex 32)
 
-sed "s|POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$password|" .env.example > .env
+sed -e "s|POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$password|" \
+    -e "s|USER_HASH_SECRET=.*|USER_HASH_SECRET=$hash_secret|" \
+    .env.example > .env
 
 echo -e "${GREEN}${BOLD}.env created.${NC}"
 echo ""
-echo "Generated a random database password."
+echo "Generated a random database password and user-hash secret."
 echo ""
 echo -e "Next steps:"
 echo -e "  1. Edit ${BOLD}.env${NC} and fill in any remaining values"
