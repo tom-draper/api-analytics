@@ -98,10 +98,22 @@ func main() {
 func setupRouter(db *database.DB, geoIPDB *geoip2.Reader, cfg *config.Config, startTime time.Time) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
-	app.Use(cors.Default())
+	app.Use(corsMiddleware(cfg.AllowedOrigins))
 
 	r := app.Group("/api")
 	routes.RegisterRouter(r, db, geoIPDB, cfg, startTime)
 
 	return app
+}
+
+// corsMiddleware allows all origins when allowedOrigins is empty (the historical
+// default) and otherwise restricts CORS to the configured origins, matching the
+// API service so both can be locked down with the same CORS_ALLOWED_ORIGINS.
+func corsMiddleware(allowedOrigins []string) gin.HandlerFunc {
+	if len(allowedOrigins) == 0 {
+		return cors.Default()
+	}
+	c := cors.DefaultConfig()
+	c.AllowOrigins = allowedOrigins
+	return cors.New(c)
 }

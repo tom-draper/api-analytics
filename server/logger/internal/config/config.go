@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/tom-draper/api-analytics/server/logger/internal/log"
@@ -17,6 +18,11 @@ type Config struct {
 	IPRateLimit int
 	MaxInsert   int
 	HashSecret  string
+	// AllowedOrigins restricts CORS to these origins. Empty means allow all
+	// origins (the historical default), which is safe for an ingest endpoint
+	// that is called server-to-server and gated by an API key, not by the
+	// browser's ambient credentials.
+	AllowedOrigins []string
 }
 
 // Load loads environment variables and validates them
@@ -27,12 +33,13 @@ func Load() (*Config, error) {
 	}
 
 	cfg := &Config{
-		PostgresURL: os.Getenv("POSTGRES_URL"),
-		Port:        getIntWithDefault("LOGGER_PORT", 8000),
-		RateLimit:   getIntWithDefault("LOGGER_RATE_LIMIT", 10),
-		IPRateLimit: getIntWithDefault("LOGGER_IP_RATE_LIMIT", 100),
-		MaxInsert:   getIntWithDefault("LOGGER_MAX_INSERT", 2000),
-		HashSecret:  os.Getenv("USER_HASH_SECRET"),
+		PostgresURL:    os.Getenv("POSTGRES_URL"),
+		Port:           getIntWithDefault("LOGGER_PORT", 8000),
+		RateLimit:      getIntWithDefault("LOGGER_RATE_LIMIT", 10),
+		IPRateLimit:    getIntWithDefault("LOGGER_IP_RATE_LIMIT", 100),
+		MaxInsert:      getIntWithDefault("LOGGER_MAX_INSERT", 2000),
+		HashSecret:     os.Getenv("USER_HASH_SECRET"),
+		AllowedOrigins: parseOrigins(os.Getenv("CORS_ALLOWED_ORIGINS")),
 	}
 
 	// Validate required fields
@@ -65,6 +72,20 @@ func Load() (*Config, error) {
 	log.Info(fmt.Sprintf("configuration loaded: port=%d, rate_limit=%d, ip_rate_limit=%d, max_insert=%d", cfg.Port, cfg.RateLimit, cfg.IPRateLimit, cfg.MaxInsert))
 
 	return cfg, nil
+}
+
+// parseOrigins splits a comma-separated CORS origin list, trimming blanks.
+func parseOrigins(value string) []string {
+	if strings.TrimSpace(value) == "" {
+		return nil
+	}
+	var origins []string
+	for _, origin := range strings.Split(value, ",") {
+		if origin = strings.TrimSpace(origin); origin != "" {
+			origins = append(origins, origin)
+		}
+	}
+	return origins
 }
 
 // getIntWithDefault is a helper for parsing integer environment variables
