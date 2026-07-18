@@ -17,6 +17,8 @@ func RegisterRouter(r *gin.RouterGroup, db *database.DB, cfg *config.Config, sta
 	r.GET("/generate", genAPIKey(db))
 	r.GET("/generate-api-key", genAPIKey(db))
 	r.GET("/user-id/:apiKey", getUserID(db))
+	r.POST("/regenerate-user-id", regenerateUserIDFromBody(db))
+	// Deprecated: the key in the URL leaks into logs. Use POST /regenerate-user-id.
 	r.GET("/reset-user-id/:apiKey", regenerateUserID(db))
 	r.GET("/requests/:userID", getRequestsHandler(db, cfg))
 	r.GET("/requests/:userID/:page", getPaginatedRequestsHandler(db, cfg))

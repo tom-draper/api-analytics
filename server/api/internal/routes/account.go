@@ -97,29 +97,64 @@ func deleteAccountByAPIKey(c *gin.Context, db *database.DB, apiKey string) {
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "message": "Account data deleted successfully."})
 }
 
+// regenerateUserIDFromBody regenerates a user's dashboard ID, taking the API key
+// from the POST body so it stays out of URLs and logs and needs no custom
+// header. Sending no header keeps this a CORS "simple request", avoiding a
+// preflight the API does not answer — the same approach as deleteAccount.
+func regenerateUserIDFromBody(db *database.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var body struct {
+			APIKey string `json:"api_key"`
+		}
+		if err := c.ShouldBindJSON(&body); err != nil {
+			log.Info(fmt.Sprintf("invalid user ID regeneration request - %s", err.Error()))
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request body."})
+			return
+		}
+
+		// Users sometimes provide the key in quotes.
+		apiKey := strings.TrimSpace(strings.ReplaceAll(body.APIKey, "\"", ""))
+		if apiKey == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
+			return
+		}
+		if !database.ValidAPIKey(apiKey) {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key format. Expected UUID format."})
+			return
+		}
+
+		regenerateUserIDByAPIKey(c, db, apiKey)
+	}
+}
+
+// regenerateUserID is the deprecated GET form, kept for existing clients. Prefer
+// POST /regenerate-user-id, which keeps the key out of the URL.
 func regenerateUserID(db *database.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		apiKey, ok := requireAPIKeyParam(c)
 		if !ok {
 			return
 		}
-
-		ctx := c.Request.Context()
-
-		userID, err := db.RegenerateUserID(ctx, apiKey)
-		if err != nil {
-			if err == pgx.ErrNoRows {
-				c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "API key not found."})
-			} else {
-				log.Error(fmt.Sprintf("key=%s: user ID regeneration failed - %s", apiKey, err.Error()))
-				c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
-			}
-			return
-		}
-
-		log.Info(fmt.Sprintf("key=%s: user ID regenerated successfully", apiKey))
-		c.JSON(http.StatusOK, userID)
+		regenerateUserIDByAPIKey(c, db, apiKey)
 	}
+}
+
+func regenerateUserIDByAPIKey(c *gin.Context, db *database.DB, apiKey string) {
+	ctx := c.Request.Context()
+
+	userID, err := db.RegenerateUserID(ctx, apiKey)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "API key not found."})
+		} else {
+			log.Error(fmt.Sprintf("key=%s: user ID regeneration failed - %s", apiKey, err.Error()))
+			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
+		}
+		return
+	}
+
+	log.Info(fmt.Sprintf("key=%s: user ID regenerated successfully", apiKey))
+	c.JSON(http.StatusOK, userID)
 }
 
 func checkHealth(db *database.DB, startTime time.Time) gin.HandlerFunc {

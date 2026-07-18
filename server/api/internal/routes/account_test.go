@@ -26,6 +26,60 @@ func deleteAccountRecorderFor(t *testing.T, body string) *httptest.ResponseRecor
 	return recorder
 }
 
+// regenerateRecorderFor drives regenerateUserIDFromBody with the given JSON
+// body. Like delete, validation happens before any DB access, so a nil DB is
+// only reached (panicking) if a bad request slips through.
+func regenerateRecorderFor(t *testing.T, body string) *httptest.ResponseRecorder {
+	t.Helper()
+	gin.SetMode(gin.TestMode)
+
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Request = httptest.NewRequest(http.MethodPost, "/regenerate-user-id", strings.NewReader(body))
+	c.Request.Header.Set("Content-Type", "application/json")
+
+	regenerateUserIDFromBody(nil)(c)
+	return recorder
+}
+
+func TestRegenerateUserIDRejectsInvalidRequests(t *testing.T) {
+	tests := []struct {
+		name string
+		body string
+	}{
+		{"empty body", ""},
+		{"malformed json", "{"},
+		{"missing api key", `{}`},
+		{"empty api key", `{"api_key":""}`},
+		{"api key not a uuid", `{"api_key":"not-a-uuid"}`},
+		{"sql injection attempt", `{"api_key":"' OR 1=1 --"}`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("%s reached the database instead of being rejected: %v", tt.name, r)
+				}
+			}()
+
+			if recorder := regenerateRecorderFor(t, tt.body); recorder.Code != http.StatusBadRequest {
+				t.Errorf("status = %d, expected %d for %s", recorder.Code, http.StatusBadRequest, tt.name)
+			}
+		})
+	}
+}
+
+func TestRegenerateUserIDAcceptsValidAPIKey(t *testing.T) {
+	// A well formed key passes validation and reaches the DB (nil), which panics
+	// — proving validation let it through.
+	defer func() { _ = recover() }()
+	recorder := regenerateRecorderFor(t, `{"api_key":"11111111-1111-4111-8111-111111111111"}`)
+	if recorder.Code == http.StatusBadRequest {
+		t.Error("a valid API key should not be rejected")
+	}
+}
+
 func TestDeleteAccountRejectsInvalidRequests(t *testing.T) {
 	tests := []struct {
 		name string
