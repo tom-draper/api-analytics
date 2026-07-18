@@ -610,6 +610,35 @@ func TestValidIPAddress(t *testing.T) {
 	}
 }
 
+func TestValidAPIKey(t *testing.T) {
+	tests := []struct {
+		name     string
+		apiKey   string
+		expected bool
+	}{
+		{"empty", "", false},
+		{"valid lowercase uuid", "b56cbd92-1168-4d7b-8d94-0418da207908", true},
+		{"valid uppercase is accepted", "B56CBD92-1168-4D7B-8D94-0418DA207908", true},
+		{"valid mixed case", "B56cbd92-1168-4d7B-8D94-0418da207908", true},
+		{"nil uuid", "00000000-0000-0000-0000-000000000000", true},
+		{"too short", "b56cbd92-1168-4d7b-8d94-0418da20790", false},
+		{"too long", "b56cbd92-1168-4d7b-8d94-0418da2079088", false},
+		{"missing hyphens", "b56cbd9211684d7b8d940418da207908zzzz", false},
+		{"hyphens in wrong positions", "b56cbd921-168-4d7b-8d94-0418da20790", false},
+		{"non-hex character", "g56cbd92-1168-4d7b-8d94-0418da207908", false},
+		{"surrounding whitespace", " b56cbd92-1168-4d7b-8d94-0418da207908 ", false},
+		{"braced uuid", "{b56cbd92-1168-4d7b-8d94-0418da207908}", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ValidAPIKey(tt.apiKey); got != tt.expected {
+				t.Errorf("ValidAPIKey(%q) = %v, expected %v", tt.apiKey, got, tt.expected)
+			}
+		})
+	}
+}
+
 // Benchmark tests
 func BenchmarkValidString(b *testing.B) {
 	testString := "This is a test string with some content"
