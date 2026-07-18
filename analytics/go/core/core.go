@@ -130,7 +130,9 @@ func (c *Client) pushRequests(requests []RequestData) {
 		return
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
+	// The logging endpoint returns 201 Created on success; treat any 2xx as
+	// success so a normal upload is not logged as an error.
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		log.Printf("Server responded with status: %d", resp.StatusCode)
 	}
 }
