@@ -1,12 +1,52 @@
 package routes
 
 import (
+	"math"
 	"strings"
 	"testing"
 	"unicode/utf8"
 
 	"github.com/tom-draper/api-analytics/server/database"
 )
+
+func TestTruncateExtremeUnicode(t *testing.T) {
+	emoji := "😀" // one 4-byte rune
+
+	// Truncating below the rune's byte size drops it entirely rather than
+	// splitting it, which would leave invalid UTF-8.
+	for n := 0; n < 4; n++ {
+		if got := truncate(emoji, n); got != "" {
+			t.Errorf("truncate(4-byte rune, %d) = %q, want empty (a rune cannot be split)", n, got)
+		}
+	}
+	if truncate(emoji, 4) != emoji {
+		t.Error("truncate at the exact rune size should keep the whole rune")
+	}
+
+	// Property: truncating a run of multi-byte runes at ANY byte length must stay
+	// valid UTF-8 and never exceed the requested length.
+	s := strings.Repeat("😀", 8) + strings.Repeat("é", 8) // mixed 4-byte and 2-byte runes
+	for n := 0; n <= len(s); n++ {
+		got := truncate(s, n)
+		if len(got) > n {
+			t.Fatalf("truncate(...,%d) length %d exceeds the limit", n, len(got))
+		}
+		if !utf8.ValidString(got) {
+			t.Fatalf("truncate(...,%d) produced invalid UTF-8: %q", n, got)
+		}
+	}
+}
+
+func TestIPUsageForPrivacyExtremes(t *testing.T) {
+	// The most-negative level is treated as level 0 (least private): full IP use.
+	if u := ipUsageForPrivacy(PrivacyLevel(math.MinInt)); !u.store || !u.inferLocation || !u.hash {
+		t.Errorf("MinInt privacy = %+v, want full IP usage", u)
+	}
+	// The most-positive level is treated as the most private: no IP use at all.
+	if u := ipUsageForPrivacy(PrivacyLevel(math.MaxInt)); u.store || u.inferLocation || u.hash {
+		t.Errorf("MaxInt privacy = %+v, want no IP usage", u)
+	}
+}
 
 func TestTruncate(t *testing.T) {
 	tests := []struct {

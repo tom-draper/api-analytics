@@ -30,6 +30,33 @@ func TestValidMonitorURL(t *testing.T) {
 	}
 }
 
+func TestValidMonitorURLBoundaries(t *testing.T) {
+	base := "http://x/"
+	at255 := base + strings.Repeat("a", 255-len(base))
+	if len(at255) != 255 {
+		t.Fatalf("test setup wrong: len=%d", len(at255))
+	}
+	if !validMonitorURL(at255) {
+		t.Error("a 255-char URL should be valid (matches the column width)")
+	}
+	if validMonitorURL(at255 + "a") {
+		t.Error("a 256-char URL should be rejected")
+	}
+
+	// Every C0 control character, DEL, and the C1 NEL must be rejected, since a
+	// CR/LF could inject headers into the alert email that embeds the URL.
+	for _, r := range []rune{'\x00', '\x07', '\x08', '\x0b', '\x0c', '\x1b', '\x7f', '\u0085'} {
+		if validMonitorURL("http://x/" + string(r)) {
+			t.Errorf("URL containing control char %U should be rejected", r)
+		}
+	}
+
+	// A legitimate internationalized URL with a multibyte path is accepted.
+	if !validMonitorURL("https://例え.テスト/パス") {
+		t.Error("a URL with a multibyte path should be accepted")
+	}
+}
+
 func TestInternalMonitorTarget(t *testing.T) {
 	tests := []struct {
 		name     string

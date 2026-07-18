@@ -673,6 +673,23 @@ func TestSESHTMLUsesHtmlBody(t *testing.T) {
 	}
 }
 
+func TestSanitizeHeaderExtremes(t *testing.T) {
+	cases := map[string]string{
+		"a\r\nb":         "ab", // classic CRLF
+		"\r\n\r\n":       "",   // entirely CR/LF collapses to empty
+		"lone\rcarriage": "lonecarriage",
+		"lone\nfeed":     "lonefeed",
+		"trailing\r\n":   "trailing",
+		"a\rb\nc\r\nd":   "abcd",      // interleaved
+		"café ☕ 日本":      "café ☕ 日本", // multibyte content preserved
+	}
+	for in, want := range cases {
+		if got := sanitizeHeader(in); got != want {
+			t.Errorf("sanitizeHeader(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
+
 func TestMessageRecipients(t *testing.T) {
 	m := Message{
 		To:  []string{"a@x.com", "b@x.com"},
