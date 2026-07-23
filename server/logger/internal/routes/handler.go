@@ -282,8 +282,11 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 			}
 			userHash := getUserHash(hashSecret, hashIP, request.UserAgent)
 
+			// Fall back to now when the timestamp is missing, unparseable, or wildly
+			// out of range (e.g. a misconfigured client clock), so a bad value can't
+			// skew time-series analytics with a far-past or far-future row.
 			createdAt, err := time.Parse(time.RFC3339Nano, request.CreatedAt)
-			if err != nil {
+			if err != nil || !database.ValidDate(createdAt) {
 				createdAt = time.Now().UTC()
 			}
 

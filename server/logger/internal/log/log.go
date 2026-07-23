@@ -64,10 +64,6 @@ func Error(msg string) {
 	Logger.Error().Msg(msg)
 }
 
-func Fatal(msg string) {
-	Logger.Fatal().Msg(msg)
-}
-
 // LogClientError logs a client-side rejection with IP and API key context at Info level.
 func LogClientError(ipAddress string, apiKey string, msg string) {
 	if apiKey != "" {
