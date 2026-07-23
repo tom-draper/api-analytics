@@ -40,8 +40,7 @@ RUN --mount=type=bind,from=builder,source=/build/logger,target=/build/logger \
         chown appuser:appuser /app/GeoLite2-Country.mmdb; \
     fi
 
-RUN mkdir -p /app/logs && \
-    chown -R appuser:appuser /app
+RUN chown -R appuser:appuser /app
 
 USER appuser
 

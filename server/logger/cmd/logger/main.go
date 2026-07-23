@@ -63,6 +63,13 @@ func main() {
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),
 		Handler: app,
+		// Bound every stage of a connection so a slow or idle client cannot hold
+		// resources open indefinitely (Slowloris). ReadTimeout covers the whole
+		// request including the body; WriteTimeout covers handler + response.
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       120 * time.Second,
 	}
 
 	serverErr := make(chan error, 1)

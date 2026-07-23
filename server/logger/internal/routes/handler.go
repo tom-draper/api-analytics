@@ -213,8 +213,12 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 		// Privacy level is fixed for the whole payload, so resolve IP usage once.
 		usage := ipUsageForPrivacy(payload.PrivacyLevel)
 
+		truncated := false
 		for _, request := range payload.Requests {
 			if len(validRequests) >= maxInsert {
+				// Cap reached with requests still unprocessed; report it so the
+				// client can tell the batch was not fully logged.
+				truncated = true
 				break
 			}
 
@@ -372,7 +376,19 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 			return
 		}
 
-		c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "API requests logged successfully."})
+		resp := gin.H{
+			"status":   http.StatusCreated,
+			"message":  "API requests logged successfully.",
+			"logged":   len(validRequests),
+			"received": len(payload.Requests),
+		}
+		if truncated {
+			// Data that was accepted is still stored (201), but tell the client the
+			// batch exceeded the server limit so it does not assume all was logged.
+			resp["truncated"] = true
+			resp["message"] = fmt.Sprintf("Batch exceeded the server limit of %d requests; only the first %d were logged.", maxInsert, len(validRequests))
+		}
+		c.JSON(http.StatusCreated, resp)
 		log.LogRequestsInserted(payload.APIKey, len(validRequests), len(payload.Requests))
 	}
 }
