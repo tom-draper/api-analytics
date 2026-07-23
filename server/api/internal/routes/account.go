@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -157,12 +158,31 @@ func regenerateUserIDByAPIKey(c *gin.Context, db *database.DB, apiKey string) {
 	c.JSON(http.StatusOK, userID)
 }
 
+// healthTTL bounds how often the health check actually pings the database, so a
+// flood of /health requests cannot contend with real traffic for the pool.
+const healthTTL = time.Second
+
 func checkHealth(db *database.DB, startTime time.Time) gin.HandlerFunc {
+	var (
+		mu        sync.Mutex
+		lastCheck time.Time
+		lastErr   error
+		checked   bool
+	)
+
 	return func(c *gin.Context) {
-		ctx := c.Request.Context()
 		uptime := int(time.Since(startTime).Seconds())
 
-		if err := db.CheckConnection(ctx); err != nil {
+		mu.Lock()
+		if !checked || time.Since(lastCheck) > healthTTL {
+			lastErr = db.CheckConnection(c.Request.Context())
+			lastCheck = time.Now()
+			checked = true
+		}
+		err := lastErr
+		mu.Unlock()
+
+		if err != nil {
 			log.Error(fmt.Sprintf("health check failed: %v", err))
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"health":         "unhealthy",

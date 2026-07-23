@@ -54,6 +54,13 @@ func main() {
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),
 		Handler: app,
+		// Bound every stage of a connection so a slow or idle client cannot hold
+		// resources open indefinitely (Slowloris). ReadTimeout is generous because
+		// the dashboard full-load response can take a while to stream.
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      120 * time.Second,
+		IdleTimeout:       120 * time.Second,
 	}
 
 	serverErr := make(chan error, 1)
@@ -88,6 +95,13 @@ func main() {
 func setupRouter(db *database.DB, cfg *config.Config, startTime time.Time) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
+
+	// Only believe X-Forwarded-For from trusted proxies; otherwise c.ClientIP()
+	// (the rate-limit key and log source) would trust a client-spoofable header,
+	// letting an attacker rotate fake IPs to bypass the per-IP rate limit.
+	if err := app.SetTrustedProxies(cfg.TrustedProxies); err != nil {
+		log.Error(fmt.Sprintf("failed to set trusted proxies: %v", err))
+	}
 
 	// Middleware must be registered before the route group is created. A group
 	// copies the engine's handler chain as it stands at that moment, so

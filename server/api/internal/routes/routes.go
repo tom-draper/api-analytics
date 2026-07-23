@@ -1,9 +1,6 @@
 package routes
 
 import (
-	"bytes"
-	"compress/gzip"
-	"encoding/json"
 	"net/http"
 	"strings"
 	"time"
@@ -13,22 +10,39 @@ import (
 	"github.com/tom-draper/api-analytics/server/database"
 )
 
+// maxJSONBody caps request bodies on the POST routes. Every accepted body holds
+// only an API key/user ID/URL, so 64 KiB is ample while stopping an unbounded
+// read into memory.
+const maxJSONBody = 64 * 1024
+
 func RegisterRouter(r *gin.RouterGroup, db *database.DB, cfg *config.Config, startTime time.Time) {
+	body := bodyLimit(maxJSONBody)
+
 	r.GET("/generate", genAPIKey(db))
 	r.GET("/generate-api-key", genAPIKey(db))
 	r.GET("/user-id/:apiKey", getUserID(db))
-	r.POST("/regenerate-user-id", regenerateUserIDFromBody(db))
+	r.POST("/regenerate-user-id", body, regenerateUserIDFromBody(db))
 	// Deprecated: the key in the URL leaks into logs. Use POST /regenerate-user-id.
 	r.GET("/reset-user-id/:apiKey", regenerateUserID(db))
 	r.GET("/requests/:userID", getRequestsHandler(db, cfg))
 	r.GET("/requests/:userID/:page", getPaginatedRequestsHandler(db, cfg))
-	r.POST("/delete", deleteAccount(db))
+	r.POST("/delete", body, deleteAccount(db))
 	r.GET("/monitor/:userID", getUserMonitor(db))
 	r.GET("/monitor/pings/:userID", getUserPings(db))
-	r.POST("/monitor/add", addUserMonitor(db))
-	r.POST("/monitor/delete", deleteUserMonitor(db))
+	r.POST("/monitor/add", body, addUserMonitor(db))
+	r.POST("/monitor/delete", body, deleteUserMonitor(db))
 	r.GET("/data", getData(db))
 	r.GET("/health", checkHealth(db, startTime))
+}
+
+// bodyLimit caps the request body so an oversized POST cannot be read into
+// memory; once the limit is exceeded the bound reader errors and the handler's
+// JSON bind fails, returning 400.
+func bodyLimit(maxBytes int64) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxBytes)
+		c.Next()
+	}
 }
 
 // requireAPIKeyParam extracts and validates the :apiKey route param.
@@ -64,21 +78,4 @@ func getAPIKeyFromHeader(c *gin.Context) string {
 	}
 	// Clean up API key (users sometimes provide it in quotes)
 	return strings.TrimSpace(strings.ReplaceAll(apiKey, "\"", ""))
-}
-
-func compressJSON(data any) ([]byte, error) {
-	body, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	var buffer bytes.Buffer
-	gzw := gzip.NewWriter(&buffer)
-	if _, err = gzw.Write(body); err != nil {
-		return nil, err
-	}
-	if err = gzw.Close(); err != nil {
-		return nil, err
-	}
-	return buffer.Bytes(), nil
 }

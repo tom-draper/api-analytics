@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -22,6 +23,20 @@ type Config struct {
 	// carry no cookies and access is gated by an API key or an unguessable
 	// user ID, not by the browser's ambient credentials.
 	AllowedOrigins []string
+	// TrustedProxies is the set of proxy CIDRs/IPs whose X-Forwarded-For header
+	// is believed. Only when the direct peer is in this set is the forwarded
+	// client IP used for rate limiting and logging; a request arriving directly
+	// from a public address cannot spoof its IP. Defaults to loopback and the
+	// private ranges, which covers a co-located reverse proxy.
+	TrustedProxies []string
+}
+
+// defaultTrustedProxies trusts only loopback and RFC1918/ULA private ranges, so
+// a reverse proxy on the same host or private network is believed while a
+// direct public client cannot forge X-Forwarded-For.
+var defaultTrustedProxies = []string{
+	"127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16",
+	"::1/128", "fc00::/7",
 }
 
 // Load loads environment variables and validates them
@@ -37,6 +52,12 @@ func Load() (*Config, error) {
 		PageSize:       getIntWithDefault("API_PAGE_SIZE", 250_000),
 		AllowedOrigins: parseOrigins(os.Getenv("CORS_ALLOWED_ORIGINS")),
 	}
+
+	trustedProxies, err := parseTrustedProxies(os.Getenv("TRUSTED_PROXIES"))
+	if err != nil {
+		return nil, err
+	}
+	cfg.TrustedProxies = trustedProxies
 
 	// Validate required fields
 	if cfg.PostgresURL == "" {
@@ -78,6 +99,32 @@ func parseOrigins(value string) []string {
 		}
 	}
 	return origins
+}
+
+// parseTrustedProxies reads a comma-separated list of proxy CIDRs or IPs,
+// falling back to the safe private/loopback default when unset. Each entry is
+// validated so a typo fails startup rather than silently disabling XFF trust.
+func parseTrustedProxies(value string) ([]string, error) {
+	if strings.TrimSpace(value) == "" {
+		return defaultTrustedProxies, nil
+	}
+	var proxies []string
+	for _, entry := range strings.Split(value, ",") {
+		entry = strings.TrimSpace(entry)
+		if entry == "" {
+			continue
+		}
+		if _, _, err := net.ParseCIDR(entry); err != nil {
+			if net.ParseIP(entry) == nil {
+				return nil, fmt.Errorf("TRUSTED_PROXIES entry %q is not a valid IP or CIDR", entry)
+			}
+		}
+		proxies = append(proxies, entry)
+	}
+	if len(proxies) == 0 {
+		return defaultTrustedProxies, nil
+	}
+	return proxies, nil
 }
 
 // getIntWithDefault is a helper that doesn't log (used internally)

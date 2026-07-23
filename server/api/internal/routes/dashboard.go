@@ -1,8 +1,11 @@
 package routes
 
 import (
+	"compress/gzip"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -140,13 +143,8 @@ func sendDashboardResponse(c *gin.Context, db *database.DB, ctx context.Context,
 		return err
 	}
 
-	gzipOutput, err := compressJSON(DashboardData{UserAgents: userAgents, Requests: requests, HasMore: hasMore})
-	if err != nil {
-		log.Error(fmt.Sprintf("key=%s: compression failed - %s", apiKey, err.Error()))
-		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Compression failed."})
-		return err
-	}
-
+	// Update last-accessed before streaming: once the body starts we have already
+	// committed a 200 and can no longer fall back to an error status.
 	if err := db.UpdateLastAccessed(ctx, apiKey); err != nil {
 		log.Error(fmt.Sprintf("key=%s: user last access update failed - %s", apiKey, err.Error()))
 	}
@@ -154,8 +152,28 @@ func sendDashboardResponse(c *gin.Context, db *database.DB, ctx context.Context,
 	c.Writer.Header().Set("Vary", "Accept-Encoding")
 	c.Writer.Header().Set("Content-Encoding", "gzip")
 	c.Writer.Header().Set("Content-Type", "application/json")
-	c.Data(http.StatusOK, "gzip", gzipOutput)
+	c.Status(http.StatusOK)
+
+	// Stream JSON straight through gzip into the response so a large full-load
+	// result is never fully buffered as JSON bytes and again as a gzip buffer.
+	if err := streamGzipJSON(c.Writer, DashboardData{UserAgents: userAgents, Requests: requests, HasMore: hasMore}); err != nil {
+		// Status and headers are already sent, so this can only be logged.
+		log.Error(fmt.Sprintf("key=%s: failed to write response - %s", apiKey, err.Error()))
+		return err
+	}
 	return nil
+}
+
+// streamGzipJSON encodes data as gzip-compressed JSON directly to w, without
+// buffering the whole payload as JSON bytes and again as a gzip buffer. It is
+// the single place the dashboard response body is serialized.
+func streamGzipJSON(w io.Writer, data any) error {
+	gzw := gzip.NewWriter(w)
+	if err := json.NewEncoder(gzw).Encode(data); err != nil {
+		gzw.Close()
+		return err
+	}
+	return gzw.Close()
 }
 
 func getRequestsHandler(db *database.DB, cfg *config.Config) gin.HandlerFunc {

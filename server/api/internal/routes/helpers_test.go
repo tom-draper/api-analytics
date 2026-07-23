@@ -12,15 +12,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func TestCompressJSONRoundTrip(t *testing.T) {
+func TestStreamGzipJSONRoundTrip(t *testing.T) {
 	input := map[string]any{"hello": "world", "n": float64(42)}
 
-	compressed, err := compressJSON(input)
-	if err != nil {
-		t.Fatalf("compressJSON: %v", err)
+	var buf bytes.Buffer
+	if err := streamGzipJSON(&buf, input); err != nil {
+		t.Fatalf("streamGzipJSON: %v", err)
 	}
 
-	gzr, err := gzip.NewReader(bytes.NewReader(compressed))
+	gzr, err := gzip.NewReader(&buf)
 	if err != nil {
 		t.Fatalf("output is not valid gzip: %v", err)
 	}
