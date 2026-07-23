@@ -166,8 +166,20 @@ func addUserMonitor(db *database.DB) gin.HandlerFunc {
 		}
 		defer tx.Rollback(ctx)
 
+		// Serialize concurrent adds for this key by locking the owning user row.
+		// Postgres rejects FOR UPDATE on an aggregate (SELECT count(*) ... FOR
+		// UPDATE errors), so we take the lock on users and then count separately;
+		// the lock is held until commit, so two racing adds cannot both pass the
+		// limit check.
+		var locked int
+		if err = tx.QueryRow(ctx, "SELECT 1 FROM users WHERE api_key = $1 FOR UPDATE;", apiKey).Scan(&locked); err != nil {
+			log.Error(fmt.Sprintf("key=%s: failed to lock user row - %s", apiKey, err.Error()))
+			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
+			return
+		}
+
 		var monitorCount int
-		if err = tx.QueryRow(ctx, "SELECT count(*) FROM monitor WHERE api_key = $1 FOR UPDATE;", apiKey).Scan(&monitorCount); err != nil {
+		if err = tx.QueryRow(ctx, "SELECT count(*) FROM monitor WHERE api_key = $1;", apiKey).Scan(&monitorCount); err != nil {
 			log.Error(fmt.Sprintf("key=%s: failed to get monitor count - %s", apiKey, err.Error()))
 			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Internal server error."})
 			return
