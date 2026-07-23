@@ -256,6 +256,10 @@ var hasherPool = sync.Pool{
 	New: func() any { return sha256.New() },
 }
 
+// hashSeparator delimits the hash inputs. Kept as a package-level byte slice so
+// it isn't reallocated on every getUserHash call (it's on the per-request path).
+var hashSeparator = []byte("|")
+
 // getUserHash derives an anonymous per-user identifier from the IP and user
 // agent. secret is a server-side pepper: when set, it is mixed into the digest
 // so the output cannot be brute-forced back to the source IP (the IPv4 space is
@@ -271,10 +275,23 @@ func getUserHash(secret, ipAddress, userAgent string) string {
 	h.Reset()
 	if secret != "" {
 		h.Write([]byte(secret))
-		h.Write([]byte("|"))
+		h.Write(hashSeparator)
 	}
-	h.Write([]byte(ipAddress + "|" + userAgent))
-	result := hex.EncodeToString(h.Sum(nil))[:32]
+	// Write the fields separately rather than concatenating them, so no
+	// intermediate joined string is allocated. The byte stream is identical to
+	// ipAddress+"|"+userAgent, so the digest stays compatible.
+	h.Write([]byte(ipAddress))
+	h.Write(hashSeparator)
+	h.Write([]byte(userAgent))
+
+	// Sum into a stack array (cap == sha256.Size) so no heap slice is allocated,
+	// then hex-encode the first 16 bytes into a fixed buffer. The result is the
+	// only allocation, versus the previous 32-byte digest plus 64-char string.
+	var digest [sha256.Size]byte
+	sum := h.Sum(digest[:0])
 	hasherPool.Put(h)
-	return result
+
+	var out [32]byte
+	hex.Encode(out[:], sum[:16])
+	return string(out[:])
 }

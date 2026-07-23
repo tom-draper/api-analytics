@@ -72,6 +72,14 @@ func TestGetUserHash(t *testing.T) {
 	})
 }
 
+func BenchmarkGetUserHash(b *testing.B) {
+	ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = getUserHash("pepper", "203.0.113.42", ua)
+	}
+}
+
 func TestEnsureUserAgentIDsEmpty(t *testing.T) {
 	// No user agents: returns an empty map without touching the database, so a
 	// nil DB is safe.
