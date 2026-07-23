@@ -33,8 +33,7 @@ WORKDIR /app
 
 COPY --from=builder /build/api/api /app/api
 
-RUN mkdir -p /app/logs && \
-    chown -R appuser:appuser /app
+RUN chown -R appuser:appuser /app
 
 USER appuser
 

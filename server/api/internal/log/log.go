@@ -62,7 +62,3 @@ func Info(msg string) {
 func Error(msg string) {
 	Logger.Error().Msg(msg)
 }
-
-func Fatal(msg string) {
-	Logger.Fatal().Msg(msg)
-}
