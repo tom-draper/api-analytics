@@ -18,11 +18,12 @@ import (
 )
 
 type Cache struct {
-	userAgentMap map[string]int
-	userAgentMu  sync.RWMutex
-	geoIPMap     map[string]*geoIPEntry
-	geoIPMu      sync.RWMutex
-	maxSize      int
+	userAgentMap     map[string]int
+	userAgentMu      sync.RWMutex
+	userAgentMaxSize int
+	geoIPMap         map[string]*geoIPEntry
+	geoIPMu          sync.RWMutex
+	geoIPMaxSize     int
 }
 
 type geoIPEntry struct {
@@ -30,11 +31,15 @@ type geoIPEntry struct {
 	lastAccess  int64 // unix seconds; read/written atomically
 }
 
-func newCache(maxSize int) *Cache {
+// newCache builds the caches with independent capacities. The user-agent map is
+// far larger because the full set is preloaded and reused across every request,
+// whereas the geoIP map is a bounded LRU of recently seen IPs.
+func newCache(geoIPMaxSize, userAgentMaxSize int) *Cache {
 	return &Cache{
-		userAgentMap: make(map[string]int),
-		geoIPMap:     make(map[string]*geoIPEntry),
-		maxSize:      maxSize,
+		userAgentMap:     make(map[string]int),
+		userAgentMaxSize: userAgentMaxSize,
+		geoIPMap:         make(map[string]*geoIPEntry),
+		geoIPMaxSize:     geoIPMaxSize,
 	}
 }
 
@@ -55,7 +60,7 @@ func reseedUserAgentSequence(ctx context.Context, db *database.DB) error {
 }
 
 func preloadUserAgentCache(ctx context.Context, db *database.DB, cache *Cache) (int, error) {
-	rows, err := db.Pool.Query(ctx, "SELECT user_agent, id FROM user_agents LIMIT 50000")
+	rows, err := db.Pool.Query(ctx, "SELECT user_agent, id FROM user_agents LIMIT $1", cache.userAgentMaxSize)
 	if err != nil {
 		return 0, err
 	}
@@ -65,7 +70,7 @@ func preloadUserAgentCache(ctx context.Context, db *database.DB, cache *Cache) (
 		ua string
 		id int
 	}
-	entries := make([]entry, 0, 50000)
+	entries := make([]entry, 0, cache.userAgentMaxSize)
 	for rows.Next() {
 		var e entry
 		if err := rows.Scan(&e.ua, &e.id); err != nil {
@@ -135,9 +140,10 @@ func ensureUserAgentIDs(ctx context.Context, db *database.DB, cache *Cache, user
 			continue
 		}
 		result[userAgent] = id
-		if len(cache.userAgentMap) < cache.maxSize {
-			cache.userAgentMap[userAgent] = id
+		if len(cache.userAgentMap) >= cache.userAgentMaxSize {
+			evictUserAgents(cache)
 		}
+		cache.userAgentMap[userAgent] = id
 	}
 	cache.userAgentMu.Unlock()
 
@@ -146,6 +152,23 @@ func ensureUserAgentIDs(ctx context.Context, db *database.DB, cache *Cache, user
 	}
 
 	return result, nil
+}
+
+// evictUserAgents drops roughly a quarter of the user-agent cache to make room
+// once it reaches capacity, so the cache keeps admitting newly seen agents
+// instead of freezing at its cap. The map carries no access metadata, so
+// eviction is arbitrary; a dropped agent is simply re-resolved (and re-cached)
+// on its next request, so correctness is unaffected. Caller must hold
+// cache.userAgentMu write lock.
+func evictUserAgents(cache *Cache) {
+	target := max(len(cache.userAgentMap)/4, 1)
+	for ua := range cache.userAgentMap {
+		delete(cache.userAgentMap, ua)
+		target--
+		if target == 0 {
+			break
+		}
+	}
 }
 
 func getCountryCode(geoIPDB *geoip2.Reader, cache *Cache, ipAddress string) string {
@@ -179,7 +202,7 @@ func getCountryCode(geoIPDB *geoip2.Reader, cache *Cache, ipAddress string) stri
 	cache.geoIPMu.Lock()
 	// Double-check: another goroutine may have inserted while we did the lookup
 	if _, exists := cache.geoIPMap[ipAddress]; !exists {
-		if len(cache.geoIPMap) >= cache.maxSize {
+		if len(cache.geoIPMap) >= cache.geoIPMaxSize {
 			evictLRUEntries(cache)
 		}
 		cache.geoIPMap[ipAddress] = &geoIPEntry{
@@ -208,7 +231,7 @@ func evictLRUEntries(cache *Cache) {
 		delete(cache.geoIPMap, ip)
 	}
 
-	if len(cache.geoIPMap) >= cache.maxSize {
+	if len(cache.geoIPMap) >= cache.geoIPMaxSize {
 		type entry struct {
 			ip         string
 			lastAccess int64

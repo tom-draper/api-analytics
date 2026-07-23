@@ -58,9 +58,9 @@ type RequestData struct {
 	IPAddress    string `json:"ip_address"`
 	UserAgent    string `json:"user_agent"`
 	Method       string `json:"method"`
-	Status       int16  `json:"status"`
+	Status       int    `json:"status"`
 	Referrer     string `json:"referrer"`
-	ResponseTime int16  `json:"response_time"`
+	ResponseTime int    `json:"response_time"`
 	UserID       string `json:"user_id"`
 	CreatedAt    string `json:"created_at"`
 }
@@ -90,6 +90,12 @@ type ProcessedRequest struct {
 }
 
 const frameworkOther int16 = 255
+
+// maxResponseTime is the largest response time the smallint response_time column
+// can hold. A payload is decoded before per-request validation, so an oversized
+// value is clamped here rather than dropped, and a value that overflowed int16
+// (the previous field type) can no longer fail the whole batch's JSON binding.
+const maxResponseTime = 32767
 
 // applyUserAgentIDs sets each request's UserAgentID from ids, returning the
 // requests that resolved and a count of those dropped.
@@ -204,6 +210,9 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 		userAgents := make([]string, 0, len(payload.Requests))
 		uniqueUserAgents := make(map[string]struct{})
 
+		// Privacy level is fixed for the whole payload, so resolve IP usage once.
+		usage := ipUsageForPrivacy(payload.PrivacyLevel)
+
 		for _, request := range payload.Requests {
 			if len(validRequests) >= maxInsert {
 				break
@@ -242,15 +251,23 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 			if request.ResponseTime < 0 {
 				continue
 			}
+			// Clamp to the smallint column ceiling so a genuinely slow request is
+			// still recorded (saturated) rather than dropped or overflowing.
+			if request.ResponseTime > maxResponseTime {
+				request.ResponseTime = maxResponseTime
+			}
 
-			if !database.ValidStatus(int(request.Status)) {
+			if !database.ValidStatus(request.Status) {
 				continue
 			}
 
-			usage := ipUsageForPrivacy(payload.PrivacyLevel)
-
 			var ipAddress *string
-			if usage.store && request.IPAddress != "" {
+			// Only persist the IP when the privacy level allows it AND it parses as
+			// a real address. The ip_address column is a Postgres cidr, so a single
+			// unparseable value (e.g. an "X-Forwarded-For" list, a hostname, or an
+			// ip:port) would abort the whole COPY and drop every request in the
+			// batch. Storing NULL for a bad IP keeps the rest of the batch valid.
+			if usage.store && database.ValidIPAddress(request.IPAddress) {
 				ipAddress = &request.IPAddress
 			}
 
@@ -281,8 +298,8 @@ func logRequestHandler(db *database.DB, geoIPDB *geoip2.Reader, cache *Cache, ra
 				IPAddress:    ipAddress,
 				UserHash:     userHash,
 				Referrer:     request.Referrer,
-				Status:       request.Status,
-				ResponseTime: request.ResponseTime,
+				Status:       int16(request.Status),
+				ResponseTime: int16(request.ResponseTime),
 				Method:       method,
 				Framework:    framework,
 				Location:     location,

@@ -15,7 +15,9 @@ import (
 )
 
 func RegisterRouter(r *gin.RouterGroup, db *database.DB, geoIPDB *geoip2.Reader, cfg *config.Config, startTime time.Time) {
-	cache := newCache(10000)
+	// geoIP is a bounded LRU of recent IPs; the user-agent set is small and
+	// long-lived, so it gets a much larger cap and is fully preloaded.
+	cache := newCache(10000, 50000)
 
 	// Keep the user_agents id sequence ahead of max(id) so inserts cannot hit a
 	// primary-key collision after a restore or backfill.

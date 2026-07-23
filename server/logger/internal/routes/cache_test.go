@@ -4,9 +4,12 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"regexp"
 	"testing"
 	"time"
+
+	"github.com/tom-draper/api-analytics/server/database"
 )
 
 var hex32 = regexp.MustCompile(`^[0-9a-f]{32}$`)
@@ -72,7 +75,7 @@ func TestGetUserHash(t *testing.T) {
 func TestEnsureUserAgentIDsEmpty(t *testing.T) {
 	// No user agents: returns an empty map without touching the database, so a
 	// nil DB is safe.
-	got, err := ensureUserAgentIDs(context.Background(), nil, newCache(10), nil)
+	got, err := ensureUserAgentIDs(context.Background(), nil, newCache(10, 10), nil)
 	if err != nil {
 		t.Fatalf("ensureUserAgentIDs: %v", err)
 	}
@@ -82,7 +85,7 @@ func TestEnsureUserAgentIDsEmpty(t *testing.T) {
 }
 
 func TestEnsureUserAgentIDsAllCached(t *testing.T) {
-	cache := newCache(10)
+	cache := newCache(10, 10)
 	cache.userAgentMap["Mozilla/5.0"] = 1
 	cache.userAgentMap["curl/8.4.0"] = 2
 
@@ -97,8 +100,50 @@ func TestEnsureUserAgentIDsAllCached(t *testing.T) {
 	}
 }
 
+func TestEvictUserAgents(t *testing.T) {
+	// A cache at capacity must shed entries so newly seen agents can still be
+	// admitted, rather than freezing at the cap.
+	cache := newCache(10, 8)
+	for i := 0; i < cache.userAgentMaxSize; i++ {
+		cache.userAgentMap[fmt.Sprintf("agent/%d", i)] = i
+	}
+
+	evictUserAgents(cache)
+
+	// Roughly a quarter is removed, leaving room for new entries.
+	if got := len(cache.userAgentMap); got != 6 {
+		t.Errorf("after eviction len = %d, want 6 (dropped a quarter of 8)", got)
+	}
+	if len(cache.userAgentMap) >= cache.userAgentMaxSize {
+		t.Error("eviction left no room for new user agents")
+	}
+}
+
+// The ip_address column is a Postgres cidr, so these client-supplied values must
+// be rejected before insert; a single one would otherwise abort the whole COPY
+// batch. Guards the ingest-side use of database.ValidIPAddress.
+func TestValidIPAddressRejectsBatchPoisoners(t *testing.T) {
+	poisoners := []string{
+		"203.0.113.1, 70.41.3.18", // raw X-Forwarded-For list
+		"unknown",
+		"1.2.3.4:8080", // host:port
+		"not-an-ip",
+		"1.2.3",
+	}
+	for _, ip := range poisoners {
+		if database.ValidIPAddress(ip) {
+			t.Errorf("ValidIPAddress(%q) = true, want false (would poison the COPY batch)", ip)
+		}
+	}
+	for _, ip := range []string{"203.0.113.1", "2001:db8::1"} {
+		if !database.ValidIPAddress(ip) {
+			t.Errorf("ValidIPAddress(%q) = false, want true (a real address must still store)", ip)
+		}
+	}
+}
+
 func TestGetCountryCodeGuards(t *testing.T) {
-	cache := newCache(10)
+	cache := newCache(10, 10)
 	// A nil GeoIP reader must not panic and yields no location.
 	if got := getCountryCode(nil, cache, "1.2.3.4"); got != "" {
 		t.Errorf("nil GeoIP db = %q, want empty", got)
@@ -110,7 +155,7 @@ func TestGetCountryCodeGuards(t *testing.T) {
 }
 
 func TestEvictLRUEntriesRemovesStale(t *testing.T) {
-	cache := newCache(100)
+	cache := newCache(100, 100)
 	now := time.Now().Unix()
 
 	// Two entries older than the one hour cutoff, one fresh.
@@ -134,7 +179,7 @@ func TestEvictLRUEntriesRemovesStale(t *testing.T) {
 func TestEvictLRUEntriesFallsBackToLRU(t *testing.T) {
 	// All entries are fresh (none past the cutoff), and the map is at capacity,
 	// so eviction must remove the least recently used quarter.
-	cache := newCache(4)
+	cache := newCache(4, 4)
 	now := time.Now().Unix()
 	for i, key := range []string{"a", "b", "c", "d"} {
 		// a is oldest, d is newest, all within the last hour.
