@@ -6,3 +6,6 @@ bin
 tmp
 
 GeoLite2-Country.mmdb
+# stray top-level build artifacts
+/logger
+/logger.log
