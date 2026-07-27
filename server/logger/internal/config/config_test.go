@@ -72,3 +72,32 @@ func TestLoadAcceptsValidCustomValues(t *testing.T) {
 		t.Errorf("custom values not applied: %+v", cfg)
 	}
 }
+
+func TestParseTrustedProxies(t *testing.T) {
+	t.Run("empty falls back to the safe private/loopback default", func(t *testing.T) {
+		got, err := parseTrustedProxies("")
+		if err != nil {
+			t.Fatalf("parseTrustedProxies: %v", err)
+		}
+		if len(got) != len(defaultTrustedProxies) {
+			t.Errorf("got %v, want the default set", got)
+		}
+	})
+
+	t.Run("valid CIDRs and IPs are kept, blanks trimmed", func(t *testing.T) {
+		got, err := parseTrustedProxies(" 10.1.2.0/24 , 203.0.113.7 ,")
+		if err != nil {
+			t.Fatalf("parseTrustedProxies: %v", err)
+		}
+		want := []string{"10.1.2.0/24", "203.0.113.7"}
+		if len(got) != len(want) || got[0] != want[0] || got[1] != want[1] {
+			t.Errorf("got %v, want %v", got, want)
+		}
+	})
+
+	t.Run("an invalid entry fails startup", func(t *testing.T) {
+		if _, err := parseTrustedProxies("not-an-ip"); err == nil {
+			t.Error("expected an error for an unparseable proxy entry")
+		}
+	})
+}

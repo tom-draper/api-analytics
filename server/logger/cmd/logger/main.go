@@ -105,6 +105,15 @@ func main() {
 func setupRouter(db *database.DB, geoIPDB *geoip2.Reader, cfg *config.Config, startTime time.Time) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
+
+	// Only believe X-Forwarded-For from trusted proxies; otherwise c.ClientIP()
+	// (the per-IP rate-limit key and client-error log source) would trust a
+	// client-spoofable header, letting an attacker rotate fake IPs to bypass the
+	// ingest rate limit.
+	if err := app.SetTrustedProxies(cfg.TrustedProxies); err != nil {
+		log.Error(fmt.Sprintf("failed to set trusted proxies: %v", err))
+	}
+
 	app.Use(corsMiddleware(cfg.AllowedOrigins))
 
 	r := app.Group("/api")
