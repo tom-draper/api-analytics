@@ -26,12 +26,12 @@ func main() {
 
 	// Handle target user deletion
 	if *opts.TargetUser != "" {
-		client.DeleteUser(*opts.TargetUser)
+		client.DeleteUser(*opts.TargetUser, *opts.Yes)
 		return
 	}
 
 	// Run cleanup
-	if err := client.DeleteExpiredData(*opts.RequestsLimit, *opts.UserExpiry, *opts.Users); err != nil {
+	if err := client.DeleteExpiredData(*opts.RequestsLimit, *opts.UserExpiry, *opts.Users, *opts.Yes); err != nil {
 		log.Fatalf("Cleanup failed: %v", err)
 	}
 }

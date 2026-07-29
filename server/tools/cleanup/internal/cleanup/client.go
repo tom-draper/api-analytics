@@ -52,10 +52,12 @@ func (c *Client) Close() {
 	}
 }
 
-// DeleteExpiredData performs cleanup of both expired requests and users
-func (c *Client) DeleteExpiredData(requestsLimit int, userExpiry time.Duration, deleteUsers bool) error {
+// DeleteExpiredData performs cleanup of both expired requests and users. When
+// force is false, expired-user deletion is a dry run that only logs what it
+// would remove, so an unattended run cannot delete accounts by surprise.
+func (c *Client) DeleteExpiredData(requestsLimit int, userExpiry time.Duration, deleteUsers bool, force bool) error {
 	if deleteUsers {
-		if err := c.DeleteExpiredUsers(userExpiry); err != nil {
+		if err := c.DeleteExpiredUsers(userExpiry, force); err != nil {
 			log.Printf("Error deleting expired users: %v", err)
 			return err
 		}

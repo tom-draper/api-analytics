@@ -8,19 +8,20 @@ import (
 	"time"
 )
 
-// DeleteExpiredUsers removes users who have been unused or retired past the expiry duration
-func (c *Client) DeleteExpiredUsers(userExpiry time.Duration) error {
-	if err := c.deleteExpiredUnusedUsers(userExpiry); err != nil {
+// DeleteExpiredUsers removes users who have been unused or retired past the
+// expiry duration. When force is false it only logs what it would delete.
+func (c *Client) DeleteExpiredUsers(userExpiry time.Duration, force bool) error {
+	if err := c.deleteExpiredUnusedUsers(userExpiry, force); err != nil {
 		return err
 	}
-	if err := c.deleteExpiredRetiredUsers(userExpiry); err != nil {
+	if err := c.deleteExpiredRetiredUsers(userExpiry, force); err != nil {
 		return err
 	}
 	return nil
 }
 
 // deleteExpiredUnusedUsers removes users who never made requests and are past expiry
-func (c *Client) deleteExpiredUnusedUsers(userExpiry time.Duration) error {
+func (c *Client) deleteExpiredUnusedUsers(userExpiry time.Duration, force bool) error {
 	usersList, err := c.usageClient.UnusedUsers(c.ctx)
 	if err != nil {
 		return fmt.Errorf("failed to fetch unused users: %w", err)
@@ -29,14 +30,14 @@ func (c *Client) deleteExpiredUnusedUsers(userExpiry time.Duration) error {
 	log.Printf("%d unused users found\n", len(usersList))
 	for _, user := range usersList {
 		if time.Since(user.CreatedAt) > userExpiry {
-			c.DeleteUser(user.APIKey)
+			c.deleteExpiredUser(user.APIKey, force)
 		}
 	}
 	return nil
 }
 
 // deleteExpiredRetiredUsers removes users who haven't made requests in a while and are past expiry
-func (c *Client) deleteExpiredRetiredUsers(userExpiry time.Duration) error {
+func (c *Client) deleteExpiredRetiredUsers(userExpiry time.Duration, force bool) error {
 	usersList, err := c.usageClient.SinceLastRequestUsers(c.ctx)
 	if err != nil {
 		return fmt.Errorf("failed to fetch retired users: %w", err)
@@ -45,19 +46,37 @@ func (c *Client) deleteExpiredRetiredUsers(userExpiry time.Duration) error {
 	log.Printf("%d retired users found\n", len(usersList))
 	for _, user := range usersList {
 		if time.Since(user.CreatedAt) > userExpiry {
-			c.DeleteUser(user.APIKey)
+			c.deleteExpiredUser(user.APIKey, force)
 		}
 	}
 	return nil
 }
 
-// DeleteUser removes a user and all their associated data from all tables
-func (c *Client) DeleteUser(apiKey string) {
-	if !c.confirmDeletion(apiKey) {
+// deleteExpiredUser deletes one expired user in batch mode. Without force it is
+// a dry run (log only) so an unattended cron run never deletes by surprise, and
+// it never prompts — a per-user prompt would make batch cleanup impossible
+// interactively and silently cancel every deletion when stdin is not a terminal.
+func (c *Client) deleteExpiredUser(apiKey string, force bool) {
+	if !force {
+		log.Printf("Would delete user %s (re-run with --yes to apply)", apiKey)
+		return
+	}
+	c.deleteUser(apiKey)
+}
+
+// DeleteUser removes a single targeted user, prompting for confirmation unless
+// force is set.
+func (c *Client) DeleteUser(apiKey string, force bool) {
+	if !force && !c.confirmDeletion(apiKey) {
 		log.Println("User deletion cancelled.")
 		return
 	}
+	c.deleteUser(apiKey)
+}
 
+// deleteUser removes a user and all their associated data from every table,
+// without prompting.
+func (c *Client) deleteUser(apiKey string) {
 	ctx := context.Background()
 	deleteFromTables := []struct {
 		name       string
@@ -78,7 +97,7 @@ func (c *Client) DeleteUser(apiKey string) {
 		log.Printf("User deleted from table '%s'.\n", table.name)
 	}
 
-	log.Println("User deletion successful.")
+	log.Printf("User %s deletion successful.\n", apiKey)
 }
 
 // confirmDeletion prompts for confirmation before deleting a user

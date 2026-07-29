@@ -12,6 +12,7 @@ type Options struct {
 	Help          *bool
 	RequestsLimit *int
 	UserExpiry    *time.Duration
+	Yes           *bool
 }
 
 func GetOptions() Options {
@@ -21,6 +22,7 @@ func GetOptions() Options {
 		Help:          flag.Bool("help", false, "Display help"),
 		RequestsLimit: flag.Int("requests-limit", 1_500_000, "Maximum number of requests per user before old requests are deleted"),
 		UserExpiry:    flag.Duration("user-expiry", time.Hour*24*30*6, "Duration after which unused or retired users are deleted"),
+		Yes:           flag.Bool("yes", false, "Skip confirmation prompts; required to actually delete users in batch (non-interactive) mode"),
 	}
 	flag.Parse()
 	return options
