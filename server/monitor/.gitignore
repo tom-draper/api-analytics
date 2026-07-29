@@ -9,3 +9,6 @@ node_modules
 tmp
 
 GeoLite2-Country.mmdb
+# stray top-level build artifacts
+/monitor
+/monitor.log
