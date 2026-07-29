@@ -115,7 +115,7 @@ func runCycle(ctx context.Context, db *database.DB, alerter *alert.Alerter) {
 
 	shuffle(monitored)
 
-	results := pingMonitored(monitored)
+	results := pingMonitored(ctx, monitored)
 	pings := successfulPings(results)
 	log.Info(fmt.Sprintf("completed %d pings", len(pings)))
 
@@ -167,7 +167,9 @@ func alertResults(results []pingResult) []alert.Result {
 }
 
 func getMonitoredURLs(ctx context.Context, db *database.DB) ([]MonitorRow, error) {
-	rows, err := db.Pool.Query(ctx, "SELECT * FROM monitor;")
+	// List columns explicitly (not SELECT *) so the positional Scan below cannot
+	// silently break or mismap if the table's columns are ever reordered or added.
+	rows, err := db.Pool.Query(ctx, "SELECT api_key, url, secure, ping, created_at FROM monitor;")
 	if err != nil {
 		return nil, fmt.Errorf("failed to query monitored URLs: %w", err)
 	}
@@ -227,19 +229,26 @@ func deleteExpiredPings(ctx context.Context, db *database.DB) error {
 	return nil
 }
 
-func pingMonitored(monitored []MonitorRow) []pingResult {
+// maxConcurrentPings bounds how many URLs are pinged at once so a large monitor
+// table cannot spawn thousands of simultaneous connections and goroutines.
+const maxConcurrentPings = 50
+
+func pingMonitored(ctx context.Context, monitored []MonitorRow) []pingResult {
 	client := getClient()
 	var wg sync.WaitGroup
 	var mu sync.Mutex
+	sem := make(chan struct{}, maxConcurrentPings)
 
 	results := make([]pingResult, 0, len(monitored))
 
 	for _, m := range monitored {
 		wg.Add(1)
+		sem <- struct{}{}
 		go func(m MonitorRow) {
 			defer wg.Done()
+			defer func() { <-sem }()
 
-			status, elapsed, err := ping(client, m.URL, m.Secure, m.Ping)
+			status, elapsed, err := ping(ctx, client, m.URL, m.Secure, m.Ping)
 			if err != nil {
 				// An unreachable URL is recorded as a result (for alerting) but
 				// not stored as a ping row.
@@ -261,11 +270,12 @@ func pingMonitored(monitored []MonitorRow) []pingResult {
 	return results
 }
 
-func ping(client http.Client, url string, secure bool, ping bool) (int, time.Duration, error) {
+func ping(ctx context.Context, client http.Client, url string, secure bool, ping bool) (int, time.Duration, error) {
 	method := getMethod(ping)
 	url = applyScheme(url, secure)
 
-	request, err := http.NewRequest(method, url, nil)
+	// Bind the request to ctx so an in-flight ping is cancelled on shutdown.
+	request, err := http.NewRequestWithContext(ctx, method, url, nil)
 	if err != nil {
 		return 0, 0, fmt.Errorf("failed to create request: %v", err)
 	}
@@ -314,8 +324,15 @@ func getClient() http.Client {
 		Control: guardPrivateAddress,
 	}
 	return http.Client{
+		// Cap the entire request. The dialer timeout only bounds connection
+		// setup; without an overall timeout a URL that connects and then stalls
+		// before sending its response would block its ping goroutine forever, and
+		// because runCycle waits on every ping that one URL would freeze all
+		// subsequent monitor cycles.
+		Timeout: 10 * time.Second,
 		Transport: &http.Transport{
-			DialContext: dialer.DialContext,
+			DialContext:         dialer.DialContext,
+			TLSHandshakeTimeout: 5 * time.Second,
 		},
 	}
 }

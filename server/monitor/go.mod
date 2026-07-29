@@ -7,6 +7,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/tom-draper/api-analytics/server/database v0.0.0
 	github.com/tom-draper/api-analytics/server/email v0.0.0
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
 require (
