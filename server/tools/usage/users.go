@@ -176,7 +176,7 @@ func (c *Client) UnusedUsersRequests(ctx context.Context) ([]UserTime, error) {
 
 // UnusedUsersMonitors returns users with no monitors
 func (c *Client) UnusedUsersMonitors(ctx context.Context) ([]UserTime, error) {
-	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM users u WHERE NOT EXISTS (SELECT FROM monitors WHERE api_key = u.api_key) ORDER BY created_at;"
+	query := "SELECT api_key, created_at, (NOW() - created_at) AS days FROM users u WHERE NOT EXISTS (SELECT FROM monitor WHERE api_key = u.api_key) ORDER BY created_at;"
 	rows, err := c.db.Pool.Query(ctx, query)
 	if err != nil {
 		return nil, err

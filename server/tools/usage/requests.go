@@ -236,9 +236,32 @@ func (c *Client) TopFrameworks(ctx context.Context) ([]ColumnValueCount[any], er
 	return c.ColumnValuesCount(ctx, "framework")
 }
 
-// TopUserAgents returns the most used user agents
+// TopUserAgents returns the most used user agents. The requests table stores
+// only user_agent_id, so the user-agent text is resolved by joining user_agents
+// rather than grouping a non-existent requests.user_agent column.
 func (c *Client) TopUserAgents(ctx context.Context) ([]ColumnValueCount[any], error) {
-	return c.ColumnValuesCount(ctx, "user_agent")
+	query := `SELECT ua.user_agent, COUNT(*) AS count
+		FROM requests r JOIN user_agents ua ON r.user_agent_id = ua.id
+		GROUP BY ua.user_agent ORDER BY count DESC;`
+	rows, err := c.db.Pool.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var counts []ColumnValueCount[any]
+	for rows.Next() {
+		var count ColumnValueCount[any]
+		if err := rows.Scan(&count.Value, &count.Count); err != nil {
+			return nil, err
+		}
+		counts = append(counts, count)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return counts, nil
 }
 
 // TopIPAddresses returns the most common IP addresses
