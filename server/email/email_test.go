@@ -500,9 +500,19 @@ func TestSMTPAuthMechanisms(t *testing.T) {
 func TestLoginAuthProtocol(t *testing.T) {
 	auth := &loginAuth{username: "user", password: "pass"}
 
-	mech, resp, err := auth.Start(nil)
+	// Over a TLS connection the LOGIN exchange proceeds.
+	mech, resp, err := auth.Start(&smtp.ServerInfo{Name: "smtp.example.com", TLS: true})
 	if err != nil || mech != "LOGIN" || len(resp) != 0 {
 		t.Fatalf("Start = (%q, %v, %v), want (LOGIN, empty, nil)", mech, resp, err)
+	}
+
+	// Credentials must not be offered over an unencrypted connection.
+	if _, _, err := auth.Start(&smtp.ServerInfo{Name: "smtp.example.com", TLS: false}); err == nil {
+		t.Error("expected Start to refuse an unencrypted connection")
+	}
+	// Loopback is exempted so local testing still works without TLS.
+	if _, _, err := auth.Start(&smtp.ServerInfo{Name: "localhost", TLS: false}); err != nil {
+		t.Errorf("Start over loopback without TLS = %v, want nil", err)
 	}
 
 	if r, _ := auth.Next([]byte("Username:"), true); string(r) != "user" {

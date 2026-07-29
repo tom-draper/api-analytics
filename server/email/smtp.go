@@ -145,8 +145,18 @@ type loginAuth struct {
 	password string
 }
 
-func (a *loginAuth) Start(*smtp.ServerInfo) (string, []byte, error) {
+func (a *loginAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
+	// Refuse to send credentials over an unencrypted connection (mirrors what
+	// smtp.PlainAuth does), so a server without STARTTLS cannot elicit the
+	// username/password in cleartext. Loopback is exempted for local testing.
+	if !server.TLS && !isLocalhost(server.Name) {
+		return "", nil, errors.New("unencrypted connection")
+	}
 	return "LOGIN", []byte{}, nil
+}
+
+func isLocalhost(name string) bool {
+	return name == "localhost" || name == "127.0.0.1" || name == "::1"
 }
 
 func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
