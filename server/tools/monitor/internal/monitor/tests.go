@@ -16,8 +16,13 @@ func (c *Client) TryNewUser() error {
 	if err != nil {
 		return err
 	}
-	sb := string(body)
-	apiKey := sb[1 : len(sb)-1]
+	// The endpoint returns a JSON-encoded string; decode it rather than slicing
+	// off the surrounding quotes, which would panic on a body shorter than two
+	// bytes.
+	var apiKey string
+	if err := json.Unmarshal(body, &apiKey); err != nil {
+		return err
+	}
 	if len(apiKey) != UUIDLength {
 		return ErrInvalidUUID
 	}
@@ -64,8 +69,10 @@ func (c *Client) TryFetchUserID() error {
 	if err != nil {
 		return err
 	}
-	sb := string(body)
-	userID := sb[1 : len(sb)-1]
+	var userID string
+	if err := json.Unmarshal(body, &userID); err != nil {
+		return err
+	}
 	if len(userID) != UUIDLength {
 		return ErrInvalidUUID
 	}
@@ -123,7 +130,15 @@ func (c *Client) TryLogRequests(legacy bool) error {
 		endpoint = "requests"
 	}
 
-	response, err := http.Post(c.apiBaseURL+endpoint, "application/json", bytes.NewBuffer(postBody))
+	// Use the client's timed http.Client rather than http.Post (which uses the
+	// timeout-less DefaultClient), so a hung endpoint cannot stall the checkup.
+	request, err := http.NewRequest("POST", c.apiBaseURL+endpoint, bytes.NewBuffer(postBody))
+	if err != nil {
+		return err
+	}
+	request.Header.Set("Content-Type", "application/json")
+
+	response, err := c.httpClient.Do(request)
 	if err != nil {
 		return err
 	}
