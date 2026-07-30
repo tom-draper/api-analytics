@@ -17,8 +17,8 @@ func GetOptions() Options {
 	options := Options{
 		Email:    flag.Bool("email", false, "email the summary instead of printing to console"),
 		Users:    flag.Bool("users", false, "show user account usage"),
-		Monitors: flag.Bool("monitors", false, "show monitor usage"),		Database: flag.Bool("database", false, "show database usage"),
-		Help:     flag.Bool("help", false, "display help"),
+		Monitors: flag.Bool("monitors", false, "show monitor usage"), Database: flag.Bool("database", false, "show database usage"),
+		Help: flag.Bool("help", false, "display help"),
 	}
 	flag.Parse()
 	return options

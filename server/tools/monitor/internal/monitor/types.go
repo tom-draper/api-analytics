@@ -6,10 +6,10 @@ const UUIDLength = 36
 
 // Errors
 var (
-	ErrMissingAPIBaseURL     = errors.New("API_BASE_URL not set")
-	ErrMissingMonitorAPIKey  = errors.New("MONITOR_API_KEY not set")
-	ErrMissingMonitorUserID  = errors.New("MONITOR_USER_ID not set")
-	ErrInvalidUUID           = errors.New("uuid value returned is invalid")
+	ErrMissingAPIBaseURL    = errors.New("API_BASE_URL not set")
+	ErrMissingMonitorAPIKey = errors.New("MONITOR_API_KEY not set")
+	ErrMissingMonitorUserID = errors.New("MONITOR_USER_ID not set")
+	ErrInvalidUUID          = errors.New("uuid value returned is invalid")
 )
 
 // Request represents a logged API request
