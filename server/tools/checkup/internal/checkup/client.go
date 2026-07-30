@@ -2,6 +2,7 @@ package checkup
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"golang.org/x/text/language"
@@ -14,11 +15,11 @@ import (
 
 // Client provides methods for system checkup and monitoring
 type Client struct {
-	cfg          *config.Config
-	db           *database.DB
-	usageClient  *usage.Client
-	printer      *message.Printer
-	ctx          context.Context
+	cfg         *config.Config
+	db          *database.DB
+	usageClient *usage.Client
+	printer     *message.Printer
+	ctx         context.Context
 }
 
 // NewClient creates a new checkup client
@@ -46,10 +47,11 @@ func NewClientFromEnv(ctx context.Context, requiredFields ...string) (*Client, e
 		return nil, err
 	}
 
-	// Database is required for checkup
+	// Database is required for checkup. Return a real error, not the nil err from
+	// the successful config load, so the caller never receives a nil client with
+	// no error to check.
 	if cfg.PostgresURL == "" {
-		log.Println("POSTGRES_URL environment variable not set")
-		return nil, err
+		return nil, fmt.Errorf("POSTGRES_URL environment variable is required")
 	}
 
 	db, err := cfg.NewDatabase(ctx)

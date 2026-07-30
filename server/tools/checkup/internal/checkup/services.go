@@ -11,7 +11,13 @@ import (
 )
 
 func (c *Client) printBanner(text string) {
-	fmt.Printf("---- %s %s\n", text, strings.Repeat("-", 35-len(text)))
+	// Guard against a label longer than the banner width; a negative repeat
+	// count panics.
+	dashes := 35 - len(text)
+	if dashes < 0 {
+		dashes = 0
+	}
+	fmt.Printf("---- %s %s\n", text, strings.Repeat("-", dashes))
 }
 
 // DisplayServicesTest displays the status of all services
