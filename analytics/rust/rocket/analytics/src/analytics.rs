@@ -225,8 +225,40 @@ impl Fairing for Analytics {
     fn info(&self) -> Info {
         Info {
             name: "API Analytics",
-            kind: Kind::Request | Kind::Response,
+            kind: Kind::Ignite | Kind::Request | Kind::Response,
         }
+    }
+
+    async fn on_ignite(&self, rocket: rocket::Rocket<rocket::Build>) -> rocket::fairing::Result {
+        // Flush buffered requests on a fixed interval so a partial batch is not
+        // held indefinitely when traffic goes idle (on_response only flushes when
+        // a new request arrives).
+        let buffer = Arc::clone(&self.buffer);
+        let client = Arc::clone(&self.client);
+        let api_key = self.api_key.clone();
+        let server_url = self.config.server_url.clone();
+        let privacy_level = self.config.privacy_level;
+        tokio::spawn(async move {
+            let mut ticker = tokio::time::interval(Duration::from_secs(60));
+            ticker.tick().await; // skip the immediate first tick
+            loop {
+                ticker.tick().await;
+                let batch = {
+                    let mut buf = buffer.lock().unwrap();
+                    if buf.requests.is_empty() {
+                        Vec::new()
+                    } else {
+                        buf.last_posted = Instant::now();
+                        std::mem::take(&mut buf.requests)
+                    }
+                };
+                if !batch.is_empty() {
+                    let payload = Payload::new(api_key.clone(), batch, privacy_level);
+                    post_requests(&client, payload, &server_url).await;
+                }
+            }
+        });
+        Ok(rocket)
     }
 
     async fn on_request(&self, req: &mut Request<'_>, _data: &mut Data<'_>) {

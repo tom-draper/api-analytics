@@ -1,5 +1,5 @@
 use actix_web::{
-    rt::spawn,
+    rt::{spawn, time::interval},
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
     http::header::{HeaderValue, HOST, USER_AGENT},
     Error,
@@ -217,16 +217,52 @@ where
     type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
     fn new_transform(&self, service: S) -> Self::Future {
-        let client = Client::builder()
-            .timeout(Duration::from_secs(10))
-            .build()
-            .unwrap_or_else(|_| Client::new());
+        let client = Arc::new(
+            Client::builder()
+                .timeout(Duration::from_secs(10))
+                .build()
+                .unwrap_or_else(|_| Client::new()),
+        );
+        let api_key = Arc::new(self.api_key.clone());
+        let config = Arc::new(self.config.clone());
+        let buffer = Arc::new(Mutex::new(RequestBuffer::new()));
+
+        // Flush buffered requests on a fixed interval so a partial batch is not
+        // held indefinitely when traffic goes idle (log_request only flushes when
+        // a new request arrives).
+        {
+            let buffer = Arc::clone(&buffer);
+            let client = Arc::clone(&client);
+            let api_key = Arc::clone(&api_key);
+            let config = Arc::clone(&config);
+            spawn(async move {
+                let mut ticker = interval(Duration::from_secs(60));
+                ticker.tick().await; // skip the immediate first tick
+                loop {
+                    ticker.tick().await;
+                    let batch = {
+                        let mut buf = buffer.lock().unwrap();
+                        if buf.requests.is_empty() {
+                            Vec::new()
+                        } else {
+                            buf.last_posted = Instant::now();
+                            std::mem::take(&mut buf.requests)
+                        }
+                    };
+                    if !batch.is_empty() {
+                        let payload =
+                            Payload::new((*api_key).clone(), batch, config.privacy_level);
+                        post_requests(&client, payload, &config.server_url).await;
+                    }
+                }
+            });
+        }
 
         ready(Ok(AnalyticsMiddleware {
-            api_key: Arc::new(self.api_key.clone()),
-            config: Arc::new(self.config.clone()),
-            buffer: Arc::new(Mutex::new(RequestBuffer::new())),
-            client: Arc::new(client),
+            api_key,
+            config,
+            buffer,
+            client,
             service,
         }))
     }
