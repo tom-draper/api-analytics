@@ -276,6 +276,42 @@ pub struct AnalyticsMiddleware<S> {
     service: S,
 }
 
+impl<S> Drop for AnalyticsMiddleware<S> {
+    fn drop(&mut self) {
+        // Drain any remaining buffered requests when the worker's middleware is
+        // dropped (graceful shutdown) so the tail of traffic is not lost between
+        // the last interval flush and exit.
+        let batch = match self.buffer.lock() {
+            Ok(mut buf) => std::mem::take(&mut buf.requests),
+            Err(_) => return,
+        };
+        if batch.is_empty() {
+            return;
+        }
+
+        let api_key = (*self.api_key).clone();
+        let server_url = self.config.server_url.clone();
+        let privacy_level = self.config.privacy_level;
+
+        // Drop cannot be async and may run on a runtime worker thread, so perform
+        // the final post on a dedicated thread with its own runtime and wait for
+        // it. A fresh client avoids reusing a pool tied to the stopping runtime.
+        let _ = std::thread::spawn(move || {
+            if let Ok(rt) = actix_web::rt::Runtime::new() {
+                rt.block_on(async move {
+                    let client = Client::builder()
+                        .timeout(Duration::from_secs(10))
+                        .build()
+                        .unwrap_or_else(|_| Client::new());
+                    let payload = Payload::new(api_key, batch, privacy_level);
+                    post_requests(&client, payload, &server_url).await;
+                });
+            }
+        })
+        .join();
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 struct Payload {
     api_key: String,

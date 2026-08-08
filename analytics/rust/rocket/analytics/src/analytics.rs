@@ -225,7 +225,7 @@ impl Fairing for Analytics {
     fn info(&self) -> Info {
         Info {
             name: "API Analytics",
-            kind: Kind::Ignite | Kind::Request | Kind::Response,
+            kind: Kind::Ignite | Kind::Request | Kind::Response | Kind::Shutdown,
         }
     }
 
@@ -263,6 +263,19 @@ impl Fairing for Analytics {
 
     async fn on_request(&self, req: &mut Request<'_>, _data: &mut Data<'_>) {
         req.local_cache(|| Start::<Option<Instant>>(Some(Instant::now())));
+    }
+
+    async fn on_shutdown(&self, _rocket: &rocket::Rocket<rocket::Orbit>) {
+        // Drain any remaining buffered requests on graceful shutdown so the tail
+        // of traffic is not lost between the last interval flush and exit.
+        let batch = {
+            let mut buf = self.buffer.lock().unwrap();
+            std::mem::take(&mut buf.requests)
+        };
+        if !batch.is_empty() {
+            let payload = Payload::new(self.api_key.clone(), batch, self.config.privacy_level);
+            post_requests(&self.client, payload, &self.config.server_url).await;
+        }
     }
 
     async fn on_response<'r>(&self, req: &'r Request<'_>, res: &mut Response<'r>) {
