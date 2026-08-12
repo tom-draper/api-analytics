@@ -22,7 +22,7 @@ export function periodToDays(period: Period): number | null {
 		case 'month':
 			return 30;
 		case '6 months':
-			return 30 * 7;
+			return 30 * 6;
 		case 'year':
 			return 365;
 		default:
