@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -20,6 +21,8 @@ type Client struct {
 
 	requestChannel chan RequestData
 	done           chan struct{}
+	finished       chan struct{}
+	shutdownOnce   sync.Once
 }
 
 type Payload struct {
@@ -64,6 +67,7 @@ func NewClient(apiKey string, framework string, privacyLevel int, serverURL stri
 		endpointURL:    getEndpointURL(serverURL),
 		requestChannel: make(chan RequestData, 1000),
 		done:           make(chan struct{}),
+		finished:       make(chan struct{}),
 	}
 
 	go client.worker()
@@ -83,6 +87,9 @@ func (c *Client) LogRequest(request RequestData) {
 }
 
 func (c *Client) worker() {
+	// Signal Shutdown() callers once the final flush has completed.
+	defer close(c.finished)
+
 	var requests []RequestData
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
@@ -137,9 +144,15 @@ func (c *Client) pushRequests(requests []RequestData) {
 	}
 }
 
+// Shutdown flushes any buffered requests and blocks until that final upload has
+// completed, so callers can drain the client on graceful exit without losing the
+// last batch. It is safe to call more than once and from multiple goroutines.
 func (c *Client) Shutdown() {
 	if c == nil {
 		return
 	}
-	close(c.done)
+	c.shutdownOnce.Do(func() {
+		close(c.done)
+	})
+	<-c.finished
 }

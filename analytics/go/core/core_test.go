@@ -295,7 +295,20 @@ func TestWorkerPushingMultiple(t *testing.T) {
 }
 
 func TestClientShutdown(t *testing.T) {
-	client := getTestClient("")
+	var mu sync.Mutex
+	var received []RequestData
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var payload Payload
+		if err := json.NewDecoder(r.Body).Decode(&payload); err == nil {
+			mu.Lock()
+			received = append(received, payload.Requests...)
+			mu.Unlock()
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer ts.Close()
+
+	client := getTestClient(ts.URL)
 	if client == nil {
 		t.Fatalf("Expected client to be initialized, got nil")
 	}
@@ -313,17 +326,24 @@ func TestClientShutdown(t *testing.T) {
 	}
 	client.LogRequest(req)
 
+	// Shutdown blocks until the buffered request has been flushed.
 	client.Shutdown()
 
-	time.Sleep(time.Second)
+	mu.Lock()
+	got := len(received)
+	mu.Unlock()
+	if got != 1 {
+		t.Errorf("Expected 1 flushed request after shutdown, got %d", got)
+	}
 
+	// The worker should have drained the buffered channel before returning.
 	select {
 	case req, open := <-client.requestChannel:
 		if open {
-			t.Errorf("Expected request channel to be closed after shutdown %v", req)
+			t.Errorf("Expected request channel to be drained after shutdown, got %v", req)
 		}
 	default:
-		// Channel closed as expected
+		// Drained as expected
 	}
 }
 
