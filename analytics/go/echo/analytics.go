@@ -34,8 +34,17 @@ func Analytics(apiKey string) echo.MiddlewareFunc {
 }
 
 func AnalyticsWithConfig(apiKey string, config *Config) echo.MiddlewareFunc {
+	middleware, _ := AnalyticsWithClient(apiKey, config)
+	return middleware
+}
+
+// AnalyticsWithClient is like AnalyticsWithConfig but also returns the underlying
+// client. Call client.Shutdown() on graceful exit to flush buffered requests: the
+// client batches and flushes roughly once a minute, so the final batch is lost on
+// exit otherwise. The client is nil when apiKey is empty; Shutdown handles that.
+func AnalyticsWithClient(apiKey string, config *Config) (echo.MiddlewareFunc, *core.Client) {
 	client := core.NewClient(apiKey, "Echo", config.PrivacyLevel, config.ServerURL)
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
+	middleware := func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			start := time.Now()
 			err := next(c)
@@ -56,6 +65,7 @@ func AnalyticsWithConfig(apiKey string, config *Config) echo.MiddlewareFunc {
 			return err
 		}
 	}
+	return middleware, client
 }
 
 func getHostname(c echo.Context, config *Config) string {

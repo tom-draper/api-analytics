@@ -36,10 +36,10 @@ func NewMockAnalyticsServer() *MockAnalyticsServer {
 			}
 			defer r.Body.Close()
 
-			var data core.RequestData
-			if err := json.Unmarshal(body, &data); err == nil {
+			var payload core.Payload
+			if err := json.Unmarshal(body, &payload); err == nil {
 				mock.mu.Lock()
-				mock.requests = append(mock.requests, data)
+				mock.requests = append(mock.requests, payload.Requests...)
 				mock.mu.Unlock()
 			}
 		}
@@ -66,7 +66,7 @@ func (m *MockAnalyticsServer) GetRequests() []core.RequestData {
 }
 
 // Setup test server and middleware
-func setupTest(t *testing.T, config *Config) (*httptest.Server, *MockAnalyticsServer) {
+func setupTest(t *testing.T, config *Config) (*httptest.Server, *MockAnalyticsServer, *core.Client) {
 	// Create mock analytics server
 	mockServer := NewMockAnalyticsServer()
 	t.Cleanup(func() {
@@ -91,7 +91,8 @@ func setupTest(t *testing.T, config *Config) (*httptest.Server, *MockAnalyticsSe
 	})
 
 	// Create middleware
-	handler := AnalyticsWithConfig("test-api-key", config)(testHandler)
+	mw, client := AnalyticsWithClient("test-api-key", config)
+	handler := mw(testHandler)
 
 	// Create test server
 	server := httptest.NewServer(handler)
@@ -99,11 +100,11 @@ func setupTest(t *testing.T, config *Config) (*httptest.Server, *MockAnalyticsSe
 		server.Close()
 	})
 
-	return server, mockServer
+	return server, mockServer, client
 }
 
 func TestAnalyticsMiddleware(t *testing.T) {
-	server, mockServer := setupTest(t, nil)
+	server, mockServer, client := setupTest(t, nil)
 
 	// Make a request
 	resp, err := http.Get(server.URL + "/test-path")
@@ -117,8 +118,8 @@ func TestAnalyticsMiddleware(t *testing.T) {
 		t.Errorf("Expected status 200, got %d", resp.StatusCode)
 	}
 
-	// Wait a bit for async request to complete
-	time.Sleep(50 * time.Millisecond)
+	// Flush the buffered request; Shutdown blocks until the upload completes.
+	client.Shutdown()
 
 	// Check that analytics were captured
 	requests := mockServer.GetRequests()
@@ -142,7 +143,7 @@ func TestAnalyticsMiddleware(t *testing.T) {
 }
 
 func TestErrorHandling(t *testing.T) {
-	server, mockServer := setupTest(t, nil)
+	server, mockServer, client := setupTest(t, nil)
 
 	// Make a request to error path
 	resp, err := http.Get(server.URL + "/error")
@@ -156,8 +157,8 @@ func TestErrorHandling(t *testing.T) {
 		t.Errorf("Expected status 500, got %d", resp.StatusCode)
 	}
 
-	// Wait a bit for async request to complete
-	time.Sleep(50 * time.Millisecond)
+	// Flush the buffered request; Shutdown blocks until the upload completes.
+	client.Shutdown()
 
 	// Check that analytics were captured with correct status
 	requests := mockServer.GetRequests()
@@ -191,7 +192,7 @@ func TestCustomConfig(t *testing.T) {
 		},
 	}
 
-	server, mockServer := setupTest(t, customConfig)
+	server, mockServer, client := setupTest(t, customConfig)
 
 	// Make a request
 	resp, err := http.Get(server.URL + "/ignored-path")
@@ -200,8 +201,8 @@ func TestCustomConfig(t *testing.T) {
 	}
 	defer resp.Body.Close()
 
-	// Wait a bit for async request to complete
-	time.Sleep(50 * time.Millisecond)
+	// Flush the buffered request; Shutdown blocks until the upload completes.
+	client.Shutdown()
 
 	// Check custom values were used
 	requests := mockServer.GetRequests()
@@ -245,7 +246,7 @@ func TestPrivacyLevels(t *testing.T) {
 				PrivacyLevel: tt.privacyLevel,
 			}
 
-			server, mockServer := setupTest(t, config)
+			server, mockServer, client := setupTest(t, config)
 
 			// Make a request
 			resp, err := http.Get(server.URL + "/privacy-test")
@@ -254,8 +255,8 @@ func TestPrivacyLevels(t *testing.T) {
 			}
 			defer resp.Body.Close()
 
-			// Wait a bit for async request to complete
-			time.Sleep(50 * time.Millisecond)
+			// Flush the buffered request; Shutdown blocks until the upload completes.
+			client.Shutdown()
 
 			// Check privacy settings were respected
 			requests := mockServer.GetRequests()

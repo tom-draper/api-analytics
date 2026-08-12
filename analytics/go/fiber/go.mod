@@ -7,6 +7,8 @@ require (
 	github.com/tom-draper/api-analytics/analytics/go/core v0.0.0-20251222101928-a076bea009fb
 )
 
+replace github.com/tom-draper/api-analytics/analytics/go/core => ../core
+
 require (
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect

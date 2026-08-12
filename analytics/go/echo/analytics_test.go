@@ -36,10 +36,10 @@ func NewMockAnalyticsServer() *MockAnalyticsServer {
 			}
 			defer r.Body.Close()
 
-			var data core.RequestData
-			if err := json.Unmarshal(body, &data); err == nil {
+			var payload core.Payload
+			if err := json.Unmarshal(body, &payload); err == nil {
 				mock.mu.Lock()
-				mock.requests = append(mock.requests, data)
+				mock.requests = append(mock.requests, payload.Requests...)
 				mock.mu.Unlock()
 			}
 		}
@@ -66,7 +66,7 @@ func (m *MockAnalyticsServer) GetRequests() []core.RequestData {
 }
 
 // Setup test Echo instance and middleware
-func setupEchoTest(t *testing.T, config *Config) (*echo.Echo, *MockAnalyticsServer) {
+func setupEchoTest(t *testing.T, config *Config) (*echo.Echo, *MockAnalyticsServer, *core.Client) {
 	// Create mock analytics server
 	mockServer := NewMockAnalyticsServer()
 	t.Cleanup(func() {
@@ -83,7 +83,8 @@ func setupEchoTest(t *testing.T, config *Config) (*echo.Echo, *MockAnalyticsServ
 	e := echo.New()
 
 	// Add the analytics middleware
-	e.Use(AnalyticsWithConfig("test-api-key", config))
+	handler, client := AnalyticsWithClient("test-api-key", config)
+	e.Use(handler)
 
 	// Add test routes
 	e.GET("/test-path", func(c echo.Context) error {
@@ -100,11 +101,11 @@ func setupEchoTest(t *testing.T, config *Config) (*echo.Echo, *MockAnalyticsServ
 		panic("test panic")
 	})
 
-	return e, mockServer
+	return e, mockServer, client
 }
 
 func TestEchoAnalyticsMiddleware(t *testing.T) {
-	e, mockServer := setupEchoTest(t, nil)
+	e, mockServer, client := setupEchoTest(t, nil)
 
 	// Create a test request
 	req := httptest.NewRequest(http.MethodGet, "/test-path", nil)
@@ -118,8 +119,8 @@ func TestEchoAnalyticsMiddleware(t *testing.T) {
 		t.Errorf("Expected status 200, got %d", rec.Code)
 	}
 
-	// Wait a bit for async request to complete
-	time.Sleep(50 * time.Millisecond)
+	// Flush the buffered request; Shutdown blocks until the upload completes.
+	client.Shutdown()
 
 	// Check that analytics were captured
 	requests := mockServer.GetRequests()
@@ -143,7 +144,7 @@ func TestEchoAnalyticsMiddleware(t *testing.T) {
 }
 
 func TestEchoErrorHandling(t *testing.T) {
-	e, mockServer := setupEchoTest(t, nil)
+	e, mockServer, client := setupEchoTest(t, nil)
 
 	// Create a test request
 	req := httptest.NewRequest(http.MethodGet, "/error", nil)
@@ -157,8 +158,8 @@ func TestEchoErrorHandling(t *testing.T) {
 		t.Errorf("Expected status 500, got %d", rec.Code)
 	}
 
-	// Wait a bit for async request to complete
-	time.Sleep(50 * time.Millisecond)
+	// Flush the buffered request; Shutdown blocks until the upload completes.
+	client.Shutdown()
 
 	// Check that analytics were captured with correct status
 	requests := mockServer.GetRequests()
@@ -192,7 +193,7 @@ func TestEchoCustomConfig(t *testing.T) {
 		},
 	}
 
-	e, mockServer := setupEchoTest(t, customConfig)
+	e, mockServer, client := setupEchoTest(t, customConfig)
 
 	// Create a test request
 	req := httptest.NewRequest(http.MethodGet, "/ignored-path", nil)
@@ -201,8 +202,8 @@ func TestEchoCustomConfig(t *testing.T) {
 	// Serve the request
 	e.ServeHTTP(rec, req)
 
-	// Wait a bit for async request to complete
-	time.Sleep(50 * time.Millisecond)
+	// Flush the buffered request; Shutdown blocks until the upload completes.
+	client.Shutdown()
 
 	// Check custom values were used
 	requests := mockServer.GetRequests()
@@ -246,7 +247,7 @@ func TestEchoPrivacyLevels(t *testing.T) {
 				PrivacyLevel: tt.privacyLevel,
 			}
 
-			e, mockServer := setupEchoTest(t, config)
+			e, mockServer, client := setupEchoTest(t, config)
 
 			// Create a test request
 			req := httptest.NewRequest(http.MethodGet, "/privacy-test", nil)
@@ -258,8 +259,8 @@ func TestEchoPrivacyLevels(t *testing.T) {
 			// Serve the request
 			e.ServeHTTP(rec, req)
 
-			// Wait a bit for async request to complete
-			time.Sleep(50 * time.Millisecond)
+			// Flush the buffered request; Shutdown blocks until the upload completes.
+			client.Shutdown()
 
 			// Check privacy settings were respected
 			requests := mockServer.GetRequests()
@@ -314,7 +315,7 @@ func TestEchoNewConfig(t *testing.T) {
 
 func TestEchoRealIPExtraction(t *testing.T) {
 	config := NewConfig()
-	e, mockServer := setupEchoTest(t, config)
+	e, mockServer, client := setupEchoTest(t, config)
 
 	// Create a test request with various IP headers
 	req := httptest.NewRequest(http.MethodGet, "/test-path", nil)
@@ -326,8 +327,8 @@ func TestEchoRealIPExtraction(t *testing.T) {
 	// Serve the request
 	e.ServeHTTP(rec, req)
 
-	// Wait a bit for async request to complete
-	time.Sleep(50 * time.Millisecond)
+	// Flush the buffered request; Shutdown blocks until the upload completes.
+	client.Shutdown()
 
 	// Check IP extraction based on Echo's RealIP implementation
 	requests := mockServer.GetRequests()
@@ -335,9 +336,9 @@ func TestEchoRealIPExtraction(t *testing.T) {
 		t.Fatalf("Expected 1 logged request, got %d", len(requests))
 	}
 
-	// Echo's RealIP prioritizes X-Real-IP if present
+	// Echo's RealIP prioritizes X-Forwarded-For (first hop) over X-Real-IP.
 	req_data := requests[0]
-	expectedIP := "10.10.10.10" // Echo should prioritize X-Real-IP
+	expectedIP := "20.20.20.20" // first entry of X-Forwarded-For
 	if req_data.IPAddress != expectedIP {
 		t.Errorf("Expected IP '%s', got '%s'", expectedIP, req_data.IPAddress)
 	}

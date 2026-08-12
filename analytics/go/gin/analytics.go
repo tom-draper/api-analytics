@@ -34,8 +34,17 @@ func Analytics(apiKey string) gin.HandlerFunc {
 }
 
 func AnalyticsWithConfig(apiKey string, config *Config) gin.HandlerFunc {
+	middleware, _ := AnalyticsWithClient(apiKey, config)
+	return middleware
+}
+
+// AnalyticsWithClient is like AnalyticsWithConfig but also returns the underlying
+// client. Call client.Shutdown() on graceful exit to flush buffered requests: the
+// client batches and flushes roughly once a minute, so the final batch is lost on
+// exit otherwise. The client is nil when apiKey is empty; Shutdown handles that.
+func AnalyticsWithClient(apiKey string, config *Config) (gin.HandlerFunc, *core.Client) {
 	client := core.NewClient(apiKey, "Gin", config.PrivacyLevel, config.ServerURL)
-	return func(c *gin.Context) {
+	middleware := func(c *gin.Context) {
 		start := time.Now()
 		c.Next()
 
@@ -53,6 +62,7 @@ func AnalyticsWithConfig(apiKey string, config *Config) gin.HandlerFunc {
 
 		client.LogRequest(data)
 	}
+	return middleware, client
 }
 
 func getHostname(c *gin.Context, config *Config) string {

@@ -35,8 +35,17 @@ func Analytics(apiKey string) func(c *fiber.Ctx) error {
 }
 
 func AnalyticsWithConfig(apiKey string, config *Config) func(c *fiber.Ctx) error {
+	middleware, _ := AnalyticsWithClient(apiKey, config)
+	return middleware
+}
+
+// AnalyticsWithClient is like AnalyticsWithConfig but also returns the underlying
+// client. Call client.Shutdown() on graceful exit to flush buffered requests: the
+// client batches and flushes roughly once a minute, so the final batch is lost on
+// exit otherwise. The client is nil when apiKey is empty; Shutdown handles that.
+func AnalyticsWithClient(apiKey string, config *Config) (func(c *fiber.Ctx) error, *core.Client) {
 	client := core.NewClient(apiKey, "Fiber", config.PrivacyLevel, config.ServerURL)
-	return func(c *fiber.Ctx) error {
+	middleware := func(c *fiber.Ctx) error {
 		start := time.Now()
 		err := c.Next()
 
@@ -56,6 +65,7 @@ func AnalyticsWithConfig(apiKey string, config *Config) func(c *fiber.Ctx) error
 
 		return err
 	}
+	return middleware, client
 }
 
 func getHostname(c *fiber.Ctx, config *Config) string {
