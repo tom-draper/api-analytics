@@ -1,6 +1,7 @@
 package analytics
 
 import (
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -109,6 +110,15 @@ func GetUserAgent(c *fiber.Ctx) string {
 }
 
 func GetIPAddress(c *fiber.Ctx) string {
+	if ip := c.Get("CF-Connecting-IP"); ip != "" {
+		return ip
+	}
+	if fwd := c.Get("X-Forwarded-For"); fwd != "" {
+		return strings.TrimSpace(strings.SplitN(fwd, ",", 2)[0])
+	}
+	if ip := c.Get("X-Real-IP"); ip != "" {
+		return ip
+	}
 	return c.IP()
 }
 
