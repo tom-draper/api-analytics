@@ -44,6 +44,16 @@ func main() {
 }
 ```
 
+### Flush on shutdown
+
+Requests are buffered and uploaded in batches (roughly once a minute), so the final batch can be lost when your process exits. To flush it on a graceful shutdown, use `AnalyticsWithClient`, which returns the middleware together with a client you can `Shutdown`:
+
+```go
+mw, client := analytics.AnalyticsWithClient("YOUR-API-KEY", analytics.NewConfig())
+e.Use(mw)
+defer client.Shutdown() // blocks until the final batch is uploaded
+```
+
 ### 3. View your analytics
 
 Your API will now log and store incoming request data on all routes. Logged data can be viewed using two methods:
