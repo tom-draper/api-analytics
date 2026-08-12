@@ -303,8 +303,11 @@ export function aggregate(
 		const userID = ipAddress ?? customUserID?.toString() ?? '';
 		const isSuccessful = statusSuccessful(status);
 
-		// 1. Request buckets (time-based)
-		const bucketIdx = Math.min(Math.floor((dateMs - startMs) / bucketInterval), 4);
+		// 1. Request buckets (time-based). Clamp both ends: a row can sit just
+		// before startMs because getPeriodData filtered against an earlier
+		// Date.now() than the one used here, which would otherwise index the
+		// buckets at -1 (undefined userSets entry -> throws).
+		const bucketIdx = Math.max(Math.min(Math.floor((dateMs - startMs) / bucketInterval), 4), 0);
 		requestBuckets[bucketIdx]++;
 
 		// 2. User buckets (unique users per time bucket)
