@@ -2,10 +2,6 @@ export function toDay(date: Date) {
 	return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
-export function previousDay(date: Date) {
-	return new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1);
-}
-
 export function nextDay(date: Date) {
 	return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
 }

@@ -14,10 +14,6 @@ export function statusError(status: number) {
 	return status >= 500;
 }
 
-export function statusUnknown(status: number) {
-	return status < 200 || status > 599;
-}
-
 export function statusSuccessful(status: number) {
 	return statusSuccess(status) || statusRedirect(status);
 }

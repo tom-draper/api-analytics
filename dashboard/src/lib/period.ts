@@ -57,21 +57,6 @@ export function dateInPeriod(date: Date, period: Period) {
 	return date > periodAgo;
 }
 
-export function dateInPrevPeriod(date: Date, period: Period) {
-	if (period === 'all time') {
-		return true;
-	}
-	const days = periodToDays(period);
-	if (days === null) {
-		return true;
-	}
-	const startPeriodAgo = new Date();
-	startPeriodAgo.setDate(startPeriodAgo.getDate() - days * 2);
-	const endPeriodAgo = new Date();
-	endPeriodAgo.setDate(endPeriodAgo.getDate() - days);
-	return startPeriodAgo < date && date < endPeriodAgo;
-}
-
 export function isPeriod(period: string): period is Period {
 	return (
 		period === '24 hours' ||
