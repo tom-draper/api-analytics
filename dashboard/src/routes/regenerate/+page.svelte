@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { getServerURL } from '$lib/url';
+	import { formatPath } from '$lib/path';
+	import { page } from '$app/state';
 	import Lightning from '$components/Lightning.svelte';
 
-	type State = 'idle' | 'loading' | 'success' | 'error';
+	type State = 'idle' | 'loading' | 'error';
 
 	let status = $state<State>('idle');
 	let apiKey = $state('');
@@ -20,16 +22,23 @@
 				method: 'POST',
 				body: JSON.stringify({ api_key: apiKey })
 			});
-			status = response.status === 200 ? 'success' : 'error';
+
+			if (response.status === 200) {
+				const userID = await response.json();
+				const params = page.url.searchParams.toString();
+				window.location.href = formatPath(`/dashboard/${userID.replaceAll('-', '')}`, params);
+				return;
+			}
+
+			status = 'error';
 		} catch (e) {
 			console.log(e);
 			status = 'error';
 		}
 	}
 
-	function reset() {
+	function retry() {
 		status = 'idle';
-		apiKey = '';
 	}
 
 	function enter(e: KeyboardEvent) {
@@ -49,17 +58,11 @@
 		<h2 class="title">Regenerate Link</h2>
 		<p class="subtitle">Invalidate your current dashboard link and generate a new one.</p>
 
-		{#if status === 'success'}
-			<div class="status-msg success">
-				Your dashboard link has been regenerated. Any previously shared links are now
-				invalid.
-			</div>
-			<button class="form-btn" onclick={reset}>Done</button>
-		{:else if status === 'error'}
+		{#if status === 'error'}
 			<div class="status-msg error">
 				Something went wrong. Please check your API key and try again.
 			</div>
-			<button class="form-btn regen-btn" onclick={reset}>Try again</button>
+			<button class="form-btn regen-btn" onclick={retry}>Try again</button>
 		{:else}
 			<label class="input-label" for="api-key">
 				Enter API Key
@@ -134,10 +137,5 @@
 	.loader {
 		border-color: rgba(255, 255, 255, 0.2);
 		border-top-color: white;
-	}
-	.status-msg.success {
-		background: #0d1f2b;
-		color: var(--blue);
-		border: 1px solid #1a3a4a;
 	}
 </style>
