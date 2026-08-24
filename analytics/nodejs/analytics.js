@@ -103,6 +103,7 @@ class Analytics {
 		this.config = config;
 		this.requests = [];
 		this.lastPosted = new Date();
+		this.flushPromise = null;
 
 		// Periodically flush buffered requests so a partial batch is not held
 		// indefinitely when traffic goes idle (logRequest only flushes when a
@@ -125,27 +126,39 @@ class Analytics {
 		if (!this.apiKey || this.requests.length === 0) {
 			return;
 		}
+		if (this.flushPromise) {
+			return this.flushPromise;
+		}
 
-		this.lastPosted = new Date();
 		const requestsToSend = this.requests;
 		this.requests = [];
 
-		try {
-			await fetch(this.getServerEndpoint(), {
-				method: "POST",
-				body: JSON.stringify({
-					api_key: this.apiKey,
-					requests: requestsToSend,
-					framework: this.framework,
-					privacy_level: this.config.privacyLevel,
-				}),
-				headers: {
-					"Content-Type": "application/json",
-				},
-			});
-		} catch (error) {
-			console.error("Failed to send analytics data:", error);
-		}
+		this.flushPromise = (async () => {
+			try {
+				const response = await fetch(this.getServerEndpoint(), {
+					method: "POST",
+					body: JSON.stringify({
+						api_key: this.apiKey,
+						requests: requestsToSend,
+						framework: this.framework,
+						privacy_level: this.config.privacyLevel,
+					}),
+					headers: {
+						"Content-Type": "application/json",
+					},
+				});
+				if (!response.ok) {
+					throw new Error(`Analytics server responded with status: ${response.status}`);
+				}
+				this.lastPosted = new Date();
+			} catch (error) {
+				this.requests = requestsToSend.concat(this.requests);
+				console.error("Failed to send analytics data:", error);
+			} finally {
+				this.flushPromise = null;
+			}
+		})();
+		return this.flushPromise;
 	}
 
 	/**
