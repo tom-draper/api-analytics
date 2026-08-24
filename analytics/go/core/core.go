@@ -102,8 +102,12 @@ func (c *Client) worker() {
 		case <-ticker.C:
 			// Push any logged requests periodically
 			if len(requests) > 0 {
-				c.pushRequests(requests)
-				requests = nil
+				// Keep a failed batch in memory for the next scheduled attempt.
+				// Clearing it unconditionally makes temporary logger outages silently
+				// lose every request collected during the previous interval.
+				if c.pushRequests(requests) {
+					requests = nil
+				}
 			}
 
 		case <-c.done:
@@ -119,7 +123,9 @@ func (c *Client) worker() {
 	}
 }
 
-func (c *Client) pushRequests(requests []RequestData) {
+// pushRequests returns true only when the logger accepted the batch. Callers
+// retain a false-returning batch and retry it later.
+func (c *Client) pushRequests(requests []RequestData) bool {
 	data := Payload{
 		APIKey:       c.apiKey,
 		Requests:     requests,
@@ -129,19 +135,21 @@ func (c *Client) pushRequests(requests []RequestData) {
 	body, err := json.Marshal(data)
 	if err != nil {
 		log.Printf("Failed to send requests: %v", err)
-		return
+		return false
 	}
 	resp, err := httpClient.Post(c.endpointURL, "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		log.Printf("Failed to send requests: %v", err)
-		return
+		return false
 	}
 	defer resp.Body.Close()
 	// The logging endpoint returns 201 Created on success; treat any 2xx as
 	// success so a normal upload is not logged as an error.
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		log.Printf("Server responded with status: %d", resp.StatusCode)
+		return false
 	}
+	return true
 }
 
 // Shutdown flushes any buffered requests and blocks until that final upload has

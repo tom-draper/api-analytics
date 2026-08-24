@@ -347,6 +347,27 @@ func TestClientShutdown(t *testing.T) {
 	}
 }
 
+func TestPushRequestsReportsFailedServerResponse(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		http.Error(w, "temporarily unavailable", http.StatusServiceUnavailable)
+	}))
+	defer ts.Close()
+
+	client := &Client{apiKey: "test-api-key", framework: "Gin", endpointURL: ts.URL}
+	requests := []RequestData{{
+		Hostname:  "example.test",
+		Path:      "/",
+		UserAgent: "test-agent",
+		Method:    "GET",
+		Status:    http.StatusOK,
+		CreatedAt: time.Now().Format(time.RFC3339),
+	}}
+
+	if client.pushRequests(requests) {
+		t.Fatal("pushRequests reported success for a 503 response")
+	}
+}
+
 func TestPerformanceLogRequests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping: waits on the 1-minute worker flush interval")
