@@ -20,6 +20,9 @@ func RegisterRouter(r *gin.RouterGroup, db *database.DB, cfg *config.Config, sta
 
 	r.GET("/generate", genAPIKey(db))
 	r.GET("/generate-api-key", genAPIKey(db))
+	r.POST("/user-id", body, getUserIDFromBody(db))
+	// Deprecated: the API key in the URL can leak through access logs. New
+	// callers should use POST /user-id with {"api_key": "..."} instead.
 	r.GET("/user-id/:apiKey", getUserID(db))
 	r.POST("/regenerate-user-id", body, regenerateUserIDFromBody(db))
 	// Deprecated: the key in the URL leaks into logs. Use POST /regenerate-user-id.

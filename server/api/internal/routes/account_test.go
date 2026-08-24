@@ -42,6 +42,51 @@ func regenerateRecorderFor(t *testing.T, body string) *httptest.ResponseRecorder
 	return recorder
 }
 
+func userIDRecorderFor(t *testing.T, body string) *httptest.ResponseRecorder {
+	t.Helper()
+	gin.SetMode(gin.TestMode)
+
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Request = httptest.NewRequest(http.MethodPost, "/user-id", strings.NewReader(body))
+	c.Request.Header.Set("Content-Type", "application/json")
+
+	getUserIDFromBody(nil)(c)
+	return recorder
+}
+
+func TestGetUserIDRejectsInvalidRequests(t *testing.T) {
+	for _, body := range []string{
+		"",
+		"{",
+		`{}`,
+		`{"api_key":""}`,
+		`{"api_key":"not-a-uuid"}`,
+	} {
+		t.Run(body, func(t *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("invalid API key reached the database: %v", r)
+				}
+			}()
+			if recorder := userIDRecorderFor(t, body); recorder.Code != http.StatusBadRequest {
+				t.Errorf("status = %d, want %d", recorder.Code, http.StatusBadRequest)
+			}
+		})
+	}
+}
+
+func TestGetUserIDKeepsAPIKeyOutOfTheURL(t *testing.T) {
+	const apiKey = "11111111-1111-4111-8111-111111111111"
+	req := httptest.NewRequest(http.MethodPost, "/user-id", strings.NewReader(`{"api_key":"`+apiKey+`"}`))
+	if strings.Contains(req.URL.String(), apiKey) {
+		t.Errorf("URL %q contains the API key", req.URL.String())
+	}
+	if req.Method != http.MethodPost {
+		t.Errorf("method = %s, want %s", req.Method, http.MethodPost)
+	}
+}
+
 func TestRegenerateUserIDRejectsInvalidRequests(t *testing.T) {
 	tests := []struct {
 		name string

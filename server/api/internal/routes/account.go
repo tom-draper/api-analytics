@@ -29,28 +29,61 @@ func genAPIKey(db *database.DB) gin.HandlerFunc {
 	}
 }
 
+// getUserIDFromBody resolves a dashboard user ID without putting the API key in
+// a URL, which would expose it to access logs, proxy logs and browser history.
+func getUserIDFromBody(db *database.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var body struct {
+			APIKey string `json:"api_key"`
+		}
+		if err := c.ShouldBindJSON(&body); err != nil {
+			log.Info(fmt.Sprintf("invalid user ID lookup request - %s", err.Error()))
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request body."})
+			return
+		}
+
+		// Users sometimes provide the key in quotes.
+		apiKey := strings.TrimSpace(strings.ReplaceAll(body.APIKey, "\"", ""))
+		if apiKey == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
+			return
+		}
+		if !database.ValidAPIKey(apiKey) {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid API key format. Expected UUID format."})
+			return
+		}
+
+		getUserIDByAPIKey(c, db, apiKey)
+	}
+}
+
+// getUserID is the legacy URL-based lookup retained for existing clients.
+// New callers should use POST /user-id so API keys do not enter URL logs.
 func getUserID(db *database.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		apiKey, ok := requireAPIKeyParam(c)
 		if !ok {
 			return
 		}
-
-		ctx := c.Request.Context()
-
-		userID, err := db.GetUserID(ctx, apiKey)
-		if err != nil {
-			if err == pgx.ErrNoRows {
-				c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "API key not found."})
-			} else {
-				log.Error(fmt.Sprintf("key=%s: user ID fetch failed - %s", apiKey, err.Error()))
-				c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
-			}
-			return
-		}
-
-		c.JSON(http.StatusOK, userID)
+		getUserIDByAPIKey(c, db, apiKey)
 	}
+}
+
+func getUserIDByAPIKey(c *gin.Context, db *database.DB, apiKey string) {
+	ctx := c.Request.Context()
+
+	userID, err := db.GetUserID(ctx, apiKey)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "API key not found."})
+		} else {
+			log.Error(fmt.Sprintf("key=%s: user ID fetch failed - %s", apiKey, err.Error()))
+			c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Database error."})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, userID)
 }
 
 // deleteAccount permanently deletes an account and every request, monitor and

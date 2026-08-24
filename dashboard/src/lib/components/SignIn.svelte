@@ -33,7 +33,11 @@
 		const url = getServerURL();
 
 		try {
-			const response = await fetch(`${url}/api/user-id/${apiKey}`);
+			const response = await fetch(`${url}/api/user-id`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ api_key: apiKey })
+			});
 
 			if (response.status === 200) {
 				const userID = await response.json();
