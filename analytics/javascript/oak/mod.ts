@@ -33,11 +33,21 @@ class Analytics {
 	private privacyLevel: number;
 	private requests: RequestData[] = [];
 	private lastPosted: Date = new Date();
+	private flushPromise: Promise<void> | null = null;
 
 	constructor(apiKey: string, serverUrl: string, privacyLevel: number) {
 		this.apiKey = apiKey;
 		this.serverUrl = serverUrl;
 		this.privacyLevel = privacyLevel;
+
+		// Flush even when traffic goes idle. Without this timer, a service that
+		// receives only one request after startup retains it until a later request
+		// happens to arrive more than a minute later.
+		if (this.apiKey) {
+			setInterval(() => {
+				void this.flush();
+			}, 60_000);
+		}
 	}
 
 	async logRequest(requestData: RequestData): Promise<void> {
@@ -46,12 +56,19 @@ class Analytics {
 		this.requests.push(requestData);
 		const now = new Date();
 		if (now.getTime() - this.lastPosted.getTime() > 60000 && this.requests.length > 0) {
-			this.lastPosted = now;
-			const requestsToSend = this.requests;
-			this.requests = [];
+			await this.flush();
+		}
+	}
 
+	private async flush(): Promise<void> {
+		if (!this.apiKey || this.requests.length === 0) return;
+		if (this.flushPromise) return this.flushPromise;
+
+		const requestsToSend = this.requests;
+		this.requests = [];
+		this.flushPromise = (async () => {
 			try {
-				await fetch(this.getServerEndpoint(), {
+				const response = await fetch(this.getServerEndpoint(), {
 					method: "POST",
 					body: JSON.stringify({
 						api_key: this.apiKey,
@@ -61,10 +78,19 @@ class Analytics {
 					}),
 					headers: { "Content-Type": "application/json" },
 				});
+				if (!response.ok) {
+					throw new Error(`Analytics server responded with status: ${response.status}`);
+				}
+				this.lastPosted = new Date();
 			} catch {
-				// Silently fail — analytics should never affect the application
+				// Analytics must not affect the application, but a transient failure
+				// must not discard the batch.
+				this.requests = requestsToSend.concat(this.requests);
+			} finally {
+				this.flushPromise = null;
 			}
-		}
+		})();
+		return this.flushPromise;
 	}
 
 	private getServerEndpoint(): string {
