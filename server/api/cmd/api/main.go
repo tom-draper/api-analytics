@@ -135,10 +135,15 @@ func setupRouter(db *database.DB, cfg *config.Config, startTime time.Time) *gin.
 // default) and otherwise restricts CORS to the configured origins, so a hosted
 // deployment can lock the dashboard API down to its own front-end.
 func corsMiddleware(allowedOrigins []string) gin.HandlerFunc {
-	if len(allowedOrigins) == 0 {
-		return cors.Default()
-	}
 	c := cors.DefaultConfig()
+	// /api/data accepts either of these headers for API-key authentication.
+	// They are non-safelisted request headers, so browsers require them to be
+	// present in the preflight response before they will send the GET request.
+	c.AllowHeaders = append(c.AllowHeaders, "X-AUTH-TOKEN", "API-Key")
+	if len(allowedOrigins) == 0 {
+		c.AllowAllOrigins = true
+		return cors.New(c)
+	}
 	c.AllowOrigins = allowedOrigins
 	return cors.New(c)
 }
