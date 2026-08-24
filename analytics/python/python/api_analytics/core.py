@@ -54,7 +54,7 @@ def log_request(
 
     if requests_to_post:
         threading.Thread(
-            target=_post_requests,
+            target=_post_or_requeue,
             args=(api_key, requests_to_post, framework, privacy_level, server_url),
         ).start()
 
@@ -76,7 +76,7 @@ def flush() -> None:
                 _last_posted[api_key] = datetime.now()
 
     for api_key, buffered, (framework, privacy_level, server_url) in batches:
-        _post_requests(api_key, buffered, framework, privacy_level, server_url)
+        _post_or_requeue(api_key, buffered, framework, privacy_level, server_url)
 
 
 def _ensure_flusher():
@@ -110,7 +110,7 @@ def _post_requests(
     framework: str,
     privacy_level: int,
     server_url: str,
-):
+) -> bool:
     url = _endpoint_url(server_url)
     logger.debug(f"Posting {len(requests_data)} logged requests to server: {url}")
 
@@ -126,8 +126,25 @@ def _post_requests(
             timeout=10,
         )
         logger.debug(f"Response from server ({response.status_code}): {response.text}")
+        return 200 <= response.status_code < 300
     except Exception as e:
         logger.debug(f"Failed to post logs: {e}")
+        return False
+
+
+def _post_or_requeue(
+    api_key: str,
+    requests_data: List[Dict],
+    framework: str,
+    privacy_level: int,
+    server_url: str,
+):
+    """Upload a batch, restoring it ahead of newer requests on failure."""
+    if _post_requests(api_key, requests_data, framework, privacy_level, server_url):
+        return
+
+    with _lock:
+        _requests[api_key] = requests_data + _requests.get(api_key, [])
 
 
 def _endpoint_url(server_url: str) -> str:
