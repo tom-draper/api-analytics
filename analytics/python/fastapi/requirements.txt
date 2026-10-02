@@ -1,2 +1,55 @@
-fastapi==0.80.0
-requests==2.27.1
+# Pinned dependencies for this integration.
+annotated-doc==0.0.5
+    # via fastapi
+annotated-types==0.8.0
+    # via pydantic
+anyio==4.15.1
+    # via
+    #   direct requirements
+    #   starlette
+certifi==2026.7.22
+    # via
+    #   direct requirements
+    #   requests
+charset-normalizer==3.5.2
+    # via
+    #   direct requirements
+    #   requests
+fastapi==0.142.2
+    # via direct requirements
+idna==3.20
+    # via
+    #   direct requirements
+    #   anyio
+    #   requests
+opentelemetry-api==1.45.0
+    # via fastapi
+pydantic==2.13.5
+    # via
+    #   direct requirements
+    #   fastapi
+pydantic-core==2.46.5
+    # via pydantic
+requests==2.34.2
+    # via direct requirements
+starlette==1.7.0
+    # via
+    #   direct requirements
+    #   fastapi
+typing-extensions==4.16.0
+    # via
+    #   direct requirements
+    #   anyio
+    #   fastapi
+    #   opentelemetry-api
+    #   pydantic
+    #   pydantic-core
+    #   typing-inspection
+typing-inspection==0.4.4
+    # via
+    #   fastapi
+    #   pydantic
+urllib3==2.8.0
+    # via
+    #   direct requirements
+    #   requests
