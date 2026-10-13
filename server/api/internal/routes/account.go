@@ -1,7 +1,9 @@
 package routes
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"sync"
@@ -134,20 +136,27 @@ func deleteAccountByAPIKey(c *gin.Context, db *database.DB, apiKey string) {
 // regenerateUserIDFromBody regenerates a user's dashboard ID, taking the API key
 // from the POST body so it stays out of URLs and logs and needs no custom
 // header. Sending no header keeps this a CORS "simple request", avoiding a
-// preflight the API does not answer — the same approach as deleteAccount.
+// preflight — the same approach as deleteAccount.
+//
+// Older dashboards send the key in the X-AUTH-TOKEN header with no body, so an
+// empty body falls back to the header rather than being rejected.
 func regenerateUserIDFromBody(db *database.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var body struct {
 			APIKey string `json:"api_key"`
 		}
-		if err := c.ShouldBindJSON(&body); err != nil {
+		var apiKey string
+		if err := c.ShouldBindJSON(&body); err == nil {
+			// Users sometimes provide the key in quotes.
+			apiKey = strings.TrimSpace(strings.ReplaceAll(body.APIKey, "\"", ""))
+		} else if errors.Is(err, io.EOF) {
+			apiKey = getAPIKeyFromHeader(c)
+		} else {
 			log.Info(fmt.Sprintf("invalid user ID regeneration request - %s", err.Error()))
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid request body."})
 			return
 		}
 
-		// Users sometimes provide the key in quotes.
-		apiKey := strings.TrimSpace(strings.ReplaceAll(body.APIKey, "\"", ""))
 		if apiKey == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "API key required."})
 			return

@@ -125,6 +125,59 @@ func TestRegenerateUserIDAcceptsValidAPIKey(t *testing.T) {
 	}
 }
 
+// regenerateHeaderRecorderFor drives regenerateUserIDFromBody the way older
+// dashboards call it: the API key in the X-AUTH-TOKEN header and the given body.
+func regenerateHeaderRecorderFor(t *testing.T, apiKey, body string) *httptest.ResponseRecorder {
+	t.Helper()
+	gin.SetMode(gin.TestMode)
+
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Request = httptest.NewRequest(http.MethodPost, "/regenerate-user-id", strings.NewReader(body))
+	c.Request.Header.Set("X-AUTH-TOKEN", apiKey)
+
+	regenerateUserIDFromBody(nil)(c)
+	return recorder
+}
+
+func TestRegenerateUserIDAcceptsAPIKeyHeaderWithEmptyBody(t *testing.T) {
+	// A valid header key with no body passes validation and reaches the DB
+	// (nil), which panics — proving the header fallback let it through.
+	reachedDB := false
+	func() {
+		defer func() { reachedDB = recover() != nil }()
+		regenerateHeaderRecorderFor(t, "11111111-1111-4111-8111-111111111111", "")
+	}()
+	if !reachedDB {
+		t.Error("a valid API key header with an empty body should not be rejected")
+	}
+}
+
+func TestRegenerateUserIDRejectsInvalidAPIKeyHeader(t *testing.T) {
+	tests := []struct {
+		name   string
+		apiKey string
+		body   string
+	}{
+		{"header not a uuid", "not-a-uuid", ""},
+		{"valid header with malformed body", "11111111-1111-4111-8111-111111111111", "{"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("%s reached the database instead of being rejected: %v", tt.name, r)
+				}
+			}()
+
+			if recorder := regenerateHeaderRecorderFor(t, tt.apiKey, tt.body); recorder.Code != http.StatusBadRequest {
+				t.Errorf("status = %d, expected %d for %s", recorder.Code, http.StatusBadRequest, tt.name)
+			}
+		})
+	}
+}
+
 func TestDeleteAccountRejectsInvalidRequests(t *testing.T) {
 	tests := []struct {
 		name string
