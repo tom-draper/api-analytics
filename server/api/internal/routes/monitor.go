@@ -263,7 +263,8 @@ func deleteUserMonitor(db *database.DB) gin.HandlerFunc {
 		}
 
 		log.Info(fmt.Sprintf("key=%s: monitor '%s' deleted successfully", apiKey, body.URL))
-		c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "message": "Monitor deleted successfully."})
+		// 201 rather than 200: the dashboard treats only 201 as a successful delete.
+		c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "Monitor deleted successfully."})
 	}
 }
 
